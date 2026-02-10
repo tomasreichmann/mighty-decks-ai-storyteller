@@ -2,10 +2,11 @@ services:
   - type: web
     name: mighty-decks-ai-storyteller
     runtime: node
+    plan: free
     autoDeploy: true
     healthCheckPath: /health
-    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm -C apps/web build
-    startCommand: corepack enable && pnpm -C apps/server serve
+    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm -C apps/web build
+    startCommand: pnpm -C apps/server serve
     envVars:
       - key: OPENROUTER_API_KEY
         sync: false
