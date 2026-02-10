@@ -8,10 +8,6 @@ services:
     buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm -C apps/web build
     startCommand: pnpm -C apps/server serve
     envVars:
-      - key: OPENROUTER_API_KEY
-        sync: false
-      - key: CORS_ORIGINS
-        sync: false
       - key: DEBUG_MODE
         value: "false"
       - key: MAX_ACTIVE_ADVENTURES
