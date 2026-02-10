@@ -4,7 +4,7 @@ This deploys web + API + Socket.IO on one Render Web Service.
 
 ## 1) Push this repo
 
-Push your latest branch (includes `render.yaml`).
+Push your latest branch (includes `render.yaml` and committed `pnpm-lock.yaml`).
 
 ## 2) Create service from Blueprint
 
