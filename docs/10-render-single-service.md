@@ -24,6 +24,7 @@ In the Render service settings, set:
 Optional:
 
 - `DEBUG_MODE=false`
+- `MAX_ACTIVE_ADVENTURES=1`
 - model overrides (`OR_TEXT_*`, `OR_IMAGE_MODEL`, etc.)
 
 ## 4) Keep one instance
