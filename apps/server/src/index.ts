@@ -1,5 +1,8 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { extname, resolve, sep } from "node:path";
 import { Server as SocketServer } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
 import { OpenRouterClient } from "./ai/OpenRouterClient";
@@ -85,6 +88,91 @@ app.get("/adventures", async () => {
     })),
   };
 });
+
+const WEB_DIST_DIR = resolve(process.cwd(), "../web/dist");
+const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
+const CONTENT_TYPES: Record<string, string> = {
+  ".css": "text/css; charset=utf-8",
+  ".html": HTML_CONTENT_TYPE,
+  ".ico": "image/x-icon",
+  ".jpeg": "image/jpeg",
+  ".jpg": "image/jpeg",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".map": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
+  ".webp": "image/webp",
+};
+
+const resolveWebFilePath = (requestPath: string): { absolutePath: string; isAssetRequest: boolean } | null => {
+  const normalizedPath = requestPath === "/" ? "/index.html" : requestPath;
+  const absolutePath = resolve(WEB_DIST_DIR, `.${normalizedPath}`);
+  const withinDist = absolutePath === WEB_DIST_DIR || absolutePath.startsWith(`${WEB_DIST_DIR}${sep}`);
+  if (!withinDist) {
+    return null;
+  }
+
+  return {
+    absolutePath,
+    isAssetRequest: extname(requestPath).length > 0,
+  };
+};
+
+if (existsSync(WEB_DIST_DIR)) {
+  app.log.info(`Serving web client from ${WEB_DIST_DIR}`);
+
+  app.get("/*", async (request, reply) => {
+    const rawPath = request.raw.url?.split("?")[0] ?? "/";
+    if (rawPath.startsWith("/socket.io")) {
+      return reply.code(404).send({
+        message: "Route not found",
+      });
+    }
+
+    let decodedPath: string;
+    try {
+      decodedPath = decodeURIComponent(rawPath);
+    } catch {
+      return reply.code(400).send({
+        message: "Invalid request path",
+      });
+    }
+
+    const resolved = resolveWebFilePath(decodedPath);
+    if (!resolved) {
+      return reply.code(400).send({
+        message: "Invalid request path",
+      });
+    }
+
+    try {
+      const body = await readFile(resolved.absolutePath);
+      const extension = extname(resolved.absolutePath);
+      reply.type(CONTENT_TYPES[extension] ?? "application/octet-stream");
+      return reply.send(body);
+    } catch {
+      if (resolved.isAssetRequest) {
+        return reply.code(404).send({
+          message: "Route not found",
+        });
+      }
+
+      try {
+        const indexHtml = await readFile(resolve(WEB_DIST_DIR, "index.html"));
+        reply.type(HTML_CONTENT_TYPE);
+        return reply.send(indexHtml);
+      } catch {
+        return reply.code(500).send({
+          message: "Web client is unavailable",
+        });
+      }
+    }
+  });
+} else {
+  app.log.warn(`Web dist not found at ${WEB_DIST_DIR}. Build apps/web to serve UI from this server.`);
+}
 
 const start = async (): Promise<void> => {
   try {
