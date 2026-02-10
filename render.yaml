@@ -5,7 +5,7 @@ services:
     plan: free
     autoDeploy: true
     healthCheckPath: /health
-    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm -C apps/web build
+    buildCommand: pnpm install --frozen-lockfile --config.production=false --force && pnpm -C apps/web build
     startCommand: pnpm -C apps/server serve
     envVars:
       - key: DEBUG_MODE

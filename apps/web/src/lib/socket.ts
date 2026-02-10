@@ -14,19 +14,6 @@ export const resolveServerUrl = (): string => {
   const configuredServerUrl = import.meta.env.VITE_SERVER_URL;
 
   if (configuredServerUrl) {
-    try {
-      const configuredUrl = new URL(configuredServerUrl, pageUrl.origin);
-      // Prevent stale quick-tunnel URLs from breaking local/LAN Vite dev.
-      if (
-        pageUrl.port === "5173" &&
-        configuredUrl.hostname.endsWith(".trycloudflare.com")
-      ) {
-        return resolveLocalDevServerUrl(pageUrl);
-      }
-    } catch {
-      return configuredServerUrl;
-    }
-
     return configuredServerUrl;
   }
 
@@ -37,16 +24,6 @@ export const resolveServerUrl = (): string => {
 
   // Deployed single-service setup should use same-origin API + Socket.IO.
   return pageUrl.origin;
-};
-
-const isQuickCloudflareTunnel = (serverUrl: string): boolean => {
-  try {
-    const base = typeof window !== "undefined" ? window.location.href : "http://localhost";
-    const parsed = new URL(serverUrl, base);
-    return parsed.hostname.endsWith(".trycloudflare.com");
-  } catch {
-    return false;
-  }
 };
 
 export const getServerUrlWarning = (serverUrl: string): string | null => {
@@ -77,11 +54,9 @@ export const getServerUrlWarning = (serverUrl: string): string | null => {
 
 export const createSocketClient = (): Socket<ServerToClientEvents, ClientToServerEvents> => {
   const serverUrl = resolveServerUrl();
-  const usePollingOnly = isQuickCloudflareTunnel(serverUrl);
-
   return io(serverUrl, {
     autoConnect: false,
-    transports: usePollingOnly ? ["polling"] : ["websocket", "polling"],
-    upgrade: !usePollingOnly,
+    transports: ["websocket", "polling"],
+    upgrade: true,
   });
 };
