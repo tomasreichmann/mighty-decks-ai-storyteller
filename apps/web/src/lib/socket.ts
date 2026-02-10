@@ -3,19 +3,36 @@ import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/s
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
-export const resolveServerUrl = (): string => {
-  if (import.meta.env.VITE_SERVER_URL) {
-    return import.meta.env.VITE_SERVER_URL;
-  }
+const resolveLocalDevServerUrl = (pageUrl: URL): string => `${pageUrl.protocol}//${pageUrl.hostname}:8080`;
 
+export const resolveServerUrl = (): string => {
   if (typeof window === "undefined") {
-    return "http://localhost:8080";
+    return import.meta.env.VITE_SERVER_URL ?? "http://localhost:8080";
   }
 
   const pageUrl = new URL(window.location.href);
+  const configuredServerUrl = import.meta.env.VITE_SERVER_URL;
+
+  if (configuredServerUrl) {
+    try {
+      const configuredUrl = new URL(configuredServerUrl, pageUrl.origin);
+      // Prevent stale quick-tunnel URLs from breaking localhost dev.
+      if (
+        LOCAL_HOSTS.has(pageUrl.hostname) &&
+        configuredUrl.hostname.endsWith(".trycloudflare.com")
+      ) {
+        return resolveLocalDevServerUrl(pageUrl);
+      }
+    } catch {
+      return configuredServerUrl;
+    }
+
+    return configuredServerUrl;
+  }
+
   // Local/LAN dev commonly runs Vite on 5173 and server on 8080.
   if (pageUrl.port === "5173") {
-    return `${pageUrl.protocol}//${pageUrl.hostname}:8080`;
+    return resolveLocalDevServerUrl(pageUrl);
   }
 
   // Deployed single-service setup should use same-origin API + Socket.IO.
