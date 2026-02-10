@@ -81,7 +81,9 @@ export const AdventureHeader = ({
   const [activeShareTarget, setActiveShareTarget] = useState<
     "player" | "screen" | null
   >(null);
-  const statusMeta = connectionStatus ? connectionStatusMeta[connectionStatus] : null;
+  const statusMeta = connectionStatus
+    ? connectionStatusMeta[connectionStatus]
+    : null;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -143,7 +145,9 @@ export const AdventureHeader = ({
       <Section className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs uppercase tracking-wider text-slate-500">Adventure</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">
+              Adventure {phase}
+            </p>
             {statusMeta ? (
               <span
                 className={cn(
@@ -154,6 +158,7 @@ export const AdventureHeader = ({
               >
                 <span className={cn("h-2 w-2 rounded-full", statusMeta.dot)} />
                 {statusMeta.label}
+                {connectionStatus !== "offline" ? <> as {role}</> : null}
               </span>
             ) : null}
           </div>
@@ -176,10 +181,6 @@ export const AdventureHeader = ({
               Share Screen
             </Button>
           </div>
-          <div className="text-right text-sm text-slate-600">
-            {role ? <p>Role: {role}</p> : null}
-            {phase ? <p>Phase: {phase}</p> : null}
-          </div>
         </div>
       </Section>
       <ShareLinkOverlay
@@ -191,4 +192,3 @@ export const AdventureHeader = ({
     </>
   );
 };
-

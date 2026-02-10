@@ -9,7 +9,10 @@ interface RuntimeConfigPanelProps {
   onApply: (nextConfig: RuntimeConfig) => void;
 }
 
-export const RuntimeConfigPanel = ({ config, onApply }: RuntimeConfigPanelProps): JSX.Element => {
+export const RuntimeConfigPanel = ({
+  config,
+  onApply,
+}: RuntimeConfigPanelProps): JSX.Element => {
   const [draft, setDraft] = useState<RuntimeConfig>(config);
 
   useEffect(() => {
@@ -22,15 +25,20 @@ export const RuntimeConfigPanel = ({ config, onApply }: RuntimeConfigPanelProps)
   };
 
   return (
-    <Section className="stack bg-cyan-50">
-      <h3 className="text-lg font-semibold text-ink">Runtime Config (Screen only)</h3>
+    <Section className="stack">
+      <h3 className="text-lg font-semibold text-ink">
+        Runtime Config (Screen only)
+      </h3>
       <form className="grid gap-3 sm:grid-cols-2" onSubmit={handleSubmit}>
         <TextField
           label="Text call timeout (ms)"
           type="number"
           value={draft.textCallTimeoutMs}
           onChange={(event) =>
-            setDraft((current) => ({ ...current, textCallTimeoutMs: Number(event.target.value) }))
+            setDraft((current) => ({
+              ...current,
+              textCallTimeoutMs: Number(event.target.value),
+            }))
           }
         />
         <TextField
@@ -38,7 +46,10 @@ export const RuntimeConfigPanel = ({ config, onApply }: RuntimeConfigPanelProps)
           type="number"
           value={draft.turnDeadlineMs}
           onChange={(event) =>
-            setDraft((current) => ({ ...current, turnDeadlineMs: Number(event.target.value) }))
+            setDraft((current) => ({
+              ...current,
+              turnDeadlineMs: Number(event.target.value),
+            }))
           }
         />
         <TextField
@@ -46,7 +57,10 @@ export const RuntimeConfigPanel = ({ config, onApply }: RuntimeConfigPanelProps)
           type="number"
           value={draft.imageTimeoutMs}
           onChange={(event) =>
-            setDraft((current) => ({ ...current, imageTimeoutMs: Number(event.target.value) }))
+            setDraft((current) => ({
+              ...current,
+              imageTimeoutMs: Number(event.target.value),
+            }))
           }
         />
         <TextField
@@ -54,7 +68,10 @@ export const RuntimeConfigPanel = ({ config, onApply }: RuntimeConfigPanelProps)
           type="number"
           value={draft.aiRetryCount}
           onChange={(event) =>
-            setDraft((current) => ({ ...current, aiRetryCount: Number(event.target.value) }))
+            setDraft((current) => ({
+              ...current,
+              aiRetryCount: Number(event.target.value),
+            }))
           }
         />
         <TextField
@@ -62,7 +79,10 @@ export const RuntimeConfigPanel = ({ config, onApply }: RuntimeConfigPanelProps)
           type="number"
           value={draft.voteTimeoutMs}
           onChange={(event) =>
-            setDraft((current) => ({ ...current, voteTimeoutMs: Number(event.target.value) }))
+            setDraft((current) => ({
+              ...current,
+              voteTimeoutMs: Number(event.target.value),
+            }))
           }
         />
         <div className="flex items-end">
@@ -74,4 +94,3 @@ export const RuntimeConfigPanel = ({ config, onApply }: RuntimeConfigPanelProps)
     </Section>
   );
 };
-

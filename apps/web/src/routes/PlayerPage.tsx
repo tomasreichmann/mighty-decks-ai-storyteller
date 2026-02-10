@@ -54,6 +54,24 @@ export const PlayerPage = (): JSX.Element => {
       ).length ?? 0,
     [adventure],
   );
+  const hasCharacterSetup = useMemo(() => {
+    const setup = participant?.setup;
+    if (!setup) {
+      return false;
+    }
+
+    return setup.characterName.trim().length > 0 && setup.visualDescription.trim().length > 0;
+  }, [participant?.setup]);
+  const needsCharacterSetup = !hasCharacterSetup;
+  const adventureGenerationInProgress =
+    phase === "lobby" &&
+    thinking.active &&
+    thinking.label.toLowerCase().includes("generating adventure pitches");
+  const showLateJoinSetup =
+    (phase === "vote" || phase === "play") &&
+    !adventure?.closed &&
+    Boolean(participant?.connected) &&
+    needsCharacterSetup;
 
   const canVote =
     Boolean(adventure?.activeVote) &&
@@ -67,7 +85,8 @@ export const PlayerPage = (): JSX.Element => {
     Boolean(adventure?.currentScene) &&
     !adventure?.closed &&
     !thinking.active &&
-    !adventure?.activeVote;
+    !adventure?.activeVote &&
+    hasCharacterSetup;
   const connectionStatus = connected ? "connected" : "reconnecting";
 
   return (
@@ -93,13 +112,28 @@ export const PlayerPage = (): JSX.Element => {
       {phase === "lobby" ? (
         <>
           <CharacterSetupForm
+            mode="ready_gate"
             isReady={participant?.ready ?? false}
             connectedPlayers={connectedPlayers}
             readyPlayers={readyPlayers}
+            initialSetup={participant?.setup}
+            adventureGenerationInProgress={adventureGenerationInProgress}
             onSubmit={submitSetup}
             onToggleReady={toggleReady}
           />
         </>
+      ) : null}
+
+      {showLateJoinSetup ? (
+        <CharacterSetupForm
+          mode="profile_only"
+          isReady={false}
+          connectedPlayers={connectedPlayers}
+          readyPlayers={readyPlayers}
+          initialSetup={participant?.setup}
+          onSubmit={submitSetup}
+          onToggleReady={toggleReady}
+        />
       ) : null}
 
       {phase === "vote" && adventure?.activeVote ? (
@@ -132,7 +166,7 @@ export const PlayerPage = (): JSX.Element => {
           <div className="shrink-0">
             <ActionComposer
               canSend={canSendAction}
-              allowDrafting={true}
+              allowDrafting={hasCharacterSetup}
               onSend={submitAction}
               onEndSession={!adventure?.closed ? endSession : undefined}
             />

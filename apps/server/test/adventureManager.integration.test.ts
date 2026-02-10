@@ -394,6 +394,63 @@ test("enforces queue lock during storyteller turn and records player transcript 
   );
 });
 
+test("allows late joiners to submit setup during play", async () => {
+  const storyteller = createStorytellerMock();
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Clockwork disaster mystery.");
+
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  let state = manager.getAdventure(adventureId);
+  assert.equal(state?.phase, "play");
+
+  joinPlayer(manager, "player-2", "Jordan");
+  manager.updateSetup({
+    adventureId,
+    playerId: "player-2",
+    setup: {
+      characterName: "Cass Varn",
+      visualDescription: "Cass Varn in soot-streaked courier leathers.",
+      adventurePreference: "",
+    },
+  });
+
+  state = manager.getAdventure(adventureId);
+  const lateJoiner = state?.roster.find((entry) => entry.playerId === "player-2");
+  assert.equal(lateJoiner?.setup?.characterName, "Cass Varn");
+
+  manager.submitAction({
+    adventureId,
+    playerId: "player-2",
+    text: "I sweep the archive floor for tripwires before anyone moves.",
+  });
+
+  state = manager.getAdventure(adventureId);
+  const latestPlayerEntry = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "player");
+  assert.ok(latestPlayerEntry);
+  assert.equal(latestPlayerEntry.author, "Cass Varn");
+});
+
 test("excludes AI debug transcript entries from storyteller and continuity context", async () => {
   const storyteller = createStorytellerMock();
   const manager = createManager(storyteller.storyteller);

@@ -16,9 +16,9 @@ export const resolveServerUrl = (): string => {
   if (configuredServerUrl) {
     try {
       const configuredUrl = new URL(configuredServerUrl, pageUrl.origin);
-      // Prevent stale quick-tunnel URLs from breaking localhost dev.
+      // Prevent stale quick-tunnel URLs from breaking local/LAN Vite dev.
       if (
-        LOCAL_HOSTS.has(pageUrl.hostname) &&
+        pageUrl.port === "5173" &&
         configuredUrl.hostname.endsWith(".trycloudflare.com")
       ) {
         return resolveLocalDevServerUrl(pageUrl);

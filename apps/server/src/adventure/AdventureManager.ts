@@ -279,7 +279,7 @@ export class AdventureManager {
     const parsed = submitSetupPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
     this.assertAdventureOpen(adventure);
-    this.assertPhase(adventure, ["lobby"], "setup can only be updated during lobby phase");
+    this.assertPhase(adventure, ["lobby", "vote", "play"], "setup can only be updated during active phases");
 
     const rosterEntry = this.getRosterEntry(adventure, parsed.playerId);
     if (rosterEntry.role !== "player") {
