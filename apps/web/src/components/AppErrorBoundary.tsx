@@ -44,7 +44,7 @@ export class AppErrorBoundary extends Component<
             This usually means a runtime error in the web app. Please share the
             message below.
           </p>
-          <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-rose-200 bg-white p-3 text-xs text-slate-800">
+          <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-rose-200 bg-white p-3 text-xs text-kac-iron">
             {this.state.error.stack ?? this.state.error.message}
           </pre>
         </section>

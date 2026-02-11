@@ -4,6 +4,7 @@ import {
   adventureStateSchema,
   clientRoleSchema,
   latencyMetricsSchema,
+  outcomeCardTypeSchema,
   playerSetupSchema,
   runtimeConfigSchema,
   transcriptEntrySchema,
@@ -52,6 +53,14 @@ export const submitActionPayloadSchema = z.object({
 });
 export type SubmitActionPayload = z.infer<typeof submitActionPayloadSchema>;
 
+export const playOutcomeCardPayloadSchema = z.object({
+  adventureId: z.string().min(1),
+  playerId: z.string().min(1),
+  checkId: z.string().min(1),
+  card: outcomeCardTypeSchema,
+});
+export type PlayOutcomeCardPayload = z.infer<typeof playOutcomeCardPayloadSchema>;
+
 export const endSessionPayloadSchema = z.object({
   adventureId: z.string().min(1),
   playerId: z.string().min(1),
@@ -87,6 +96,7 @@ export type ClientToServerEventName =
   | "toggle_ready"
   | "cast_vote"
   | "submit_action"
+  | "play_outcome_card"
   | "end_session"
   | "update_runtime_config";
 
@@ -109,6 +119,7 @@ export interface ClientToServerEvents {
   toggle_ready: (payload: ToggleReadyPayload) => void;
   cast_vote: (payload: CastVotePayload) => void;
   submit_action: (payload: SubmitActionPayload) => void;
+  play_outcome_card: (payload: PlayOutcomeCardPayload) => void;
   end_session: (payload: EndSessionPayload) => void;
   update_runtime_config: (payload: UpdateRuntimeConfigPayload) => void;
 }

@@ -42,11 +42,11 @@ export const ConnectionDiagnostics = ({
         </p>
       ) : null}
       {serverUrlWarning ? (
-        <p className="text-sm text-amber-700">Warning: {serverUrlWarning}</p>
+        <p className="text-sm text-kac-gold-darker">Warning: {serverUrlWarning}</p>
       ) : null}
-      <p className="text-xs text-slate-700">Page origin: {origin}</p>
-      <p className="text-xs text-slate-700">Socket URL: {serverUrl}</p>
-      <p className="text-xs text-slate-700">Secure context: {secureContextLabel}</p>
+      <p className="text-xs text-kac-iron-light">Page origin: {origin}</p>
+      <p className="text-xs text-kac-iron-light">Socket URL: {serverUrl}</p>
+      <p className="text-xs text-kac-iron-light">Secure context: {secureContextLabel}</p>
     </Section>
   );
 };

@@ -7,6 +7,7 @@ import { Section } from "./common/Section";
 import { NarratedSceneCard } from "./NarratedSceneCard";
 import { TranscriptItem } from "./TranscriptItem";
 import { cn } from "../utils/cn";
+import { Message } from "./common/Message";
 
 interface TranscriptFeedProps {
   entries: TranscriptEntry[];
@@ -79,7 +80,7 @@ export const TranscriptFeed = ({
       <div className={cn(scrollable && "min-h-0 flex-1 overflow-y-auto")}>
         <div className="grid min-w-0 gap-2">
           {maxEntries.length === 0 && !scene && !pendingLabel ? (
-            <p className="text-sm text-slate-600">No entries yet.</p>
+            <p className="text-sm text-kac-steel-dark">No entries yet.</p>
           ) : null}
           {maxEntries.map((entry, index) => (
             <div key={entry.entryId} className="grid gap-2">
@@ -94,15 +95,15 @@ export const TranscriptFeed = ({
           ))}
           {scene && sceneAnchorIndex < 0 ? <NarratedSceneCard scene={scene} /> : null}
           {pendingLabel ? (
-            <article className="min-w-0 max-w-full rounded-md border border-dashed border-slate-300 bg-slate-100 px-3 py-2">
-              <p className="min-w-0 whitespace-pre-wrap text-sm italic leading-relaxed text-slate-700">
-                <span className="mr-2 inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
-                  Status
-                </span>
-                <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-accent align-middle" />
-                {pendingLabel}
-              </p>
-            </article>
+            <Message
+              label="Status"
+              variant="gold"
+              className="min-w-0 max-w-full"
+              contentClassName="text-sm italic text-kac-iron-light"
+            >
+              <span className="mr-2 inline-block h-2.5 w-2.5 animate-pulse bg-kac-blood align-middle shadow-[1px_1px_0_0_#121b23]" />
+              {pendingLabel}
+            </Message>
           ) : null}
           <div ref={endRef} />
         </div>

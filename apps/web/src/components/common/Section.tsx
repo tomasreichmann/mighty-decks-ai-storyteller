@@ -14,7 +14,7 @@ export const Section = ({
   return (
     <section className={cn(className)}>
       {title ? (
-        <h2 className="mb-2 text-lg font-semibold text-ink">{title}</h2>
+        <h2 className="mb-2 text-lg font-semibold text-kac-iron">{title}</h2>
       ) : null}
       {children}
     </section>

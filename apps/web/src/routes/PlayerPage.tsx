@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ActionComposer } from "../components/ActionComposer";
 import { AdventureHeader } from "../components/AdventureHeader";
+import { OutcomeHandPanel } from "../components/cards/OutcomeHandPanel";
 import { CharacterSetupForm } from "../components/CharacterSetupForm";
 import { ConnectionDiagnostics } from "../components/ConnectionDiagnostics";
 import { GenericVotePanel } from "../components/GenericVotePanel";
@@ -33,6 +34,7 @@ export const PlayerPage = (): JSX.Element => {
     toggleReady,
     castVote,
     submitAction,
+    playOutcomeCard,
     endSession,
   } = useAdventureSession({
     adventureId,
@@ -86,7 +88,16 @@ export const PlayerPage = (): JSX.Element => {
     !adventure?.closed &&
     !thinking.active &&
     !adventure?.activeVote &&
+    !adventure?.activeOutcomeCheck &&
     hasCharacterSetup;
+  const activeOutcomeCheck = adventure?.activeOutcomeCheck;
+  const activeOutcomeTarget = useMemo(
+    () =>
+      activeOutcomeCheck && participant
+        ? activeOutcomeCheck.targets.find((entry) => entry.playerId === participant.playerId) ?? null
+        : null,
+    [activeOutcomeCheck, participant],
+  );
   const connectionStatus = connected ? "connected" : "reconnecting";
   const showLobbySetup = phase === "lobby" && Boolean(adventure);
 
@@ -125,7 +136,7 @@ export const PlayerPage = (): JSX.Element => {
         </>
       ) : null}
       {phase === "lobby" && !adventure ? (
-        <section className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+        <section className="rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-4 text-sm text-kac-iron-light">
           Joining adventure session...
         </section>
       ) : null}
@@ -152,6 +163,18 @@ export const PlayerPage = (): JSX.Element => {
 
       {phase === "play" ? (
         <>
+          {activeOutcomeCheck && activeOutcomeTarget ? (
+            <OutcomeHandPanel
+              check={activeOutcomeCheck}
+              playerId={activeOutcomeTarget.playerId}
+              onPlayCard={(card) => playOutcomeCard(activeOutcomeCheck.checkId, card)}
+            />
+          ) : null}
+          {activeOutcomeCheck && !activeOutcomeTarget ? (
+            <section className="rounded-md border border-kac-gold-dark/20 bg-kac-gold-light/30 p-3 text-sm text-kac-iron">
+              Waiting for another player to choose an Outcome card before the turn resolves.
+            </section>
+          ) : null}
           {adventure?.activeVote ? (
             <GenericVotePanel
               vote={adventure.activeVote}

@@ -4,6 +4,7 @@ import {
   endSessionPayloadSchema,
   joinAdventurePayloadSchema,
   leaveAdventurePayloadSchema,
+  playOutcomeCardPayloadSchema,
   submitActionPayloadSchema,
   submitSetupPayloadSchema,
   toggleReadyPayloadSchema,
@@ -263,6 +264,21 @@ export const registerSocketHandlers = (
       } catch (error) {
         socket.emit("storyteller_response", {
           text: error instanceof Error ? error.message : "Could not submit action.",
+        });
+      }
+    });
+
+    socket.on("play_outcome_card", (rawPayload) => {
+      const payload = withValidation(socket, playOutcomeCardPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+
+      try {
+        manager.playOutcomeCard(payload);
+      } catch (error) {
+        socket.emit("storyteller_response", {
+          text: error instanceof Error ? error.message : "Could not play outcome card.",
         });
       }
     });

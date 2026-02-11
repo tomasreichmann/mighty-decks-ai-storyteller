@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { AdventureState, PlayerSetup, RosterEntry, RuntimeConfig } from "@mighty-decks/spec/adventureState";
+import type {
+  AdventureState,
+  OutcomeCardType,
+  PlayerSetup,
+  RosterEntry,
+  RuntimeConfig,
+} from "@mighty-decks/spec/adventureState";
 import type { TranscriptAppendPayload } from "@mighty-decks/spec/events";
 import { getClientIdentity, type ClientIdentity } from "../lib/ids";
 import { createSocketClient, getServerUrlWarning, resolveServerUrl } from "../lib/socket";
@@ -28,6 +34,7 @@ export interface UseAdventureSessionResult {
   toggleReady: (ready: boolean) => void;
   castVote: (optionId: string) => void;
   submitAction: (text: string) => void;
+  playOutcomeCard: (checkId: string, card: OutcomeCardType) => void;
   endSession: () => void;
   updateRuntimeConfig: (runtimeConfig: RuntimeConfig) => void;
 }
@@ -251,6 +258,14 @@ export const useAdventureSession = ({
         adventureId,
         playerId: identity.playerId,
         text,
+      });
+    },
+    playOutcomeCard: (checkId: string, card: OutcomeCardType) => {
+      socket.emit("play_outcome_card", {
+        adventureId,
+        playerId: identity.playerId,
+        checkId,
+        card,
       });
     },
     endSession: () => {

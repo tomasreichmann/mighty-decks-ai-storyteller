@@ -66,11 +66,11 @@ export const ActionComposer = ({
             Send
           </Button>
           <div className="flex-1">
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-kac-steel-dark">
               Press Enter to send. Shift+Enter for newline.
             </p>
             {!canSend ? (
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-kac-steel-dark">
                 You can draft while waiting for the queue.
               </p>
             ) : null}

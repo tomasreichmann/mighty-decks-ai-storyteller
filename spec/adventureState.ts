@@ -70,6 +70,35 @@ export const scenePublicSchema = z.object({
 });
 export type ScenePublic = z.infer<typeof scenePublicSchema>;
 
+export const outcomeCardTypeSchema = z.enum([
+  "success",
+  "partial-success",
+  "special-action",
+  "chaos",
+  "fumble",
+]);
+export type OutcomeCardType = z.infer<typeof outcomeCardTypeSchema>;
+
+export const outcomeCheckSourceSchema = z.enum(["player_action", "npc_move", "hazard"]);
+export type OutcomeCheckSource = z.infer<typeof outcomeCheckSourceSchema>;
+
+export const outcomeCheckTargetSchema = z.object({
+  playerId: z.string().min(1),
+  displayName: z.string().min(1).max(50),
+  playedCard: outcomeCardTypeSchema.optional(),
+  playedAtIso: z.string().datetime().optional(),
+});
+export type OutcomeCheckTarget = z.infer<typeof outcomeCheckTargetSchema>;
+
+export const activeOutcomeCheckSchema = z.object({
+  checkId: z.string().min(1),
+  source: outcomeCheckSourceSchema,
+  prompt: z.string().min(1).max(500),
+  requestedAtIso: z.string().datetime(),
+  targets: z.array(outcomeCheckTargetSchema).min(1).max(5),
+});
+export type ActiveOutcomeCheck = z.infer<typeof activeOutcomeCheckSchema>;
+
 export const aiRequestAgentSchema = z.enum([
   "pitch_generator",
   "narrative_director",
@@ -138,6 +167,7 @@ export const adventureStateSchema = z.object({
   phase: adventurePhaseSchema,
   roster: z.array(rosterEntrySchema),
   activeVote: activeVoteSchema.optional(),
+  activeOutcomeCheck: activeOutcomeCheckSchema.optional(),
   currentScene: scenePublicSchema.optional(),
   transcript: z.array(transcriptEntrySchema),
   sessionSummary: z.string().optional(),

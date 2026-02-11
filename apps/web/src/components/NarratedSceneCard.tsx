@@ -10,7 +10,7 @@ export const NarratedSceneCard = ({
 }: NarratedSceneCardProps): JSX.Element => {
   return (
     <Section className="stack">
-      <div className="relative aspect-video overflow-hidden rounded-md border border-slate-300 bg-slate-200">
+      <div className="relative aspect-video overflow-hidden rounded-md border border-kac-steel-dark/40 bg-kac-steel">
         {scene.imageUrl ? (
           <img
             src={scene.imageUrl}
@@ -18,16 +18,16 @@ export const NarratedSceneCard = ({
             className="absolute h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-slate-600">
+          <div className="flex h-full items-center justify-center text-sm text-kac-steel-dark">
             {scene.imagePending ? "Generating scene image..." : "No image yet"}
           </div>
         )}
       </div>
-      <p className="text-base italic leading-relaxed text-slate-800">
+      <p className="text-base italic leading-relaxed text-kac-iron">
         {scene.introProse}
       </p>
       {scene.summary ? (
-        <div className="rounded-md bg-slate-100 p-3 text-sm text-slate-700">
+        <div className="rounded-md bg-kac-steel-light p-3 text-sm text-kac-iron-light">
           <strong>Scene Summary:</strong> {scene.summary}
         </div>
       ) : null}

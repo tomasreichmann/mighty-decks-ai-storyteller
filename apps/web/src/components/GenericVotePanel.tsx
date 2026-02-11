@@ -50,10 +50,10 @@ export const GenericVotePanel = ({
   return (
     <Section className="stack">
       <div>
-        <h3 className="text-lg font-semibold text-ink">{vote.title}</h3>
-        <p className="text-sm text-slate-700">{vote.prompt}</p>
+        <h3 className="text-lg font-semibold text-kac-iron">{vote.title}</h3>
+        <p className="text-sm text-kac-iron-light">{vote.prompt}</p>
       </div>
-      <p className="text-xs uppercase tracking-widest text-slate-500">
+      <p className="text-xs uppercase tracking-widest text-kac-steel-dark/90">
         Timeout: {Math.min(secondsRemaining, timeoutDisplay)}s
       </p>
       <div className="grid gap-2">
@@ -63,19 +63,21 @@ export const GenericVotePanel = ({
             <label
               key={option.optionId}
               className={cn(
-                "rounded-md border p-3 text-sm",
-                selected ? "border-accent bg-teal-50" : "border-slate-300 bg-white",
+                "border-[3px] border-b-[6px] p-3 text-sm shadow-[3px_3px_0_0_#121b23]",
+                selected
+                  ? "border-kac-iron bg-gradient-to-b from-kac-cloth-lightest to-kac-cloth-light"
+                  : "border-kac-iron bg-gradient-to-b from-[#fffdf5] to-kac-bone-light",
               )}
             >
               <input
                 type="radio"
-                className="mr-2"
+                className="mr-2 h-4 w-4 accent-kac-blood align-middle"
                 checked={selected}
                 onChange={() => setLocalSelection(option.optionId)}
                 disabled={disabled}
               />
-              <span className="font-medium text-ink">{option.title}</span>
-              <p className="mt-1 text-slate-600">{option.description}</p>
+              <span className="font-medium text-kac-iron">{option.title}</span>
+              <p className="mt-1 text-kac-steel-dark">{option.description}</p>
             </label>
           );
         })}
@@ -91,7 +93,7 @@ export const GenericVotePanel = ({
         >
           Cast Vote
         </Button>
-        <p className="self-center text-xs text-slate-600">Ties are resolved by randomized server tie-breaker.</p>
+        <p className="self-center text-xs text-kac-steel-dark">Ties are resolved by randomized server tie-breaker.</p>
       </div>
     </Section>
   );

@@ -7,7 +7,7 @@ interface CardProps extends PropsWithChildren {
 
 export const Card = ({ children, className = "" }: CardProps): JSX.Element => {
   return (
-    <section className={cn("soft-card p-5", className)}>
+    <section className={cn(className)}>
       {children}
     </section>
   );

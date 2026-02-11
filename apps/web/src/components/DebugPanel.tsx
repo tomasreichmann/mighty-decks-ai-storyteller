@@ -7,13 +7,20 @@ interface DebugPanelProps {
 
 export const DebugPanel = ({ debug }: DebugPanelProps): JSX.Element => {
   return (
-    <Section className="stack bg-amber-50">
-      <h3 className="text-lg font-semibold text-ink">Debug Panel</h3>
-      <p className="text-sm text-slate-700">Tension: {debug.tension ?? "n/a"}</p>
-      <p className="text-sm text-slate-700">Secrets: {debug.secrets.join(", ") || "none"}</p>
-      <p className="text-sm text-slate-700">Pacing: {debug.pacingNotes.join(", ") || "none"}</p>
-      <p className="text-sm text-slate-700">Continuity warnings: {debug.continuityWarnings.join(", ") || "none"}</p>
+    <Section className="stack relative paper-shadow">
+      <h3 className="text-lg font-semibold text-kac-iron">Debug Panel</h3>
+      <p className="text-sm text-kac-iron-light">
+        Tension: {debug.tension ?? "n/a"}
+      </p>
+      <p className="text-sm text-kac-iron-light">
+        Secrets: {debug.secrets.join(", ") || "none"}
+      </p>
+      <p className="text-sm text-kac-iron-light">
+        Pacing: {debug.pacingNotes.join(", ") || "none"}
+      </p>
+      <p className="text-sm text-kac-iron-light">
+        Continuity warnings: {debug.continuityWarnings.join(", ") || "none"}
+      </p>
     </Section>
   );
 };
-

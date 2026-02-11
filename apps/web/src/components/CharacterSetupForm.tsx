@@ -219,9 +219,9 @@ export const CharacterSetupForm = ({
             disabled={setupLocked}
           />
         ) : null}
-        <div className="rounded-md border border-slate-200 bg-white/70 p-3">
+        <div className="rounded-md border border-kac-steel/70 bg-kac-steel-light/55 p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-sm font-medium text-slate-700">Saved Presets</p>
+            <p className="text-sm font-medium text-kac-iron-light">Saved Presets</p>
             <Button
               type="button"
               size="sm"
@@ -233,7 +233,7 @@ export const CharacterSetupForm = ({
             </Button>
           </div>
           {savedPresets.length === 0 ? (
-            <p className="text-xs text-slate-600">No presets saved yet.</p>
+            <p className="text-xs text-kac-steel-dark">No presets saved yet.</p>
           ) : (
             <div className="grid gap-2">
               {savedPresets.map((preset) => (
@@ -264,7 +264,7 @@ export const CharacterSetupForm = ({
           )}
         </div>
         {isReadyGateMode ? (
-          <div className="grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+          <div className="grid gap-2 rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-3">
             {showReadyControls ? (
               <div className="flex gap-2">
                 <Button type="submit" disabled={!canReady || isReady}>
@@ -282,28 +282,28 @@ export const CharacterSetupForm = ({
                 ) : null}
               </div>
             ) : (
-              <div className="flex items-center gap-3 rounded-md border border-dashed border-slate-300 bg-white px-3 py-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-                <p className="text-sm text-slate-700">
+              <div className="flex items-center gap-3 rounded-md border border-dashed border-kac-steel-dark/40 bg-kac-steel-light/90 px-3 py-2">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-kac-gold-dark" />
+                <p className="text-sm text-kac-iron-light">
                   Adventure generation is in progress. Please wait.
                 </p>
               </div>
             )}
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-kac-iron-light">
               {readyPlayers} / {connectedPlayers} connected players are ready.
             </p>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-kac-steel-dark">
               {adventureGenerationInProgress
                 ? "Pitches are being generated now."
                 : "Phase advances when all connected player role clients are ready."}
             </p>
           </div>
         ) : (
-          <div className="grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+          <div className="grid gap-2 rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-3">
             <Button type="submit" disabled={!canReady}>
               Save character
             </Button>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-kac-steel-dark">
               Adventure is already underway. Add your character details to join
               in.
             </p>

@@ -3,6 +3,7 @@ import { Section } from "./common/Section";
 import { Button } from "./common/Button";
 import { ShareLinkOverlay } from "./ShareLinkOverlay";
 import { cn } from "../utils/cn";
+import { Label } from "./common/Label";
 
 interface AdventureHeaderProps {
   adventureId: string;
@@ -13,25 +14,28 @@ interface AdventureHeaderProps {
 
 const connectionStatusMeta: Record<
   NonNullable<AdventureHeaderProps["connectionStatus"]>,
-  { label: string; dot: string; text: string; ring: string }
+  { label: string; dot: string; text: string; ring: string; bg: string }
 > = {
   connected: {
     label: "Connected",
-    dot: "bg-emerald-500",
-    text: "text-emerald-700",
-    ring: "ring-emerald-200",
+    dot: "bg-kac-monster-dark",
+    text: "text-kac-monster-dark",
+    ring: "ring-kac-monster-dark/25",
+    bg: "bg-kac-monster-lightest/75",
   },
   reconnecting: {
     label: "Reconnecting",
-    dot: "bg-amber-500",
-    text: "text-amber-700",
-    ring: "ring-amber-200",
+    dot: "bg-kac-gold-dark",
+    text: "text-kac-gold-darker",
+    ring: "ring-kac-gold-dark/30",
+    bg: "bg-kac-gold-light/30",
   },
   offline: {
     label: "Offline",
-    dot: "bg-rose-500",
-    text: "text-rose-700",
-    ring: "ring-rose-200",
+    dot: "bg-kac-blood-light",
+    text: "text-kac-blood-dark",
+    ring: "ring-kac-blood-light/25",
+    bg: "bg-kac-blood-light/25",
   },
 };
 
@@ -142,16 +146,17 @@ export const AdventureHeader = ({
 
   return (
     <>
-      <Section className="flex flex-wrap items-start justify-between gap-3">
+      <Section className="flex flex-wrap items-start justify-between gap-3 relative paper-shadow">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs uppercase tracking-wider text-slate-500">
+            <Label rotate variant="gold">
               Adventure {phase}
-            </p>
+            </Label>
             {statusMeta ? (
               <span
                 className={cn(
                   "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1",
+                  statusMeta.bg,
                   statusMeta.text,
                   statusMeta.ring,
                 )}
@@ -162,7 +167,9 @@ export const AdventureHeader = ({
               </span>
             ) : null}
           </div>
-          <p className="text-lg font-semibold text-ink">{adventureId}</p>
+          <p className="text-lg font-semibold uppercase tracking-wide text-kac-iron">
+            {adventureId}
+          </p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <div className="flex flex-wrap justify-end gap-2">

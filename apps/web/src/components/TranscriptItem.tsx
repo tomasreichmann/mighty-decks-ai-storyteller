@@ -1,5 +1,7 @@
 import type { TranscriptEntry } from "@mighty-decks/spec/adventureState";
 import { cn } from "../utils/cn";
+import { Message, type MessageVariant } from "./common/Message";
+import { type LabelVariant } from "./common/Label";
 
 interface TranscriptItemProps {
   entry: TranscriptEntry;
@@ -10,22 +12,34 @@ const AI_IMAGE_SUCCESS_MARKER = "[AI SUCCEEDED] image_generator image";
 
 const entryStyles: Record<
   TranscriptEntry["kind"],
-  { badge: string; container: string; label: string }
+  {
+    label: string;
+    messageVariant: MessageVariant;
+    labelVariant: LabelVariant;
+    textClassName: string;
+    authorClassName: string;
+  }
 > = {
   system: {
-    badge: "bg-slate-200 text-slate-700",
-    container: "border-slate-300 bg-slate-50",
     label: "System",
+    messageVariant: "cloth",
+    labelVariant: "cloth",
+    textClassName: "text-sm font-semibold text-kac-iron-light",
+    authorClassName: "text-kac-cloth-dark",
   },
   storyteller: {
-    badge: "bg-amber-200 text-amber-900",
-    container: "border-amber-300 bg-amber-50",
     label: "Storyteller",
+    messageVariant: "gold",
+    labelVariant: "gold",
+    textClassName: "text-base italic text-kac-iron-dark",
+    authorClassName: "text-kac-iron-dark",
   },
   player: {
-    badge: "bg-teal-200 text-teal-900",
-    container: "border-teal-300 bg-teal-50",
     label: "Player",
+    messageVariant: "fire",
+    labelVariant: "fire",
+    textClassName: "text-sm text-kac-iron-light",
+    authorClassName: "text-kac-iron-dark",
   },
 };
 
@@ -141,9 +155,11 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
   const aiDebugImageUrl = isAiDebug ? extractAiDebugImageUrl(entry.text) : null;
   const style = isAiDebug
     ? {
-        badge: "bg-sky-200 text-sky-900",
-        container: "border-sky-300 bg-sky-50",
         label: "AI Debug",
+        messageVariant: "curse" as const,
+        labelVariant: "curse" as const,
+        textClassName: "text-xs text-kac-iron-light",
+        authorClassName: "text-kac-curse-dark",
       }
     : entryStyles[entry.kind];
   const authorLabel =
@@ -154,29 +170,20 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
       : null;
 
   return (
-    <article
-      className={cn(
-        "min-w-0 max-w-full rounded-md border px-3 py-2",
-        style.container,
-      )}
+    <Message
+      label={style.label}
+      variant={style.messageVariant}
+      labelVariant={style.labelVariant}
+      className="min-w-0 max-w-full"
+      contentClassName="min-w-0"
     >
       {isAiDebug ? (
         <>
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
-                style.badge,
-              )}
-            >
-              {style.label}
-            </span>
-          </div>
-          <pre className="mt-2 max-h-[300px] w-full min-w-0 overflow-x-auto overflow-y-auto whitespace-pre rounded-md bg-sky-100 p-2 font-mono text-xs text-slate-800">
+          <pre className="max-h-[300px] w-full min-w-0 overflow-x-auto overflow-y-auto whitespace-pre p-2 font-mono text-xs text-kac-iron">
             {entry.text}
           </pre>
           {aiDebugImageUrl ? (
-            <div className="mt-2 overflow-hidden rounded-md border border-sky-200 bg-sky-100">
+            <div className="mt-2 overflow-hidden">
               <img
                 src={aiDebugImageUrl}
                 alt="AI debug generated scene"
@@ -189,31 +196,24 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
       ) : (
         <p
           className={cn(
-            "min-w-0 whitespace-pre-wrap leading-relaxed text-slate-800",
+            "min-w-0 whitespace-pre-wrap leading-relaxed",
+            style.textClassName,
           )}
         >
-          <span
-            className={cn(
-              "mr-2 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
-              style.badge,
-            )}
-          >
-            {style.label}
-          </span>
           {authorLabel ? (
-            <span className="mr-2 text-xs font-medium text-slate-600">
+            <span
+              className={cn(
+                "mr-2 inline-block align-middle font-semibold uppercase tracking-[0.04em]",
+                style.authorClassName,
+                entry.kind === "storyteller" ? "text-xs" : "text-[11px]",
+              )}
+            >
               {authorLabel}
             </span>
           ) : null}
-          <span
-            className={cn(
-              entry.kind === "storyteller" ? "text-base italic" : "text-sm",
-            )}
-          >
-            {entry.text}
-          </span>
+          <span>{entry.text}</span>
         </p>
       )}
-    </article>
+    </Message>
   );
 };

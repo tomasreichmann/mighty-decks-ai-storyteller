@@ -8,7 +8,7 @@ interface RosterListProps {
 export const RosterList = ({ roster }: RosterListProps): JSX.Element => {
   return (
     <Section className="stack">
-      <h3 className="text-lg font-semibold text-ink">Roster</h3>
+      <h3 className="text-lg font-semibold text-kac-iron">Roster</h3>
       <ul className="grid gap-2">
         {roster.map((entry) => {
           const presenceLabel = entry.connected ? "connected" : "offline";
@@ -18,7 +18,7 @@ export const RosterList = ({ roster }: RosterListProps): JSX.Element => {
           return (
             <li
               key={entry.playerId}
-              className="rounded-md border border-slate-200 bg-white p-2 text-sm text-slate-700"
+              className="rounded-md border border-kac-steel/70 bg-kac-steel-light/90 p-2 text-sm text-kac-iron-light"
             >
               <strong>{entry.displayName}</strong> ({entry.role}) - {presenceLabel}
               {readyLabel ? ` - ${readyLabel}` : ""}

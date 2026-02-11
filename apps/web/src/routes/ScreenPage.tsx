@@ -71,7 +71,7 @@ export const ScreenPage = (): JSX.Element => {
         </>
       ) : null}
       {phase === "lobby" && !adventure ? (
-        <section className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+        <section className="rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-4 text-sm text-kac-iron-light">
           Joining adventure session...
         </section>
       ) : null}

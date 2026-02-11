@@ -10,22 +10,38 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClassMap: Record<ButtonVariant, string> = {
-  primary: "bg-ink text-white hover:bg-slate-900",
-  secondary: "bg-accent text-white hover:bg-teal-700",
-  ghost: "bg-transparent text-ink hover:bg-slate-200",
-  danger: "bg-rose-700 text-white hover:bg-rose-800",
+  primary: "bg-gradient-to-b from-kac-gold to-kac-gold-dark text-kac-iron",
+  secondary:
+    "bg-gradient-to-b from-kac-cloth-light to-kac-cloth-dark text-kac-steel-light",
+  ghost: "bg-gradient-to-b from-kac-bone-light to-kac-bone text-kac-iron-dark",
+  danger:
+    "bg-gradient-to-b from-kac-fire-light to-kac-fire-dark text-kac-fire-lightest",
 };
 
 const sizeClassMap: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-base",
-  lg: "px-5 py-3 text-lg",
+  sm: "px-3 py-1.5 text-xs rounded-sm",
+  md: "px-4 py-2 text-sm",
+  lg: "px-5 py-2.5 text-base",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = "", variant = "primary", size = "md", type = "button", ...props }, ref) => {
+  (
+    {
+      className = "",
+      variant = "primary",
+      size = "md",
+      type = "button",
+      ...props
+    },
+    ref,
+  ) => {
     const classes = cn(
-      "inline-flex items-center justify-center rounded-md font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-55",
+      "inline-flex select-none items-center justify-center border-[3px] border-b-[6px] border-kac-iron",
+      "font-ui font-bold uppercase tracking-[0.08em] transition duration-100",
+      "shadow-[3px_3px_0_0_#121b23]",
+      "hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50",
+      "active:translate-y-[2px] active:border-b-[4px] active:shadow-[1px_1px_0_0_#121b23]",
+      "disabled:cursor-not-allowed disabled:opacity-55 disabled:brightness-100 disabled:translate-y-0 disabled:border-b-[6px] disabled:shadow-[3px_3px_0_0_#121b23]",
       variantClassMap[variant],
       sizeClassMap[size],
       className,

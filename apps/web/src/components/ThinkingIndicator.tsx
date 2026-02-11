@@ -6,9 +6,9 @@ interface ThinkingIndicatorProps {
 
 export const ThinkingIndicator = ({ label = "Storyteller is thinking..." }: ThinkingIndicatorProps): JSX.Element => {
   return (
-    <Section className="flex items-center gap-3 border border-dashed border-slate-400 bg-slate-100">
-      <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-      <p className="text-sm text-slate-700">{label}</p>
+    <Section className="flex items-center gap-3 border border-dashed border-kac-steel-dark/60 bg-kac-steel-light">
+      <span className="h-2 w-2 animate-pulse rounded-full bg-kac-gold-dark" />
+      <p className="text-sm text-kac-iron-light">{label}</p>
     </Section>
   );
 };

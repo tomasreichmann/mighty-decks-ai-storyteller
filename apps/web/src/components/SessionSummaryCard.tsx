@@ -97,7 +97,7 @@ const renderInlineMarkdown = (value: string): ReactNode[] =>
 
     if (token.kind === "code") {
       return (
-        <code key={key} className="rounded bg-slate-100 px-1 py-0.5 text-[0.92em] text-slate-800">
+        <code key={key} className="rounded bg-kac-steel-light px-1 py-0.5 text-[0.92em] text-kac-iron">
           {token.value}
         </code>
       );
@@ -212,14 +212,14 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
 
   return (
     <Section className="stack">
-      <h2 className="text-2xl font-bold text-ink">Session Summary</h2>
-      <div className="grid gap-3 text-slate-700">
+      <h2 className="text-2xl font-bold text-kac-iron">Session Summary</h2>
+      <div className="grid gap-3 text-kac-iron-light">
         {blocks.length === 0 ? <p>No summary available.</p> : null}
         {blocks.map((block, index) => {
           if (block.kind === "heading") {
             if (block.level === 1) {
               return (
-                <h3 key={`heading-${index}`} className="text-lg font-semibold text-ink">
+                <h3 key={`heading-${index}`} className="text-lg font-semibold text-kac-iron">
                   {renderInlineMarkdown(block.text)}
                 </h3>
               );
@@ -227,14 +227,14 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
 
             if (block.level === 2) {
               return (
-                <h4 key={`heading-${index}`} className="text-base font-semibold text-ink">
+                <h4 key={`heading-${index}`} className="text-base font-semibold text-kac-iron">
                   {renderInlineMarkdown(block.text)}
                 </h4>
               );
             }
 
             return (
-              <h5 key={`heading-${index}`} className="text-sm font-semibold uppercase tracking-wide text-slate-800">
+              <h5 key={`heading-${index}`} className="text-sm font-semibold uppercase tracking-wide text-kac-iron">
                 {renderInlineMarkdown(block.text)}
               </h5>
             );

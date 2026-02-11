@@ -26,7 +26,7 @@ export const RuntimeConfigPanel = ({
 
   return (
     <Section className="stack">
-      <h3 className="text-lg font-semibold text-ink">
+      <h3 className="text-lg font-semibold text-kac-iron">
         Runtime Config (Screen only)
       </h3>
       <form className="grid gap-3 sm:grid-cols-2" onSubmit={handleSubmit}>
