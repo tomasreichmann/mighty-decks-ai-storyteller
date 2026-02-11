@@ -2,9 +2,12 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { PlayerSetup } from "@mighty-decks/spec/adventureState";
 import { Button } from "./common/Button";
 import { Section } from "./common/Section";
-import { TextArea } from "./common/TextArea";
-import { TextField } from "./common/TextField";
+import { DepressedInput } from "./common/DepressedInput";
 import { generateUuid } from "../lib/randomId";
+import { Label } from "./common/Label";
+import { Text } from "./common/Text";
+import { Panel } from "./common/Panel";
+import { Message } from "./common/Message";
 
 type SetupMode = "ready_gate" | "profile_only";
 
@@ -188,8 +191,9 @@ export const CharacterSetupForm = ({
 
   return (
     <Section>
-      <form className="stack" onSubmit={handleSubmit}>
-        <TextField
+      <form className="stack gap-4 mt-8" onSubmit={handleSubmit}>
+        <Text variant="h2">Your Character</Text>
+        <DepressedInput
           id="character-name"
           label="What do they call your character?"
           placeholder="Nyra Flint"
@@ -198,7 +202,8 @@ export const CharacterSetupForm = ({
           disabled={setupLocked}
           required
         />
-        <TextArea
+        <DepressedInput
+          multiline
           id="character-visual-description"
           label="What do they look like?"
           placeholder="A storm-chaser in patched leather with brass goggles."
@@ -209,9 +214,10 @@ export const CharacterSetupForm = ({
           required
         />
         {showAdventurePreference ? (
-          <TextArea
+          <DepressedInput
+            multiline
             id="adventure-preference"
-            label="What adventure would you like to play?"
+            label="What adventure do you want to play?"
             placeholder="A tense mystery with weird weather and ruins."
             rows={3}
             value={adventurePreference}
@@ -219,96 +225,111 @@ export const CharacterSetupForm = ({
             disabled={setupLocked}
           />
         ) : null}
-        <div className="rounded-md border border-kac-steel/70 bg-kac-steel-light/55 p-3">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-sm font-medium text-kac-iron-light">Saved Presets</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={handleSavePreset}
-              disabled={!canReady}
-            >
-              Save as Preset
-            </Button>
-          </div>
-          {savedPresets.length === 0 ? (
-            <p className="text-xs text-kac-steel-dark">No presets saved yet.</p>
-          ) : (
-            <div className="grid gap-2">
-              {savedPresets.map((preset) => (
-                <div
-                  key={preset.id}
-                  className="flex flex-wrap items-center gap-2"
-                >
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleRecallPreset(preset)}
-                    disabled={setupLocked}
-                  >
-                    {preset.label}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="danger"
-                    onClick={() => handleDeletePreset(preset.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        {isReadyGateMode ? (
-          <div className="grid gap-2 rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-3">
-            {showReadyControls ? (
-              <div className="flex gap-2">
-                <Button type="submit" disabled={!canReady || isReady}>
-                  I am ready
-                </Button>
-                {showNotReadyButton ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => onToggleReady(false)}
-                    disabled={!isReady}
-                  >
-                    Not ready
-                  </Button>
-                ) : null}
-              </div>
+        <Panel className="relative">
+          <Label className="absolute -top-2 -left-2">Saved Presets</Label>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={handleSavePreset}
+            disabled={!canReady}
+            className="absolute -top-2 -right-2"
+          >
+            Save as Preset
+          </Button>
+          <div className="pt-4">
+            {savedPresets.length === 0 ? (
+              <Text
+                variant="note"
+                color="steel-dark"
+                className="normal-case tracking-normal"
+              >
+                No presets saved yet.
+              </Text>
             ) : (
-              <div className="flex items-center gap-3 rounded-md border border-dashed border-kac-steel-dark/40 bg-kac-steel-light/90 px-3 py-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-kac-gold-dark" />
-                <p className="text-sm text-kac-iron-light">
-                  Adventure generation is in progress. Please wait.
-                </p>
+              <div className="grid gap-2">
+                {savedPresets.map((preset) => (
+                  <div key={preset.id} className="flex flex-wrap items-center">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleRecallPreset(preset)}
+                      disabled={setupLocked}
+                    >
+                      {preset.label}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handleDeletePreset(preset.id)}
+                      className="relative -ml-1 z-5"
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
-            <p className="text-sm text-kac-iron-light">
-              {readyPlayers} / {connectedPlayers} connected players are ready.
-            </p>
-            <p className="text-xs text-kac-steel-dark">
-              {adventureGenerationInProgress
-                ? "Pitches are being generated now."
-                : "Phase advances when all connected player role clients are ready."}
-            </p>
           </div>
-        ) : (
-          <div className="grid gap-2 rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-3">
-            <Button type="submit" disabled={!canReady}>
-              Save character
-            </Button>
-            <p className="text-xs text-kac-steel-dark">
-              Adventure is already underway. Add your character details to join
-              in.
-            </p>
-          </div>
-        )}
+        </Panel>
+        <Panel contentClassName="flex flex-row flex-wrap items-center gap-4">
+          {isReadyGateMode ? (
+            <>
+              {showReadyControls ? (
+                <>
+                  <Button type="submit" disabled={!canReady || isReady}>
+                    I am ready
+                  </Button>
+                  {showNotReadyButton ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => onToggleReady(false)}
+                      disabled={!isReady}
+                    >
+                      Not ready
+                    </Button>
+                  ) : null}
+                </>
+              ) : (
+                <Message variant="cloth">
+                  Adventure generation is in progress. Please wait.
+                </Message>
+              )}
+              <div>
+                <Text variant="emphasised">
+                  {readyPlayers} / {connectedPlayers} connected players are
+                  ready.
+                </Text>
+                <Text
+                  variant="note"
+                  color="steel-dark"
+                  className="normal-case tracking-normal"
+                >
+                  {adventureGenerationInProgress
+                    ? "We will be pitching adventures shortly..."
+                    : "We will begin when all connected players are ready."}
+                </Text>
+              </div>
+            </>
+          ) : (
+            <>
+              <Button type="submit" disabled={!canReady}>
+                Save character
+              </Button>
+              <Text
+                variant="note"
+                color="steel-dark"
+                className="normal-case tracking-normal"
+              >
+                Adventure is already underway. Add your character details to
+                join in.
+              </Text>
+            </>
+          )}
+        </Panel>
       </form>
     </Section>
   );

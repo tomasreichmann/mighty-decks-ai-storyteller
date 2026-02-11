@@ -1,7 +1,8 @@
 import { FormEvent, KeyboardEvent, useState } from "react";
 import { Button } from "./common/Button";
 import { Section } from "./common/Section";
-import { TextArea } from "./common/TextArea";
+import { DepressedInput } from "./common/DepressedInput";
+import { Text } from "./common/Text";
 
 interface ActionComposerProps {
   canSend: boolean;
@@ -49,7 +50,8 @@ export const ActionComposer = ({
   return (
     <Section>
       <form className="stack" onSubmit={handleSubmit}>
-        <TextArea
+        <DepressedInput
+          multiline
           label="Your action"
           rows={3}
           placeholder="I climb the broken stair and listen at the brass door."
@@ -58,7 +60,7 @@ export const ActionComposer = ({
           onKeyDown={handleKeyDown}
           disabled={!allowDrafting}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 paper-shadow">
           <Button
             type="submit"
             disabled={!canSend || draft.trim().length === 0}
@@ -66,13 +68,21 @@ export const ActionComposer = ({
             Send
           </Button>
           <div className="flex-1">
-            <p className="text-xs text-kac-steel-dark">
+            <Text
+              variant="note"
+              color="steel-dark"
+              className="normal-case tracking-normal"
+            >
               Press Enter to send. Shift+Enter for newline.
-            </p>
+            </Text>
             {!canSend ? (
-              <p className="text-xs text-kac-steel-dark">
+              <Text
+                variant="note"
+                color="steel-dark"
+                className="normal-case tracking-normal"
+              >
                 You can draft while waiting for the queue.
-              </p>
+              </Text>
             ) : null}
           </div>
           {onEndSession ? (
@@ -93,4 +103,3 @@ export const ActionComposer = ({
     </Section>
   );
 };
-

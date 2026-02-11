@@ -10,6 +10,8 @@ import { SessionSummaryCard } from "../components/SessionSummaryCard";
 import { TranscriptFeed } from "../components/TranscriptFeed";
 import { useAdventureSession } from "../hooks/useAdventureSession";
 import { cn } from "../utils/cn";
+import { Message } from "../components/common/Message";
+import { Text } from "../components/common/Text";
 
 export const PlayerPage = (): JSX.Element => {
   const { adventureId } = useParams<{ adventureId: string }>();
@@ -17,7 +19,9 @@ export const PlayerPage = (): JSX.Element => {
   if (!adventureId) {
     return (
       <main className="app-shell py-10">
-        <p className="text-red-700">Missing adventureId.</p>
+        <Text variant="body" className="text-red-700">
+          Missing adventureId.
+        </Text>
       </main>
     );
   }
@@ -62,7 +66,10 @@ export const PlayerPage = (): JSX.Element => {
       return false;
     }
 
-    return setup.characterName.trim().length > 0 && setup.visualDescription.trim().length > 0;
+    return (
+      setup.characterName.trim().length > 0 &&
+      setup.visualDescription.trim().length > 0
+    );
   }, [participant?.setup]);
   const needsCharacterSetup = !hasCharacterSetup;
   const adventureGenerationInProgress =
@@ -94,7 +101,9 @@ export const PlayerPage = (): JSX.Element => {
   const activeOutcomeTarget = useMemo(
     () =>
       activeOutcomeCheck && participant
-        ? activeOutcomeCheck.targets.find((entry) => entry.playerId === participant.playerId) ?? null
+        ? (activeOutcomeCheck.targets.find(
+            (entry) => entry.playerId === participant.playerId,
+          ) ?? null)
         : null,
     [activeOutcomeCheck, participant],
   );
@@ -105,7 +114,9 @@ export const PlayerPage = (): JSX.Element => {
     <main
       className={cn(
         "app-shell py-6",
-        phase === "play" ? "flex h-[100dvh] min-h-0 flex-col gap-3" : "stack",
+        phase === "play"
+          ? "flex h-[100dvh] min-h-0 flex-col gap-3"
+          : "stack gap-4",
       )}
     >
       <AdventureHeader
@@ -136,9 +147,9 @@ export const PlayerPage = (): JSX.Element => {
         </>
       ) : null}
       {phase === "lobby" && !adventure ? (
-        <section className="rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-4 text-sm text-kac-iron-light">
+        <Message label="System" variant="cloth">
           Joining adventure session...
-        </section>
+        </Message>
       ) : null}
 
       {showLateJoinSetup ? (
@@ -167,13 +178,16 @@ export const PlayerPage = (): JSX.Element => {
             <OutcomeHandPanel
               check={activeOutcomeCheck}
               playerId={activeOutcomeTarget.playerId}
-              onPlayCard={(card) => playOutcomeCard(activeOutcomeCheck.checkId, card)}
+              onPlayCard={(card) =>
+                playOutcomeCard(activeOutcomeCheck.checkId, card)
+              }
             />
           ) : null}
           {activeOutcomeCheck && !activeOutcomeTarget ? (
-            <section className="rounded-md border border-kac-gold-dark/20 bg-kac-gold-light/30 p-3 text-sm text-kac-iron">
-              Waiting for another player to choose an Outcome card before the turn resolves.
-            </section>
+            <Message label="System" variant="cloth">
+              Waiting for another player to choose an Outcome card before the
+              turn resolves.
+            </Message>
           ) : null}
           {adventure?.activeVote ? (
             <GenericVotePanel

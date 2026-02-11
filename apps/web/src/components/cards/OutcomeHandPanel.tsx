@@ -1,6 +1,7 @@
 import type { ActiveOutcomeCheck, OutcomeCardType } from "@mighty-decks/spec/adventureState";
 import { Card } from "../common/Card";
 import { OutcomeCard, outcomeCardOrder } from "./OutcomeCard";
+import { Text } from "../common/Text";
 
 interface OutcomeHandPanelProps {
   check: ActiveOutcomeCheck;
@@ -25,24 +26,30 @@ export const OutcomeHandPanel = ({
   return (
     <Card className="grid gap-3 border border-kac-gold-dark/20 bg-kac-gold-light/30 p-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-kac-gold-darker">
+        <Text variant="note" color="gold-dark">
           Outcome Check
-        </p>
-        <p className="text-sm text-kac-iron">{check.prompt}</p>
+        </Text>
+        <Text variant="body" color="iron" className="text-sm">
+          {check.prompt}
+        </Text>
       </div>
 
       {playedCard ? (
         <div className="grid gap-2 sm:max-w-sm">
           <OutcomeCard card={playedCard} selected={true} disabled={true} />
-          <p className="text-xs text-kac-iron-light">
+          <Text
+            variant="note"
+            color="iron-light"
+            className="normal-case tracking-normal"
+          >
             Card locked in. Waiting for resolution.
-          </p>
+          </Text>
         </div>
       ) : (
         <>
-          <p className="text-sm font-medium text-kac-iron">
+          <Text variant="body" color="iron" className="text-sm font-medium">
             Pick one reusable Outcome card:
-          </p>
+          </Text>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
             {outcomeCardOrder.map((card) => (
               <OutcomeCard

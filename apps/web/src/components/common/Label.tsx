@@ -22,6 +22,7 @@ const labelToneClassMap: Record<LabelVariant, string> = {
 
 interface LabelProps extends PropsWithChildren {
   variant?: LabelVariant;
+  size?: "sm" | "md" | "lg";
   rotate?: boolean;
   className?: string;
 }
@@ -29,16 +30,18 @@ interface LabelProps extends PropsWithChildren {
 export const Label = ({
   variant = "gold",
   rotate = true,
+  size,
   className = "",
   children,
 }: LabelProps): JSX.Element => {
   return (
     <span
       className={cn(
-        "inline-flex items-center border-[3px] border-kac-iron px-2 py-1",
-        "font-heading text-xs font-bold uppercase tracking-[0.08em] leading-none",
+        "inline-flex items-center border-2 border-kac-iron px-2 pt-1.5 pb-1",
+        "font-heading text-xs/none font-bold uppercase tracking-wide",
         "shadow-[3px_3px_0_0_#121b23]",
         rotate && "-rotate-[1.5deg]",
+        size ? "text-" + size + "/[0.8]" : "",
         labelToneClassMap[variant],
         className,
       )}

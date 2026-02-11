@@ -1,5 +1,7 @@
 import type { RosterEntry } from "@mighty-decks/spec/adventureState";
 import { Section } from "./common/Section";
+import { Message } from "./common/Message";
+import { Text } from "./common/Text";
 
 interface RosterListProps {
   roster: RosterEntry[];
@@ -8,25 +10,27 @@ interface RosterListProps {
 export const RosterList = ({ roster }: RosterListProps): JSX.Element => {
   return (
     <Section className="stack">
-      <h3 className="text-lg font-semibold text-kac-iron">Roster</h3>
-      <ul className="grid gap-2">
+      <Text as="h3" variant="h3" color="iron" className="text-lg">
+        Roster
+      </Text>
+      <div className="stack gap-4">
         {roster.map((entry) => {
           const presenceLabel = entry.connected ? "connected" : "offline";
           const readyLabel =
-            entry.role === "player" ? (entry.ready ? "ready" : "not ready") : null;
+            entry.role === "player"
+              ? entry.ready
+                ? "✔ Ready"
+                : "❌ Not ready"
+              : null;
 
           return (
-            <li
-              key={entry.playerId}
-              className="rounded-md border border-kac-steel/70 bg-kac-steel-light/90 p-2 text-sm text-kac-iron-light"
-            >
-              <strong>{entry.displayName}</strong> ({entry.role}) - {presenceLabel}
+            <Message label={entry.displayName} key={entry.playerId}>
+              {presenceLabel}
               {readyLabel ? ` - ${readyLabel}` : ""}
-            </li>
+            </Message>
           );
         })}
-      </ul>
+      </div>
     </Section>
   );
 };
-

@@ -3,6 +3,7 @@ import type { RuntimeConfig } from "@mighty-decks/spec/adventureState";
 import { Button } from "./common/Button";
 import { Section } from "./common/Section";
 import { TextField } from "./common/TextField";
+import { Text } from "./common/Text";
 
 interface RuntimeConfigPanelProps {
   config: RuntimeConfig;
@@ -26,9 +27,9 @@ export const RuntimeConfigPanel = ({
 
   return (
     <Section className="stack">
-      <h3 className="text-lg font-semibold text-kac-iron">
+      <Text as="h3" variant="h3" color="iron" className="text-lg">
         Runtime Config (Screen only)
-      </h3>
+      </Text>
       <form className="grid gap-3 sm:grid-cols-2" onSubmit={handleSubmit}>
         <TextField
           label="Text call timeout (ms)"

@@ -56,6 +56,7 @@ interface AdventureRuntimeState {
   actionQueue: ActionQueueItem[];
   pendingOutcomeAction: ActionQueueItem | null;
   processingAction: boolean;
+  processingOutcomeDecision: boolean;
   pitchVoteInProgress: boolean;
   sceneCounter: number;
   sceneTurnCounter: number;
@@ -419,7 +420,7 @@ export class AdventureManager {
     };
   }
 
-  public submitAction(payload: unknown): AdventureState {
+  public async submitAction(payload: unknown): Promise<AdventureState> {
     const parsed = submitActionPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
     this.assertAdventureOpen(adventure);
@@ -441,11 +442,17 @@ export class AdventureManager {
     const runtime = this.ensureRuntime(adventure.adventureId);
     if (
       runtime.processingAction ||
+      runtime.processingOutcomeDecision ||
       runtime.actionQueue.length > 0 ||
       runtime.pendingOutcomeAction ||
       adventure.activeOutcomeCheck
     ) {
       throw new Error("action queue busy; draft while the storyteller resolves the current turn");
+    }
+
+    const actionText = parsed.text.trim();
+    if (actionText.length === 0) {
+      throw new Error("action text is empty");
     }
 
     const configuredCharacterName = player.setup?.characterName?.trim();
@@ -454,38 +461,92 @@ export class AdventureManager {
         ? configuredCharacterName
         : player.displayName;
 
-    runtime.pendingOutcomeAction = {
-      playerId: parsed.playerId,
-      text: parsed.text.trim(),
-    };
-
-    const checkId = createId("oc");
-    adventure.activeOutcomeCheck = activeOutcomeCheckSchema.parse({
-      checkId,
-      source: "player_action",
-      prompt: `${playerAuthor} must play an Outcome card before the action resolves.`,
-      requestedAtIso: new Date().toISOString(),
-      targets: [
-        {
-          playerId: parsed.playerId,
-          displayName: playerAuthor,
-        },
-      ],
-    });
-
     this.appendTranscriptEntry(adventure, {
       kind: "player",
       author: playerAuthor,
-      text: parsed.text.trim(),
-    });
-    this.appendTranscriptEntry(adventure, {
-      kind: "system",
-      author: "System",
-      text: `Outcome check: ${playerAuthor}, play an Outcome card.`,
+      text: actionText,
     });
     this.notifyAdventureUpdated(adventure.adventureId);
 
-    return adventure;
+    runtime.processingOutcomeDecision = true;
+    this.hooks.onStorytellerThinking?.(adventure.adventureId, {
+      active: true,
+      label: "Assessing stakes...",
+    });
+
+    try {
+      const decision = await this.options.storyteller.decideOutcomeCheckForPlayerAction(
+        {
+          actorCharacterName: playerAuthor,
+          actionText,
+          turnNumber: runtime.sceneTurnCounter + 1,
+          scene: adventure.currentScene,
+          transcriptTail: this.getNarrativeTranscript(adventure.transcript).slice(-14),
+          rollingSummary: runtime.rollingSummary,
+        },
+        adventure.runtimeConfig,
+        { adventureId: adventure.adventureId },
+      );
+
+      const refreshedAdventure = this.adventures.get(adventure.adventureId);
+      if (
+        !refreshedAdventure ||
+        refreshedAdventure.closed ||
+        refreshedAdventure.phase !== "play" ||
+        !refreshedAdventure.currentScene
+      ) {
+        return adventure;
+      }
+
+      if (decision.shouldCheck) {
+        runtime.pendingOutcomeAction = {
+          playerId: parsed.playerId,
+          text: actionText,
+        };
+
+        const checkId = createId("oc");
+        refreshedAdventure.activeOutcomeCheck = activeOutcomeCheckSchema.parse({
+          checkId,
+          source: "player_action",
+          prompt: `${playerAuthor} must play an Outcome card before the action resolves.`,
+          requestedAtIso: new Date().toISOString(),
+          targets: [
+            {
+              playerId: parsed.playerId,
+              displayName: playerAuthor,
+            },
+          ],
+        });
+
+        this.appendTranscriptEntry(refreshedAdventure, {
+          kind: "system",
+          author: "System",
+          text: `Outcome check: ${playerAuthor}, play an Outcome card. ${decision.reason}`,
+        });
+        this.notifyAdventureUpdated(refreshedAdventure.adventureId);
+        return refreshedAdventure;
+      }
+
+      runtime.actionQueue.push({
+        playerId: parsed.playerId,
+        text: actionText,
+      });
+      this.notifyAdventureUpdated(refreshedAdventure.adventureId);
+
+      if (!runtime.processingAction) {
+        void this.processActionQueue(refreshedAdventure.adventureId);
+      }
+
+      return refreshedAdventure;
+    } finally {
+      runtime.processingOutcomeDecision = false;
+      if (!runtime.processingAction) {
+        this.hooks.onStorytellerThinking?.(adventure.adventureId, {
+          active: false,
+          label: "",
+        });
+      }
+    }
   }
 
   public playOutcomeCard(payload: unknown): AdventureState {
@@ -644,6 +705,7 @@ export class AdventureManager {
       actionQueue: [],
       pendingOutcomeAction: null,
       processingAction: false,
+      processingOutcomeDecision: false,
       pitchVoteInProgress: false,
       sceneCounter: 0,
       sceneTurnCounter: 0,
@@ -965,6 +1027,7 @@ export class AdventureManager {
     runtime.sceneCounter += 1;
     runtime.sceneTurnCounter = 0;
     runtime.pendingOutcomeAction = null;
+    runtime.processingOutcomeDecision = false;
     adventure.activeOutcomeCheck = undefined;
 
     const pitchTitle = runtime.selectedPitch?.title ?? "Uncharted Trouble";
@@ -1294,6 +1357,7 @@ export class AdventureManager {
     const runtime = this.ensureRuntime(adventureId);
     runtime.actionQueue = [];
     runtime.pendingOutcomeAction = null;
+    runtime.processingOutcomeDecision = false;
     adventure.activeOutcomeCheck = undefined;
 
     if (!adventure.closed) {

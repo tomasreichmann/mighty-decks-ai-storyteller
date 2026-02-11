@@ -11,14 +11,18 @@ import { RuntimeConfigPanel } from "../components/RuntimeConfigPanel";
 import { SessionSummaryCard } from "../components/SessionSummaryCard";
 import { TranscriptFeed } from "../components/TranscriptFeed";
 import { useAdventureSession } from "../hooks/useAdventureSession";
+import { Message } from "../components/common/Message";
+import { Text } from "../components/common/Text";
 
 export const ScreenPage = (): JSX.Element => {
   const { adventureId } = useParams<{ adventureId: string }>();
 
   if (!adventureId) {
     return (
-      <main className="app-shell py-10">
-        <p className="text-red-700">Missing adventureId.</p>
+      <main className="app-shell py-10 gap-4">
+        <Message label="Error" variant="curse">
+          Missing adventureId.
+        </Message>
       </main>
     );
   }
@@ -38,19 +42,24 @@ export const ScreenPage = (): JSX.Element => {
 
   const phase = adventure?.phase ?? "lobby";
   const connectedPlayers = useMemo(
-    () => adventure?.roster.filter((entry) => entry.role === "player" && entry.connected).length ?? 0,
+    () =>
+      adventure?.roster.filter(
+        (entry) => entry.role === "player" && entry.connected,
+      ).length ?? 0,
     [adventure],
   );
   const readyPlayers = useMemo(
     () =>
-      adventure?.roster.filter((entry) => entry.role === "player" && entry.connected && entry.ready).length ?? 0,
+      adventure?.roster.filter(
+        (entry) => entry.role === "player" && entry.connected && entry.ready,
+      ).length ?? 0,
     [adventure],
   );
   const connectionStatus = connected ? "connected" : "reconnecting";
   const showLobbyState = phase === "lobby" && Boolean(adventure);
 
   return (
-    <main className="app-shell stack py-6">
+    <main className="app-shell stack py-6 gap-4">
       <AdventureHeader
         adventureId={adventureId}
         role="screen"
@@ -67,18 +76,27 @@ export const ScreenPage = (): JSX.Element => {
       {showLobbyState ? (
         <>
           <RosterList roster={adventure?.roster ?? []} />
-          <ReadyGatePanel connectedPlayers={connectedPlayers} readyPlayers={readyPlayers} />
+          <ReadyGatePanel
+            connectedPlayers={connectedPlayers}
+            readyPlayers={readyPlayers}
+          />
         </>
       ) : null}
       {phase === "lobby" && !adventure ? (
-        <section className="rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-4 text-sm text-kac-iron-light">
-          Joining adventure session...
+        <section className="rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-4">
+          <Text variant="body" color="iron-light" className="text-sm">
+            Joining adventure session...
+          </Text>
         </section>
       ) : null}
 
       {phase === "vote" && adventure?.activeVote ? (
         <>
-          <GenericVotePanel vote={adventure.activeVote} onVote={() => undefined} disabled={true} />
+          <GenericVotePanel
+            vote={adventure.activeVote}
+            onVote={() => undefined}
+            disabled={true}
+          />
           <RosterList roster={adventure.roster} />
         </>
       ) : null}
@@ -86,7 +104,11 @@ export const ScreenPage = (): JSX.Element => {
       {phase === "play" ? (
         <>
           {adventure?.activeVote ? (
-            <GenericVotePanel vote={adventure.activeVote} onVote={() => undefined} disabled={true} />
+            <GenericVotePanel
+              vote={adventure.activeVote}
+              onVote={() => undefined}
+              disabled={true}
+            />
           ) : null}
           <TranscriptFeed
             entries={adventure?.transcript ?? []}
@@ -94,17 +116,29 @@ export const ScreenPage = (): JSX.Element => {
             pendingLabel={thinking.active ? thinking.label : undefined}
           />
           {adventure ? (
-            <RuntimeConfigPanel config={adventure.runtimeConfig} onApply={updateRuntimeConfig} />
+            <RuntimeConfigPanel
+              config={adventure.runtimeConfig}
+              onApply={updateRuntimeConfig}
+            />
           ) : null}
-          {adventure ? <LatencyMetricsCard metrics={adventure.latencyMetrics} /> : null}
-          {adventure?.debugMode && adventure.debugScene ? <DebugPanel debug={adventure.debugScene} /> : null}
+          {adventure ? (
+            <LatencyMetricsCard metrics={adventure.latencyMetrics} />
+          ) : null}
+          {adventure?.debugMode && adventure.debugScene ? (
+            <DebugPanel debug={adventure.debugScene} />
+          ) : null}
         </>
       ) : null}
 
       {phase === "ending" ? (
         <>
-          <TranscriptFeed entries={adventure?.transcript ?? []} scene={adventure?.currentScene} />
-          <SessionSummaryCard summary={adventure?.sessionSummary ?? "Session ended."} />
+          <TranscriptFeed
+            entries={adventure?.transcript ?? []}
+            scene={adventure?.currentScene}
+          />
+          <SessionSummaryCard
+            summary={adventure?.sessionSummary ?? "Session ended."}
+          />
         </>
       ) : null}
     </main>

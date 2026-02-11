@@ -3,6 +3,7 @@ import type { ActiveVote } from "@mighty-decks/spec/adventureState";
 import { Button } from "./common/Button";
 import { Section } from "./common/Section";
 import { cn } from "../utils/cn";
+import { Text } from "./common/Text";
 
 interface GenericVotePanelProps {
   vote: ActiveVote;
@@ -50,12 +51,20 @@ export const GenericVotePanel = ({
   return (
     <Section className="stack">
       <div>
-        <h3 className="text-lg font-semibold text-kac-iron">{vote.title}</h3>
-        <p className="text-sm text-kac-iron-light">{vote.prompt}</p>
+        <Text as="h3" variant="h3" color="iron" className="text-lg">
+          {vote.title}
+        </Text>
+        <Text variant="body" color="iron-light" className="text-sm">
+          {vote.prompt}
+        </Text>
       </div>
-      <p className="text-xs uppercase tracking-widest text-kac-steel-dark/90">
+      <Text
+        variant="note"
+        color="steel-dark"
+        className="tracking-widest opacity-90"
+      >
         Timeout: {Math.min(secondsRemaining, timeoutDisplay)}s
-      </p>
+      </Text>
       <div className="grid gap-2">
         {vote.options.map((option) => {
           const selected = localSelection === option.optionId;
@@ -76,8 +85,17 @@ export const GenericVotePanel = ({
                 onChange={() => setLocalSelection(option.optionId)}
                 disabled={disabled}
               />
-              <span className="font-medium text-kac-iron">{option.title}</span>
-              <p className="mt-1 text-kac-steel-dark">{option.description}</p>
+              <Text
+                as="span"
+                variant="body"
+                color="iron"
+                className="font-medium"
+              >
+                {option.title}
+              </Text>
+              <Text variant="body" color="steel-dark" className="mt-1 text-sm">
+                {option.description}
+              </Text>
             </label>
           );
         })}
@@ -93,7 +111,13 @@ export const GenericVotePanel = ({
         >
           Cast Vote
         </Button>
-        <p className="self-center text-xs text-kac-steel-dark">Ties are resolved by randomized server tie-breaker.</p>
+        <Text
+          variant="note"
+          color="steel-dark"
+          className="self-center normal-case tracking-normal"
+        >
+          Ties are resolved by randomized server tie-breaker.
+        </Text>
       </div>
     </Section>
   );

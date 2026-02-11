@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Button } from "./common/Button";
 import { cn } from "../utils/cn";
+import { Text } from "./common/Text";
+import { Panel } from "./common/Panel";
+import { Label } from "./common/Label";
 
 interface ShareLinkOverlayProps {
   open: boolean;
   title: string;
+  shortTitle: string;
   url: string;
   onClose: () => void;
 }
@@ -95,51 +99,58 @@ export const ShareLinkOverlay = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-kac-iron-dark/72 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-kac-iron/70 bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.1)_0px,rgba(0,0,0,0.1)_10px,transparent_10px,transparent_20px)] p-4"
       onClick={onClose}
       role="presentation"
     >
-      <section
-        className="w-full max-w-md rounded-xl border border-kac-steel-dark/40 bg-kac-steel-light/95 p-4 shadow-xl"
+      <Panel
+        className="w-full max-w-md"
+        contentClassName="stack gap-2"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={title}
       >
-        <div className="mb-3 flex items-start justify-between gap-2">
-          <h2 className="text-lg font-semibold text-kac-iron">{title}</h2>
+        <div className="mb-3 flex items-start justify-between gap-4 pt-4">
+          <Label size="lg" className="absolute -top-2 -left-2">
+            {title}
+          </Label>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
             aria-label="Close share overlay"
+            className="absolute -top-2 -right-2"
           >
             Close
           </Button>
         </div>
 
-        <div className="mb-3 flex justify-center rounded-lg border border-kac-steel/70 bg-kac-steel-light/70 p-3">
-          {qrDataUrl ? (
-            <img
-              src={qrDataUrl}
-              alt={`${title} QR code`}
-              className="h-56 w-56 rounded-md border border-kac-steel/70 bg-white object-contain"
-            />
-          ) : (
-            <div className="flex h-56 w-56 items-center justify-center text-sm text-kac-steel-dark">
+        {qrDataUrl ? (
+          <img
+            src={qrDataUrl}
+            alt={`${title} QR code`}
+            className="block h-56 w-56 bg-white object-contain mx-auto"
+          />
+        ) : (
+          <div className="flex h-56 w-56 items-center justify-center">
+            <Text variant="body" color="steel-dark" className="text-sm">
               {qrError ?? "Generating QR code..."}
-            </div>
-          )}
-        </div>
+            </Text>
+          </div>
+        )}
 
-        <div className="rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-3">
-          <p className="mb-1 text-xs uppercase tracking-wide text-kac-steel-dark/90">
-            Link
-          </p>
-          <p className="break-all text-sm text-kac-iron-light">{url}</p>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between gap-2">
+        <div className="stack gap-2 items-center text-center">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="">
+            <Text
+              as="span"
+              variant="body"
+              color="gold-dark"
+              className="break-all text-sm hover:underline"
+            >
+              {url}
+            </Text>
+          </a>
           <Button
             variant="secondary"
             onClick={() => {
@@ -151,16 +162,18 @@ export const ShareLinkOverlay = ({
           >
             Copy Address
           </Button>
-          <p
+          <Text
             className={cn(
-              "text-xs text-kac-steel-dark transition-opacity",
+              "text-xs transition-opacity",
               copied ? "opacity-100" : "opacity-0",
             )}
+            variant="note"
+            color="steel-dark"
           >
             Copied
-          </p>
+          </Text>
         </div>
-      </section>
+      </Panel>
     </div>
   );
 };

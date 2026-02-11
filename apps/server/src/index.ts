@@ -36,6 +36,8 @@ const storyteller = new StorytellerService({
     narrativeDirectorFallback: "google/gemini-2.5-flash",
     sceneController: env.models.sceneController,
     sceneControllerFallback: "google/gemini-2.5-flash",
+    outcomeDecider: env.models.outcomeDecider,
+    outcomeDeciderFallback: "google/gemini-2.5-flash-lite",
     continuityKeeper: env.models.continuityKeeper,
     continuityKeeperFallback: "deepseek/deepseek-v3.2",
     pitchGenerator: env.models.pitchGenerator,

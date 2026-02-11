@@ -63,10 +63,10 @@ export default {
         "3xs": ["0.5rem", "0.6rem"],
       },
       fontFamily: {
-        kacBody: ["Shantell Sans", "cursive"],
-        kacLogo: ["Kalam", "cursive"],
-        kacTitle: ["Passion One", "sans-serif"],
-        kacHeading: ["Kalam", "cursive"],
+        "md-body": ["Shantell Sans", "cursive"],
+        "md-logo": ["Kalam", "cursive"],
+        "md-title": ["Passion One", "sans-serif"],
+        "md-heading": ["Kalam", "cursive"],
       },
       backgroundPosition: {
         "1/3": "center 33%",

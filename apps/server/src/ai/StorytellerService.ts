@@ -16,6 +16,8 @@ export interface StorytellerModelConfig {
   narrativeDirectorFallback: string;
   sceneController: string;
   sceneControllerFallback: string;
+  outcomeDecider: string;
+  outcomeDeciderFallback: string;
   continuityKeeper: string;
   continuityKeeperFallback: string;
   pitchGenerator: string;
@@ -102,6 +104,25 @@ export interface ActionResponseResult {
   debug: SceneDebug;
 }
 
+export interface OutcomeCheckDecisionInput {
+  actorCharacterName: string;
+  actionText: string;
+  turnNumber: number;
+  scene: ScenePublic;
+  transcriptTail: TranscriptEntry[];
+  rollingSummary: string;
+}
+
+export interface OutcomeCheckDecisionResult {
+  shouldCheck: boolean;
+  reason: string;
+  triggers: {
+    threat: boolean;
+    uncertainty: boolean;
+    highReward: boolean;
+  };
+}
+
 interface TextModelRequest {
   agent: AiRequestAgent;
   primaryModel: string;
@@ -146,6 +167,16 @@ const actionResponseSchema = z.object({
   secrets: z.array(z.string()).optional(),
   pacingNotes: z.array(z.string()).optional(),
   continuityWarnings: z.array(z.string()).optional(),
+});
+
+const outcomeCheckDecisionSchema = z.object({
+  shouldCheck: z.boolean(),
+  reason: z.string().min(1).max(180),
+  triggers: z.object({
+    threat: z.boolean(),
+    uncertainty: z.boolean(),
+    highReward: z.boolean(),
+  }),
 });
 
 const trimLines = (value: string): string =>
@@ -477,6 +508,119 @@ const toDebugState = (source: {
   aiRequests: [],
 });
 
+const OUTCOME_THREAT_KEYWORDS = [
+  "attack",
+  "ambush",
+  "hazard",
+  "trap",
+  "collapse",
+  "fire",
+  "fight",
+  "enemy",
+  "monster",
+  "guard",
+  "chase",
+  "storm",
+  "wound",
+  "explode",
+  "fall",
+];
+
+const OUTCOME_UNCERTAINTY_KEYWORDS = [
+  "attempt",
+  "try",
+  "sneak",
+  "steal",
+  "pick",
+  "climb",
+  "jump",
+  "convince",
+  "persuade",
+  "guess",
+  "investigate",
+  "search",
+  "cross",
+  "dodge",
+  "disarm",
+  "risky",
+  "careful",
+  "carefully",
+  "gamble",
+];
+
+const OUTCOME_REWARD_KEYWORDS = [
+  "treasure",
+  "relic",
+  "artifact",
+  "vault",
+  "key",
+  "power",
+  "breakthrough",
+  "shortcut",
+  "jackpot",
+  "big score",
+  "crystal",
+  "legendary",
+];
+
+const hasKeywordMatch = (value: string, keywords: string[]): boolean =>
+  keywords.some((keyword) => value.includes(keyword));
+
+const decideOutcomeCheckByHeuristic = (
+  input: OutcomeCheckDecisionInput,
+): OutcomeCheckDecisionResult => {
+  const action = input.actionText.toLowerCase();
+  const sceneContext = `${input.scene.introProse} ${input.scene.orientationBullets.join(" ")}`
+    .toLowerCase();
+
+  const threat = hasKeywordMatch(action, OUTCOME_THREAT_KEYWORDS) ||
+    hasKeywordMatch(sceneContext, OUTCOME_THREAT_KEYWORDS);
+  const uncertainty =
+    hasKeywordMatch(action, OUTCOME_UNCERTAINTY_KEYWORDS) ||
+    action.includes("?") ||
+    action.includes("if ");
+  const highReward = hasKeywordMatch(action, OUTCOME_REWARD_KEYWORDS);
+
+  const shouldCheck =
+    (threat && uncertainty) ||
+    (threat && highReward) ||
+    (uncertainty && highReward);
+
+  if (!shouldCheck) {
+    return {
+      shouldCheck: false,
+      reason:
+        "No immediate high-stakes threat, uncertainty, or major reward is in play.",
+      triggers: {
+        threat,
+        uncertainty,
+        highReward,
+      },
+    };
+  }
+
+  const reasonParts: string[] = [];
+  if (threat) {
+    reasonParts.push("clear threat pressure");
+  }
+  if (uncertainty) {
+    reasonParts.push("meaningful uncertainty");
+  }
+  if (highReward) {
+    reasonParts.push("chance for a bigger reward");
+  }
+
+  return {
+    shouldCheck: true,
+    reason: `Stakes justify an Outcome card: ${reasonParts.join(", ")}.`,
+    triggers: {
+      threat,
+      uncertainty,
+      highReward,
+    },
+  };
+};
+
 export class StorytellerService {
   private readonly promptTemplates: PromptTemplateMap;
 
@@ -753,6 +897,70 @@ export class StorytellerService {
         aiRequests: [],
       },
     };
+  }
+
+  public async decideOutcomeCheckForPlayerAction(
+    input: OutcomeCheckDecisionInput,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<OutcomeCheckDecisionResult> {
+    const prompt = this.composePrompt("outcome_decider", [
+      "You are the Outcome Check Decider for a GM-less adventure game.",
+      "Decide whether this player action should require an Outcome card.",
+      "Set shouldCheck=true only when at least one of these is meaningful now:",
+      "1) threat: danger or opposition can cause a dramatic setback",
+      "2) uncertainty: result is genuinely unclear and could swing either way",
+      "3) highReward: there is a chance for a major upside worth risking for",
+      "Default to shouldCheck=false for routine, low-stakes, or purely descriptive actions.",
+      "Return JSON only with keys:",
+      "shouldCheck: boolean",
+      "reason: string (max 140 chars)",
+      "triggers: { threat: boolean, uncertainty: boolean, highReward: boolean }",
+      `Actor: ${input.actorCharacterName}`,
+      `Turn number: ${input.turnNumber}`,
+      `Scene intro: ${input.scene.introProse}`,
+      ...input.scene.orientationBullets.map((bullet) => `Scene cue: ${bullet}`),
+      `Rolling continuity summary: ${input.rollingSummary}`,
+      `Player action: ${input.actionText}`,
+      "Recent transcript:",
+      compactTranscript(input.transcriptTail) || "none",
+    ]);
+
+    const fastRuntimeConfig = {
+      ...runtimeConfig,
+      textCallTimeoutMs: Math.min(runtimeConfig.textCallTimeoutMs, 3500),
+      aiRetryCount: 0,
+    };
+
+    const modelText = await this.callTextModel({
+      agent: "outcome_decider",
+      primaryModel: this.options.models.outcomeDecider,
+      fallbackModel: this.options.models.outcomeDeciderFallback,
+      prompt,
+      runtimeConfig: fastRuntimeConfig,
+      maxTokens: 140,
+      temperature: 0.1,
+      context,
+    });
+
+    if (modelText) {
+      const parsed = this.parseJson(modelText, outcomeCheckDecisionSchema);
+      if (parsed) {
+        const hasTrigger =
+          parsed.triggers.threat ||
+          parsed.triggers.uncertainty ||
+          parsed.triggers.highReward;
+        const shouldCheck = parsed.shouldCheck && hasTrigger;
+
+        return {
+          shouldCheck,
+          reason: trimLines(parsed.reason).slice(0, 180),
+          triggers: parsed.triggers,
+        };
+      }
+    }
+
+    return decideOutcomeCheckByHeuristic(input);
   }
 
   public async summarizeSession(

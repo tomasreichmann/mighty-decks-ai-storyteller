@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Section } from "./common/Section";
+import { Text } from "./common/Text";
 
 interface SessionSummaryCardProps {
   summary: string;
@@ -212,31 +213,54 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
 
   return (
     <Section className="stack">
-      <h2 className="text-2xl font-bold text-kac-iron">Session Summary</h2>
+      <Text as="h2" variant="h2" color="iron" className="text-2xl">
+        Session Summary
+      </Text>
       <div className="grid gap-3 text-kac-iron-light">
-        {blocks.length === 0 ? <p>No summary available.</p> : null}
+        {blocks.length === 0 ? (
+          <Text variant="body" color="iron-light">
+            No summary available.
+          </Text>
+        ) : null}
         {blocks.map((block, index) => {
           if (block.kind === "heading") {
             if (block.level === 1) {
               return (
-                <h3 key={`heading-${index}`} className="text-lg font-semibold text-kac-iron">
+                <Text
+                  key={`heading-${index}`}
+                  as="h3"
+                  variant="h3"
+                  color="iron"
+                  className="text-lg"
+                >
                   {renderInlineMarkdown(block.text)}
-                </h3>
+                </Text>
               );
             }
 
             if (block.level === 2) {
               return (
-                <h4 key={`heading-${index}`} className="text-base font-semibold text-kac-iron">
+                <Text
+                  key={`heading-${index}`}
+                  as="h4"
+                  variant="h3"
+                  color="iron"
+                  className="text-base"
+                >
                   {renderInlineMarkdown(block.text)}
-                </h4>
+                </Text>
               );
             }
 
             return (
-              <h5 key={`heading-${index}`} className="text-sm font-semibold uppercase tracking-wide text-kac-iron">
+              <Text
+                key={`heading-${index}`}
+                as="h5"
+                variant="note"
+                color="iron"
+              >
                 {renderInlineMarkdown(block.text)}
-              </h5>
+              </Text>
             );
           }
 
@@ -262,9 +286,9 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
 
           if (block.kind === "paragraph") {
             return (
-              <p key={`p-${index}`} className="leading-relaxed">
+              <Text key={`p-${index}`} variant="body" color="iron-light">
                 {renderInlineMarkdown(block.text)}
-              </p>
+              </Text>
             );
           }
 

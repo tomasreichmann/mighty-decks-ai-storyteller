@@ -4,6 +4,7 @@ import { Button } from "./common/Button";
 import { ShareLinkOverlay } from "./ShareLinkOverlay";
 import { cn } from "../utils/cn";
 import { Label } from "./common/Label";
+import { Text } from "./common/Text";
 
 interface AdventureHeaderProps {
   adventureId: string;
@@ -14,28 +15,22 @@ interface AdventureHeaderProps {
 
 const connectionStatusMeta: Record<
   NonNullable<AdventureHeaderProps["connectionStatus"]>,
-  { label: string; dot: string; text: string; ring: string; bg: string }
+  { label: string; dot: string; text: string }
 > = {
   connected: {
     label: "Connected",
     dot: "bg-kac-monster-dark",
-    text: "text-kac-monster-dark",
-    ring: "ring-kac-monster-dark/25",
-    bg: "bg-kac-monster-lightest/75",
+    text: "text-kac-monster-darker",
   },
   reconnecting: {
-    label: "Reconnecting",
+    label: "Reconnecting...",
     dot: "bg-kac-gold-dark",
     text: "text-kac-gold-darker",
-    ring: "ring-kac-gold-dark/30",
-    bg: "bg-kac-gold-light/30",
   },
   offline: {
     label: "Offline",
-    dot: "bg-kac-blood-light",
-    text: "text-kac-blood-dark",
-    ring: "ring-kac-blood-light/25",
-    bg: "bg-kac-blood-light/25",
+    dot: "bg-kac-blood",
+    text: "text-kac-blood-darker",
   },
 };
 
@@ -67,6 +62,11 @@ const selectShareOrigin = (
   } catch {
     return fallbackOrigin;
   }
+};
+
+const titles = {
+  player: { short: "🙋‍♂️", long: "Invite Player" },
+  screen: { short: "💻", long: "Share Screen" },
 };
 
 export const AdventureHeader = ({
@@ -140,59 +140,58 @@ export const AdventureHeader = ({
     };
   }, [adventureId, shareOrigin]);
 
+  const shareShortTitle =
+    activeShareTarget === "player" ? titles.player.short : titles.screen.short;
   const shareTitle =
-    activeShareTarget === "player" ? "Invite a Player" : "Share Screen";
+    activeShareTarget === "player" ? titles.player.long : titles.screen.long;
   const shareUrl = activeShareTarget ? shareLinks[activeShareTarget] : "";
 
   return (
     <>
-      <Section className="flex flex-wrap items-start justify-between gap-3 relative paper-shadow">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Label rotate variant="gold">
-              Adventure {phase}
-            </Label>
-            {statusMeta ? (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1",
-                  statusMeta.bg,
-                  statusMeta.text,
-                  statusMeta.ring,
-                )}
-              >
-                <span className={cn("h-2 w-2 rounded-full", statusMeta.dot)} />
-                {statusMeta.label}
-                {connectionStatus !== "offline" ? <> as {role}</> : null}
-              </span>
-            ) : null}
-          </div>
-          <p className="text-lg font-semibold uppercase tracking-wide text-kac-iron">
-            {adventureId}
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setActiveShareTarget("player")}
-            >
-              Invite a Player
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveShareTarget("screen")}
-            >
-              Share Screen
-            </Button>
-          </div>
+      <Section className="flex flex-wrap items-center relative paper-shadow gap-x-4 gap-y-2">
+        <Label rotate variant="gold">
+          Adventure {phase}
+        </Label>
+        <Text as="span" variant="emphasised" color="iron">
+          {adventureId}
+        </Text>
+        {statusMeta ? (
+          <Text
+            as="span"
+            variant="emphasised"
+            className={cn(
+              "inline-flex items-baseline gap-2 text-base",
+              statusMeta.text,
+            )}
+          >
+            <span className={cn("h-3 w-3 rounded-full", statusMeta.dot)} />
+            {statusMeta.label}
+            {connectionStatus !== "offline" ? <> as {role}</> : null}
+          </Text>
+        ) : null}
+        <div className="flex-1 shrink-0 basis-auto flex flex-wrap justify-end items-center relative paper-shadow gap-x-4">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setActiveShareTarget("player")}
+          >
+            <span className="hidden md:inline">{titles.player.long}</span>
+            <span className="md:hidden">{titles.player.short}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveShareTarget("screen")}
+          >
+            <span className="hidden md:inline">{titles.screen.long}</span>
+            <span className="md:hidden">{titles.screen.short}</span>
+          </Button>
         </div>
       </Section>
       <ShareLinkOverlay
         open={activeShareTarget !== null}
         title={shareTitle}
+        shortTitle={shareShortTitle}
         url={shareUrl}
         onClose={() => setActiveShareTarget(null)}
       />

@@ -1,19 +1,30 @@
+import { Label } from "./common/Label";
 import { Section } from "./common/Section";
+import { Text } from "./common/Text";
 
 export const LandingHero = (): JSX.Element => {
   return (
     <Section className="stack">
-      <p className="text-xs uppercase tracking-widest text-kac-steel-dark/90">
+      <Label className="self-start" size="lg">
         Mighty Decks AI Storyteller
-      </p>
-      <h1 className="hero-title text-4xl font-black text-kac-iron sm:text-5xl">
+      </Label>
+      <Text
+        variant="h1"
+        color="iron"
+        as="h1"
+        className="mt-4 !font-md-title text-4xl/8 sm:text-5xl/10"
+      >
         A GM-less adventure table that runs on your phones and one shared
         screen.
-      </h1>
-      <p className="max-w-2xl text-base text-kac-iron-light sm:text-lg">
+      </Text>
+      <Text
+        variant="body"
+        color="iron-light"
+        className="max-w-2xl text-base sm:text-lg"
+      >
         Create one adventure, invite 1-5 players, vote on a pitch, and play
         narrative scenes with an AI storyteller.
-      </p>
+      </Text>
     </Section>
   );
 };

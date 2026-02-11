@@ -13,6 +13,7 @@ const AI_IMAGE_SUCCESS_MARKER = "[AI SUCCEEDED] image_generator image";
 const entryStyles: Record<
   TranscriptEntry["kind"],
   {
+    className?: string;
     label: string;
     messageVariant: MessageVariant;
     labelVariant: LabelVariant;
@@ -21,6 +22,7 @@ const entryStyles: Record<
   }
 > = {
   system: {
+    className: "self-start",
     label: "System",
     messageVariant: "cloth",
     labelVariant: "cloth",
@@ -28,6 +30,7 @@ const entryStyles: Record<
     authorClassName: "text-kac-cloth-dark",
   },
   storyteller: {
+    className: "self-start",
     label: "Storyteller",
     messageVariant: "gold",
     labelVariant: "gold",
@@ -35,6 +38,7 @@ const entryStyles: Record<
     authorClassName: "text-kac-iron-dark",
   },
   player: {
+    className: "self-end",
     label: "Player",
     messageVariant: "fire",
     labelVariant: "fire",
@@ -171,10 +175,10 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
 
   return (
     <Message
-      label={style.label}
+      label={entry.kind === "player" && authorLabel ? authorLabel : style.label}
       variant={style.messageVariant}
       labelVariant={style.labelVariant}
-      className="min-w-0 max-w-full"
+      className={cn("min-w-0 max-w-full", style.className)}
       contentClassName="min-w-0"
     >
       {isAiDebug ? (
@@ -200,17 +204,6 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
             style.textClassName,
           )}
         >
-          {authorLabel ? (
-            <span
-              className={cn(
-                "mr-2 inline-block align-middle font-semibold uppercase tracking-[0.04em]",
-                style.authorClassName,
-                entry.kind === "storyteller" ? "text-xs" : "text-[11px]",
-              )}
-            >
-              {authorLabel}
-            </span>
-          ) : null}
           <span>{entry.text}</span>
         </p>
       )}

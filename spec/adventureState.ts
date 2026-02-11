@@ -103,6 +103,7 @@ export const aiRequestAgentSchema = z.enum([
   "pitch_generator",
   "narrative_director",
   "scene_controller",
+  "outcome_decider",
   "continuity_keeper",
   "image_generator",
 ]);

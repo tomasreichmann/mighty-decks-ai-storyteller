@@ -8,6 +8,7 @@ import { NarratedSceneCard } from "./NarratedSceneCard";
 import { TranscriptItem } from "./TranscriptItem";
 import { cn } from "../utils/cn";
 import { Message } from "./common/Message";
+import { Text } from "./common/Text";
 
 interface TranscriptFeedProps {
   entries: TranscriptEntry[];
@@ -77,13 +78,19 @@ export const TranscriptFeed = ({
         className,
       )}
     >
-      <div className={cn(scrollable && "min-h-0 flex-1 overflow-y-auto")}>
-        <div className="grid min-w-0 gap-2">
+      <div
+        className={cn(
+          scrollable && "transcript-scroll-mask min-h-0 flex-1 overflow-y-auto p-2 -m-2",
+        )}
+      >
+        <div className="flex flex-col min-w-0 gap-4">
           {maxEntries.length === 0 && !scene && !pendingLabel ? (
-            <p className="text-sm text-kac-steel-dark">No entries yet.</p>
+            <Text variant="body" color="steel-dark" className="text-sm">
+              No entries yet.
+            </Text>
           ) : null}
           {maxEntries.map((entry, index) => (
-            <div key={entry.entryId} className="grid gap-2">
+            <>
               <TranscriptItem entry={entry} />
               {scene && index === sceneAnchorIndex ? (
                 <NarratedSceneCard
@@ -91,9 +98,11 @@ export const TranscriptFeed = ({
                   scene={scene}
                 />
               ) : null}
-            </div>
+            </>
           ))}
-          {scene && sceneAnchorIndex < 0 ? <NarratedSceneCard scene={scene} /> : null}
+          {scene && sceneAnchorIndex < 0 ? (
+            <NarratedSceneCard scene={scene} />
+          ) : null}
           {pendingLabel ? (
             <Message
               label="Status"
@@ -111,4 +120,3 @@ export const TranscriptFeed = ({
     </Section>
   );
 };
-

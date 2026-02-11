@@ -1,4 +1,5 @@
-import { Section } from "./common/Section";
+import { Message } from "./common/Message";
+import { Text } from "./common/Text";
 
 interface ConnectionDiagnosticsProps {
   connected: boolean;
@@ -13,11 +14,14 @@ export const ConnectionDiagnostics = ({
   serverUrl,
   serverUrlWarning,
 }: ConnectionDiagnosticsProps): JSX.Element | null => {
-  const hasIssues = !connected || Boolean(connectionError) || Boolean(serverUrlWarning);
+  const hasIssues =
+    !connected || Boolean(connectionError) || Boolean(serverUrlWarning);
   if (!hasIssues) {
     return null;
   }
-  const isAdventureCapError = connectionError?.toLowerCase().includes("active adventure cap reached") ?? false;
+  const isAdventureCapError =
+    connectionError?.toLowerCase().includes("active adventure cap reached") ??
+    false;
 
   const origin =
     typeof window !== "undefined" ? window.location.origin : "unknown";
@@ -25,28 +29,34 @@ export const ConnectionDiagnostics = ({
     typeof window !== "undefined" && window.isSecureContext ? "yes" : "no";
 
   return (
-    <Section className="grid gap-2 rounded-md border border-rose-200 bg-rose-50 p-3">
-      <p className="text-sm font-semibold text-rose-800">Connection diagnostics</p>
+    <Message className="stack gap-2">
+      <Text as="h3" variant="h3" color="curse">
+        Connection diagnostics
+      </Text>
       {!connected ? (
-        <p className="text-sm text-rose-700">
+        <Text variant="body" color="curse">
           Not connected to adventure server yet.
-        </p>
+        </Text>
       ) : null}
       {connectionError ? (
-        <p className="text-sm text-rose-700">Error: {connectionError}</p>
+        <Text variant="body" color="curse">
+          Error: {connectionError}
+        </Text>
       ) : null}
       {isAdventureCapError ? (
-        <p className="text-xs text-rose-700">
-          This server currently allows one active adventure. Reuse the existing adventure ID or increase{" "}
-          MAX_ACTIVE_ADVENTURES.
-        </p>
+        <Text variant="emphasised">
+          This server currently allows one active adventure. Reuse the existing
+          adventure ID or increase MAX_ACTIVE_ADVENTURES.
+        </Text>
       ) : null}
       {serverUrlWarning ? (
-        <p className="text-sm text-kac-gold-darker">Warning: {serverUrlWarning}</p>
+        <Text variant="body" color="gold-dark" className="text-sm">
+          Warning: {serverUrlWarning}
+        </Text>
       ) : null}
-      <p className="text-xs text-kac-iron-light">Page origin: {origin}</p>
-      <p className="text-xs text-kac-iron-light">Socket URL: {serverUrl}</p>
-      <p className="text-xs text-kac-iron-light">Secure context: {secureContextLabel}</p>
-    </Section>
+      <Text variant="body">Page origin: {origin}</Text>
+      <Text variant="body">Socket URL: {serverUrl}</Text>
+      <Text variant="body">Secure context: {secureContextLabel}</Text>
+    </Message>
   );
 };

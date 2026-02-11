@@ -1,12 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Shantell+Sans:ital,wght,BNCE,INFM@0,300..800,-5,37;1,300..800,-5,37&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Passion+One:wght@400;700;900&family=Kalam:wght@400;700&family=Shantell+Sans:ital,wght,BNCE,INFM@0,300..800,-5,37;1,300..800,-5,37&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  position: relative;
   color: #121b23;
   background: #f3f3f4;
+  z-index: 1;
 }
 
 body {
@@ -16,12 +18,15 @@ body {
   min-height: 100vh;
   color: #121b23;
   font-family: "Shantell Sans", cursive;
+  display: flex;
+  flex-direction: column;
 }
 
 #root {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
+  display: flex;
+  flex: 1 0 auto;
 }
 
 h1,
@@ -45,20 +50,26 @@ h6 {
 
 .app-shell {
   margin: 0 auto;
+  width: 100%;
   max-width: 1120px;
   padding: 1.25rem;
 }
 
 .stack {
-  display: grid;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .hero-title {
   line-height: 1.05;
   letter-spacing: 0.015em;
 }
-
+.halftone-vignette-wrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
 .halftone-vignette {
   --bg: #e4ceb3;
   --dot-rgb: 18 27 35;
@@ -78,7 +89,7 @@ h6 {
   --grain: 0;
   --invert: 0;
   position: absolute;
-  inset: -3%;
+  inset: -8px;
   z-index: -1;
   pointer-events: none;
   background: var(--bg);
@@ -93,7 +104,7 @@ h6 {
 .halftone-vignette::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 2px;
   background-image: radial-gradient(
     circle at center,
     rgb(var(--dot-rgb) / var(--dot-a)) var(--stop1),
@@ -111,6 +122,9 @@ h6 {
   mix-blend-mode: multiply;
 }
 
+.paper-shadow {
+  position: relative;
+}
 .paper-shadow::after {
   content: "";
   display: block;
@@ -120,4 +134,69 @@ h6 {
   border-radius: 10%;
   background: #f8fafc;
   filter: blur(20px);
+}
+
+.comic-panel {
+  position: relative;
+  /* isolation: isolate; */
+  /* background: #121b23; */
+  /* box-shadow: 4px 4px 0 0 #121b23; */
+}
+
+.comic-panel::before {
+  content: "";
+  --size: 15px;
+  --overhang: 13px;
+  position: absolute;
+  inset: calc(var(--size) - var(--overhang));
+  z-index: 0;
+  pointer-events: none;
+  border: var(--size) solid #090f15;
+  transform: rotate(-0.25deg) skewX(-2.5deg);
+  transform-origin: center;
+}
+
+.focusHighlightWrapper {
+  position: relative;
+}
+.focusHighlightWrapper input:focus-visible + .focusHighlight,
+.focusHighlightWrapper textarea:focus-visible + .focusHighlight {
+  /* --size: 15px;
+  --overhang: 5px; */
+  position: absolute;
+  inset: -5px;
+  z-index: -2;
+  pointer-events: none;
+  border: 10px solid theme("colors.kac-gold-light");
+  transform: rotate(-0.25deg) skewX(-2.5deg);
+  transform-origin: center;
+}
+
+.skew-clip-mask {
+  --skew-offset: 3%;
+  clip-path: polygon(
+    var(--skew-offset) 0,
+    100% 0,
+    calc(100% - var(--skew-offset)) 100%,
+    0 100%,
+    var(--skew-offset) 0
+  );
+}
+
+.transcript-scroll-mask {
+  --fade-size: 14px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade-size),
+    #000 calc(100% - var(--fade-size)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade-size),
+    #000 calc(100% - var(--fade-size)),
+    transparent 100%
+  );
 }

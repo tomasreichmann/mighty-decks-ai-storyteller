@@ -253,14 +253,14 @@ export const registerSocketHandlers = (
       }
     });
 
-    socket.on("submit_action", (rawPayload) => {
+    socket.on("submit_action", async (rawPayload) => {
       const payload = withValidation(socket, submitActionPayloadSchema, rawPayload);
       if (!payload) {
         return;
       }
 
       try {
-        manager.submitAction(payload);
+        await manager.submitAction(payload);
       } catch (error) {
         socket.emit("storyteller_response", {
           text: error instanceof Error ? error.message : "Could not submit action.",

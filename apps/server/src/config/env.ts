@@ -22,6 +22,7 @@ const envSchema = z.object({
   OPENROUTER_API_KEY: z.string().optional(),
   OR_TEXT_NARRATIVE_MODEL: z.string().min(1).default("deepseek/deepseek-v3.2"),
   OR_TEXT_SCENE_MODEL: z.string().min(1).default("google/gemini-2.5-flash-lite"),
+  OR_TEXT_OUTCOME_MODEL: z.string().min(1).default("google/gemini-2.5-flash-lite"),
   OR_TEXT_CONTINUITY_MODEL: z.string().min(1).default("google/gemini-2.5-flash-lite"),
   OR_TEXT_PITCH_MODEL: z.string().min(1).default("deepseek/deepseek-v3.2"),
   OR_IMAGE_MODEL: z.string().min(1).default("black-forest-labs/flux.2-klein-4b"),
@@ -55,6 +56,7 @@ export const env = {
   models: {
     narrativeDirector: parsed.OR_TEXT_NARRATIVE_MODEL,
     sceneController: parsed.OR_TEXT_SCENE_MODEL,
+    outcomeDecider: parsed.OR_TEXT_OUTCOME_MODEL,
     continuityKeeper: parsed.OR_TEXT_CONTINUITY_MODEL,
     pitchGenerator: parsed.OR_TEXT_PITCH_MODEL,
     imageGenerator: parsed.OR_IMAGE_MODEL,

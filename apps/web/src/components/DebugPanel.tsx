@@ -1,5 +1,6 @@
 import type { SceneDebug } from "@mighty-decks/spec/adventureState";
 import { Section } from "./common/Section";
+import { Text } from "./common/Text";
 
 interface DebugPanelProps {
   debug: SceneDebug;
@@ -8,19 +9,21 @@ interface DebugPanelProps {
 export const DebugPanel = ({ debug }: DebugPanelProps): JSX.Element => {
   return (
     <Section className="stack relative paper-shadow">
-      <h3 className="text-lg font-semibold text-kac-iron">Debug Panel</h3>
-      <p className="text-sm text-kac-iron-light">
+      <Text as="h3" variant="h3" color="iron" className="text-lg">
+        Debug Panel
+      </Text>
+      <Text variant="body" color="iron-light" className="text-sm">
         Tension: {debug.tension ?? "n/a"}
-      </p>
-      <p className="text-sm text-kac-iron-light">
+      </Text>
+      <Text variant="body" color="iron-light" className="text-sm">
         Secrets: {debug.secrets.join(", ") || "none"}
-      </p>
-      <p className="text-sm text-kac-iron-light">
+      </Text>
+      <Text variant="body" color="iron-light" className="text-sm">
         Pacing: {debug.pacingNotes.join(", ") || "none"}
-      </p>
-      <p className="text-sm text-kac-iron-light">
+      </Text>
+      <Text variant="body" color="iron-light" className="text-sm">
         Continuity warnings: {debug.continuityWarnings.join(", ") || "none"}
-      </p>
+      </Text>
     </Section>
   );
 };
