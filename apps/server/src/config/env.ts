@@ -41,9 +41,14 @@ const envSchema = z.object({
 
 const parsed = envSchema.parse(process.env);
 
+const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, "");
+
 export const env = {
   port: parsed.PORT,
-  corsOrigins: parsed.CORS_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean),
+  corsOrigins: parsed.CORS_ORIGINS
+    .split(",")
+    .map((origin) => normalizeOrigin(origin))
+    .filter(Boolean),
   openRouterApiKey: parsed.OPENROUTER_API_KEY && parsed.OPENROUTER_API_KEY.trim().length > 0
     ? parsed.OPENROUTER_API_KEY.trim()
     : null,

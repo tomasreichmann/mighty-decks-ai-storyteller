@@ -47,6 +47,7 @@ export const ScreenPage = (): JSX.Element => {
     [adventure],
   );
   const connectionStatus = connected ? "connected" : "reconnecting";
+  const showLobbyState = phase === "lobby" && Boolean(adventure);
 
   return (
     <main className="app-shell stack py-6">
@@ -63,11 +64,16 @@ export const ScreenPage = (): JSX.Element => {
         serverUrlWarning={serverUrlWarning}
       />
 
-      {phase === "lobby" ? (
+      {showLobbyState ? (
         <>
           <RosterList roster={adventure?.roster ?? []} />
           <ReadyGatePanel connectedPlayers={connectedPlayers} readyPlayers={readyPlayers} />
         </>
+      ) : null}
+      {phase === "lobby" && !adventure ? (
+        <section className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          Joining adventure session...
+        </section>
       ) : null}
 
       {phase === "vote" && adventure?.activeVote ? (

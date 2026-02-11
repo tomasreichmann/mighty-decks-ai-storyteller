@@ -7,5 +7,8 @@
     "dev": "pnpm -r --parallel --if-present dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck"
+  },
+  "devDependencies": {
+    "playwright": "^1.58.2"
   }
 }

@@ -3,7 +3,11 @@ import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/s
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
-const resolveLocalDevServerUrl = (pageUrl: URL): string => `${pageUrl.protocol}//${pageUrl.hostname}:8080`;
+const resolveLocalDevServerUrl = (pageUrl: URL): string => {
+  // Browsers may resolve "localhost" to ::1, while local server binds on 127.0.0.1.
+  const resolvedHost = pageUrl.hostname === "localhost" ? "127.0.0.1" : pageUrl.hostname;
+  return `${pageUrl.protocol}//${resolvedHost}:8080`;
+};
 
 export const resolveServerUrl = (): string => {
   if (typeof window === "undefined") {
@@ -56,7 +60,7 @@ export const createSocketClient = (): Socket<ServerToClientEvents, ClientToServe
   const serverUrl = resolveServerUrl();
   return io(serverUrl, {
     autoConnect: false,
-    transports: ["websocket", "polling"],
+    transports: ["polling", "websocket"],
     upgrade: true,
   });
 };

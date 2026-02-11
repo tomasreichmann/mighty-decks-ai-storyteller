@@ -88,6 +88,7 @@ export const PlayerPage = (): JSX.Element => {
     !adventure?.activeVote &&
     hasCharacterSetup;
   const connectionStatus = connected ? "connected" : "reconnecting";
+  const showLobbySetup = phase === "lobby" && Boolean(adventure);
 
   return (
     <main
@@ -109,7 +110,7 @@ export const PlayerPage = (): JSX.Element => {
         serverUrlWarning={serverUrlWarning}
       />
 
-      {phase === "lobby" ? (
+      {showLobbySetup ? (
         <>
           <CharacterSetupForm
             mode="ready_gate"
@@ -122,6 +123,11 @@ export const PlayerPage = (): JSX.Element => {
             onToggleReady={toggleReady}
           />
         </>
+      ) : null}
+      {phase === "lobby" && !adventure ? (
+        <section className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          Joining adventure session...
+        </section>
       ) : null}
 
       {showLateJoinSetup ? (

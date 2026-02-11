@@ -201,11 +201,12 @@ export class AdventureManager {
 
     let adventure = this.adventures.get(adventureId);
     if (!adventure) {
-      const activeAdventureCount = Array.from(this.adventures.values()).filter(
-        (candidate) => !candidate.closed,
-      ).length;
-      if (activeAdventureCount >= this.options.maxActiveAdventures) {
-        throw new Error("active adventure cap reached");
+      const activeAdventures = Array.from(this.adventures.values()).filter(
+        (candidate) => !candidate.closed && candidate.roster.some((entry) => entry.connected),
+      );
+      if (activeAdventures.length >= this.options.maxActiveAdventures) {
+        const activeIds = activeAdventures.map((candidate) => candidate.adventureId).join(", ");
+        throw new Error(`active adventure cap reached (active: ${activeIds})`);
       }
 
       adventure = createInitialAdventureState(adventureId, this.runtimeConfig, this.options.debugMode);
@@ -451,6 +452,17 @@ export class AdventureManager {
 
   public getParticipantForSocket(socketId: string): SocketParticipantLink | null {
     return this.socketLinks.get(socketId) ?? null;
+  }
+
+  public getSocketIdsForPlayer(playerId: string): string[] {
+    const matches: string[] = [];
+    for (const [socketId, link] of this.socketLinks.entries()) {
+      if (link.playerId === playerId) {
+        matches.push(socketId);
+      }
+    }
+
+    return matches;
   }
 
   private ensureRuntime(adventureId: string): AdventureRuntimeState {

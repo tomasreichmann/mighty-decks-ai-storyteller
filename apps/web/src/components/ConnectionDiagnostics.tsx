@@ -17,6 +17,7 @@ export const ConnectionDiagnostics = ({
   if (!hasIssues) {
     return null;
   }
+  const isAdventureCapError = connectionError?.toLowerCase().includes("active adventure cap reached") ?? false;
 
   const origin =
     typeof window !== "undefined" ? window.location.origin : "unknown";
@@ -34,6 +35,12 @@ export const ConnectionDiagnostics = ({
       {connectionError ? (
         <p className="text-sm text-rose-700">Error: {connectionError}</p>
       ) : null}
+      {isAdventureCapError ? (
+        <p className="text-xs text-rose-700">
+          This server currently allows one active adventure. Reuse the existing adventure ID or increase{" "}
+          MAX_ACTIVE_ADVENTURES.
+        </p>
+      ) : null}
       {serverUrlWarning ? (
         <p className="text-sm text-amber-700">Warning: {serverUrlWarning}</p>
       ) : null}
@@ -43,4 +50,3 @@ export const ConnectionDiagnostics = ({
     </Section>
   );
 };
-

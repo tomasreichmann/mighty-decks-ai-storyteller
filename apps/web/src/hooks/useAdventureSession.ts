@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdventureState, PlayerSetup, RosterEntry, RuntimeConfig } from "@mighty-decks/spec/adventureState";
 import type { TranscriptAppendPayload } from "@mighty-decks/spec/events";
 import { getClientIdentity, type ClientIdentity } from "../lib/ids";
@@ -68,6 +68,7 @@ export const useAdventureSession = ({
     label: "Storyteller is thinking...",
   });
   const [lastStorytellerResponse, setLastStorytellerResponse] = useState<string | null>(null);
+  const receivedAdventureStateRef = useRef(false);
 
   useEffect(() => {
     const emitJoin = (): void => {
@@ -101,7 +102,9 @@ export const useAdventureSession = ({
     };
 
     const handleAdventureState = (nextState: AdventureState): void => {
+      receivedAdventureStateRef.current = true;
       setAdventure(nextState);
+      setConnectionError(null);
     };
 
     const handlePlayerUpdate = (roster: AdventureState["roster"]): void => {
@@ -152,6 +155,9 @@ export const useAdventureSession = ({
 
     const handleStorytellerResponse = (payload: { text: string }): void => {
       setLastStorytellerResponse(payload.text);
+      if (!receivedAdventureStateRef.current && payload.text.trim().length > 0) {
+        setConnectionError(payload.text);
+      }
     };
 
     socket.on("connect", handleConnect);
@@ -167,13 +173,21 @@ export const useAdventureSession = ({
     socket.on("storyteller_thinking", handleThinking);
     socket.on("storyteller_response", handleStorytellerResponse);
     socket.on("connect_error", handleConnectError);
-    socket.connect();
+
+    // In React StrictMode (dev), effects mount/unmount once immediately.
+    // Defer connect so the first synthetic cleanup can cancel it cleanly.
+    const connectTimer = setTimeout(() => {
+      socket.connect();
+    }, 0);
 
     return () => {
-      socket.emit("leave_adventure", {
-        adventureId,
-        playerId: identity.playerId,
-      });
+      clearTimeout(connectTimer);
+      if (socket.connected) {
+        socket.emit("leave_adventure", {
+          adventureId,
+          playerId: identity.playerId,
+        });
+      }
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("adventure_state", handleAdventureState);

@@ -151,6 +151,21 @@ export const registerSocketHandlers = (
       }
 
       try {
+        const supersededSocketIds = manager
+          .getSocketIdsForPlayer(payload.playerId)
+          .filter((existingSocketId) => existingSocketId !== socket.id);
+        for (const supersededSocketId of supersededSocketIds) {
+          const previousLink = manager.getParticipantForSocket(supersededSocketId);
+          const supersededSocket = io.sockets.sockets.get(supersededSocketId);
+          supersededSocket?.disconnect(true);
+          const previousAdventure = manager.leaveBySocket(supersededSocketId);
+          if (previousLink) {
+            emitAdventureState(io, previousLink.adventureId, manager);
+          } else if (previousAdventure) {
+            emitAdventureState(io, previousAdventure.adventureId, manager);
+          }
+        }
+
         const adventure = manager.joinAdventure(payload, socket.id);
         socket.join(adventure.adventureId);
         emitAdventureState(io, adventure.adventureId, manager);
