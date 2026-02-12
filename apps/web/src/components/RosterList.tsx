@@ -10,7 +10,7 @@ interface RosterListProps {
 export const RosterList = ({ roster }: RosterListProps): JSX.Element => {
   return (
     <Section className="stack">
-      <Text as="h3" variant="h3" color="iron" className="text-lg">
+      <Text as="h3" variant="h3" color="iron" className="mb-2">
         Roster
       </Text>
       <div className="stack gap-4">

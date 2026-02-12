@@ -15,7 +15,7 @@ export const Section = ({
   return (
     <section className={cn(className)}>
       {title ? (
-        <Text as="h2" variant="h3" color="iron" className="mb-2 text-lg">
+        <Text as="h2" variant="h3" color="iron" className="mb-2">
           {title}
         </Text>
       ) : null}

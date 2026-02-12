@@ -18,7 +18,9 @@ export const GenericVotePanel = ({
   onVote,
   disabled = false,
 }: GenericVotePanelProps): JSX.Element => {
-  const [localSelection, setLocalSelection] = useState<string | undefined>(selectedOptionId);
+  const [localSelection, setLocalSelection] = useState<string | undefined>(
+    selectedOptionId,
+  );
   const [secondsRemaining, setSecondsRemaining] = useState(0);
 
   useEffect(() => {
@@ -51,19 +53,19 @@ export const GenericVotePanel = ({
   return (
     <Section className="stack">
       <div>
-        <Text as="h3" variant="h3" color="iron" className="text-lg">
+        <Text as="h3" variant="h3" color="iron">
           {vote.title}
         </Text>
-        <Text variant="body" color="iron-light" className="text-sm">
+        <Text variant="body" color="iron-light">
           {vote.prompt}
         </Text>
       </div>
       <Text
-        variant="note"
+        variant="h3"
         color="steel-dark"
         className="tracking-widest opacity-90"
       >
-        Timeout: {Math.min(secondsRemaining, timeoutDisplay)}s
+        Time till vote closes: {Math.min(secondsRemaining, timeoutDisplay)}s
       </Text>
       <div className="grid gap-2">
         {vote.options.map((option) => {
@@ -122,4 +124,3 @@ export const GenericVotePanel = ({
     </Section>
   );
 };
-

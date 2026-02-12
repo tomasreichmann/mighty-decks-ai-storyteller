@@ -1,3 +1,4 @@
+import { CardProps } from "../components/cards/Card";
 import type { OutcomeSlug, OutcomeType } from "../types/types";
 import arrayToMap from "../utils/arrayToMap";
 import outcomeCsvRaw from "./outcomes-en.csv?raw";
@@ -20,7 +21,7 @@ const decodeBrokenEncoding = (value: string): string =>
 
 const sanitizeRichText = (value: string): string =>
   decodeBrokenEncoding(value)
-    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, " ")
     .replace(/\s+\n/g, "\n")
     .replace(/\n\s+/g, "\n")
     .replace(/[ \t]{2,}/g, " ")
@@ -115,9 +116,9 @@ const toOutcomeTypeWithCount = (
 ): (OutcomeType & { count: number }) | null => {
   const normalizedSlug = row.slug.trim().toLowerCase();
   if (
-    normalizedSlug !== "special" &&
+    normalizedSlug !== "special-action" &&
     normalizedSlug !== "success" &&
-    normalizedSlug !== "partial" &&
+    normalizedSlug !== "partial-success" &&
     normalizedSlug !== "fumble" &&
     normalizedSlug !== "chaos"
   ) {
@@ -145,11 +146,19 @@ const outcomeRecords = outcomeRows
       value !== null && value.slug.length > 0,
   );
 
+console.log("outcomeRecords", outcomeRecords);
+
 export const outcomeMap = arrayToMap(outcomeRecords, "slug") as {
   [key in OutcomeSlug]: OutcomeType & { count: number };
 };
 
-export const { special, success, partial, fumble, chaos } = outcomeMap;
+export const {
+  "special-action": special,
+  success,
+  "partial-success": partial,
+  fumble,
+  chaos,
+} = outcomeMap;
 
 const outcomes = [
   special,
@@ -168,5 +177,43 @@ const outcomes = [
   ...outcome,
   slug: `${outcome.slug}-${outcomeIndex}`,
 }));
+
+const slugOrder = [
+  "special-action",
+  "success",
+  "partial-success",
+  "chaos",
+  "fumble",
+] as const;
+
+const titleColorClassBySlug = {
+  "special-action": "text-special",
+  success: "text-success",
+  "partial-success": "text-partial",
+  chaos: "text-chaos",
+  fumble: "text-fumble",
+} as const;
+
+const isOutcomeSlug = (value: string): value is OutcomeSlug =>
+  slugOrder.includes(value as OutcomeSlug);
+
+export const ourcomeCardPropsMap = Object.fromEntries(
+  Object.entries(outcomeMap).map(([slug, outcome]) => {
+    return [
+      slug as OutcomeSlug,
+      {
+        iconUri: outcome.iconUri,
+        deck: outcome.deck ?? "base",
+        typeIconUri: "/types/outcome.png",
+        title: outcome.title,
+        effect: outcome.description,
+        titleClassName: isOutcomeSlug(slug)
+          ? titleColorClassBySlug[slug]
+          : undefined,
+        modifierEffect: outcome.instructions,
+      } as CardProps,
+    ];
+  }),
+) as { [key in OutcomeSlug]: CardProps };
 
 export default outcomes;

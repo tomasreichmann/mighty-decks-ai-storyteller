@@ -2,8 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import type { RuntimeConfig } from "@mighty-decks/spec/adventureState";
 import { Button } from "./common/Button";
 import { Section } from "./common/Section";
-import { TextField } from "./common/TextField";
 import { Text } from "./common/Text";
+import { DepressedInput } from "./common/DepressedInput";
 
 interface RuntimeConfigPanelProps {
   config: RuntimeConfig;
@@ -27,11 +27,11 @@ export const RuntimeConfigPanel = ({
 
   return (
     <Section className="stack">
-      <Text as="h3" variant="h3" color="iron" className="text-lg">
+      <Text as="h3" variant="h3" color="iron" className="mb-2">
         Runtime Config (Screen only)
       </Text>
       <form className="grid gap-3 sm:grid-cols-2" onSubmit={handleSubmit}>
-        <TextField
+        <DepressedInput
           label="Text call timeout (ms)"
           type="number"
           value={draft.textCallTimeoutMs}
@@ -42,7 +42,7 @@ export const RuntimeConfigPanel = ({
             }))
           }
         />
-        <TextField
+        <DepressedInput
           label="Turn deadline (ms)"
           type="number"
           value={draft.turnDeadlineMs}
@@ -53,7 +53,7 @@ export const RuntimeConfigPanel = ({
             }))
           }
         />
-        <TextField
+        <DepressedInput
           label="Image timeout (ms)"
           type="number"
           value={draft.imageTimeoutMs}
@@ -64,7 +64,7 @@ export const RuntimeConfigPanel = ({
             }))
           }
         />
-        <TextField
+        <DepressedInput
           label="AI retries"
           type="number"
           value={draft.aiRetryCount}
@@ -75,7 +75,7 @@ export const RuntimeConfigPanel = ({
             }))
           }
         />
-        <TextField
+        <DepressedInput
           label="Vote timeout (ms)"
           type="number"
           value={draft.voteTimeoutMs}

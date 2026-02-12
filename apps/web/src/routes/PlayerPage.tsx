@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ActionComposer } from "../components/ActionComposer";
 import { AdventureHeader } from "../components/AdventureHeader";
 import { OutcomeHandPanel } from "../components/cards/OutcomeHandPanel";
@@ -14,6 +14,7 @@ import { Message } from "../components/common/Message";
 import { Text } from "../components/common/Text";
 
 export const PlayerPage = (): JSX.Element => {
+  const navigate = useNavigate();
   const { adventureId } = useParams<{ adventureId: string }>();
 
   if (!adventureId) {
@@ -130,6 +131,9 @@ export const PlayerPage = (): JSX.Element => {
         connectionError={connectionError}
         serverUrl={serverUrl}
         serverUrlWarning={serverUrlWarning}
+        onJoinAdventure={(nextAdventureId) => {
+          navigate(`/adventure/${nextAdventureId}/player`);
+        }}
       />
 
       {showLobbySetup ? (

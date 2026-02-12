@@ -69,8 +69,14 @@ export interface AdventureManagerHooks {
   onAdventureUpdated?: (adventureId: string) => void;
   onPhaseChanged?: (adventureId: string, phase: AdventurePhase) => void;
   onTranscriptAppend?: (adventureId: string, entry: TranscriptEntry) => void;
-  onStorytellerThinking?: (adventureId: string, payload: { active: boolean; label: string }) => void;
-  onStorytellerResponse?: (adventureId: string, payload: { text: string }) => void;
+  onStorytellerThinking?: (
+    adventureId: string,
+    payload: { active: boolean; label: string },
+  ) => void;
+  onStorytellerResponse?: (
+    adventureId: string,
+    payload: { text: string },
+  ) => void;
 }
 
 export interface AdventureManagerOptions {
@@ -128,7 +134,8 @@ const outcomeCardDetailsMap: Record<
   chaos: {
     label: "Chaos",
     effect: "Sudden Change",
-    narrationHint: "Introduce a surprising twist that reshapes immediate priorities.",
+    narrationHint:
+      "Introduce a surprising twist that reshapes immediate priorities.",
   },
   fumble: {
     label: "Fumble",
@@ -160,12 +167,17 @@ const percentile90 = (values: number[]): number => {
 export class AdventureManager {
   private readonly adventures = new Map<string, AdventureState>();
   private readonly socketLinks = new Map<string, SocketParticipantLink>();
-  private readonly runtimeByAdventure = new Map<string, AdventureRuntimeState>();
+  private readonly runtimeByAdventure = new Map<
+    string,
+    AdventureRuntimeState
+  >();
   private runtimeConfig: RuntimeConfig;
   private hooks: AdventureManagerHooks = {};
 
   public constructor(private readonly options: AdventureManagerOptions) {
-    this.runtimeConfig = runtimeConfigSchema.parse(options.runtimeConfigDefaults);
+    this.runtimeConfig = runtimeConfigSchema.parse(
+      options.runtimeConfigDefaults,
+    );
   }
 
   public setHooks(hooks: AdventureManagerHooks): void {
@@ -218,7 +230,9 @@ export class AdventureManager {
     const statusLabel = statusLabelMap[event.status];
     const fallbackText = event.fallback ? " (fallback model)" : "";
     const attemptText = `attempt ${event.attempt}${fallbackText}`;
-    const details: string[] = [`[AI ${statusLabel}] ${event.agent} ${event.kind} ${attemptText}`];
+    const details: string[] = [
+      `[AI ${statusLabel}] ${event.agent} ${event.kind} ${attemptText}`,
+    ];
 
     if (event.status === "started" && event.prompt) {
       details.push(`Prompt:\n${event.prompt}`);
@@ -240,21 +254,32 @@ export class AdventureManager {
     this.notifyAdventureUpdated(adventure.adventureId);
   }
 
-  public joinAdventure(payload: JoinAdventurePayload, socketId: string): AdventureState {
+  public joinAdventure(
+    payload: JoinAdventurePayload,
+    socketId: string,
+  ): AdventureState {
     const parsed = joinAdventurePayloadSchema.parse(payload);
     const adventureId = ensureAdventureId(parsed.adventureId);
 
     let adventure = this.adventures.get(adventureId);
     if (!adventure) {
       const activeAdventures = Array.from(this.adventures.values()).filter(
-        (candidate) => !candidate.closed && candidate.roster.some((entry) => entry.connected),
+        (candidate) =>
+          !candidate.closed &&
+          candidate.roster.some((entry) => entry.connected),
       );
       if (activeAdventures.length >= this.options.maxActiveAdventures) {
-        const activeIds = activeAdventures.map((candidate) => candidate.adventureId).join(", ");
+        const activeIds = activeAdventures
+          .map((candidate) => candidate.adventureId)
+          .join(", ");
         throw new Error(`active adventure cap reached (active: ${activeIds})`);
       }
 
-      adventure = createInitialAdventureState(adventureId, this.runtimeConfig, this.options.debugMode);
+      adventure = createInitialAdventureState(
+        adventureId,
+        this.runtimeConfig,
+        this.options.debugMode,
+      );
       this.adventures.set(adventureId, adventure);
       this.ensureRuntime(adventureId);
       this.logDiagnostic(adventure, {
@@ -263,7 +288,9 @@ export class AdventureManager {
       });
     }
 
-    const existingIndex = adventure.roster.findIndex((entry) => entry.playerId === parsed.playerId);
+    const existingIndex = adventure.roster.findIndex(
+      (entry) => entry.playerId === parsed.playerId,
+    );
     if (existingIndex >= 0) {
       const existing = adventure.roster[existingIndex];
       adventure.roster[existingIndex] = {
@@ -308,7 +335,9 @@ export class AdventureManager {
       return null;
     }
 
-    const rosterIndex = adventure.roster.findIndex((entry) => entry.playerId === link.playerId);
+    const rosterIndex = adventure.roster.findIndex(
+      (entry) => entry.playerId === link.playerId,
+    );
     if (rosterIndex >= 0) {
       adventure.roster[rosterIndex] = {
         ...adventure.roster[rosterIndex],
@@ -346,7 +375,11 @@ export class AdventureManager {
     const parsed = submitSetupPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
     this.assertAdventureOpen(adventure);
-    this.assertPhase(adventure, ["lobby", "vote", "play"], "setup can only be updated during active phases");
+    this.assertPhase(
+      adventure,
+      ["lobby", "vote", "play"],
+      "setup can only be updated during active phases",
+    );
 
     const rosterEntry = this.getRosterEntry(adventure, parsed.playerId);
     if (rosterEntry.role !== "player") {
@@ -362,7 +395,11 @@ export class AdventureManager {
     const parsed = toggleReadyPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
     this.assertAdventureOpen(adventure);
-    this.assertPhase(adventure, ["lobby"], "ready state can only be toggled during lobby phase");
+    this.assertPhase(
+      adventure,
+      ["lobby"],
+      "ready state can only be toggled during lobby phase",
+    );
 
     const rosterEntry = this.getRosterEntry(adventure, parsed.playerId);
     if (rosterEntry.role !== "player") {
@@ -395,7 +432,9 @@ export class AdventureManager {
       throw new Error("only connected players can cast votes");
     }
 
-    const targetOption = activeVote.options.find((option) => option.optionId === parsed.optionId);
+    const targetOption = activeVote.options.find(
+      (option) => option.optionId === parsed.optionId,
+    );
     if (!targetOption) {
       throw new Error("unknown vote option");
     }
@@ -424,7 +463,11 @@ export class AdventureManager {
     const parsed = submitActionPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
     this.assertAdventureOpen(adventure);
-    this.assertPhase(adventure, ["play"], "actions can only be submitted during play phase");
+    this.assertPhase(
+      adventure,
+      ["play"],
+      "actions can only be submitted during play phase",
+    );
 
     if (!adventure.currentScene) {
       throw new Error("no active scene");
@@ -447,7 +490,9 @@ export class AdventureManager {
       runtime.pendingOutcomeAction ||
       adventure.activeOutcomeCheck
     ) {
-      throw new Error("action queue busy; draft while the storyteller resolves the current turn");
+      throw new Error(
+        "action queue busy; draft while the storyteller resolves the current turn",
+      );
     }
 
     const actionText = parsed.text.trim();
@@ -475,18 +520,21 @@ export class AdventureManager {
     });
 
     try {
-      const decision = await this.options.storyteller.decideOutcomeCheckForPlayerAction(
-        {
-          actorCharacterName: playerAuthor,
-          actionText,
-          turnNumber: runtime.sceneTurnCounter + 1,
-          scene: adventure.currentScene,
-          transcriptTail: this.getNarrativeTranscript(adventure.transcript).slice(-14),
-          rollingSummary: runtime.rollingSummary,
-        },
-        adventure.runtimeConfig,
-        { adventureId: adventure.adventureId },
-      );
+      const decision =
+        await this.options.storyteller.decideOutcomeCheckForPlayerAction(
+          {
+            actorCharacterName: playerAuthor,
+            actionText,
+            turnNumber: runtime.sceneTurnCounter + 1,
+            scene: adventure.currentScene,
+            transcriptTail: this.getNarrativeTranscript(
+              adventure.transcript,
+            ).slice(-14),
+            rollingSummary: runtime.rollingSummary,
+          },
+          adventure.runtimeConfig,
+          { adventureId: adventure.adventureId },
+        );
 
       const refreshedAdventure = this.adventures.get(adventure.adventureId);
       if (
@@ -520,8 +568,8 @@ export class AdventureManager {
 
         this.appendTranscriptEntry(refreshedAdventure, {
           kind: "system",
-          author: "System",
-          text: `Outcome check: ${playerAuthor}, play an Outcome card. ${decision.reason}`,
+          author: "Storyteller",
+          text: `${playerAuthor}, play an Outcome card. ${decision.reason}`,
         });
         this.notifyAdventureUpdated(refreshedAdventure.adventureId);
         return refreshedAdventure;
@@ -553,7 +601,11 @@ export class AdventureManager {
     const parsed = playOutcomeCardPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
     this.assertAdventureOpen(adventure);
-    this.assertPhase(adventure, ["play"], "outcome cards can only be played during play phase");
+    this.assertPhase(
+      adventure,
+      ["play"],
+      "outcome cards can only be played during play phase",
+    );
 
     const activeOutcomeCheck = adventure.activeOutcomeCheck;
     if (!activeOutcomeCheck) {
@@ -569,7 +621,9 @@ export class AdventureManager {
       throw new Error("only connected players can play outcome cards");
     }
 
-    const target = activeOutcomeCheck.targets.find((entry) => entry.playerId === parsed.playerId);
+    const target = activeOutcomeCheck.targets.find(
+      (entry) => entry.playerId === parsed.playerId,
+    );
     if (!target) {
       throw new Error("player not targeted by this outcome check");
     }
@@ -597,7 +651,9 @@ export class AdventureManager {
       text: `${target.displayName} played ${formatOutcomeCard(selectedCard)}.`,
     });
 
-    const everyonePlayed = activeOutcomeCheck.targets.every((entry) => Boolean(entry.playedCard));
+    const everyonePlayed = activeOutcomeCheck.targets.every((entry) =>
+      Boolean(entry.playedCard),
+    );
     if (!everyonePlayed) {
       this.notifyAdventureUpdated(adventure.adventureId);
       return adventure;
@@ -644,7 +700,10 @@ export class AdventureManager {
     return adventure;
   }
 
-  public updateRuntimeConfig(payload: unknown): { adventure: AdventureState; runtimeConfig: RuntimeConfig } {
+  public updateRuntimeConfig(payload: unknown): {
+    adventure: AdventureState;
+    runtimeConfig: RuntimeConfig;
+  } {
     const parsed = updateRuntimeConfigPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
 
@@ -678,7 +737,9 @@ export class AdventureManager {
     return Array.from(this.adventures.values());
   }
 
-  public getParticipantForSocket(socketId: string): SocketParticipantLink | null {
+  public getParticipantForSocket(
+    socketId: string,
+  ): SocketParticipantLink | null {
     return this.socketLinks.get(socketId) ?? null;
   }
 
@@ -717,8 +778,12 @@ export class AdventureManager {
     return created;
   }
 
-  private getConnectedPlayers(adventure: AdventureState): AdventureState["roster"] {
-    return adventure.roster.filter((entry) => entry.role === "player" && entry.connected);
+  private getConnectedPlayers(
+    adventure: AdventureState,
+  ): AdventureState["roster"] {
+    return adventure.roster.filter(
+      (entry) => entry.role === "player" && entry.connected,
+    );
   }
 
   private assertAdventureOpen(adventure: AdventureState): void {
@@ -727,14 +792,23 @@ export class AdventureManager {
     }
   }
 
-  private assertPhase(adventure: AdventureState, phases: AdventurePhase[], errorMessage: string): void {
+  private assertPhase(
+    adventure: AdventureState,
+    phases: AdventurePhase[],
+    errorMessage: string,
+  ): void {
     if (!phases.includes(adventure.phase)) {
       throw new Error(errorMessage);
     }
   }
 
-  private getRosterEntry(adventure: AdventureState, playerId: string): AdventureState["roster"][number] {
-    const entry = adventure.roster.find((candidate) => candidate.playerId === playerId);
+  private getRosterEntry(
+    adventure: AdventureState,
+    playerId: string,
+  ): AdventureState["roster"][number] {
+    const entry = adventure.roster.find(
+      (candidate) => candidate.playerId === playerId,
+    );
     if (!entry) {
       throw new Error("player not in adventure");
     }
@@ -759,11 +833,16 @@ export class AdventureManager {
     this.hooks.onAdventureUpdated?.(adventureId);
   }
 
-  private logDiagnostic(adventure: AdventureState, event: AdventureDiagnosticEvent): void {
+  private logDiagnostic(
+    adventure: AdventureState,
+    event: AdventureDiagnosticEvent,
+  ): void {
     this.options.diagnosticsLogger?.logEvent(adventure, event);
   }
 
-  private getNarrativeTranscript(entries: TranscriptEntry[]): TranscriptEntry[] {
+  private getNarrativeTranscript(
+    entries: TranscriptEntry[],
+  ): TranscriptEntry[] {
     return entries.filter((entry) => !isAiDebugTranscriptEntry(entry));
   }
 
@@ -788,9 +867,16 @@ export class AdventureManager {
     return transcriptEntry;
   }
 
-  private async maybeStartAdventurePitchVote(adventureId: string): Promise<void> {
+  private async maybeStartAdventurePitchVote(
+    adventureId: string,
+  ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
-    if (!adventure || adventure.phase !== "lobby" || adventure.activeVote || adventure.closed) {
+    if (
+      !adventure ||
+      adventure.phase !== "lobby" ||
+      adventure.activeVote ||
+      adventure.closed
+    ) {
       return;
     }
 
@@ -819,15 +905,17 @@ export class AdventureManager {
       const pitchInputs: PitchInput[] = connectedPlayers.map((entry) => ({
         displayName: entry.displayName,
         characterName: entry.setup?.characterName ?? entry.displayName,
-        visualDescription: entry.setup?.visualDescription ?? "No description provided.",
+        visualDescription:
+          entry.setup?.visualDescription ?? "No description provided.",
         adventurePreference: entry.setup?.adventurePreference ?? "",
       }));
 
-      const generatedPitches = await this.options.storyteller.generateAdventurePitches(
-        pitchInputs,
-        adventure.runtimeConfig,
-        { adventureId },
-      );
+      const generatedPitches =
+        await this.options.storyteller.generateAdventurePitches(
+          pitchInputs,
+          adventure.runtimeConfig,
+          { adventureId },
+        );
 
       const refreshedAdventure = this.adventures.get(adventureId);
       if (
@@ -929,13 +1017,17 @@ export class AdventureManager {
       countsByOption.set(optionId, (countsByOption.get(optionId) ?? 0) + 1);
     }
 
-    adventure.activeVote.options = adventure.activeVote.options.map((option) => ({
-      ...option,
-      voteCount: countsByOption.get(option.optionId) ?? 0,
-    }));
+    adventure.activeVote.options = adventure.activeVote.options.map(
+      (option) => ({
+        ...option,
+        voteCount: countsByOption.get(option.optionId) ?? 0,
+      }),
+    );
   }
 
-  private async maybeResolveActiveVoteEarly(adventureId: string): Promise<void> {
+  private async maybeResolveActiveVoteEarly(
+    adventureId: string,
+  ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
     const runtime = this.runtimeByAdventure.get(adventureId);
     if (!adventure?.activeVote || !runtime) {
@@ -947,7 +1039,9 @@ export class AdventureManager {
       return;
     }
 
-    const everyoneVoted = connectedPlayers.every((entry) => runtime.votesByPlayerId.has(entry.playerId));
+    const everyoneVoted = connectedPlayers.every((entry) =>
+      runtime.votesByPlayerId.has(entry.playerId),
+    );
     if (!everyoneVoted) {
       return;
     }
@@ -955,7 +1049,10 @@ export class AdventureManager {
     await this.resolveVote(adventureId, false);
   }
 
-  private async resolveVote(adventureId: string, timeoutClosed: boolean): Promise<void> {
+  private async resolveVote(
+    adventureId: string,
+    timeoutClosed: boolean,
+  ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
     const runtime = this.runtimeByAdventure.get(adventureId);
     if (!adventure?.activeVote || !runtime) {
@@ -966,9 +1063,16 @@ export class AdventureManager {
     this.clearVoteTimer(adventureId);
     this.refreshVoteTallies(adventureId);
 
-    const highestVoteCount = Math.max(...vote.options.map((option) => option.voteCount), 0);
-    const tiedTopOptions = vote.options.filter((option) => option.voteCount === highestVoteCount);
-    const winner = tiedTopOptions[Math.floor(Math.random() * tiedTopOptions.length)] ?? vote.options[0];
+    const highestVoteCount = Math.max(
+      ...vote.options.map((option) => option.voteCount),
+      0,
+    );
+    const tiedTopOptions = vote.options.filter(
+      (option) => option.voteCount === highestVoteCount,
+    );
+    const winner =
+      tiedTopOptions[Math.floor(Math.random() * tiedTopOptions.length)] ??
+      vote.options[0];
     if (!winner) {
       return;
     }
@@ -977,7 +1081,10 @@ export class AdventureManager {
       winnerOptionId: winner.optionId,
       timeoutClosed,
       tieBreakApplied: tiedTopOptions.length > 1,
-      tiedOptionIds: tiedTopOptions.length > 1 ? tiedTopOptions.map((option) => option.optionId) : [],
+      tiedOptionIds:
+        tiedTopOptions.length > 1
+          ? tiedTopOptions.map((option) => option.optionId)
+          : [],
     };
 
     this.notifyAdventureUpdated(adventureId);
@@ -1017,7 +1124,10 @@ export class AdventureManager {
     await this.startScene(adventureId, adventure.currentScene?.summary);
   }
 
-  private async startScene(adventureId: string, previousSceneSummary?: string): Promise<void> {
+  private async startScene(
+    adventureId: string,
+    previousSceneSummary?: string,
+  ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
     if (!adventure || adventure.phase !== "play" || adventure.closed) {
       return;
@@ -1065,7 +1175,9 @@ export class AdventureManager {
           sceneNumber: runtime.sceneCounter,
           previousSceneSummary,
           partyMembers,
-          transcriptTail: this.getNarrativeTranscript(adventure.transcript).slice(-12),
+          transcriptTail: this.getNarrativeTranscript(
+            adventure.transcript,
+          ).slice(-12),
         },
         adventure.runtimeConfig,
         { adventureId },
@@ -1089,7 +1201,8 @@ export class AdventureManager {
         orientationBullets: sceneStart.orientationBullets,
       });
       if (refreshedAdventure.debugMode) {
-        const existingAiRequests = refreshedAdventure.debugScene?.aiRequests ?? [];
+        const existingAiRequests =
+          refreshedAdventure.debugScene?.aiRequests ?? [];
         refreshedAdventure.debugScene = {
           ...sceneStart.debug,
           aiRequests: existingAiRequests,
@@ -1116,9 +1229,15 @@ export class AdventureManager {
     }
   }
 
-  private async generateSceneImage(adventureId: string, sceneId: string): Promise<void> {
+  private async generateSceneImage(
+    adventureId: string,
+    sceneId: string,
+  ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
-    if (!adventure?.currentScene || adventure.currentScene.sceneId !== sceneId) {
+    if (
+      !adventure?.currentScene ||
+      adventure.currentScene.sceneId !== sceneId
+    ) {
       return;
     }
 
@@ -1154,7 +1273,12 @@ export class AdventureManager {
     try {
       while (runtime.actionQueue.length > 0) {
         const adventure = this.adventures.get(adventureId);
-        if (!adventure || adventure.phase !== "play" || adventure.closed || !adventure.currentScene) {
+        if (
+          !adventure ||
+          adventure.phase !== "play" ||
+          adventure.closed ||
+          !adventure.currentScene
+        ) {
           runtime.actionQueue = [];
           break;
         }
@@ -1172,9 +1296,13 @@ export class AdventureManager {
         let actionResponse: ActionResponseResult;
         const startedAtMs = Date.now();
         try {
-          const actingPlayer = this.getRosterEntry(adventure, actionItem.playerId);
+          const actingPlayer = this.getRosterEntry(
+            adventure,
+            actionItem.playerId,
+          );
           const actorCharacterName =
-            actingPlayer.setup?.characterName?.trim() || actingPlayer.displayName;
+            actingPlayer.setup?.characterName?.trim() ||
+            actingPlayer.displayName;
 
           try {
             actionResponse = await this.options.storyteller.narrateAction(
@@ -1187,7 +1315,9 @@ export class AdventureManager {
                 actionText: actionItem.text,
                 turnNumber: runtime.sceneTurnCounter + 1,
                 scene: adventure.currentScene,
-                transcriptTail: this.getNarrativeTranscript(adventure.transcript).slice(-14),
+                transcriptTail: this.getNarrativeTranscript(
+                  adventure.transcript,
+                ).slice(-14),
                 rollingSummary: runtime.rollingSummary,
               },
               adventure.runtimeConfig,
@@ -1200,7 +1330,9 @@ export class AdventureManager {
               debug: {
                 tension: 55,
                 secrets: [],
-                pacingNotes: ["Recover from model failure with neutral fail-forward narration."],
+                pacingNotes: [
+                  "Recover from model failure with neutral fail-forward narration.",
+                ],
                 continuityWarnings: [],
                 aiRequests: [],
               },
@@ -1261,9 +1393,14 @@ export class AdventureManager {
       runtime.latencySamplesMs.shift();
     }
 
-    const sampleTotal = runtime.latencySamplesMs.reduce((sum, current) => sum + current, 0);
+    const sampleTotal = runtime.latencySamplesMs.reduce(
+      (sum, current) => sum + current,
+      0,
+    );
     const averageMs =
-      runtime.latencySamplesMs.length > 0 ? sampleTotal / runtime.latencySamplesMs.length : 0;
+      runtime.latencySamplesMs.length > 0
+        ? sampleTotal / runtime.latencySamplesMs.length
+        : 0;
 
     adventure.latencyMetrics = {
       actionCount: runtime.latencySamplesMs.length,
@@ -1301,9 +1438,17 @@ export class AdventureManager {
     }
   }
 
-  private async beginSceneTransitionVote(adventureId: string, sceneSummary: string): Promise<void> {
+  private async beginSceneTransitionVote(
+    adventureId: string,
+    sceneSummary: string,
+  ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
-    if (!adventure || adventure.phase !== "play" || !adventure.currentScene || adventure.closed) {
+    if (
+      !adventure ||
+      adventure.phase !== "play" ||
+      !adventure.currentScene ||
+      adventure.closed
+    ) {
       return;
     }
 
@@ -1339,7 +1484,8 @@ export class AdventureManager {
         voteOptionSchema.parse({
           optionId: "end_session",
           title: "End Session",
-          description: "End this session now and keep the current adventure transcript.",
+          description:
+            "End this session now and keep the current adventure transcript.",
           voteCount: 0,
         }),
       ],
@@ -1347,7 +1493,10 @@ export class AdventureManager {
     this.notifyAdventureUpdated(adventureId);
   }
 
-  private async closeAdventure(adventureId: string, reason: string): Promise<void> {
+  private async closeAdventure(
+    adventureId: string,
+    reason: string,
+  ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
     if (!adventure) {
       return;

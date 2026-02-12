@@ -1,62 +1,44 @@
-import { Card } from "./cards/Card";
+import { Card, CardProps } from "./cards/Card";
 import { Section } from "./common/Section";
 import { outcomeMap } from "../data/outcomeDeck";
 import { Text } from "./common/Text";
 
 interface OutcomeCardShowcaseItem {
   id: string;
-  base: {
-    iconUri: string;
-    deckName: string;
-    typeIconUri: string;
-    title: string;
-    effect: string;
-  };
-  modifier?: {
-    iconUri?: string;
-    deckName: string;
-    typeIconUri: string;
-    title: string;
-    effect: string;
-  };
+  props: CardProps;
 }
 
-const modifierTitleBySlug: Record<string, string> = {
-  special: "Burst",
-  success: "Clean",
-  partial: "Tradeoff",
-  fumble: "Backfire",
-  chaos: "Twist",
-};
+const slugOrder = [
+  "special-action",
+  "success",
+  "partial-success",
+  "chaos",
+  "fumble",
+] as const;
+const titleColorClassBySlug = {
+  "special-action": "text-special",
+  success: "text-success",
+  "partial-success": "text-partial",
+  chaos: "text-chaos",
+  fumble: "text-fumble",
+} as const;
 
-const slugOrder = ["special", "success", "fumble"] as const;
+const showcaseCards: OutcomeCardShowcaseItem[] = slugOrder.map((slug) => {
+  const outcome = outcomeMap[slug];
 
-const showcaseCards: OutcomeCardShowcaseItem[] = slugOrder
-  .map((slug) => outcomeMap[slug])
-  .filter(Boolean)
-  .map((outcome) => {
-    const hasModifier = Boolean(outcome.instructions && outcome.instructions.length > 0);
-
-    return {
-      id: `${outcome.slug}-showcase`,
-      base: {
-        iconUri: outcome.iconUri,
-        deckName: outcome.deck ?? "base",
-        typeIconUri: "/types/outcome.png",
-        title: outcome.title,
-        effect: outcome.description,
-      },
-      modifier: hasModifier
-        ? {
-            iconUri: "/types/effect.png",
-            deckName: "mod",
-            typeIconUri: "/types/effect.png",
-            title: modifierTitleBySlug[outcome.slug] ?? "Modifier",
-            effect: outcome.instructions ?? "",
-          }
-        : undefined,
-    };
-  });
+  return {
+    id: `${outcome.slug}-showcase`,
+    props: {
+      iconUri: outcome.iconUri,
+      deck: outcome.deck ?? "base",
+      typeIconUri: "/types/outcome.png",
+      title: outcome.title,
+      effect: outcome.description,
+      titleClassName: titleColorClassBySlug[slug],
+      modifierEffect: outcome.instructions,
+    },
+  };
+});
 
 export const OutcomeCardShowcase = (): JSX.Element => {
   return (
@@ -71,14 +53,7 @@ export const OutcomeCardShowcase = (): JSX.Element => {
       </div>
       <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2">
         {showcaseCards.map((item) => (
-          <Card
-            key={item.id}
-            className="shrink-0 snap-start"
-            base={item.base}
-            modifierPart={item.modifier}
-            baseHeaderIconUri="/types/outcome.png"
-            backgroundUri="/backgrounds/paper-with-image-shadow.png"
-          />
+          <Card key={item.id} className="shrink-0 snap-start" {...item.props} />
         ))}
       </div>
     </Section>

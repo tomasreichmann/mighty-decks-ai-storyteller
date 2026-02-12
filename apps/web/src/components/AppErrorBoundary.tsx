@@ -38,11 +38,7 @@ export class AppErrorBoundary extends Component<
     return (
       <main className="app-shell py-8">
         <section className="rounded-lg border border-rose-300 bg-rose-50 p-4">
-          <Text
-            as="h1"
-            variant="h3"
-            className="text-lg font-semibold text-rose-800"
-          >
+          <Text as="h1" variant="h3" className="text-rose-800">
             App crashed while rendering
           </Text>
           <Text variant="body" className="mt-2 text-sm text-rose-700">

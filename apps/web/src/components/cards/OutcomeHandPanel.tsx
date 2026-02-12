@@ -1,7 +1,12 @@
-import type { ActiveOutcomeCheck, OutcomeCardType } from "@mighty-decks/spec/adventureState";
-import { Card } from "../common/Card";
-import { OutcomeCard, outcomeCardOrder } from "./OutcomeCard";
+import type {
+  ActiveOutcomeCheck,
+  OutcomeCardType,
+} from "@mighty-decks/spec/adventureState";
 import { Text } from "../common/Text";
+import { Message } from "../common/Message";
+import { Card } from "./Card";
+import { ourcomeCardPropsMap } from "../../data/outcomeDeck";
+import { cn } from "../../utils/cn";
 
 interface OutcomeHandPanelProps {
   check: ActiveOutcomeCheck;
@@ -9,6 +14,14 @@ interface OutcomeHandPanelProps {
   onPlayCard: (card: OutcomeCardType) => void;
   disabled?: boolean;
 }
+
+const outcomeCardSlugOrder = [
+  "special-action",
+  "success",
+  "partial-success",
+  "chaos",
+  "fumble",
+] as const;
 
 export const OutcomeHandPanel = ({
   check,
@@ -24,19 +37,18 @@ export const OutcomeHandPanel = ({
   const playedCard = target.playedCard;
 
   return (
-    <Card className="grid gap-3 border border-kac-gold-dark/20 bg-kac-gold-light/30 p-4">
-      <div>
-        <Text variant="note" color="gold-dark">
-          Outcome Check
-        </Text>
+    <div className="grid gap-3 border border-kac-gold-dark/20 bg-kac-gold-light/30 p-4">
+      <Message label="Outcome Check" variant="gold">
         <Text variant="body" color="iron" className="text-sm">
           {check.prompt}
         </Text>
-      </div>
+      </Message>
 
       {playedCard ? (
-        <div className="grid gap-2 sm:max-w-sm">
-          <OutcomeCard card={playedCard} selected={true} disabled={true} />
+        <div className="grid gap-2">
+          <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1">
+            <Card {...ourcomeCardPropsMap[playedCard]} />
+          </div>
           <Text
             variant="note"
             color="iron-light"
@@ -47,21 +59,26 @@ export const OutcomeHandPanel = ({
         </div>
       ) : (
         <>
-          <Text variant="body" color="iron" className="text-sm font-medium">
-            Pick one reusable Outcome card:
-          </Text>
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-            {outcomeCardOrder.map((card) => (
-              <OutcomeCard
-                key={card}
-                card={card}
-                disabled={disabled}
-                onSelect={onPlayCard}
-              />
-            ))}
+          <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1">
+            {outcomeCardSlugOrder.map((slug) => {
+              const props = ourcomeCardPropsMap[slug];
+              return (
+                <div
+                  onClick={disabled ? undefined : () => onPlayCard(slug)}
+                  key={slug}
+                  className={cn(
+                    "snap-start",
+                    disabled &&
+                      "cursor-not-allowed opacity-60 pointer-events-none",
+                  )}
+                >
+                  <Card {...props} />
+                </div>
+              );
+            })}
           </div>
         </>
       )}
-    </Card>
+    </div>
   );
 };

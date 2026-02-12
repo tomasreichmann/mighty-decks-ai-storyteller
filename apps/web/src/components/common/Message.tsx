@@ -103,7 +103,7 @@ export const Message = ({
         )}
         <div
           className={cn(
-            "min-w-0 flex-1 whitespace-pre-wrap text-sm leading-relaxed",
+            "min-w-0 w-full flex-1 whitespace-pre-wrap text-sm leading-relaxed",
             tone.text,
             contentClassName,
           )}

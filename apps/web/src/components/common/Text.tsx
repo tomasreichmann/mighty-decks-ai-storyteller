@@ -11,6 +11,7 @@ export type TextVariant =
   | "emphasised";
 
 export type TextColor =
+  | "inherit"
   | "iron"
   | "iron-light"
   | "iron-dark"
@@ -35,7 +36,7 @@ interface TextProps extends PropsWithChildren {
 }
 
 const variantClassMap: Record<TextVariant, string> = {
-  h1: "font-heading font-bold text-4xl/none sm:text-5xl/none tracking-tight",
+  h1: "font-heading font-bold text-4xl/none sm:text-5xl/none tracking-tight transform rotate(1deg) skewX(-5deg) ",
   h2: "font-heading font-bold text-3xl/none sm:text-4xl/none tracking-tight",
   h3: "font-heading font-bold text-2xl/none sm:text-3xl/none tracking-tight",
   body: "font-ui text-base leading-relaxed",
@@ -70,11 +71,12 @@ const colorClassMap: Record<TextColor, string> = {
   monster: "text-kac-monster-dark",
   blood: "text-kac-blood",
   paper: "text-paper",
+  inherit: "",
 };
 
 export const Text = ({
   variant = "body",
-  color = "iron",
+  color = "inherit",
   as,
   className = "",
   children,

@@ -27,7 +27,10 @@ interface ParsedListBlock {
   items: string[];
 }
 
-type ParsedMarkdownBlock = ParsedHeadingBlock | ParsedParagraphBlock | ParsedListBlock;
+type ParsedMarkdownBlock =
+  | ParsedHeadingBlock
+  | ParsedParagraphBlock
+  | ParsedListBlock;
 
 const headingMatcher = /^(#{1,3})\s+(.+)$/;
 const unorderedListMatcher = /^[-*]\s+(.+)$/;
@@ -98,7 +101,10 @@ const renderInlineMarkdown = (value: string): ReactNode[] =>
 
     if (token.kind === "code") {
       return (
-        <code key={key} className="rounded bg-kac-steel-light px-1 py-0.5 text-[0.92em] text-kac-iron">
+        <code
+          key={key}
+          className="rounded bg-kac-steel-light px-1 py-0.5 text-[0.92em] text-kac-iron"
+        >
           {token.value}
         </code>
       );
@@ -208,7 +214,9 @@ const parseMarkdown = (value: string): ParsedMarkdownBlock[] => {
   return blocks;
 };
 
-export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.Element => {
+export const SessionSummaryCard = ({
+  summary,
+}: SessionSummaryCardProps): JSX.Element => {
   const blocks = parseMarkdown(summary);
 
   return (
@@ -231,7 +239,6 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
                   as="h3"
                   variant="h3"
                   color="iron"
-                  className="text-lg"
                 >
                   {renderInlineMarkdown(block.text)}
                 </Text>
@@ -268,7 +275,9 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
             return (
               <ul key={`ul-${index}`} className="list-disc space-y-1 pl-5">
                 {block.items.map((item, itemIndex) => (
-                  <li key={`ul-item-${itemIndex}`}>{renderInlineMarkdown(item)}</li>
+                  <li key={`ul-item-${itemIndex}`}>
+                    {renderInlineMarkdown(item)}
+                  </li>
                 ))}
               </ul>
             );
@@ -278,7 +287,9 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
             return (
               <ol key={`ol-${index}`} className="list-decimal space-y-1 pl-5">
                 {block.items.map((item, itemIndex) => (
-                  <li key={`ol-item-${itemIndex}`}>{renderInlineMarkdown(item)}</li>
+                  <li key={`ol-item-${itemIndex}`}>
+                    {renderInlineMarkdown(item)}
+                  </li>
                 ))}
               </ol>
             );
@@ -298,4 +309,3 @@ export const SessionSummaryCard = ({ summary }: SessionSummaryCardProps): JSX.El
     </Section>
   );
 };
-

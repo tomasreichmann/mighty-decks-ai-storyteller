@@ -1,25 +1,23 @@
 import { InputHTMLAttributes } from "react";
 import { cn } from "../../utils/cn";
-import { Text } from "./Text";
+import { Label } from "./Label";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
 }
 
-export const TextField = ({ label, id, className = "", ...props }: TextFieldProps): JSX.Element => {
+export const TextField = ({
+  label,
+  id,
+  className = "",
+  ...props
+}: TextFieldProps): JSX.Element => {
   const fallbackId = label.toLowerCase().replace(/\s+/g, "-");
   const inputId = id ?? fallbackId;
 
   return (
-    <label htmlFor={inputId} className="grid gap-1">
-      <Text
-        as="span"
-        variant="note"
-        color="iron"
-        className="text-base tracking-[0.04em]"
-      >
-        {label}
-      </Text>
+    <label htmlFor={inputId} className="stack gap-1">
+      <Label className="self-start">{label}</Label>
       <input
         id={inputId}
         className={cn(

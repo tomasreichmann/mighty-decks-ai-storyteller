@@ -12,7 +12,7 @@ export const ReadyGatePanel = ({
 }: ReadyGatePanelProps): JSX.Element => {
   return (
     <Section className="stack">
-      <Text as="h3" variant="h3" color="iron" className="text-lg">
+      <Text as="h3" variant="h3" color="iron" className="mt-2">
         Ready Gate
       </Text>
       <Text variant="emphasised">

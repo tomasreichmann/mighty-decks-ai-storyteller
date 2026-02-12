@@ -187,12 +187,12 @@ const trimLines = (value: string): string =>
     .join("\n");
 
 const AI_DEBUG_AUTHOR = "AI Debug";
+const isAiDebugTranscriptEntry = (entry: TranscriptEntry): boolean =>
+  entry.kind === "system" && entry.author === AI_DEBUG_AUTHOR;
 
 const compactTranscript = (entries: TranscriptEntry[]): string =>
   entries
-    .filter(
-      (entry) => !(entry.kind === "system" && entry.author === AI_DEBUG_AUTHOR),
-    )
+    .filter((entry) => !isAiDebugTranscriptEntry(entry))
     .slice(-8)
     .map((entry) => `${entry.kind}:${entry.author}: ${entry.text}`)
     .join("\n");
@@ -548,6 +548,29 @@ const OUTCOME_UNCERTAINTY_KEYWORDS = [
   "gamble",
 ];
 
+const OUTCOME_CONTEST_KEYWORDS = [
+  "sneak",
+  "steal",
+  "pick",
+  "disarm",
+  "climb",
+  "jump",
+  "convince",
+  "persuade",
+  "bluff",
+  "threaten",
+  "bargain",
+  "negotiate",
+  "duel",
+  "fight",
+  "attack",
+  "rush",
+  "charge",
+  "cast",
+  "grab",
+  "intercept",
+];
+
 const OUTCOME_REWARD_KEYWORDS = [
   "treasure",
   "relic",
@@ -563,34 +586,61 @@ const OUTCOME_REWARD_KEYWORDS = [
   "legendary",
 ];
 
+const OUTCOME_LOW_STAKES_KEYWORDS = [
+  "look",
+  "watch",
+  "listen",
+  "wait",
+  "rest",
+  "hide",
+  "check map",
+  "map",
+  "plan",
+  "discuss",
+  "talk",
+  "move carefully",
+  "follow",
+  "search for clues",
+  "scan",
+  "observe",
+];
+
 const hasKeywordMatch = (value: string, keywords: string[]): boolean =>
   keywords.some((keyword) => value.includes(keyword));
+
+const hasRecentOutcomePrompt = (entries: TranscriptEntry[]): boolean => {
+  const recent = entries.slice(-3);
+  return recent.some(
+    (entry) =>
+      entry.kind === "system" &&
+      entry.author === "System" &&
+      entry.text.toLowerCase().includes("outcome check:"),
+  );
+};
 
 const decideOutcomeCheckByHeuristic = (
   input: OutcomeCheckDecisionInput,
 ): OutcomeCheckDecisionResult => {
   const action = input.actionText.toLowerCase();
-  const sceneContext = `${input.scene.introProse} ${input.scene.orientationBullets.join(" ")}`
-    .toLowerCase();
-
-  const threat = hasKeywordMatch(action, OUTCOME_THREAT_KEYWORDS) ||
-    hasKeywordMatch(sceneContext, OUTCOME_THREAT_KEYWORDS);
+  const threat = hasKeywordMatch(action, OUTCOME_THREAT_KEYWORDS);
   const uncertainty =
     hasKeywordMatch(action, OUTCOME_UNCERTAINTY_KEYWORDS) ||
+    hasKeywordMatch(action, OUTCOME_CONTEST_KEYWORDS) ||
     action.includes("?") ||
     action.includes("if ");
   const highReward = hasKeywordMatch(action, OUTCOME_REWARD_KEYWORDS);
+  const lowStakes = hasKeywordMatch(action, OUTCOME_LOW_STAKES_KEYWORDS);
+  const repeatedCheck = hasRecentOutcomePrompt(input.transcriptTail);
 
-  const shouldCheck =
-    (threat && uncertainty) ||
-    (threat && highReward) ||
-    (uncertainty && highReward);
+  const shouldCheck = !lowStakes &&
+    !repeatedCheck &&
+    ((threat && uncertainty) || (highReward && uncertainty));
 
   if (!shouldCheck) {
     return {
       shouldCheck: false,
       reason:
-        "No immediate high-stakes threat, uncertainty, or major reward is in play.",
+        "No immediate dramatic risk or major upside warrants an Outcome card.",
       triggers: {
         threat,
         uncertainty,
@@ -904,31 +954,35 @@ export class StorytellerService {
     runtimeConfig: RuntimeConfig,
     context?: StorytellerRequestContext,
   ): Promise<OutcomeCheckDecisionResult> {
+    const actionText = trimLines(input.actionText).slice(0, 260);
+    const recentNarrative = this.getNarrativeTailForOutcomeDecision(
+      input.transcriptTail,
+    );
     const prompt = this.composePrompt("outcome_decider", [
-      "You are the Outcome Check Decider for a GM-less adventure game.",
-      "Decide whether this player action should require an Outcome card.",
-      "Set shouldCheck=true only when at least one of these is meaningful now:",
-      "1) threat: danger or opposition can cause a dramatic setback",
-      "2) uncertainty: result is genuinely unclear and could swing either way",
-      "3) highReward: there is a chance for a major upside worth risking for",
-      "Default to shouldCheck=false for routine, low-stakes, or purely descriptive actions.",
+      "You are a fast Outcome-check classifier for a GM-less adventure game.",
+      "Decide whether the CURRENT player action should trigger an Outcome card check.",
+      "Use conservative calibration.",
+      "Set shouldCheck=true only for immediate dramatic stakes in this action:",
+      "1) threat: direct danger/opposition can cause a setback now",
+      "2) uncertainty: the action is contested or risky enough to swing hard",
+      "3) highReward: the action could win a major upside worth risking for",
+      "Set shouldCheck=false for planning, observation, positioning, or low-stakes probing.",
+      "Do not trigger based only on ambient scene danger.",
+      "Avoid repeated checks on consecutive low-stakes actions.",
       "Return JSON only with keys:",
       "shouldCheck: boolean",
       "reason: string (max 140 chars)",
       "triggers: { threat: boolean, uncertainty: boolean, highReward: boolean }",
       `Actor: ${input.actorCharacterName}`,
       `Turn number: ${input.turnNumber}`,
-      `Scene intro: ${input.scene.introProse}`,
-      ...input.scene.orientationBullets.map((bullet) => `Scene cue: ${bullet}`),
-      `Rolling continuity summary: ${input.rollingSummary}`,
-      `Player action: ${input.actionText}`,
-      "Recent transcript:",
-      compactTranscript(input.transcriptTail) || "none",
+      `Player action: ${actionText}`,
+      "Recent narrative context:",
+      recentNarrative,
     ]);
 
     const fastRuntimeConfig = {
       ...runtimeConfig,
-      textCallTimeoutMs: Math.min(runtimeConfig.textCallTimeoutMs, 3500),
+      textCallTimeoutMs: Math.min(runtimeConfig.textCallTimeoutMs, 2500),
       aiRetryCount: 0,
     };
 
@@ -938,19 +992,41 @@ export class StorytellerService {
       fallbackModel: this.options.models.outcomeDeciderFallback,
       prompt,
       runtimeConfig: fastRuntimeConfig,
-      maxTokens: 140,
-      temperature: 0.1,
+      maxTokens: 90,
+      temperature: 0,
       context,
     });
 
     if (modelText) {
       const parsed = this.parseJson(modelText, outcomeCheckDecisionSchema);
       if (parsed) {
+        const normalizedAction = actionText.toLowerCase();
+        const directlyRisky = hasKeywordMatch(
+          normalizedAction,
+          OUTCOME_THREAT_KEYWORDS,
+        ) || hasKeywordMatch(normalizedAction, OUTCOME_CONTEST_KEYWORDS);
+        const explicitHighReward = hasKeywordMatch(
+          normalizedAction,
+          OUTCOME_REWARD_KEYWORDS,
+        );
+        const likelyLowStakes = hasKeywordMatch(
+          normalizedAction,
+          OUTCOME_LOW_STAKES_KEYWORDS,
+        );
+        const repeatedCheck = hasRecentOutcomePrompt(input.transcriptTail);
         const hasTrigger =
           parsed.triggers.threat ||
           parsed.triggers.uncertainty ||
           parsed.triggers.highReward;
-        const shouldCheck = parsed.shouldCheck && hasTrigger;
+        const shouldCheck = parsed.shouldCheck &&
+          hasTrigger &&
+          !likelyLowStakes &&
+          !(
+            repeatedCheck &&
+            !parsed.triggers.highReward &&
+            !explicitHighReward
+          ) &&
+          (directlyRisky || explicitHighReward);
 
         return {
           shouldCheck,
@@ -961,6 +1037,22 @@ export class StorytellerService {
     }
 
     return decideOutcomeCheckByHeuristic(input);
+  }
+
+  private getNarrativeTailForOutcomeDecision(
+    transcript: TranscriptEntry[],
+  ): string {
+    const relevant = transcript
+      .filter((entry) => !isAiDebugTranscriptEntry(entry))
+      .slice(-4)
+      .map((entry) => `${entry.kind}:${entry.author}: ${entry.text}`)
+      .join("\n");
+
+    if (relevant.length > 0) {
+      return relevant.slice(0, 800);
+    }
+
+    return "none";
   }
 
   public async summarizeSession(

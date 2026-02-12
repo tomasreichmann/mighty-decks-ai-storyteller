@@ -27,9 +27,9 @@ export type StuntType = {
 };
 
 export type OutcomeSlug =
-  | "special"
+  | "special-action"
   | "success"
-  | "partial"
+  | "partial-success"
   | "fumble"
   | "chaos";
 

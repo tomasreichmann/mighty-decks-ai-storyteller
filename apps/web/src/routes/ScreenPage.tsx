@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AdventureHeader } from "../components/AdventureHeader";
 import { ConnectionDiagnostics } from "../components/ConnectionDiagnostics";
 import { DebugPanel } from "../components/DebugPanel";
@@ -15,6 +15,7 @@ import { Message } from "../components/common/Message";
 import { Text } from "../components/common/Text";
 
 export const ScreenPage = (): JSX.Element => {
+  const navigate = useNavigate();
   const { adventureId } = useParams<{ adventureId: string }>();
 
   if (!adventureId) {
@@ -71,6 +72,9 @@ export const ScreenPage = (): JSX.Element => {
         connectionError={connectionError}
         serverUrl={serverUrl}
         serverUrlWarning={serverUrlWarning}
+        onJoinAdventure={(nextAdventureId) => {
+          navigate(`/adventure/${nextAdventureId}/screen`);
+        }}
       />
 
       {showLobbyState ? (
