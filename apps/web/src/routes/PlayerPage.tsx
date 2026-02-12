@@ -35,12 +35,14 @@ export const PlayerPage = (): JSX.Element => {
     serverUrl,
     serverUrlWarning,
     thinking,
+    identity,
     submitSetup,
     toggleReady,
     castVote,
     submitAction,
     playOutcomeCard,
     endSession,
+    reconnect,
   } = useAdventureSession({
     adventureId,
     role: "player",
@@ -101,12 +103,15 @@ export const PlayerPage = (): JSX.Element => {
   const activeOutcomeCheck = adventure?.activeOutcomeCheck;
   const activeOutcomeTarget = useMemo(
     () =>
-      activeOutcomeCheck && participant
+      activeOutcomeCheck
         ? (activeOutcomeCheck.targets.find(
-            (entry) => entry.playerId === participant.playerId,
+            (entry) => entry.playerId === identity.playerId,
           ) ?? null)
         : null,
-    [activeOutcomeCheck, participant],
+    [activeOutcomeCheck, identity.playerId],
+  );
+  const requiresOutcomeSelection = Boolean(
+    activeOutcomeTarget && !activeOutcomeTarget.playedCard,
   );
   const connectionStatus = connected ? "connected" : "reconnecting";
   const showLobbySetup = phase === "lobby" && Boolean(adventure);
@@ -131,6 +136,7 @@ export const PlayerPage = (): JSX.Element => {
         connectionError={connectionError}
         serverUrl={serverUrl}
         serverUrlWarning={serverUrlWarning}
+        onReconnect={reconnect}
         onJoinAdventure={(nextAdventureId) => {
           navigate(`/adventure/${nextAdventureId}/player`);
         }}
@@ -151,7 +157,7 @@ export const PlayerPage = (): JSX.Element => {
         </>
       ) : null}
       {phase === "lobby" && !adventure ? (
-        <Message label="System" variant="cloth">
+        <Message label="System" color="cloth">
           Joining adventure session...
         </Message>
       ) : null}
@@ -178,19 +184,15 @@ export const PlayerPage = (): JSX.Element => {
 
       {phase === "play" ? (
         <>
-          {activeOutcomeCheck && activeOutcomeTarget ? (
-            <OutcomeHandPanel
-              check={activeOutcomeCheck}
-              playerId={activeOutcomeTarget.playerId}
-              onPlayCard={(card) =>
-                playOutcomeCard(activeOutcomeCheck.checkId, card)
-              }
-            />
-          ) : null}
           {activeOutcomeCheck && !activeOutcomeTarget ? (
-            <Message label="System" variant="cloth">
+            <Message label="System" color="cloth">
               Waiting for another player to choose an Outcome card before the
               turn resolves.
+            </Message>
+          ) : null}
+          {activeOutcomeTarget?.playedCard ? (
+            <Message label="System" color="cloth">
+              Your Outcome card is locked in. Waiting for resolution.
             </Message>
           ) : null}
           {adventure?.activeVote ? (
@@ -210,13 +212,34 @@ export const PlayerPage = (): JSX.Element => {
               className="h-full"
             />
           </div>
-          <div className="shrink-0">
-            <ActionComposer
-              canSend={canSendAction}
-              allowDrafting={hasCharacterSetup}
-              onSend={submitAction}
-              onEndSession={!adventure?.closed ? endSession : undefined}
-            />
+          <div className="shrink-0 relative">
+            <div className="relative">
+              <OutcomeHandPanel
+                check={activeOutcomeCheck}
+                playerId={identity.playerId}
+                disabled={!requiresOutcomeSelection}
+                onPlayCard={(card) => {
+                  if (!activeOutcomeCheck) {
+                    return;
+                  }
+
+                  playOutcomeCard(activeOutcomeCheck.checkId, card);
+                }}
+              />
+            </div>
+            <div
+              className={cn(
+                "relative z-10 transition-transform duration-300",
+                requiresOutcomeSelection ? "-mt-4" : "-mt-7",
+              )}
+            >
+              <ActionComposer
+                canSend={canSendAction}
+                allowDrafting={hasCharacterSetup}
+                onSend={submitAction}
+                onEndSession={!adventure?.closed ? endSession : undefined}
+              />
+            </div>
           </div>
         </>
       ) : null}

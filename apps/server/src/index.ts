@@ -65,7 +65,9 @@ const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(app.serv
   },
 });
 
-registerSocketHandlers(io, manager);
+registerSocketHandlers(io, manager, {
+  clientIdleTimeoutMs: env.clientIdleTimeoutMs,
+});
 
 app.get("/health", async () => {
   return {

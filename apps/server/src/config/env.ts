@@ -32,6 +32,7 @@ const envSchema = z.object({
     .optional()
     .transform((value) => value === "true"),
   MAX_ACTIVE_ADVENTURES: z.coerce.number().int().min(1).default(1),
+  CLIENT_IDLE_TIMEOUT_MS: z.coerce.number().int().min(60_000).default(900_000),
   TEXT_CALL_TIMEOUT_MS: z.coerce.number().int().min(1000).default(20000),
   TURN_DEADLINE_MS: z.coerce.number().int().min(2000).default(18000),
   IMAGE_TIMEOUT_MS: z.coerce.number().int().min(1000).default(180000),
@@ -64,6 +65,7 @@ export const env = {
   },
   debugMode: parsed.DEBUG_MODE ?? false,
   maxActiveAdventures: parsed.MAX_ACTIVE_ADVENTURES,
+  clientIdleTimeoutMs: parsed.CLIENT_IDLE_TIMEOUT_MS,
   debugLogDir: parsed.DEBUG_LOG_DIR,
   runtimeConfigDefaults: {
     textCallTimeoutMs: parsed.TEXT_CALL_TIMEOUT_MS,

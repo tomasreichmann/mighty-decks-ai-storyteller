@@ -21,7 +21,7 @@ export const ScreenPage = (): JSX.Element => {
   if (!adventureId) {
     return (
       <main className="app-shell py-10 gap-4">
-        <Message label="Error" variant="curse">
+        <Message label="Error" color="curse">
           Missing adventureId.
         </Message>
       </main>
@@ -36,6 +36,7 @@ export const ScreenPage = (): JSX.Element => {
     serverUrlWarning,
     thinking,
     updateRuntimeConfig,
+    reconnect,
   } = useAdventureSession({
     adventureId,
     role: "screen",
@@ -72,6 +73,7 @@ export const ScreenPage = (): JSX.Element => {
         connectionError={connectionError}
         serverUrl={serverUrl}
         serverUrlWarning={serverUrlWarning}
+        onReconnect={reconnect}
         onJoinAdventure={(nextAdventureId) => {
           navigate(`/adventure/${nextAdventureId}/screen`);
         }}

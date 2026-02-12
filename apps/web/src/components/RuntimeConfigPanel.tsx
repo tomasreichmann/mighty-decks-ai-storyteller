@@ -87,7 +87,7 @@ export const RuntimeConfigPanel = ({
           }
         />
         <div className="flex items-end">
-          <Button type="submit" variant="secondary">
+          <Button type="submit" variant="solid" color="cloth">
             Apply Runtime Config
           </Button>
         </div>

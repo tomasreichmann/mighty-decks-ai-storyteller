@@ -171,7 +171,8 @@ export const AdventureHeader = ({
         ) : null}
         <div className="flex-1 shrink-0 basis-auto flex flex-wrap justify-end items-center relative paper-shadow gap-x-4">
           <Button
-            variant="secondary"
+            variant="solid"
+            color="cloth"
             size="sm"
             onClick={() => setActiveShareTarget("player")}
           >
@@ -179,7 +180,8 @@ export const AdventureHeader = ({
             <span className="md:hidden">{titles.player.short}</span>
           </Button>
           <Button
-            variant="ghost"
+            variant="solid"
+            color="bone"
             size="sm"
             onClick={() => setActiveShareTarget("screen")}
           >

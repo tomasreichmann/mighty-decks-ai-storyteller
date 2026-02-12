@@ -567,7 +567,7 @@ export class AdventureManager {
         });
 
         this.appendTranscriptEntry(refreshedAdventure, {
-          kind: "system",
+          kind: "storyteller",
           author: "Storyteller",
           text: `${playerAuthor}, play an Outcome card. ${decision.reason}`,
         });

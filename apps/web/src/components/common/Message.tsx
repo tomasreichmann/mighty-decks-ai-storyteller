@@ -1,67 +1,152 @@
 import { PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
 import { Label, type LabelVariant } from "./Label";
+import type { ButtonColors } from "./Button";
 
-export type MessageVariant =
-  | "gold"
-  | "fire"
-  | "bone"
-  | "skin"
-  | "cloth"
-  | "curse"
-  | "monster";
+export type MessageColor = ButtonColors;
 
-const messageToneClassMap: Record<
-  MessageVariant,
-  { container: string; text: string; defaultLabelVariant: LabelVariant }
-> = {
-  gold: {
-    container:
-      "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-kac-gold-light to-kac-bone border-2 border-kac-iron-dark",
-    text: "text-kac-iron-dark",
-    defaultLabelVariant: "gold",
-  },
-  fire: {
-    container:
-      "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-kac-fire-lightest to-kac-fire-light border-2 border-kac-iron-dark",
-    text: "text-kac-iron-dark",
-    defaultLabelVariant: "fire",
-  },
-  bone: {
-    container:
-      "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-[#f8efd8] to-kac-bone-light border-2 border-kac-iron-dark",
-    text: "text-kac-iron-dark",
-    defaultLabelVariant: "bone",
-  },
-  skin: {
-    container:
-      "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-kac-skin-light to-kac-skin border-2 border-kac-iron-dark",
-    text: "text-kac-iron-dark",
-    defaultLabelVariant: "skin",
-  },
-  cloth: {
-    container:
-      "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-kac-cloth-lightest/25 to-kac-cloth-light border-2 border-kac-iron-dark",
-    text: "text-kac-iron-dark",
-    defaultLabelVariant: "cloth",
-  },
-  curse: {
-    container:
-      "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-kac-curse-lightest to-kac-curse-lighter border-2 border-kac-iron-dark",
-    text: "text-kac-iron-dark",
-    defaultLabelVariant: "curse",
-  },
-  monster: {
-    container:
-      "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-kac-monster-lightest to-kac-monster-light",
-    text: "text-kac-iron-dark",
-    defaultLabelVariant: "monster",
-  },
+interface MessageTone {
+  container: string;
+  text: string;
+  defaultLabelVariant: LabelVariant;
+}
+
+const baseContainerClass =
+  "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] border-2 border-kac-iron-dark";
+
+const resolveMessageTone = (color: MessageColor): MessageTone => {
+  switch (color) {
+    case "fire":
+    case "fire-light":
+    case "fire-lightest":
+      return {
+        container: `${baseContainerClass} from-kac-fire-lightest to-kac-fire-light`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "fire",
+      };
+    case "fire-dark":
+      return {
+        container: `${baseContainerClass} from-kac-fire-dark to-kac-fire-light`,
+        text: "text-kac-bone-light",
+        defaultLabelVariant: "fire",
+      };
+    case "bone":
+    case "bone-light":
+      return {
+        container: `${baseContainerClass} from-[#f8efd8] to-kac-bone-light`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "bone",
+      };
+    case "bone-dark":
+    case "bone-darker":
+      return {
+        container: `${baseContainerClass} from-kac-bone to-kac-bone-dark`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "bone",
+      };
+    case "skin":
+    case "skin-light":
+    case "skin-dark":
+      return {
+        container: `${baseContainerClass} from-kac-skin-light to-kac-skin`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "skin",
+      };
+    case "cloth":
+    case "cloth-light":
+    case "cloth-lightest":
+      return {
+        container: `${baseContainerClass} from-kac-cloth-lightest/25 to-kac-cloth-light`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "cloth",
+      };
+    case "cloth-dark":
+      return {
+        container: `${baseContainerClass} from-kac-cloth to-kac-cloth-dark`,
+        text: "text-kac-steel-light",
+        defaultLabelVariant: "cloth",
+      };
+    case "curse":
+    case "curse-light":
+    case "curse-lighter":
+    case "curse-lightest":
+      return {
+        container: `${baseContainerClass} from-kac-curse-lightest to-kac-curse-lighter`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "curse",
+      };
+    case "curse-dark":
+      return {
+        container: `${baseContainerClass} from-kac-curse-dark to-kac-curse-light`,
+        text: "text-kac-curse-lightest",
+        defaultLabelVariant: "curse",
+      };
+    case "monster":
+    case "monster-light":
+    case "monster-lightest":
+      return {
+        container: `${baseContainerClass} from-kac-monster-lightest to-kac-monster-light`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "monster",
+      };
+    case "monster-dark":
+      return {
+        container: `${baseContainerClass} from-kac-monster-dark to-kac-monster-light`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "monster",
+      };
+    case "blood":
+    case "blood-light":
+    case "blood-lighter":
+    case "blood-lightest":
+      return {
+        container: `${baseContainerClass} from-kac-blood-lightest to-kac-blood-lighter`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "curse",
+      };
+    case "blood-dark":
+      return {
+        container: `${baseContainerClass} from-kac-blood-dark to-kac-blood-light`,
+        text: "text-kac-curse-lightest",
+        defaultLabelVariant: "curse",
+      };
+    case "iron-dark":
+    case "steel-dark":
+      return {
+        container: `${baseContainerClass} from-kac-iron-dark to-kac-iron-light`,
+        text: "text-kac-steel-light",
+        defaultLabelVariant: "cloth",
+      };
+    case "iron":
+    case "iron-light":
+    case "steel":
+    case "steel-light":
+      return {
+        container: `${baseContainerClass} from-kac-steel-light to-kac-steel`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "cloth",
+      };
+    case "gold":
+    case "gold-light":
+    case "gold-dark":
+    case "gold-darker":
+      return {
+        container: `${baseContainerClass} from-kac-gold-light to-kac-bone`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "gold",
+      };
+    default:
+      return {
+        container: `${baseContainerClass} from-kac-gold-light to-kac-bone`,
+        text: "text-kac-iron-dark",
+        defaultLabelVariant: "gold",
+      };
+  }
 };
 
 interface MessageProps extends PropsWithChildren {
   label?: string;
-  variant?: MessageVariant;
+  color?: MessageColor;
   labelVariant?: LabelVariant;
   rotateLabel?: boolean;
   className?: string;
@@ -71,7 +156,7 @@ interface MessageProps extends PropsWithChildren {
 
 export const Message = ({
   label,
-  variant = "bone",
+  color = "bone",
   labelVariant,
   rotateLabel = true,
   className = "",
@@ -79,7 +164,7 @@ export const Message = ({
   labelClassName = "",
   children,
 }: MessageProps): JSX.Element => {
-  const tone = messageToneClassMap[variant];
+  const tone = resolveMessageTone(color);
 
   return (
     <article
@@ -96,7 +181,10 @@ export const Message = ({
           <Label
             variant={labelVariant ?? tone.defaultLabelVariant}
             rotate={rotateLabel}
-            className={cn("absolute -top-4 -left-4", labelClassName)}
+            className={cn(
+              "relative -mt-8 -left-3 whitespace-nowrap",
+              labelClassName,
+            )}
           >
             {label}
           </Label>

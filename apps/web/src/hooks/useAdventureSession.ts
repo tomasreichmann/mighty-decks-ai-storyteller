@@ -37,6 +37,7 @@ export interface UseAdventureSessionResult {
   playOutcomeCard: (checkId: string, card: OutcomeCardType) => void;
   endSession: () => void;
   updateRuntimeConfig: (runtimeConfig: RuntimeConfig) => void;
+  reconnect: () => void;
 }
 
 const appendTranscriptEntry = (
@@ -95,6 +96,13 @@ export const useAdventureSession = ({
 
     const handleDisconnect = (reason: string): void => {
       setConnected(false);
+      if (reason === "io server disconnect") {
+        setConnectionError(
+          "Disconnected by server due inactivity or session reset. Click reconnect to continue.",
+        );
+        return;
+      }
+
       if (reason !== "io client disconnect") {
         setConnectionError(`Disconnected from adventure server (${reason}).`);
       }
@@ -280,6 +288,12 @@ export const useAdventureSession = ({
         playerId: identity.playerId,
         runtimeConfig,
       });
+    },
+    reconnect: () => {
+      setConnectionError(null);
+      if (!socket.connected) {
+        socket.connect();
+      }
     },
   };
 };

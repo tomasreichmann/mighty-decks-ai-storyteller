@@ -230,7 +230,8 @@ export const CharacterSetupForm = ({
           <Button
             type="button"
             size="sm"
-            variant="secondary"
+            variant="solid"
+            color="cloth"
             onClick={handleSavePreset}
             disabled={!canReady}
             className="absolute -top-2 -right-2"
@@ -253,7 +254,8 @@ export const CharacterSetupForm = ({
                     <Button
                       type="button"
                       size="sm"
-                      variant="ghost"
+                      variant="solid"
+                      color="bone"
                       onClick={() => handleRecallPreset(preset)}
                       disabled={setupLocked}
                     >
@@ -262,7 +264,8 @@ export const CharacterSetupForm = ({
                     <Button
                       type="button"
                       size="sm"
-                      variant="danger"
+                      variant="solid"
+                      color="curse"
                       onClick={() => handleDeletePreset(preset.id)}
                       className="relative -ml-1 z-5"
                     >
@@ -285,7 +288,8 @@ export const CharacterSetupForm = ({
                   {showNotReadyButton ? (
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="solid"
+                      color="bone"
                       onClick={() => onToggleReady(false)}
                       disabled={!isReady}
                     >
@@ -294,7 +298,7 @@ export const CharacterSetupForm = ({
                   ) : null}
                 </>
               ) : (
-                <Message variant="cloth">
+                <Message color="cloth">
                   Adventure generation is in progress. Please wait.
                 </Message>
               )}

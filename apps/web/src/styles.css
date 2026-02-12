@@ -88,7 +88,7 @@ h6 {
   --tint: 0deg;
   --grain: 0;
   --invert: 0;
-  position: fixed;
+  position: absolute;
   inset: -8px;
   z-index: -1;
   pointer-events: none;
@@ -174,13 +174,29 @@ h6 {
 
 .skew-clip-mask {
   --skew-offset: 3%;
+  --shape:
+    var(--skew-offset) 0, 100% 0, calc(100% - var(--skew-offset)) 100%, 0 100%,
+    var(--skew-offset) 0;
+  clip-path: polygon(var(--shape));
+}
+.skew-clip-border {
+  --skew-offset: 3%;
+  --shape:
+    var(--skew-offset) 0, 100% 0, calc(100% - var(--skew-offset)) 100%, 0 100%,
+    var(--skew-offset) 0;
+  --s: -20px; /* Control the space */
+  padding: calc(-1 * var(--s));
+  /* the inverted shape */
   clip-path: polygon(
-    var(--skew-offset) 0,
-    100% 0,
-    calc(100% - var(--skew-offset)) 100%,
-    0 100%,
-    var(--skew-offset) 0
-  );
+      evenodd,
+      var(--s) var(--s),
+      calc(100% - var(--s)) var(--s),
+      calc(100% - var(--s)) calc(100% - var(--s)),
+      var(--s) calc(100% - var(--s)),
+      var(--s) var(--s),
+      var(--shape)
+    )
+    content-box;
 }
 
 .transcript-scroll-mask {

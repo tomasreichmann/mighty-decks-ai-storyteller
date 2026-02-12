@@ -19,7 +19,7 @@ export const RoleSelectCard = ({
       </Text>
       <div className="flex gap-3 justify-center">
         <Button onClick={() => onSelectRole("player")}>Player</Button>
-        <Button variant="secondary" onClick={() => onSelectRole("screen")}>
+        <Button variant="solid" color="cloth" onClick={() => onSelectRole("screen")}>
           Screen
         </Button>
       </div>

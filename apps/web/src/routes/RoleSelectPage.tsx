@@ -10,7 +10,7 @@ export const RoleSelectPage = (): JSX.Element => {
   if (!adventureId) {
     return (
       <main className="app-shell py-10 gap-4">
-        <Message label="Error" variant="curse">
+        <Message label="Error" color="curse">
           Missing adventureId.
         </Message>
       </main>

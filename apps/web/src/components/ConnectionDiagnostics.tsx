@@ -16,6 +16,7 @@ interface ConnectionDiagnosticsProps {
   serverUrl: string;
   serverUrlWarning: string | null;
   onJoinAdventure?: (adventureId: string) => void;
+  onReconnect?: () => void;
 }
 
 export const ConnectionDiagnostics = ({
@@ -24,6 +25,7 @@ export const ConnectionDiagnostics = ({
   serverUrl,
   serverUrlWarning,
   onJoinAdventure,
+  onReconnect,
 }: ConnectionDiagnosticsProps): JSX.Element | null => {
   const hasIssues =
     !connected || Boolean(connectionError) || Boolean(serverUrlWarning);
@@ -151,18 +153,31 @@ export const ConnectionDiagnostics = ({
   return (
     <Message
       label="Connection diagnostics"
-      variant="curse"
+      color="curse"
       className="stack gap-2"
     >
       {!connected ? (
-        <Text variant="emphasised" color="curse">
-          Not connected to adventure server yet.
-        </Text>
+        <div className="stack gap-2">
+          <Text variant="emphasised" color="curse" className="mt-2">
+            Not connected to adventure server.
+          </Text>
+          {onReconnect ? (
+            <Button
+              variant="solid"
+              color="cloth"
+              size="sm"
+              onClick={onReconnect}
+              className="self-start"
+            >
+              Reconnect
+            </Button>
+          ) : null}
+        </div>
       ) : null}
       {connectionError && !isAdventureCapError ? (
-        <Text variant="emphasised" color="curse">
-          Error: {connectionError}
-        </Text>
+        <Message label="Error" color="curse" className="mt-4">
+          {connectionError}
+        </Message>
       ) : null}
       {isAdventureCapError ? (
         <div className="stack gap-2">
@@ -189,7 +204,8 @@ export const ConnectionDiagnostics = ({
                 <Button
                   key={entry.adventureId}
                   size="sm"
-                  variant="secondary"
+                  variant="solid"
+                  color="cloth"
                   onClick={() => {
                     if (onJoinAdventure) {
                       onJoinAdventure(entry.adventureId);
@@ -208,7 +224,8 @@ export const ConnectionDiagnostics = ({
           ) : null}
           <Button
             size="sm"
-            variant="ghost"
+            variant="solid"
+            color="bone"
             onClick={() => setRefreshKey((current) => current + 1)}
             disabled={loadingAdventures}
             className="self-start"
@@ -224,9 +241,15 @@ export const ConnectionDiagnostics = ({
       ) : null}
       {/* TODO: Show only in Debug mode */}
       <div className="mt-2">
-        <Text variant="body">Page origin: {origin}</Text>
-        <Text variant="body">Socket URL: {serverUrl}</Text>
-        <Text variant="body">Secure context: {secureContextLabel}</Text>
+        <Text variant="note" color="iron-light">
+          Page origin: {origin}
+        </Text>
+        <Text variant="note" color="iron-light">
+          Socket URL: {serverUrl}
+        </Text>
+        <Text variant="note" color="iron-light">
+          Secure context: {secureContextLabel}
+        </Text>
       </div>
     </Message>
   );

@@ -116,7 +116,8 @@ export const ShareLinkOverlay = ({
             {title}
           </Label>
           <Button
-            variant="ghost"
+            variant="solid"
+            color="bone"
             size="sm"
             onClick={onClose}
             aria-label="Close share overlay"
@@ -152,7 +153,8 @@ export const ShareLinkOverlay = ({
             </Text>
           </a>
           <Button
-            variant="secondary"
+            variant="solid"
+            color="cloth"
             onClick={() => {
               void copyToClipboard(url).then(() => {
                 setCopied(true);

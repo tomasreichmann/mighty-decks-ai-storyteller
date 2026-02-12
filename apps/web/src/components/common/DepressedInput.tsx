@@ -30,7 +30,7 @@ const inputDepthClassName =
   "shadow-[inset_2px_2px_0_0_#9f8a6d,inset_-2px_-2px_0_0_#fff7e6]";
 
 const inputStateClassName =
-  "placeholder:text-kac-steel-dark disabled:cursor-not-allowed disabled:opacity-60";
+  "placeholder:text-kac-steel-dark/70 disabled:cursor-not-allowed disabled:opacity-60";
 
 export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
   const { label, id, className = "", controlClassName = "" } = props;

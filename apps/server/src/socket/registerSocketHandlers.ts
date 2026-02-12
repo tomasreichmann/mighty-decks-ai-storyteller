@@ -16,8 +16,18 @@ import type { Socket, Server as SocketServer } from "socket.io";
 import type { AdventureManager } from "../adventure/AdventureManager";
 
 const AI_DEBUG_AUTHOR = "AI Debug";
+const DEFAULT_CLIENT_IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+
+interface RegisterSocketHandlersOptions {
+  clientIdleTimeoutMs?: number;
+}
 
 const isDebugTranscriptEntry = (entry: TranscriptEntry): boolean => entry.author === AI_DEBUG_AUTHOR;
+
+const buildIdleDisconnectMessage = (timeoutMs: number): string => {
+  const timeoutMinutes = Math.max(1, Math.floor(timeoutMs / 60_000));
+  return `Disconnected after ${timeoutMinutes} minutes of inactivity. Reconnect to continue your adventure.`;
+};
 
 const sanitizeAdventureForRole = (
   adventure: AdventureState,
@@ -125,7 +135,12 @@ const withValidation = <T>(
 export const registerSocketHandlers = (
   io: SocketServer<ClientToServerEvents, ServerToClientEvents>,
   manager: AdventureManager,
+  options: RegisterSocketHandlersOptions = {},
 ): void => {
+  const clientIdleTimeoutMs = Math.max(
+    60_000,
+    options.clientIdleTimeoutMs ?? DEFAULT_CLIENT_IDLE_TIMEOUT_MS,
+  );
   manager.setHooks({
     onAdventureUpdated: (adventureId) => {
       emitAdventureState(io, adventureId, manager);
@@ -145,6 +160,43 @@ export const registerSocketHandlers = (
   });
 
   io.on("connection", (socket) => {
+    let clientIdleTimer: NodeJS.Timeout | null = null;
+
+    const clearClientIdleTimer = (): void => {
+      if (!clientIdleTimer) {
+        return;
+      }
+
+      clearTimeout(clientIdleTimer);
+      clientIdleTimer = null;
+    };
+
+    const resetClientIdleTimer = (): void => {
+      clearClientIdleTimer();
+      clientIdleTimer = setTimeout(() => {
+        if (!socket.connected) {
+          return;
+        }
+
+        socket.emit("storyteller_response", {
+          text: buildIdleDisconnectMessage(clientIdleTimeoutMs),
+        });
+
+        setTimeout(() => {
+          if (socket.connected) {
+            socket.disconnect(true);
+          }
+        }, 100);
+      }, clientIdleTimeoutMs);
+    };
+
+    const onClientActivity = (): void => {
+      resetClientIdleTimer();
+    };
+
+    socket.onAny(onClientActivity);
+    resetClientIdleTimer();
+
     socket.on("join_adventure", (rawPayload) => {
       const payload = withValidation(socket, joinAdventurePayloadSchema, rawPayload);
       if (!payload) {
@@ -299,6 +351,9 @@ export const registerSocketHandlers = (
     });
 
     socket.on("disconnect", () => {
+      clearClientIdleTimer();
+      socket.offAny(onClientActivity);
+
       const link = manager.getParticipantForSocket(socket.id);
       if (!link) {
         return;

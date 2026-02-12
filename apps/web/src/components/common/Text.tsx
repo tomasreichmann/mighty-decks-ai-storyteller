@@ -42,7 +42,7 @@ const variantClassMap: Record<TextVariant, string> = {
   body: "font-ui text-base leading-relaxed",
   emphasised: "font-heading text-base font-bold leading-tight",
   quote: "font-ui text-lg italic leading-relaxed",
-  note: "font-ui text-xs uppercase tracking-[0.08em] leading-snug",
+  note: "font-ui text-xs leading-snug opacity-70",
 };
 
 const variantTagMap: Record<TextVariant, ElementType> = {

@@ -61,13 +61,22 @@ export const ActionComposer = ({
           disabled={!allowDrafting}
         />
         <div className="flex items-center gap-2 paper-shadow">
-          <Button
-            type="submit"
-            disabled={!canSend || draft.trim().length === 0}
-          >
-            Send
-          </Button>
-          <div className="flex-1">
+          {onEndSession ? (
+            <Button
+              variant="solid"
+              color="curse"
+              size="sm"
+              type="button"
+              onClick={() => {
+                if (window.confirm("End this session now?")) {
+                  onEndSession();
+                }
+              }}
+            >
+              End Session
+            </Button>
+          ) : null}
+          <div className="flex-1 flex flex-col items-end">
             <Text
               variant="note"
               color="steel-dark"
@@ -85,19 +94,12 @@ export const ActionComposer = ({
               </Text>
             ) : null}
           </div>
-          {onEndSession ? (
-            <Button
-              variant="danger"
-              type="button"
-              onClick={() => {
-                if (window.confirm("End this session now?")) {
-                  onEndSession();
-                }
-              }}
-            >
-              End Session
-            </Button>
-          ) : null}
+          <Button
+            type="submit"
+            disabled={!canSend || draft.trim().length === 0}
+          >
+            Send
+          </Button>
         </div>
       </form>
     </Section>

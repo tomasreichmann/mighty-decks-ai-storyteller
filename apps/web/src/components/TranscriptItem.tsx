@@ -1,6 +1,6 @@
 import type { TranscriptEntry } from "@mighty-decks/spec/adventureState";
 import { cn } from "../utils/cn";
-import { Message, type MessageVariant } from "./common/Message";
+import { Message, type MessageColor } from "./common/Message";
 import { type LabelVariant } from "./common/Label";
 
 interface TranscriptItemProps {
@@ -15,7 +15,7 @@ const entryStyles: Record<
   {
     className?: string;
     label: string;
-    messageVariant: MessageVariant;
+    messageColor: MessageColor;
     labelVariant: LabelVariant;
     textClassName: string;
     authorClassName: string;
@@ -24,7 +24,7 @@ const entryStyles: Record<
   system: {
     className: "self-start",
     label: "System",
-    messageVariant: "cloth",
+    messageColor: "cloth",
     labelVariant: "cloth",
     textClassName: "text-sm font-semibold text-kac-iron-light",
     authorClassName: "text-kac-cloth-dark",
@@ -32,7 +32,7 @@ const entryStyles: Record<
   storyteller: {
     className: "self-start",
     label: "Storyteller",
-    messageVariant: "gold",
+    messageColor: "gold",
     labelVariant: "gold",
     textClassName: "text-base italic text-kac-iron-dark",
     authorClassName: "text-kac-iron-dark",
@@ -40,7 +40,7 @@ const entryStyles: Record<
   player: {
     className: "self-end",
     label: "Player",
-    messageVariant: "fire",
+    messageColor: "fire",
     labelVariant: "fire",
     textClassName: "text-sm text-kac-iron-light",
     authorClassName: "text-kac-iron-dark",
@@ -160,7 +160,7 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
   const style = isAiDebug
     ? {
         label: "AI Debug",
-        messageVariant: "curse" as const,
+        messageColor: "curse" as const,
         labelVariant: "curse" as const,
         textClassName: "text-xs text-kac-iron-light",
         authorClassName: "text-kac-curse-dark",
@@ -176,7 +176,7 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
   return (
     <Message
       label={entry.kind === "player" && authorLabel ? authorLabel : style.label}
-      variant={style.messageVariant}
+      color={style.messageColor}
       labelVariant={style.labelVariant}
       className={cn("min-w-0 max-w-full", style.className)}
       contentClassName="min-w-0"

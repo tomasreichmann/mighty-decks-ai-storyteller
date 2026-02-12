@@ -106,7 +106,7 @@ export const TranscriptFeed = ({
           {pendingLabel ? (
             <Message
               label="Status"
-              variant="gold"
+              color="gold"
               className="min-w-0 max-w-full"
               contentClassName="text-sm italic text-kac-iron-light"
             >
