@@ -22,7 +22,7 @@ export const LandingPage = (): JSX.Element => {
         <CreateAdventureCTA onCreate={handleCreateAdventure} />
       </div>
 
-      <div className="flex flex-col min-w-0 gap-4 mt-4">
+      <div className="flex flex-col min-w-0 gap-4 mt-4 max-w-3xl mx-auto">
         <Text
           variant="h2"
           color="iron-light"
