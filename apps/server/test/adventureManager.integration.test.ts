@@ -35,6 +35,25 @@ interface StorytellerMockOverrides {
   generateSceneStart?: (input: SceneStartInput, runtimeConfig: RuntimeConfig) => Promise<SceneStartResult>;
   updateContinuity?: (transcript: AdventureState["transcript"], runtimeConfig: RuntimeConfig) => Promise<ContinuityResult>;
   narrateAction?: (input: ActionResponseInput, runtimeConfig: RuntimeConfig) => Promise<ActionResponseResult>;
+  decideOutcomeCheckForPlayerAction?: (
+    input: {
+      actorCharacterName: string;
+      actionText: string;
+      turnNumber: number;
+      scene: NonNullable<AdventureState["currentScene"]>;
+      transcriptTail: AdventureState["transcript"];
+      rollingSummary: string;
+    },
+    runtimeConfig: RuntimeConfig,
+  ) => Promise<{
+    shouldCheck: boolean;
+    reason: string;
+    triggers: {
+      threat: boolean;
+      uncertainty: boolean;
+      highReward: boolean;
+    };
+  }>;
   summarizeSession?: (transcript: AdventureState["transcript"], runtimeConfig: RuntimeConfig) => Promise<string>;
   generateSceneImage?: (scene: NonNullable<AdventureState["currentScene"]>, runtimeConfig: RuntimeConfig) => Promise<string | null>;
 }
@@ -125,6 +144,21 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
           pacingNotes: ["Escalate a consequence on the next turn."],
           continuityWarnings: [],
           aiRequests: [],
+        },
+      };
+    },
+    decideOutcomeCheckForPlayerAction: async (input) => {
+      if (overrides.decideOutcomeCheckForPlayerAction) {
+        return overrides.decideOutcomeCheckForPlayerAction(input, baseRuntimeConfig);
+      }
+
+      return {
+        shouldCheck: false,
+        reason: "No immediate dramatic risk or major upside warrants an Outcome card.",
+        triggers: {
+          threat: false,
+          uncertainty: false,
+          highReward: false,
         },
       };
     },
@@ -262,7 +296,14 @@ test("starts adventure pitch vote from connected ready players and forwards setu
 });
 
 test("resolves vote timeout with fake timers and transitions to play", async (t) => {
-  t.mock.timers.enable({ apis: ["setTimeout"] });
+  try {
+    t.mock.timers.enable(["setTimeout"]);
+  } catch {
+    const enableLegacy = t.mock.timers.enable as unknown as (
+      options: { apis: string[] },
+    ) => void;
+    enableLegacy({ apis: ["setTimeout"] });
+  }
   t.after(() => {
     t.mock.timers.reset();
   });
@@ -348,7 +389,7 @@ test("enforces queue lock during storyteller turn and records player transcript 
   assert.ok(state);
   assert.equal(state.phase, "play");
 
-  manager.submitAction({
+  const firstActionPromise = manager.submitAction({
     adventureId,
     playerId: "player-1",
     text: "I reroute power from the flood siren bank into the clock relay.",
@@ -360,9 +401,10 @@ test("enforces queue lock during storyteller turn and records player transcript 
     .find((entry) => entry.kind === "player");
   assert.ok(latestPlayerEntry);
   assert.equal(latestPlayerEntry.author, "Nyra Flint");
+  await flushMicrotasks();
   assert.equal(storyteller.calls.narrateActions[0]?.actorCharacterName, "Nyra Flint");
 
-  assert.throws(
+  await assert.rejects(
     () =>
       manager.submitAction({
         adventureId,
@@ -385,6 +427,7 @@ test("enforces queue lock during storyteller turn and records player transcript 
     },
   });
   await flushMicrotasks();
+  await firstActionPromise;
 
   state = manager.getAdventure(adventureId);
   assert.ok(

@@ -205,7 +205,7 @@ export const CharacterSetupForm = ({
         <DepressedInput
           multiline
           id="character-visual-description"
-          label="What do they look like?"
+          label="What does your character look like?"
           placeholder="A storm-chaser in patched leather with brass goggles."
           rows={3}
           value={visualDescription}

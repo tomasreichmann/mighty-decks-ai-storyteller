@@ -5,7 +5,7 @@ It focuses on **what each agent is responsible for**, how they interact, and the
 rules they must follow to ensure a fun, coherent experience.
 
 This is **not** a prompt dump.  
-Prompt templates and concrete schemas live in `/spec/agents.ts` and `/spec/prompts.ts`.
+Prompt templates and concrete AI schemas live in `apps/server/src/ai/storyteller/`.
 
 ---
 

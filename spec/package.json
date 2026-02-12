@@ -6,9 +6,7 @@
   "exports": {
     ".": "./index.ts",
     "./adventureState": "./adventureState.ts",
-    "./events": "./events.ts",
-    "./agents": "./agents.ts",
-    "./prompts": "./prompts.ts"
+    "./events": "./events.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
