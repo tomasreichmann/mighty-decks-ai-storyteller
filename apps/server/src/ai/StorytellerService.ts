@@ -21,7 +21,12 @@ import {
   decideOutcomeCheckByHeuristic,
   refineModelOutcomeDecision,
 } from "./storyteller/outcomeHeuristics";
-import { parseJson, parseLooseSceneStart } from "./storyteller/parsers";
+import {
+  parseJson,
+  parseLooseActionResponse,
+  parseLooseSceneReaction,
+  parseLooseSceneStart,
+} from "./storyteller/parsers";
 import {
   buildAdventurePitchesPrompt,
   buildContinuityPrompt,
@@ -29,6 +34,7 @@ import {
   buildOutcomeCheckPrompt,
   buildSceneReactionPrompt,
   buildSceneImagePromptRequest,
+  buildSessionForwardHookPrompt,
   buildSceneStartPrompt,
   buildSessionSummaryPrompt,
 } from "./storyteller/promptBuilders";
@@ -99,31 +105,15 @@ const normalizeCostControls = (
 const buildSceneReactionFallback = (
   input: SceneReactionInput,
 ): SceneReactionResult => {
-  const consequenceOptions = [
-    "The action works, but it leaves the group exposed and buys the opposition a dangerous opening.",
-    "Progress lands hard, and the cost is immediate: position, gear, or stamina is compromised.",
-    "The objective advances, but the method leaves traces that hostile eyes can exploit right now.",
-  ];
-  const npcBeatOptions = [
-    "A nearby rival seizes the opening and pushes their own plan into motion.",
-    "An opposing force reacts fast, changing the battlefield before the group can settle.",
-    "Someone with their own agenda makes a decisive move that demands an answer.",
-  ];
-  const variantIndex =
-    (input.turnNumber + input.actorCharacterName.length + input.actionText.length) %
-    consequenceOptions.length;
-
   return {
     goalStatus: "advanced",
-    failForward: true,
-    consequence: consequenceOptions[variantIndex],
-    npcBeat: npcBeatOptions[variantIndex],
+    failForward: false,
     tensionShift: "stable",
     tensionDelta: 0,
     sceneMode: input.scene.mode,
     tension: clampTension(input.scene.tension),
     reasoning: [
-      "Fallback reaction used because Scene Controller output was unavailable.",
+      "Fallback reaction used because Scene Controller output was unavailable or unparsable.",
     ],
     closeScene: false,
     debug: {
@@ -359,25 +349,32 @@ export class StorytellerService {
           debug: toDebugState(parsed),
         };
       }
+
+      const looseParsed = parseLooseActionResponse(modelText);
+      if (looseParsed?.text) {
+        return {
+          text: trimLines(looseParsed.text),
+          closeScene: looseParsed.closeScene ?? false,
+          sceneSummary: looseParsed.sceneSummary
+            ? trimLines(looseParsed.sceneSummary)
+            : undefined,
+          debug: toDebugState(looseParsed),
+        };
+      }
     }
 
-    const shouldClose = input.turnNumber >= 4;
     const responseText = input.responseMode === "expanded"
-      ? `You investigate with intent and get actionable detail: the immediate clue, the hidden pressure behind it, and one concrete next step. ${input.actionText} reveals who benefits and what changes if you act now.`
-      : `You commit to the move. ${input.actionText} shifts the scene decisively, revealing a new consequence and a clear next choice for the group.`;
+      ? `${input.actorCharacterName} presses for details and uncovers usable intelligence: one clear clue, one hidden pressure, and one immediate next move.`
+      : `${input.actorCharacterName} commits to the action, shifting the situation and forcing an urgent follow-up choice.`;
 
     return {
       text: responseText,
-      closeScene: shouldClose,
-      sceneSummary: shouldClose
-        ? "The group changed the situation and uncovered a new direction, forcing a decision about what to tackle next."
-        : undefined,
+      closeScene: false,
+      sceneSummary: undefined,
       debug: {
         tension: Math.min(85, 45 + input.turnNumber * 10),
         secrets: [],
-        pacingNotes: shouldClose
-          ? ["Trigger transition vote now that the scene question is resolved."]
-          : ["Escalate external pressure on the next response."],
+        pacingNotes: ["Escalate external pressure on the next response."],
         continuityWarnings: [],
         aiRequests: [],
         recentDecisions: [],
@@ -439,6 +436,48 @@ export class StorytellerService {
             secrets: [],
             pacingNotes: parsed.pacingNotes ?? [],
             continuityWarnings: parsed.continuityWarnings ?? [],
+            aiRequests: [],
+            recentDecisions: [],
+          },
+        };
+      }
+
+      const looseParsed = parseLooseSceneReaction(modelText);
+      if (looseParsed) {
+        const rawDelta = looseParsed.tensionDelta ?? 0;
+        const boundedTensionDelta = Math.max(-35, Math.min(35, rawDelta));
+        const targetTension = looseParsed.tension !== undefined
+          ? clampTension(looseParsed.tension)
+          : clampTension(input.scene.tension + boundedTensionDelta);
+
+        return {
+          npcBeat: looseParsed.npcBeat ? trimLines(looseParsed.npcBeat) : undefined,
+          consequence: looseParsed.consequence
+            ? trimLines(looseParsed.consequence)
+            : undefined,
+          reward: looseParsed.reward ? trimLines(looseParsed.reward) : undefined,
+          goalStatus: looseParsed.goalStatus ?? "advanced",
+          failForward: looseParsed.failForward ?? true,
+          tensionShift: looseParsed.tensionShift ?? "stable",
+          tensionDelta: boundedTensionDelta,
+          sceneMode: looseParsed.sceneMode,
+          closeScene: looseParsed.closeScene ?? false,
+          sceneSummary: looseParsed.sceneSummary
+            ? trimLines(looseParsed.sceneSummary)
+            : undefined,
+          tension: targetTension,
+          tensionReason: looseParsed.tensionReason
+            ? trimLines(looseParsed.tensionReason)
+            : undefined,
+          reasoning:
+            looseParsed.reasoning
+              ?.map((note) => trimLines(note))
+              .filter((note) => note.length > 0) ?? [],
+          debug: {
+            tension: targetTension,
+            secrets: [],
+            pacingNotes: looseParsed.pacingNotes ?? [],
+            continuityWarnings: looseParsed.continuityWarnings ?? [],
             aiRequests: [],
             recentDecisions: [],
           },
@@ -530,6 +569,50 @@ export class StorytellerService {
     }
 
     return "The session closed before a full arc formed, but the table established characters, shared stakes, and a direction worth revisiting.";
+  }
+
+  public async craftSessionForwardHook(
+    transcript: TranscriptEntry[],
+    sessionSummary: string,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<string> {
+    const prompt = buildSessionForwardHookPrompt(
+      this.promptTemplates,
+      transcript,
+      sessionSummary,
+    );
+
+    const modelText = await this.callTextModel({
+      agent: "scene_controller",
+      primaryModel: this.options.models.sceneController,
+      fallbackModel: this.options.models.sceneControllerFallback,
+      prompt,
+      runtimeConfig,
+      maxTokens: 120,
+      temperature: 0.65,
+      context,
+    });
+
+    const parsedModelText = modelText
+      ? trimLines(modelText).replace(/^["'`]+|["'`]+$/g, "")
+      : "";
+    if (parsedModelText.length > 0) {
+      return parsedModelText.slice(0, 280);
+    }
+
+    const normalizedSummary = trimLines(sessionSummary);
+    if (normalizedSummary.length > 0) {
+      const summarySentences = normalizedSummary
+        .split(/(?<=[.!?])\s+/)
+        .map((sentence) => sentence.trim())
+        .filter((sentence) => sentence.length > 0);
+      const fallbackSentence =
+        summarySentences[summarySentences.length - 1] ?? normalizedSummary;
+      return fallbackSentence.slice(0, 280);
+    }
+
+    return "Unfinished threads remain, and the next chapter will decide what those signs were warning about.";
   }
 
   public async generateSceneImage(

@@ -6,11 +6,20 @@ import { Message } from "./common/Message";
 
 interface NarratedSceneCardProps {
   scene: ScenePublic;
+  variant?: "intro" | "closing";
 }
 
 export const NarratedSceneCard = ({
   scene,
+  variant = "intro",
 }: NarratedSceneCardProps): JSX.Element => {
+  const isClosing = variant === "closing";
+  const imageUrl = isClosing ? scene.closingImageUrl : scene.imageUrl;
+  const imagePending = isClosing ? scene.closingImagePending : scene.imagePending;
+  const prose = isClosing
+    ? scene.closingProse ?? scene.summary ?? scene.introProse
+    : scene.introProse;
+
   return (
     <Section className="stack gap-2">
       <div className="relative aspect-video ">
@@ -30,10 +39,10 @@ export const NarratedSceneCard = ({
             <div className="halftone-vignette-wrapper !z-50 !mix-blend-multiply">
               <div className="halftone-vignette"></div>
             </div>
-            {scene.imageUrl ? (
+            {imageUrl ? (
               <img
-                src={scene.imageUrl}
-                alt="Scene visual"
+                src={imageUrl}
+                alt={isClosing ? "Scene closing visual" : "Scene visual"}
                 className="absolute h-full w-full object-cover"
               />
             ) : (
@@ -43,7 +52,7 @@ export const NarratedSceneCard = ({
                   color="steel-light"
                   className="text-sm"
                 >
-                  {scene.imagePending
+                  {imagePending
                     ? "Generating scene image..."
                     : "No image yet"}
                 </Text>
@@ -54,32 +63,36 @@ export const NarratedSceneCard = ({
       </div>
       <Panel className="-mt-4">
         <Text variant="quote" color="iron" className="text-base">
-          {scene.introProse}
+          {prose}
         </Text>
       </Panel>
-      {scene.mode === "high_tension" ? (
-        <Message label="Turn Order" color="curse">
+      {isClosing ? (
+        <Message label="Scene Closed" color="monster">
           <Text variant="body" color="iron-light" className="text-sm">
-            High tension.{" "}
-            {scene.activeActorName
-              ? `${scene.activeActorName} acts next.`
-              : "Next actor is being determined."}
+            {scene.summary ??
+              "The immediate scene objective is resolved. Vote to continue or end the session."}
           </Text>
         </Message>
       ) : (
-        <Message label="Scene Pace" color="cloth">
-          <Text variant="body" color="iron-light" className="text-sm">
-            Low tension. Players may act freely while the queue is clear.
-          </Text>
-        </Message>
+        <>
+          {scene.mode === "high_tension" ? (
+            <Message label="Turn Order" color="curse">
+              <Text variant="body" color="iron-light" className="text-sm">
+                High tension.{" "}
+                {scene.activeActorName
+                  ? `${scene.activeActorName} acts next.`
+                  : "Next actor is being determined."}
+              </Text>
+            </Message>
+          ) : (
+            <Message label="Scene Pace" color="cloth">
+              <Text variant="body" color="iron-light" className="text-sm">
+                Low tension. Players may act freely while the queue is clear.
+              </Text>
+            </Message>
+          )}
+        </>
       )}
-      {scene.summary ? (
-        <Message label="Scene Summary" color="monster">
-          <Text variant="body" color="iron-light" className="text-sm">
-            {scene.summary}
-          </Text>
-        </Message>
-      ) : null}
     </Section>
   );
 };

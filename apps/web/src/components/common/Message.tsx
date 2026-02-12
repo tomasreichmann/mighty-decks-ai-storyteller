@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { Label, type LabelVariant } from "./Label";
 import type { ButtonColors } from "./Button";
@@ -145,10 +145,11 @@ const resolveMessageTone = (color: MessageColor): MessageTone => {
 };
 
 interface MessageProps extends PropsWithChildren {
-  label?: string;
+  label?: ReactNode;
   color?: MessageColor;
   labelVariant?: LabelVariant;
   rotateLabel?: boolean;
+  onLabelClick?: () => void;
   className?: string;
   contentClassName?: string;
   labelClassName?: string;
@@ -159,6 +160,7 @@ export const Message = ({
   color = "bone",
   labelVariant,
   rotateLabel = true,
+  onLabelClick,
   className = "",
   contentClassName = "",
   labelClassName = "",
@@ -177,18 +179,37 @@ export const Message = ({
       )}
     >
       <div className="stack min-w-0 items-baseline gap-2 relative pt-4">
-        {label && (
-          <Label
-            variant={labelVariant ?? tone.defaultLabelVariant}
-            rotate={rotateLabel}
-            className={cn(
-              "relative -mt-8 -left-3 whitespace-nowrap",
-              labelClassName,
-            )}
-          >
-            {label}
-          </Label>
-        )}
+        {label ? (
+          onLabelClick ? (
+            <button
+              type="button"
+              onClick={onLabelClick}
+              className={cn(
+                "relative -mt-8 -left-3 whitespace-nowrap bg-transparent p-0 text-left",
+                labelClassName,
+              )}
+            >
+              <Label
+                variant={labelVariant ?? tone.defaultLabelVariant}
+                rotate={rotateLabel}
+                className="cursor-pointer"
+              >
+                {label}
+              </Label>
+            </button>
+          ) : (
+            <Label
+              variant={labelVariant ?? tone.defaultLabelVariant}
+              rotate={rotateLabel}
+              className={cn(
+                "relative -mt-8 -left-3 whitespace-nowrap",
+                labelClassName,
+              )}
+            >
+              {label}
+            </Label>
+          )
+        ) : null}
         <div
           className={cn(
             "min-w-0 w-full flex-1 whitespace-pre-wrap text-sm leading-relaxed",

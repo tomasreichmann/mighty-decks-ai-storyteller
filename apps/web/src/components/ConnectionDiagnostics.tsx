@@ -13,6 +13,7 @@ interface ActiveAdventureSummary {
 interface ConnectionDiagnosticsProps {
   connected: boolean;
   connectionError: string | null;
+  disconnectedDueToInactivity: boolean;
   serverUrl: string;
   serverUrlWarning: string | null;
   onJoinAdventure?: (adventureId: string) => void;
@@ -22,19 +23,23 @@ interface ConnectionDiagnosticsProps {
 export const ConnectionDiagnostics = ({
   connected,
   connectionError,
+  disconnectedDueToInactivity,
   serverUrl,
   serverUrlWarning,
   onJoinAdventure,
   onReconnect,
 }: ConnectionDiagnosticsProps): JSX.Element | null => {
-  const hasIssues =
-    !connected || Boolean(connectionError) || Boolean(serverUrlWarning);
-  if (!hasIssues) {
-    return null;
-  }
   const isAdventureCapError =
     connectionError?.toLowerCase().includes("active adventure cap reached") ??
     false;
+  const isInactivityDisconnectError =
+    connectionError?.toLowerCase().includes("disconnected") &&
+    connectionError.toLowerCase().includes("inactivity");
+  const showInactivityDisconnectCard =
+    !connected &&
+    Boolean(disconnectedDueToInactivity || isInactivityDisconnectError);
+  const hasIssues =
+    !connected || Boolean(connectionError) || Boolean(serverUrlWarning);
   const [activeAdventures, setActiveAdventures] = useState<
     ActiveAdventureSummary[]
   >([]);
@@ -149,6 +154,31 @@ export const ConnectionDiagnostics = ({
       cancelled = true;
     };
   }, [isAdventureCapError, refreshKey, serverOrigin]);
+
+  if (!hasIssues) {
+    return null;
+  }
+
+  if (showInactivityDisconnectCard) {
+    return (
+      <Message label="Disconnected" color="curse" className="stack gap-2">
+        <Text variant="emphasised" color="curse" className="mt-2">
+          You have been disconnected due to inactivity.
+        </Text>
+        {onReconnect ? (
+          <Button
+            variant="solid"
+            color="cloth"
+            size="sm"
+            onClick={onReconnect}
+            className="self-start"
+          >
+            Reconnect
+          </Button>
+        ) : null}
+      </Message>
+    );
+  }
 
   return (
     <Message

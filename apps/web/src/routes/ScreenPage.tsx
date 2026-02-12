@@ -14,6 +14,7 @@ import { useAdventureSession } from "../hooks/useAdventureSession";
 import { Message } from "../components/common/Message";
 import { Text } from "../components/common/Text";
 import { Button } from "../components/common/Button";
+import { createAdventureId } from "../lib/ids";
 
 type TranscriptVerbosity = "full" | "table" | "story";
 
@@ -35,10 +36,12 @@ export const ScreenPage = (): JSX.Element => {
     adventure,
     connected,
     connectionError,
+    disconnectedDueToInactivity,
     serverUrl,
     serverUrlWarning,
     thinking,
     updateRuntimeConfig,
+    continueAdventure,
     reconnect,
   } = useAdventureSession({
     adventureId,
@@ -92,6 +95,7 @@ export const ScreenPage = (): JSX.Element => {
       <ConnectionDiagnostics
         connected={connected}
         connectionError={connectionError}
+        disconnectedDueToInactivity={disconnectedDueToInactivity}
         serverUrl={serverUrl}
         serverUrlWarning={serverUrlWarning}
         onReconnect={reconnect}
@@ -217,6 +221,11 @@ export const ScreenPage = (): JSX.Element => {
           />
           <SessionSummaryCard
             summary={adventure?.sessionSummary ?? "Session ended."}
+            forwardHook={adventure?.sessionForwardHook}
+            onContinueAdventure={continueAdventure}
+            onStartNewAdventure={() => {
+              navigate(`/adventure/${createAdventureId()}/screen`);
+            }}
           />
         </>
       ) : null}

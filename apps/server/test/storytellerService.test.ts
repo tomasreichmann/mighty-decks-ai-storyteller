@@ -82,6 +82,7 @@ const createOpenRouterStub = (
 const baseScene: ScenePublic = {
   sceneId: "scene-test-1",
   imagePending: true,
+  closingImagePending: false,
   mode: "low_tension",
   tension: 48,
   introProse:
@@ -480,4 +481,36 @@ test("parses outcome decision intent and response mode from AI output", async ()
   assert.equal(decision.intent, "information_request");
   assert.equal(decision.responseMode, "expanded");
   assert.equal(decision.shouldCheck, false);
+});
+
+test("crafts session forward hook via AI output", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      "As the district calms, a hidden signal from beneath the vanished tavern begins pulsing again, drawing the crew toward a deeper breach.",
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const hook = await service.craftSessionForwardHook(
+    [
+      {
+        entryId: "t-1",
+        kind: "storyteller",
+        author: "Storyteller",
+        text: "The crew secures the chamber, but a buried beacon still hums.",
+        createdAtIso: new Date().toISOString(),
+      },
+    ],
+    "The team shut down the immediate threat and restored control of the chamber.",
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(
+    hook,
+    "As the district calms, a hidden signal from beneath the vanished tavern begins pulsing again, drawing the crew toward a deeper breach.",
+  );
+  assert.equal(openRouter.calls.completeText.length, 1);
 });

@@ -210,6 +210,22 @@ export const buildSessionSummaryPrompt = (
     compactTranscript(transcript),
   ]);
 
+export const buildSessionForwardHookPrompt = (
+  promptTemplates: PromptTemplateMap,
+  transcript: TranscriptEntry[],
+  sessionSummary: string,
+): string =>
+  composePrompt(promptTemplates, "scene_controller", [
+    "Write a forward-looking hook for what may happen next in this adventure.",
+    "Return plain text only.",
+    "Output exactly one sentence between 12 and 30 words.",
+    "No markdown, no bullet points, no labels, no quotes.",
+    "Focus on unresolved danger, mystery, or opportunity.",
+    `Session summary: ${sessionSummary}`,
+    "Recent transcript:",
+    compactTranscript(transcript.slice(-14)) || "none",
+  ]);
+
 export const buildSceneImagePromptRequest = (
   promptTemplates: PromptTemplateMap,
   scene: ScenePublic,

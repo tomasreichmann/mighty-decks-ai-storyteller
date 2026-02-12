@@ -81,56 +81,56 @@ const resolveSolidColorClasses = (color: ButtonColors): string => {
   switch (color) {
     case "cloth":
     case "cloth-light":
-      return "from-kac-cloth-light to-kac-cloth-dark text-kac-steel-light disabled:bg-kac-cloth-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-cloth-light to-kac-cloth-dark text-kac-steel-light disabled:bg-kac-cloth-light";
     case "cloth-dark":
-      return "from-kac-cloth to-kac-cloth-dark text-kac-steel-light disabled:bg-kac-cloth";
+      return "[background-color:black] bg-gradient-to-b from-kac-cloth to-kac-cloth-dark text-kac-steel-light disabled:bg-kac-cloth";
     case "bone":
     case "bone-light":
-      return "from-kac-bone-light to-kac-bone text-kac-iron-dark disabled:bg-kac-bone-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-bone-light to-kac-bone text-kac-iron-dark disabled:bg-kac-bone-light";
     case "bone-dark":
     case "bone-darker":
-      return "from-kac-bone to-kac-bone-darker text-kac-iron-dark disabled:bg-kac-bone";
+      return "[background-color:black] bg-gradient-to-b from-kac-bone to-kac-bone-darker text-kac-iron-dark disabled:bg-kac-bone";
     case "curse":
     case "curse-light":
     case "curse-lighter":
     case "curse-lightest":
     case "curse-dark":
-      return "from-kac-curse-light to-kac-curse-dark text-kac-curse-lightest disabled:bg-kac-curse-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-curse-light to-kac-curse-dark text-kac-curse-lightest disabled:bg-kac-curse-light";
     case "blood":
     case "blood-light":
     case "blood-lighter":
     case "blood-lightest":
     case "blood-dark":
-      return "from-kac-blood-light to-kac-blood-dark text-kac-curse-lightest disabled:bg-kac-blood-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-blood-light to-kac-blood-dark text-kac-curse-lightest disabled:bg-kac-blood-light";
     case "monster":
     case "monster-light":
     case "monster-lightest":
     case "monster-dark":
-      return "from-kac-monster-light to-kac-monster-dark text-kac-iron-dark disabled:bg-kac-monster-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-monster-light to-kac-monster-dark text-kac-iron-dark disabled:bg-kac-monster-light";
     case "fire":
     case "fire-light":
     case "fire-lightest":
     case "fire-dark":
-      return "from-kac-fire-light to-kac-fire-dark text-kac-bone-light disabled:bg-kac-fire-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-fire-light to-kac-fire-dark text-kac-bone-light disabled:bg-kac-fire-light";
     case "iron":
     case "iron-light":
     case "iron-dark":
-      return "from-kac-iron-light to-kac-iron-dark text-kac-steel-light disabled:bg-kac-iron-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-iron-light to-kac-iron-dark text-kac-steel-light disabled:bg-kac-iron-light";
     case "steel":
     case "steel-light":
     case "steel-dark":
-      return "from-kac-steel-light to-kac-steel-dark text-kac-iron-dark disabled:bg-kac-steel-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-steel-light to-kac-steel-dark text-kac-iron-dark disabled:bg-kac-steel-light";
     case "gold":
     case "gold-light":
     case "gold-dark":
     case "gold-darker":
-      return "from-kac-gold to-kac-gold-dark text-kac-iron disabled:bg-kac-gold";
+      return "[background-color:black] bg-gradient-to-b from-kac-gold to-kac-gold-dark text-kac-iron disabled:bg-kac-gold";
     case "skin":
     case "skin-light":
     case "skin-dark":
-      return "from-kac-skin-light to-kac-skin-dark text-kac-iron-dark disabled:bg-kac-skin-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-skin-light to-kac-skin-dark text-kac-iron-dark disabled:bg-kac-skin-light";
     default:
-      return "from-kac-gold to-kac-gold-dark text-kac-iron disabled:bg-kac-gold";
+      return "[background-color:black] bg-gradient-to-b from-kac-gold to-kac-gold-dark text-kac-iron disabled:bg-kac-gold";
   }
 };
 

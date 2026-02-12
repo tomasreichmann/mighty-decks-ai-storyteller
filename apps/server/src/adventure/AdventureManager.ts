@@ -18,6 +18,7 @@ import {
 } from "@mighty-decks/spec/adventureState";
 import {
   castVotePayloadSchema,
+  continueAdventurePayloadSchema,
   endSessionPayloadSchema,
   joinAdventurePayloadSchema,
   JoinAdventurePayload,
@@ -51,6 +52,12 @@ interface ActionQueueItem {
   intent: "information_request" | "direct_action";
   responseMode: "concise" | "expanded";
   outcomeCheckTriggered: boolean;
+  sceneClosureAction?: boolean;
+}
+
+interface PendingSceneClosure {
+  summary: string;
+  requestedAtIso: string;
 }
 
 interface AdventureRuntimeState {
@@ -58,6 +65,7 @@ interface AdventureRuntimeState {
   votesByPlayerId: Map<string, string>;
   actionQueue: ActionQueueItem[];
   pendingOutcomeAction: ActionQueueItem | null;
+  pendingSceneClosure: PendingSceneClosure | null;
   processingAction: boolean;
   processingOutcomeDecision: boolean;
   pitchVoteInProgress: boolean;
@@ -539,6 +547,24 @@ export class AdventureManager {
     });
     this.notifyAdventureUpdated(adventure.adventureId);
 
+    if (runtime.pendingSceneClosure) {
+      runtime.actionQueue.push({
+        playerId: parsed.playerId,
+        text: actionText,
+        intent: "direct_action",
+        responseMode: "concise",
+        outcomeCheckTriggered: false,
+        sceneClosureAction: true,
+      });
+      this.notifyAdventureUpdated(adventure.adventureId);
+
+      if (!runtime.processingAction) {
+        void this.processActionQueue(adventure.adventureId);
+      }
+
+      return adventure;
+    }
+
     runtime.processingOutcomeDecision = true;
     this.hooks.onStorytellerThinking?.(adventure.adventureId, {
       active: true,
@@ -678,9 +704,9 @@ export class AdventureManager {
     target.playedCard = selectedCard;
     target.playedAtIso = new Date().toISOString();
     this.appendTranscriptEntry(adventure, {
-      kind: "system",
-      author: "System",
-      text: `${target.displayName} played ${formatOutcomeCard(selectedCard)}.`,
+      kind: "player",
+      author: target.displayName,
+      text: `played Outcome card: ${formatOutcomeCard(selectedCard)}.`,
     });
 
     const everyonePlayed = activeOutcomeCheck.targets.every((entry) =>
@@ -732,6 +758,35 @@ export class AdventureManager {
       adventure.adventureId,
       "Session ended by player request. The active scene was not closed.",
     );
+    return adventure;
+  }
+
+  public async continueAdventure(payload: unknown): Promise<AdventureState> {
+    const parsed = continueAdventurePayloadSchema.parse(payload);
+    const adventure = this.requireAdventure(parsed.adventureId);
+    const requester = this.getRosterEntry(adventure, parsed.playerId);
+    if (!requester.connected) {
+      throw new Error("only connected participants can continue adventure");
+    }
+    if (!adventure.closed || adventure.phase !== "ending") {
+      throw new Error("adventure is not in ending phase");
+    }
+
+    const continuationSummary =
+      adventure.currentScene?.summary ?? adventure.sessionSummary;
+
+    adventure.closed = false;
+    adventure.sessionSummary = undefined;
+    adventure.sessionForwardHook = undefined;
+    adventure.activeVote = undefined;
+    this.setPhase(adventure, "play");
+    this.logDiagnostic(adventure, {
+      type: "session_started",
+      runtimeConfig: adventure.runtimeConfig,
+    });
+    this.notifyAdventureUpdated(adventure.adventureId);
+
+    await this.startScene(adventure.adventureId, continuationSummary);
     return adventure;
   }
 
@@ -800,6 +855,7 @@ export class AdventureManager {
       votesByPlayerId: new Map<string, string>(),
       actionQueue: [],
       pendingOutcomeAction: null,
+      pendingSceneClosure: null,
       processingAction: false,
       processingOutcomeDecision: false,
       pitchVoteInProgress: false,
@@ -849,12 +905,8 @@ export class AdventureManager {
     if (modelConsequence && modelConsequence.trim().length > 0) {
       return this.sanitizeNarrationBeat(modelConsequence);
     }
-
-    if (!failForward) {
-      return undefined;
-    }
-
-    return "Progress comes at a price: the push lands, but the group is left exposed to the next threat.";
+    void failForward;
+    return undefined;
   }
 
   private sanitizeNarrationBeat(value: string | undefined): string | undefined {
@@ -872,15 +924,11 @@ export class AdventureManager {
 
   private buildPlayerVisibleStorytellerText(
     baseText: string,
-    consequence: string | undefined,
     reward: string | undefined,
-    npcBeat: string | undefined,
   ): string {
     const sections = [
       baseText.trim(),
-      this.sanitizeNarrationBeat(consequence),
-      /* this.sanitizeNarrationBeat(reward),
-      this.sanitizeNarrationBeat(npcBeat), */
+      this.sanitizeNarrationBeat(reward),
     ].filter((section): section is string =>
       Boolean(section && section.length > 0),
     );
@@ -1359,6 +1407,7 @@ export class AdventureManager {
     runtime.sceneCounter += 1;
     runtime.sceneTurnCounter = 0;
     runtime.pendingOutcomeAction = null;
+    runtime.pendingSceneClosure = null;
     runtime.processingOutcomeDecision = false;
     adventure.activeOutcomeCheck = undefined;
 
@@ -1461,7 +1510,7 @@ export class AdventureManager {
       await this.refreshContinuity(adventureId);
       this.notifyAdventureUpdated(adventureId);
 
-      void this.generateSceneImage(adventureId, sceneId);
+      void this.generateSceneStartImage(adventureId, sceneId);
     } finally {
       this.hooks.onStorytellerThinking?.(adventureId, {
         active: false,
@@ -1470,7 +1519,7 @@ export class AdventureManager {
     }
   }
 
-  private async generateSceneImage(
+  private async generateSceneStartImage(
     adventureId: string,
     sceneId: string,
   ): Promise<void> {
@@ -1503,6 +1552,49 @@ export class AdventureManager {
     this.notifyAdventureUpdated(adventureId);
   }
 
+  private async generateSceneClosingImage(
+    adventureId: string,
+    sceneId: string,
+  ): Promise<void> {
+    const adventure = this.adventures.get(adventureId);
+    if (
+      !adventure?.currentScene ||
+      adventure.currentScene.sceneId !== sceneId ||
+      !adventure.currentScene.closingProse
+    ) {
+      return;
+    }
+
+    const promptScene = scenePublicSchema.parse({
+      ...adventure.currentScene,
+      introProse: adventure.currentScene.closingProse,
+      imagePending: false,
+      imageUrl: undefined,
+      closingImagePending: false,
+      closingImageUrl: undefined,
+    });
+
+    const imageUrl = await this.options.storyteller.generateSceneImage(
+      promptScene,
+      adventure.runtimeConfig,
+      { adventureId },
+    );
+
+    const refreshedAdventure = this.adventures.get(adventureId);
+    if (
+      !refreshedAdventure?.currentScene ||
+      refreshedAdventure.currentScene.sceneId !== sceneId
+    ) {
+      return;
+    }
+
+    refreshedAdventure.currentScene.closingImagePending = false;
+    if (imageUrl) {
+      refreshedAdventure.currentScene.closingImageUrl = imageUrl;
+    }
+    this.notifyAdventureUpdated(adventureId);
+  }
+
   private async processActionQueue(adventureId: string): Promise<void> {
     const runtime = this.ensureRuntime(adventureId);
     if (runtime.processingAction) {
@@ -1528,6 +1620,7 @@ export class AdventureManager {
         if (!actionItem) {
           break;
         }
+        const pendingSceneClosure = runtime.pendingSceneClosure;
 
         this.hooks.onStorytellerThinking?.(adventureId, {
           active: true,
@@ -1585,8 +1678,9 @@ export class AdventureManager {
           }
           try {
             if (
+              !actionItem.sceneClosureAction &&
               typeof this.options.storyteller.resolveSceneReaction ===
-              "function"
+                "function"
             ) {
               sceneReaction =
                 await this.options.storyteller.resolveSceneReaction(
@@ -1618,7 +1712,7 @@ export class AdventureManager {
 
           const enforcedConsequence = this.enforceFailForwardConsequence(
             sceneReaction?.consequence,
-            sceneReaction?.failForward ?? true,
+            sceneReaction?.failForward ?? false,
           );
           const sanitizedNpcBeat = this.sanitizeNarrationBeat(
             sceneReaction?.npcBeat,
@@ -1631,10 +1725,36 @@ export class AdventureManager {
             Boolean(sanitizedReward);
           const storytellerText = this.buildPlayerVisibleStorytellerText(
             actionResponse.text,
-            enforcedConsequence,
             rewardGranted ? sanitizedReward : undefined,
-            sanitizedNpcBeat,
           );
+
+          if (actionItem.sceneClosureAction) {
+            this.appendTranscriptEntry(adventure, {
+              kind: "storyteller",
+              author: "Storyteller",
+              text: storytellerText,
+            });
+            this.hooks.onStorytellerResponse?.(adventureId, {
+              text: storytellerText,
+            });
+
+            const sceneSummary =
+              actionResponse.sceneSummary ??
+              pendingSceneClosure?.summary ??
+              "The group resolves the immediate pressure and must choose whether to continue or end.";
+            runtime.pendingSceneClosure = null;
+            adventure.currentScene.closingProse = storytellerText;
+
+            await this.refreshContinuity(adventureId);
+            this.notifyAdventureUpdated(adventureId);
+            await this.beginSceneTransitionVote(
+              adventureId,
+              sceneSummary,
+              storytellerText,
+            );
+            runtime.actionQueue = [];
+            break;
+          }
 
           const previousMode = adventure.currentScene.mode;
           const previousTension = adventure.currentScene.tension;
@@ -1656,6 +1776,8 @@ export class AdventureManager {
             actionItem.playerId,
             nextMode,
           );
+          const shouldCloseScene =
+            actionResponse.closeScene || sceneReaction?.closeScene === true;
 
           this.appendTranscriptEntry(adventure, {
             kind: "storyteller",
@@ -1666,7 +1788,7 @@ export class AdventureManager {
             text: storytellerText,
           });
 
-          if (nextMode !== previousMode) {
+          if (!shouldCloseScene && nextMode !== previousMode) {
             this.appendTranscriptEntry(adventure, {
               kind: "system",
               author: "System",
@@ -1677,6 +1799,7 @@ export class AdventureManager {
             });
           }
           if (
+            !shouldCloseScene &&
             nextMode === "high_tension" &&
             adventure.currentScene.activeActorName
           ) {
@@ -1753,14 +1876,28 @@ export class AdventureManager {
           await this.refreshContinuity(adventureId);
           this.notifyAdventureUpdated(adventureId);
 
-          const shouldCloseScene =
-            actionResponse.closeScene || sceneReaction?.closeScene === true;
           if (shouldCloseScene) {
             const sceneSummary =
               sceneReaction?.sceneSummary ??
               actionResponse.sceneSummary ??
               "The group resolves the immediate pressure and must choose whether to continue or end.";
-            await this.beginSceneTransitionVote(adventureId, sceneSummary);
+            runtime.pendingSceneClosure = {
+              summary: sceneSummary,
+              requestedAtIso: new Date().toISOString(),
+            };
+            this.appendTranscriptEntry(adventure, {
+              kind: "storyteller",
+              author: "Storyteller",
+              text:
+                `${actorCharacterName}, give one final finishing move that secures the objective. ` +
+                "Describe how the scene closes, then we will transition.",
+            });
+            this.hooks.onStorytellerResponse?.(adventureId, {
+              text:
+                `${actorCharacterName}, give one final finishing move that secures the objective. ` +
+                "Describe how the scene closes, then we will transition.",
+            });
+            this.notifyAdventureUpdated(adventureId);
             runtime.actionQueue = [];
             break;
           }
@@ -1829,6 +1966,7 @@ export class AdventureManager {
   private async beginSceneTransitionVote(
     adventureId: string,
     sceneSummary: string,
+    closingProse?: string,
   ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
     if (
@@ -1841,21 +1979,22 @@ export class AdventureManager {
     }
 
     const sceneId = adventure.currentScene.sceneId;
+    const runtime = this.runtimeByAdventure.get(adventureId);
+    if (runtime) {
+      runtime.pendingSceneClosure = null;
+    }
     adventure.currentScene.summary = sceneSummary;
-    adventure.currentScene.imagePending = true;
-    delete adventure.currentScene.imageUrl;
-    this.appendTranscriptEntry(adventure, {
-      kind: "storyteller",
-      author: "Storyteller",
-      text: `Scene Summary: ${sceneSummary}`,
-    });
+    adventure.currentScene.closingProse =
+      closingProse?.trim().length ? closingProse.trim() : sceneSummary;
+    adventure.currentScene.closingImagePending = true;
+    delete adventure.currentScene.closingImageUrl;
     this.appendTranscriptEntry(adventure, {
       kind: "system",
       author: "System",
       text: "Scene ended. Choose whether to continue this session with a new scene or end the session now.",
     });
 
-    void this.generateSceneImage(adventureId, sceneId);
+    void this.generateSceneClosingImage(adventureId, sceneId);
 
     this.startVote(
       adventure,
@@ -1894,6 +2033,7 @@ export class AdventureManager {
     const runtime = this.ensureRuntime(adventureId);
     runtime.actionQueue = [];
     runtime.pendingOutcomeAction = null;
+    runtime.pendingSceneClosure = null;
     runtime.processingOutcomeDecision = false;
     adventure.activeOutcomeCheck = undefined;
 
@@ -1910,10 +2050,17 @@ export class AdventureManager {
       adventure.runtimeConfig,
       { adventureId },
     );
+    const forwardHook = await this.options.storyteller.craftSessionForwardHook(
+      this.getNarrativeTranscript(adventure.transcript),
+      summary,
+      adventure.runtimeConfig,
+      { adventureId },
+    );
 
     adventure.activeVote = undefined;
     adventure.closed = true;
     adventure.sessionSummary = summary;
+    adventure.sessionForwardHook = forwardHook;
     this.setPhase(adventure, "ending");
     this.logDiagnostic(adventure, {
       type: "session_closed",

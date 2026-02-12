@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PlayerSetup } from "@mighty-decks/spec/adventureState";
 import { ActionComposer } from "../components/ActionComposer";
@@ -11,8 +11,10 @@ import { SessionSummaryCard } from "../components/SessionSummaryCard";
 import { TranscriptFeed } from "../components/TranscriptFeed";
 import { useAdventureSession } from "../hooks/useAdventureSession";
 import { cn } from "../utils/cn";
+import { Label } from "../components/common/Label";
 import { Message } from "../components/common/Message";
 import { Text } from "../components/common/Text";
+import { createAdventureId } from "../lib/ids";
 
 const formatSetupForDebug = (setup: PlayerSetup | null | undefined): string => {
   if (!setup) {
@@ -41,6 +43,7 @@ export const PlayerPage = (): JSX.Element => {
     participant,
     connected,
     connectionError,
+    disconnectedDueToInactivity,
     serverUrl,
     serverUrlWarning,
     thinking,
@@ -52,6 +55,7 @@ export const PlayerPage = (): JSX.Element => {
     submitAction,
     playOutcomeCard,
     endSession,
+    continueAdventure,
     reconnect,
   } = useAdventureSession({
     adventureId,
@@ -131,6 +135,7 @@ export const PlayerPage = (): JSX.Element => {
   );
   const connectionStatus = connected ? "connected" : "reconnecting";
   const showLobbySetup = phase === "lobby" && Boolean(adventure);
+  const [showPlayerDebugDetails, setShowPlayerDebugDetails] = useState(false);
   const playerDebugLines = useMemo(() => {
     if (!adventure?.debugMode) {
       return [];
@@ -202,6 +207,7 @@ export const PlayerPage = (): JSX.Element => {
       <ConnectionDiagnostics
         connected={connected}
         connectionError={connectionError}
+        disconnectedDueToInactivity={disconnectedDueToInactivity}
         serverUrl={serverUrl}
         serverUrlWarning={serverUrlWarning}
         onReconnect={reconnect}
@@ -211,16 +217,27 @@ export const PlayerPage = (): JSX.Element => {
       />
 
       {adventure?.debugMode ? (
-        <Message
-          label="Player Debug"
-          color="cloth"
-          contentClassName="font-mono text-[11px] leading-4 max-h-[200px] overflow-y-auto"
-        >
-          {playerDebugLines.join("\n")}
-          {setupDebug.trace.length > 0
-            ? `\n\nsetup_trace:\n${setupDebug.trace.slice(-12).join("\n")}`
-            : ""}
-        </Message>
+        showPlayerDebugDetails ? (
+          <Message
+            label="Player Debug"
+            color="curse"
+            onLabelClick={() => setShowPlayerDebugDetails(false)}
+            contentClassName="font-mono text-[11px] leading-4 max-h-[200px] overflow-y-auto"
+          >
+            {playerDebugLines.join("\n")}
+            {setupDebug.trace.length > 0
+              ? `\n\nsetup_trace:\n${setupDebug.trace.slice(-12).join("\n")}`
+              : ""}
+          </Message>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowPlayerDebugDetails(true)}
+            className="self-start bg-transparent p-0 text-left"
+          >
+            <Label variant="curse">Player Debug</Label>
+          </button>
+        )
       ) : null}
 
       {showLobbySetup ? (
@@ -283,8 +300,9 @@ export const PlayerPage = (): JSX.Element => {
               disabled={!canVote}
             />
           ) : null}
-          <div className="flex-1 basis-auto shrink-0">
+          <div className="relative flex-1 basis-[50vh] shrink-0 min-h-[50vh] flex flex-col">
             <TranscriptFeed
+              className="h-full"
               entries={adventure?.transcript ?? []}
               scene={adventure?.currentScene}
               scrollable={true}
@@ -314,6 +332,7 @@ export const PlayerPage = (): JSX.Element => {
               )}
             >
               <ActionComposer
+                connected={connected}
                 canSend={canSendAction && !waitingForHighTensionTurn}
                 allowDrafting={hasCharacterSetup}
                 onSend={submitAction}
@@ -340,6 +359,11 @@ export const PlayerPage = (): JSX.Element => {
           />
           <SessionSummaryCard
             summary={adventure?.sessionSummary ?? "Session ended."}
+            forwardHook={adventure?.sessionForwardHook}
+            onContinueAdventure={continueAdventure}
+            onStartNewAdventure={() => {
+              navigate(`/adventure/${createAdventureId()}/player`);
+            }}
           />
         </>
       ) : null}

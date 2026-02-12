@@ -67,6 +67,14 @@ export const endSessionPayloadSchema = z.object({
 });
 export type EndSessionPayload = z.infer<typeof endSessionPayloadSchema>;
 
+export const continueAdventurePayloadSchema = z.object({
+  adventureId: z.string().min(1),
+  playerId: z.string().min(1),
+});
+export type ContinueAdventurePayload = z.infer<
+  typeof continueAdventurePayloadSchema
+>;
+
 export const updateRuntimeConfigPayloadSchema = z.object({
   adventureId: z.string().min(1),
   playerId: z.string().min(1),
@@ -98,6 +106,7 @@ export type ClientToServerEventName =
   | "submit_action"
   | "play_outcome_card"
   | "end_session"
+  | "continue_adventure"
   | "update_runtime_config";
 
 export type ServerToClientEventName =
@@ -121,6 +130,7 @@ export interface ClientToServerEvents {
   submit_action: (payload: SubmitActionPayload) => void;
   play_outcome_card: (payload: PlayOutcomeCardPayload) => void;
   end_session: (payload: EndSessionPayload) => void;
+  continue_adventure: (payload: ContinueAdventurePayload) => void;
   update_runtime_config: (payload: UpdateRuntimeConfigPayload) => void;
 }
 

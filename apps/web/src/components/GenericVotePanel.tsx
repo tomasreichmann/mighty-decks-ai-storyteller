@@ -102,7 +102,7 @@ export const GenericVotePanel = ({
           );
         })}
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-4">
         <Button
           onClick={() => {
             if (localSelection) {
@@ -111,7 +111,7 @@ export const GenericVotePanel = ({
           }}
           disabled={!localSelection || disabled}
         >
-          Cast Vote
+          Cast Vote ({Math.min(secondsRemaining, timeoutDisplay)}s)
         </Button>
         <Text
           variant="note"

@@ -61,6 +61,11 @@ interface StorytellerMockOverrides {
     };
   }>;
   summarizeSession?: (transcript: AdventureState["transcript"], runtimeConfig: RuntimeConfig) => Promise<string>;
+  craftSessionForwardHook?: (
+    transcript: AdventureState["transcript"],
+    summary: string,
+    runtimeConfig: RuntimeConfig,
+  ) => Promise<string>;
   generateSceneImage?: (scene: NonNullable<AdventureState["currentScene"]>, runtimeConfig: RuntimeConfig) => Promise<string | null>;
 }
 
@@ -198,6 +203,20 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
       }
 
       return "The party contained the immediate crisis and left the district with one unresolved warning.";
+    },
+    craftSessionForwardHook: async (
+      transcript: AdventureState["transcript"],
+      summary: string,
+    ) => {
+      if (overrides.craftSessionForwardHook) {
+        return overrides.craftSessionForwardHook(
+          transcript,
+          summary,
+          baseRuntimeConfig,
+        );
+      }
+
+      return "The warning points deeper into the district, and the next move could expose who set the trap.";
     },
     generateSceneImage: async (scene: NonNullable<AdventureState["currentScene"]>) => {
       if (overrides.generateSceneImage) {
@@ -802,10 +821,48 @@ test("stores session summary in state only and does not duplicate it into transc
   assert.equal(state.phase, "ending");
   assert.equal(state.closed, true);
   assert.equal(typeof state.sessionSummary, "string");
+  assert.equal(typeof state.sessionForwardHook, "string");
   assert.equal(
     state.transcript.some((entry) => entry.text.startsWith("Session summary:")),
     false,
   );
+});
+
+test("can continue an ended adventure and start a follow-up scene", async () => {
+  const storyteller = createStorytellerMock({
+    summarizeSession: async () =>
+      "The chamber falls quiet. However, deeper signals are still calling from below.",
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Arcane tavern mystery.");
+
+  await manager.endSession({
+    adventureId,
+    playerId: "player-1",
+  });
+
+  let state = manager.getAdventure(adventureId);
+  assert.ok(state);
+  assert.equal(state.phase, "ending");
+  assert.equal(state.closed, true);
+  assert.equal(typeof state.sessionSummary, "string");
+
+  await manager.continueAdventure({
+    adventureId,
+    playerId: "player-1",
+  });
+  await flushMicrotasks();
+
+  state = manager.getAdventure(adventureId);
+  assert.ok(state);
+  assert.equal(state.phase, "play");
+  assert.equal(state.closed, false);
+  assert.equal(state.sessionSummary, undefined);
+  assert.equal(state.sessionForwardHook, undefined);
+  assert.ok(state.currentScene);
+  assert.equal(storyteller.calls.sceneStarts.length, 1);
 });
 
 test("enforces high-tension turn order and gates rewards until goal completion", async () => {
@@ -952,7 +1009,7 @@ test("enforces high-tension turn order and gates rewards until goal completion",
   );
 });
 
-test("enforces fail-forward consequence when dangerous failure would stall progress", async () => {
+test("does not inject generic fail-forward placeholder when consequence detail is missing", async () => {
   const storyteller = createStorytellerMock({
     narrateAction: async () => ({
       text: "The attempt backfires and the lock almost snaps shut for good.",
@@ -1015,7 +1072,191 @@ test("enforces fail-forward consequence when dangerous failure would stall progr
   assert.ok(latestStoryteller);
   assert.equal(latestStoryteller?.text.includes("Consequence:"), false);
   assert.equal(
+    latestStoryteller?.text.includes(
+      "The attempt backfires and the lock almost snaps shut for good.",
+    ),
+    true,
+  );
+  assert.equal(
     latestStoryteller?.text.includes("Progress comes at a price"),
+    false,
+  );
+});
+
+test("records played outcome cards as player-labeled transcript entries", async () => {
+  const storyteller = createStorytellerMock({
+    decideOutcomeCheckForPlayerAction: async () => ({
+      shouldCheck: true,
+      reason: "Direct confrontation under immediate threat requires an Outcome card.",
+      triggers: {
+        threat: true,
+        uncertainty: true,
+        highReward: false,
+      },
+    }),
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "High-pressure reactor breach.");
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I charge straight into the signal chamber and strike the core.",
+  });
+  await flushMicrotasks();
+
+  const checkId = manager.getAdventure(adventureId)?.activeOutcomeCheck?.checkId;
+  assert.ok(checkId);
+  manager.playOutcomeCard({
+    adventureId,
+    playerId: "player-1",
+    checkId,
+    card: "success",
+  });
+
+  const state = manager.getAdventure(adventureId);
+  const outcomeEntry = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.text.includes("played Outcome card:"));
+  assert.ok(outcomeEntry);
+  assert.equal(outcomeEntry?.kind, "player");
+  assert.equal(outcomeEntry?.author, "Nyra Flint");
+  assert.equal(
+    outcomeEntry?.text.includes("Success (+2 Effect)"),
+    true,
+  );
+});
+
+test("requires a final finishing move before scene transition vote opens", async () => {
+  let narrationCalls = 0;
+  const storyteller = createStorytellerMock({
+    narrateAction: async ({ actorCharacterName }) => {
+      narrationCalls += 1;
+      if (narrationCalls === 1) {
+        return {
+          text: `${actorCharacterName} destabilizes the AI core and forces it into a collapsing loop.`,
+          closeScene: true,
+          sceneSummary:
+            "The core destabilizes and the immediate threat can be ended with one final decisive move.",
+          debug: {
+            tension: 88,
+            secrets: [],
+            pacingNotes: [],
+            continuityWarnings: [],
+            aiRequests: [],
+          },
+        };
+      }
+
+      return {
+        text: `${actorCharacterName} drives the final strike through the core housing; the signal fractures and the chamber finally falls silent.`,
+        closeScene: false,
+        debug: {
+          tension: 70,
+          secrets: [],
+          pacingNotes: [],
+          continuityWarnings: [],
+          aiRequests: [],
+        },
+      };
+    },
+    resolveSceneReaction: async () => ({
+      goalStatus: "advanced",
+      failForward: false,
+      tensionShift: "stable",
+      tensionDelta: 0,
+      closeScene: false,
+      debug: {
+        tension: 80,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Confront a rogue machine intellect.");
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I overload the core's containment matrix.",
+  });
+  await flushMicrotasks();
+
+  let state = manager.getAdventure(adventureId);
+  assert.ok(state);
+  assert.equal(state.activeVote?.kind, undefined);
+  assert.equal(
+    state.transcript.some((entry) =>
+      entry.text.includes("give one final finishing move"),
+    ),
+    true,
+  );
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I slam my arc welder into the core and vent the surge into the chamber walls.",
+  });
+  await flushMicrotasks();
+
+  state = manager.getAdventure(adventureId);
+  assert.ok(state?.currentScene);
+  assert.equal(state.activeVote?.kind, "scene_transition");
+  assert.equal(
+    state.currentScene?.closingProse?.includes("chamber finally falls silent"),
+    true,
+  );
+  assert.equal(
+    state.currentScene?.summary,
+    "The core destabilizes and the immediate threat can be ended with one final decisive move.",
+  );
+  assert.equal(
+    state.transcript.some((entry) => entry.text.startsWith("Scene Summary:")),
+    false,
+  );
+  assert.equal(
+    state.transcript.some((entry) =>
+      entry.text.startsWith("Scene ended. Choose whether to continue"),
+    ),
     true,
   );
 });

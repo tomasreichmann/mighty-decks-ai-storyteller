@@ -1,12 +1,15 @@
 import { z } from "zod";
 import { trimLines } from "./text";
 
-const extractJsonCandidate = (raw: string): string | null => {
-  const trimmed = raw
+const stripCodeFence = (raw: string): string =>
+  raw
     .trim()
-    .replace(/^```(?:json)?/i, "")
+    .replace(/^```(?:json|yaml|yml|text)?/i, "")
     .replace(/```$/i, "")
     .trim();
+
+const extractJsonCandidate = (raw: string): string | null => {
+  const trimmed = stripCodeFence(raw);
   if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     return trimmed;
   }
@@ -45,6 +48,42 @@ const uniqueStrings = (values: string[]): string[] => {
   return output;
 };
 
+const decodeLooseScalar = (rawValue: string): string => {
+  let value = rawValue.trim().replace(/,$/, "").trim();
+  if (value.length === 0) {
+    return "";
+  }
+
+  if (
+    (value.startsWith("\"") && value.endsWith("\"")) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    if (value.startsWith("\"")) {
+      try {
+        return trimLines(JSON.parse(value) as string);
+      } catch {
+        // Fall through to manual cleanup.
+      }
+    }
+    value = value.slice(1, -1);
+  } else {
+    if (value.startsWith("\"") || value.startsWith("'")) {
+      value = value.slice(1);
+    }
+    if (value.endsWith("\"") || value.endsWith("'")) {
+      value = value.slice(0, -1);
+    }
+  }
+
+  return trimLines(
+    value
+      .replace(/\\n/g, "\n")
+      .replace(/\\t/g, "\t")
+      .replace(/\\"/g, "\"")
+      .replace(/\\'/g, "'"),
+  );
+};
+
 const parseInlineStringArray = (rawValue: string): string[] => {
   const trimmed = rawValue.trim();
   if (trimmed.length === 0) {
@@ -77,6 +116,145 @@ const parseInlineStringArray = (rawValue: string): string[] => {
   return [trimmed];
 };
 
+const parseLooseBoolean = (value: string | undefined): boolean | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "true" || normalized === "yes" || normalized === "1") {
+    return true;
+  }
+  if (normalized === "false" || normalized === "no" || normalized === "0") {
+    return false;
+  }
+
+  return undefined;
+};
+
+const parseLooseNumber = (value: string | undefined): number | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+interface LooseKeyValueRecords {
+  scalars: Map<string, string>;
+  lists: Map<string, string[]>;
+}
+
+const parseLooseKeyValueRecords = (raw: string): LooseKeyValueRecords => {
+  const cleaned = stripCodeFence(raw);
+  const lines = cleaned.split("\n");
+  const scalars = new Map<string, string>();
+  const lists = new Map<string, string[]>();
+  let listSection: string | null = null;
+
+  const pushListValue = (key: string, value: string): void => {
+    const decoded = decodeLooseScalar(value);
+    if (decoded.length === 0) {
+      return;
+    }
+
+    const current = lists.get(key) ?? [];
+    current.push(decoded);
+    lists.set(key, current);
+  };
+
+  const processKeyLine = (line: string): boolean => {
+    const keyMatch = line.match(
+      /^(?:"?([A-Za-z][A-Za-z0-9 _-]*)"?)\s*:\s*(.*)$/,
+    );
+    if (!keyMatch) {
+      return false;
+    }
+
+    const key = normalizeLabel(keyMatch[1] ?? "");
+    const rawValue = keyMatch[2]?.trim() ?? "";
+    if (rawValue.length === 0) {
+      listSection = key;
+      return true;
+    }
+
+    if (rawValue.startsWith("[")) {
+      const normalizedArray = rawValue.replace(/,$/, "").trim();
+      if (normalizedArray.endsWith("]")) {
+        const inlineValues = parseInlineStringArray(normalizedArray)
+          .map((value) => decodeLooseScalar(value))
+          .filter((value) => value.length > 0);
+        if (inlineValues.length > 0) {
+          lists.set(key, [...(lists.get(key) ?? []), ...inlineValues]);
+        }
+        return true;
+      }
+
+      listSection = key;
+      const firstToken = normalizedArray.slice(1).trim();
+      if (firstToken.length > 0) {
+        pushListValue(key, firstToken);
+      }
+      return true;
+    }
+
+    const decoded = decodeLooseScalar(rawValue);
+    if (decoded.length > 0) {
+      scalars.set(key, decoded);
+    }
+    return true;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (line.length === 0) {
+      continue;
+    }
+
+    if (listSection) {
+      if (/^\],?$/.test(line)) {
+        listSection = null;
+        continue;
+      }
+
+      const isNewKey =
+        !line.startsWith("-") &&
+        !line.startsWith("*") &&
+        /^\d+\.\s+/.test(line) === false &&
+        /^(?:"?[A-Za-z][A-Za-z0-9 _-]*"?)\s*:/.test(line);
+
+      if (!isNewKey) {
+        const listValue = line
+          .replace(/^[-*]\s+/, "")
+          .replace(/^\d+\.\s+/, "")
+          .trim();
+        if (listValue.length > 0) {
+          pushListValue(listSection, listValue);
+        }
+        continue;
+      }
+
+      listSection = null;
+    }
+
+    processKeyLine(line);
+  }
+
+  return { scalars, lists };
+};
+
+const readList = (records: LooseKeyValueRecords, key: string): string[] => {
+  const normalizedKey = normalizeLabel(key);
+  const listValues = records.lists.get(normalizedKey) ?? [];
+  const scalarValues = parseInlineStringArray(
+    records.scalars.get(normalizedKey) ?? "",
+  )
+    .map((value) => decodeLooseScalar(value))
+    .filter((value) => value.length > 0);
+  return uniqueStrings([...listValues, ...scalarValues]);
+};
+
 export interface LooseSceneStart {
   introProse?: string;
   orientationBullets?: string[];
@@ -87,12 +265,36 @@ export interface LooseSceneStart {
   continuityWarnings?: string[];
 }
 
-export const parseLooseSceneStart = (raw: string): LooseSceneStart | null => {
-  const cleaned = raw
-    .replace(/^```(?:json)?/i, "")
-    .replace(/```$/i, "")
-    .trim();
+export interface LooseActionResponse {
+  text?: string;
+  closeScene?: boolean;
+  sceneSummary?: string;
+  tension?: number;
+  secrets?: string[];
+  pacingNotes?: string[];
+  continuityWarnings?: string[];
+}
 
+export interface LooseSceneReaction {
+  npcBeat?: string;
+  consequence?: string;
+  reward?: string;
+  goalStatus?: "advanced" | "completed" | "blocked";
+  failForward?: boolean;
+  tensionShift?: "rise" | "fall" | "stable";
+  tensionDelta?: number;
+  sceneMode?: "low_tension" | "high_tension";
+  closeScene?: boolean;
+  sceneSummary?: string;
+  tension?: number;
+  tensionReason?: string;
+  reasoning?: string[];
+  pacingNotes?: string[];
+  continuityWarnings?: string[];
+}
+
+export const parseLooseSceneStart = (raw: string): LooseSceneStart | null => {
+  const cleaned = stripCodeFence(raw);
   if (cleaned.length === 0) {
     return null;
   }
@@ -236,6 +438,99 @@ export const parseLooseSceneStart = (raw: string): LooseSceneStart | null => {
     pacingNotes: normalizedPacingNotes,
     continuityWarnings: normalizedContinuityWarnings,
   };
+};
+
+export const parseLooseActionResponse = (
+  raw: string,
+): LooseActionResponse | null => {
+  const records = parseLooseKeyValueRecords(raw);
+  const text =
+    records.scalars.get("text") ?? records.scalars.get("narration") ?? "";
+  const parsedText = trimLines(text);
+  if (parsedText.length === 0) {
+    return null;
+  }
+
+  const closeScene = parseLooseBoolean(records.scalars.get("closescene"));
+  const sceneSummary = records.scalars.get("scenesummary");
+  const tension = parseLooseNumber(records.scalars.get("tension"));
+
+  return {
+    text: parsedText,
+    closeScene,
+    sceneSummary: sceneSummary ? trimLines(sceneSummary) : undefined,
+    tension:
+      tension !== undefined ? Math.max(0, Math.min(100, tension)) : undefined,
+    secrets: readList(records, "secrets"),
+    pacingNotes: readList(records, "pacingNotes"),
+    continuityWarnings: readList(records, "continuityWarnings"),
+  };
+};
+
+export const parseLooseSceneReaction = (
+  raw: string,
+): LooseSceneReaction | null => {
+  const records = parseLooseKeyValueRecords(raw);
+  const goalStatusRaw = records.scalars.get("goalstatus");
+  const tensionShiftRaw = records.scalars.get("tensionshift");
+  const sceneModeRaw = records.scalars.get("scenemode");
+  const goalStatus = goalStatusRaw && (
+    goalStatusRaw === "advanced" ||
+    goalStatusRaw === "completed" ||
+    goalStatusRaw === "blocked"
+  )
+    ? goalStatusRaw
+    : undefined;
+  const tensionShift = tensionShiftRaw && (
+    tensionShiftRaw === "rise" ||
+    tensionShiftRaw === "fall" ||
+    tensionShiftRaw === "stable"
+  )
+    ? tensionShiftRaw
+    : undefined;
+  const sceneMode = sceneModeRaw && (
+    sceneModeRaw === "low_tension" ||
+    sceneModeRaw === "high_tension"
+  )
+    ? sceneModeRaw
+    : undefined;
+
+  const reaction: LooseSceneReaction = {
+    npcBeat: records.scalars.get("npcbeat"),
+    consequence: records.scalars.get("consequence"),
+    reward: records.scalars.get("reward"),
+    goalStatus,
+    failForward: parseLooseBoolean(records.scalars.get("failforward")),
+    tensionShift,
+    tensionDelta: parseLooseNumber(records.scalars.get("tensiondelta")),
+    sceneMode,
+    closeScene: parseLooseBoolean(records.scalars.get("closescene")),
+    sceneSummary: records.scalars.get("scenesummary"),
+    tension: parseLooseNumber(records.scalars.get("tension")),
+    tensionReason: records.scalars.get("tensionreason"),
+    reasoning: readList(records, "reasoning"),
+    pacingNotes: readList(records, "pacingNotes"),
+    continuityWarnings: readList(records, "continuityWarnings"),
+  };
+
+  const hasUsefulField = Boolean(
+    reaction.npcBeat ||
+      reaction.consequence ||
+      reaction.reward ||
+      reaction.goalStatus ||
+      reaction.tensionShift ||
+      reaction.sceneMode ||
+      reaction.tension !== undefined ||
+      reaction.tensionDelta !== undefined ||
+      reaction.tensionReason ||
+      reaction.reasoning?.length ||
+      reaction.pacingNotes?.length ||
+      reaction.continuityWarnings?.length ||
+      reaction.closeScene !== undefined ||
+      reaction.sceneSummary,
+  );
+
+  return hasUsefulField ? reaction : null;
 };
 
 export const parseJson = <T>(raw: string, schema: z.ZodType<T>): T | null => {

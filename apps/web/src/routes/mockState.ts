@@ -64,6 +64,7 @@ export const mockVote: ActiveVote = {
 export const mockScene: ScenePublic = {
   sceneId: "scene-1",
   imagePending: true,
+  closingImagePending: false,
   mode: "low_tension",
   tension: 52,
   introProse:

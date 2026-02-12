@@ -1,6 +1,7 @@
 import type { AdventureState, TranscriptEntry } from "@mighty-decks/spec/adventureState";
 import {
   castVotePayloadSchema,
+  continueAdventurePayloadSchema,
   endSessionPayloadSchema,
   joinAdventurePayloadSchema,
   leaveAdventurePayloadSchema,
@@ -346,6 +347,28 @@ export const registerSocketHandlers = (
       } catch (error) {
         socket.emit("storyteller_response", {
           text: error instanceof Error ? error.message : "Could not end session.",
+        });
+      }
+    });
+
+    socket.on("continue_adventure", async (rawPayload) => {
+      const payload = withValidation(
+        socket,
+        continueAdventurePayloadSchema,
+        rawPayload,
+      );
+      if (!payload) {
+        return;
+      }
+
+      try {
+        await manager.continueAdventure(payload);
+      } catch (error) {
+        socket.emit("storyteller_response", {
+          text:
+            error instanceof Error
+              ? error.message
+              : "Could not continue adventure.",
         });
       }
     });

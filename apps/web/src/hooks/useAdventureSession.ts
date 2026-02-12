@@ -35,6 +35,7 @@ export interface UseAdventureSessionResult {
   participant: RosterEntry | null;
   connected: boolean;
   connectionError: string | null;
+  disconnectedDueToInactivity: boolean;
   serverUrl: string;
   serverUrlWarning: string | null;
   thinking: ThinkingState;
@@ -47,6 +48,7 @@ export interface UseAdventureSessionResult {
   submitAction: (text: string) => void;
   playOutcomeCard: (checkId: string, card: OutcomeCardType) => void;
   endSession: () => void;
+  continueAdventure: () => void;
   updateRuntimeConfig: (runtimeConfig: RuntimeConfig) => void;
   reconnect: () => void;
 }
@@ -173,6 +175,9 @@ export const useAdventureSession = ({
   const [adventure, setAdventure] = useState<AdventureState | null>(null);
   const [connected, setConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [disconnectedDueToInactivity, setDisconnectedDueToInactivity] =
+    useState(false);
+  const disconnectedDueToInactivityRef = useRef(false);
   const [thinking, setThinking] = useState<ThinkingState>({
     active: false,
     label: "Storyteller is thinking...",
@@ -191,6 +196,11 @@ export const useAdventureSession = ({
   const [setupDebugTrace, setSetupDebugTrace] = useState<string[]>([]);
   const receivedAdventureStateRef = useRef(false);
   const latestAdventureStateRef = useRef<AdventureState | null>(null);
+
+  const setInactivityDisconnect = useCallback((value: boolean): void => {
+    disconnectedDueToInactivityRef.current = value;
+    setDisconnectedDueToInactivity(value);
+  }, []);
 
   const appendSetupDebug = useCallback((message: string): void => {
     const timestamp = formatDebugTimestamp();
@@ -308,6 +318,7 @@ export const useAdventureSession = ({
     const handleConnect = (): void => {
       setConnected(true);
       setConnectionError(null);
+      setInactivityDisconnect(false);
       appendSetupDebug(`socket_connected id=${socket.id ?? "unknown"}`);
       emitJoin();
     };
@@ -316,13 +327,16 @@ export const useAdventureSession = ({
       setConnected(false);
       appendSetupDebug(`socket_disconnected reason=${reason}`);
       if (reason === "io server disconnect") {
-        setConnectionError(
-          "Disconnected by server due inactivity or session reset. Click reconnect to continue.",
-        );
+        if (disconnectedDueToInactivityRef.current) {
+          setConnectionError("You have been disconnected due to inactivity.");
+        } else {
+          setConnectionError("Disconnected by server. Click reconnect to continue.");
+        }
         return;
       }
 
       if (reason !== "io client disconnect") {
+        setInactivityDisconnect(false);
         setConnectionError(`Disconnected from adventure server (${reason}).`);
       }
     };
@@ -332,6 +346,7 @@ export const useAdventureSession = ({
         error instanceof Error && error.message.trim().length > 0
           ? error.message
           : "Could not connect to adventure server.";
+      setInactivityDisconnect(false);
       setConnectionError(message);
       appendSetupDebug(`socket_connect_error message=${message}`);
     };
@@ -379,6 +394,7 @@ export const useAdventureSession = ({
         setPendingSetupOverride(null, "adventure_state_ack");
       }
       maybeAutoResubmitSetup(withOverride.phase, rawOwnEntry);
+      setInactivityDisconnect(false);
       setConnectionError(null);
     };
 
@@ -498,10 +514,22 @@ export const useAdventureSession = ({
 
     const handleStorytellerResponse = (payload: { text: string }): void => {
       setLastStorytellerResponse(payload.text);
+      const normalizedText = payload.text.toLowerCase();
+      const isIdleDisconnectMessage =
+        normalizedText.includes("disconnected") &&
+        normalizedText.includes("inactivity");
+      if (isIdleDisconnectMessage) {
+        setInactivityDisconnect(true);
+      }
       if (payload.text.toLowerCase().includes("setup")) {
         appendSetupDebug(`storyteller_response ${payload.text}`);
       }
-      if (!receivedAdventureStateRef.current && payload.text.trim().length > 0) {
+      if (
+        !isIdleDisconnectMessage &&
+        !receivedAdventureStateRef.current &&
+        payload.text.trim().length > 0
+      ) {
+        setInactivityDisconnect(false);
         setConnectionError(payload.text);
       }
     };
@@ -557,6 +585,7 @@ export const useAdventureSession = ({
     role,
     saveCachedSetup,
     setPendingSetupOverride,
+    setInactivityDisconnect,
     socket,
   ]);
 
@@ -574,6 +603,7 @@ export const useAdventureSession = ({
     participant,
     connected,
     connectionError,
+    disconnectedDueToInactivity,
     serverUrl,
     serverUrlWarning,
     thinking,
@@ -662,6 +692,12 @@ export const useAdventureSession = ({
         playerId: identity.playerId,
       });
     },
+    continueAdventure: () => {
+      socket.emit("continue_adventure", {
+        adventureId,
+        playerId: identity.playerId,
+      });
+    },
     updateRuntimeConfig: (runtimeConfig: RuntimeConfig) => {
       socket.emit("update_runtime_config", {
         adventureId,
@@ -671,6 +707,7 @@ export const useAdventureSession = ({
     },
     reconnect: () => {
       setConnectionError(null);
+      setInactivityDisconnect(false);
       appendSetupDebug("manual_reconnect_requested");
       if (!socket.connected) {
         socket.connect();
