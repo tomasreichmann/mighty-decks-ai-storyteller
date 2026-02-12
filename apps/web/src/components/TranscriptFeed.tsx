@@ -73,14 +73,15 @@ export const TranscriptFeed = ({
   return (
     <Section
       className={cn(
-        "min-w-0",
-        scrollable ? "flex h-full min-h-0 flex-col" : "stack",
+        "min-w-0 min-h-[300px]",
+        scrollable ? "flex flex-col" : "stack",
         className,
       )}
     >
       <div
         className={cn(
-          scrollable && "transcript-scroll-mask min-h-0 flex-1 overflow-y-auto p-2 -m-2",
+          scrollable &&
+            "transcript-scroll-mask min-h-[200px] flex-1 overflow-y-auto p-2 -m-2",
         )}
       >
         <div className="flex flex-col min-w-0 gap-4">

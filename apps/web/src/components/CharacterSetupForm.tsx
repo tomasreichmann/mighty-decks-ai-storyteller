@@ -30,6 +30,19 @@ interface SetupPreset {
 }
 
 const PRESETS_STORAGE_KEY = "mighty_decks_player_setup_presets_v1";
+const CHARACTER_NAME_MAX_LENGTH = 100;
+const VISUAL_DESCRIPTION_MAX_LENGTH = 400;
+const ADVENTURE_PREFERENCE_MAX_LENGTH = 500;
+
+const clampSetup = (setup: PlayerSetup): PlayerSetup => ({
+  characterName: setup.characterName.trim().slice(0, CHARACTER_NAME_MAX_LENGTH),
+  visualDescription: setup.visualDescription
+    .trim()
+    .slice(0, VISUAL_DESCRIPTION_MAX_LENGTH),
+  adventurePreference: setup.adventurePreference
+    .trim()
+    .slice(0, ADVENTURE_PREFERENCE_MAX_LENGTH),
+});
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
@@ -73,6 +86,10 @@ const loadPresets = (): SetupPreset[] => {
           isPlayerSetup(candidate.setup)
         );
       })
+      .map((preset) => ({
+        ...preset,
+        setup: clampSetup(preset.setup),
+      }))
       .slice(0, 20);
   } catch {
     return [];
@@ -113,18 +130,19 @@ export const CharacterSetupForm = ({
       return;
     }
 
+    const normalizedSetup = clampSetup(initialSetup);
     const setupKey = [
-      initialSetup.characterName,
-      initialSetup.visualDescription,
-      initialSetup.adventurePreference,
+      normalizedSetup.characterName,
+      normalizedSetup.visualDescription,
+      normalizedSetup.adventurePreference,
     ].join("||");
     if (setupKey === hydratedSetupKey) {
       return;
     }
 
-    setCharacterName(initialSetup.characterName);
-    setVisualDescription(initialSetup.visualDescription);
-    setAdventurePreference(initialSetup.adventurePreference);
+    setCharacterName(normalizedSetup.characterName);
+    setVisualDescription(normalizedSetup.visualDescription);
+    setAdventurePreference(normalizedSetup.adventurePreference);
     setHydratedSetupKey(setupKey);
   }, [hydratedSetupKey, initialSetup]);
 
@@ -135,11 +153,12 @@ export const CharacterSetupForm = ({
   );
 
   const trimmedSetup: PlayerSetup = useMemo(
-    () => ({
-      characterName: characterName.trim(),
-      visualDescription: visualDescription.trim(),
-      adventurePreference: adventurePreference.trim(),
-    }),
+    () =>
+      clampSetup({
+        characterName,
+        visualDescription,
+        adventurePreference,
+      }),
     [adventurePreference, characterName, visualDescription],
   );
 
@@ -175,9 +194,10 @@ export const CharacterSetupForm = ({
   };
 
   const handleRecallPreset = (preset: SetupPreset): void => {
-    setCharacterName(preset.setup.characterName);
-    setVisualDescription(preset.setup.visualDescription);
-    setAdventurePreference(preset.setup.adventurePreference);
+    const nextSetup = clampSetup(preset.setup);
+    setCharacterName(nextSetup.characterName);
+    setVisualDescription(nextSetup.visualDescription);
+    setAdventurePreference(nextSetup.adventurePreference);
     if (isReadyGateMode) {
       onToggleReady(false);
     }
@@ -197,6 +217,7 @@ export const CharacterSetupForm = ({
           id="character-name"
           label="What do they call your character?"
           placeholder="Nyra Flint"
+          maxLength={100}
           value={characterName}
           onChange={(event) => setCharacterName(event.target.value)}
           disabled={setupLocked}
@@ -208,6 +229,7 @@ export const CharacterSetupForm = ({
           label="What does your character look like?"
           placeholder="A storm-chaser in patched leather with brass goggles."
           rows={3}
+          maxLength={400}
           value={visualDescription}
           onChange={(event) => setVisualDescription(event.target.value)}
           disabled={setupLocked}
@@ -220,6 +242,7 @@ export const CharacterSetupForm = ({
             label="What adventure do you want to play?"
             placeholder="A tense mystery with weird weather and ruins."
             rows={3}
+            maxLength={500}
             value={adventurePreference}
             onChange={(event) => setAdventurePreference(event.target.value)}
             disabled={setupLocked}
@@ -248,13 +271,17 @@ export const CharacterSetupForm = ({
                 No presets saved yet.
               </Text>
             ) : (
-              <div className="grid gap-2">
+              <div className="flex flex-row flex-wrap gap-2">
                 {savedPresets.map((preset) => (
-                  <div key={preset.id} className="flex flex-wrap items-center">
+                  <div
+                    key={preset.id}
+                    className="flex flex-wrap items-center rotate-[-2deg]"
+                  >
                     <Button
                       type="button"
                       size="sm"
                       variant="solid"
+                      className="!rotate-0"
                       color="bone"
                       onClick={() => handleRecallPreset(preset)}
                       disabled={setupLocked}
@@ -267,7 +294,7 @@ export const CharacterSetupForm = ({
                       variant="solid"
                       color="curse"
                       onClick={() => handleDeletePreset(preset.id)}
-                      className="relative -ml-1 z-5"
+                      className="relative -ml-1 z-5 !rotate-0"
                     >
                       ×
                     </Button>

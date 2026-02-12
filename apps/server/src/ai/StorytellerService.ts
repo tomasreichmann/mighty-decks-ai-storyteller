@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type {
   RuntimeConfig,
   ScenePublic,
@@ -26,6 +27,7 @@ import {
   buildContinuityPrompt,
   buildNarrateActionPrompt,
   buildOutcomeCheckPrompt,
+  buildSceneReactionPrompt,
   buildSceneImagePromptRequest,
   buildSceneStartPrompt,
   buildSessionSummaryPrompt,
@@ -39,6 +41,7 @@ import {
   continuitySchema,
   outcomeCheckDecisionSchema,
   pitchArraySchema,
+  sceneReactionSchema,
   sceneStartSchema,
 } from "./storyteller/schemas";
 import {
@@ -53,8 +56,11 @@ import type {
   OutcomeCheckDecisionResult,
   PitchInput,
   PitchOption,
+  SceneReactionInput,
+  SceneReactionResult,
   SceneStartInput,
   SceneStartResult,
+  StorytellerCostControls,
   StorytellerRequestContext,
   StorytellerServiceOptions,
   TextModelRequest,
@@ -69,16 +75,80 @@ export type {
   OutcomeCheckDecisionResult,
   PitchInput,
   PitchOption,
+  SceneReactionInput,
+  SceneReactionResult,
   SceneStartInput,
   SceneStartResult,
+  StorytellerCostControls,
   StorytellerModelConfig,
   StorytellerRequestContext,
   StorytellerServiceOptions,
 } from "./storyteller/types";
 
+const clampTension = (value: number): number => Math.max(0, Math.min(100, value));
+const hashCacheKey = (value: string): string =>
+  createHash("sha1").update(value).digest("hex");
+const normalizeCostControls = (
+  controls: StorytellerCostControls | undefined,
+): Required<StorytellerCostControls> => ({
+  disableImageGeneration: controls?.disableImageGeneration ?? false,
+  pitchCacheTtlMs: Math.max(0, controls?.pitchCacheTtlMs ?? 0),
+  imageCacheTtlMs: Math.max(0, controls?.imageCacheTtlMs ?? 0),
+});
+
+const buildSceneReactionFallback = (
+  input: SceneReactionInput,
+): SceneReactionResult => {
+  const consequenceOptions = [
+    "The action works, but it leaves the group exposed and buys the opposition a dangerous opening.",
+    "Progress lands hard, and the cost is immediate: position, gear, or stamina is compromised.",
+    "The objective advances, but the method leaves traces that hostile eyes can exploit right now.",
+  ];
+  const npcBeatOptions = [
+    "A nearby rival seizes the opening and pushes their own plan into motion.",
+    "An opposing force reacts fast, changing the battlefield before the group can settle.",
+    "Someone with their own agenda makes a decisive move that demands an answer.",
+  ];
+  const variantIndex =
+    (input.turnNumber + input.actorCharacterName.length + input.actionText.length) %
+    consequenceOptions.length;
+
+  return {
+    goalStatus: "advanced",
+    failForward: true,
+    consequence: consequenceOptions[variantIndex],
+    npcBeat: npcBeatOptions[variantIndex],
+    tensionShift: "stable",
+    tensionDelta: 0,
+    sceneMode: input.scene.mode,
+    tension: clampTension(input.scene.tension),
+    reasoning: [
+      "Fallback reaction used because Scene Controller output was unavailable.",
+    ],
+    closeScene: false,
+    debug: {
+      tension: clampTension(input.scene.tension),
+      secrets: [],
+      pacingNotes: ["Apply NPC agenda pressure every turn to keep momentum."],
+      continuityWarnings: [],
+      aiRequests: [],
+      recentDecisions: [],
+    },
+  };
+};
+
 export class StorytellerService {
   private readonly options: StorytellerServiceOptions;
   private readonly promptTemplates: PromptTemplateMap;
+  private readonly costControls: Required<StorytellerCostControls>;
+  private readonly pitchCache = new Map<
+    string,
+    { expiresAtMs: number; value: PitchOption[] }
+  >();
+  private readonly imageCache = new Map<
+    string,
+    { expiresAtMs: number; value: string | null }
+  >();
 
   public constructor(options: StorytellerServiceOptions) {
     this.options = options;
@@ -86,6 +156,7 @@ export class StorytellerService {
       ...defaultPromptTemplates,
       ...(options.promptTemplates ?? {}),
     };
+    this.costControls = normalizeCostControls(options.costControls);
   }
 
   public async generateAdventurePitches(
@@ -94,6 +165,21 @@ export class StorytellerService {
     context?: StorytellerRequestContext,
   ): Promise<PitchOption[]> {
     const prompt = buildAdventurePitchesPrompt(this.promptTemplates, inputs);
+    const pitchCacheKey = hashCacheKey(
+      JSON.stringify({
+        model: this.options.models.pitchGenerator,
+        fallbackModel: this.options.models.pitchGeneratorFallback,
+        prompt,
+      }),
+    );
+
+    const cachedPitches = this.readFromCache(
+      this.pitchCache,
+      pitchCacheKey,
+    );
+    if (cachedPitches) {
+      return cachedPitches.map((pitch) => ({ ...pitch }));
+    }
 
     const modelText = await this.callTextModel({
       agent: "pitch_generator",
@@ -109,14 +195,28 @@ export class StorytellerService {
     if (modelText) {
       const parsed = parseJson(modelText, pitchArraySchema);
       if (parsed) {
-        return parsed.map((item) => ({
+        const generatedPitches = parsed.map((item) => ({
           title: item.title.trim(),
           description: trimLines(item.description).slice(0, 400),
         }));
+        this.writeToCache(
+          this.pitchCache,
+          pitchCacheKey,
+          generatedPitches,
+          this.costControls.pitchCacheTtlMs,
+        );
+        return generatedPitches.map((pitch) => ({ ...pitch }));
       }
     }
 
-    return buildFallbackPitches(inputs);
+    const fallbackPitches = buildFallbackPitches(inputs);
+    this.writeToCache(
+      this.pitchCache,
+      pitchCacheKey,
+      fallbackPitches,
+      this.costControls.pitchCacheTtlMs,
+    );
+    return fallbackPitches.map((pitch) => ({ ...pitch }));
   }
 
   public async generateSceneStart(
@@ -181,6 +281,7 @@ export class StorytellerService {
         pacingNotes: ["Offer one hard choice within the next two turns."],
         continuityWarnings: [],
         aiRequests: [],
+        recentDecisions: [],
       },
     };
   }
@@ -233,6 +334,7 @@ export class StorytellerService {
     context?: StorytellerRequestContext,
   ): Promise<ActionResponseResult> {
     const prompt = buildNarrateActionPrompt(this.promptTemplates, input);
+    const maxTokens = input.responseMode === "expanded" ? 820 : 550;
 
     const modelText = await this.callTextModel({
       agent: "narrative_director",
@@ -240,7 +342,7 @@ export class StorytellerService {
       fallbackModel: this.options.models.narrativeDirectorFallback,
       prompt,
       runtimeConfig,
-      maxTokens: 550,
+      maxTokens,
       temperature: 0.75,
       context,
     });
@@ -259,16 +361,10 @@ export class StorytellerService {
       }
     }
 
-    const lowerAction = input.actionText.toLowerCase();
-    const keywordClose = [
-      "end scene",
-      "wrap up",
-      "move on",
-      "next scene",
-      "leave",
-    ].some((token) => lowerAction.includes(token));
-    const shouldClose = keywordClose || input.turnNumber >= 3;
-    const responseText = `You commit to the move. ${input.actionText} shifts the scene decisively, revealing a new consequence and a clear next choice for the group.`;
+    const shouldClose = input.turnNumber >= 4;
+    const responseText = input.responseMode === "expanded"
+      ? `You investigate with intent and get actionable detail: the immediate clue, the hidden pressure behind it, and one concrete next step. ${input.actionText} reveals who benefits and what changes if you act now.`
+      : `You commit to the move. ${input.actionText} shifts the scene decisively, revealing a new consequence and a clear next choice for the group.`;
 
     return {
       text: responseText,
@@ -284,8 +380,73 @@ export class StorytellerService {
           : ["Escalate external pressure on the next response."],
         continuityWarnings: [],
         aiRequests: [],
+        recentDecisions: [],
       },
     };
+  }
+
+  public async resolveSceneReaction(
+    input: SceneReactionInput,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<SceneReactionResult> {
+    const prompt = buildSceneReactionPrompt(this.promptTemplates, input);
+
+    const modelText = await this.callTextModel({
+      agent: "scene_controller",
+      primaryModel: this.options.models.sceneController,
+      fallbackModel: this.options.models.sceneControllerFallback,
+      prompt,
+      runtimeConfig,
+      maxTokens: 320,
+      temperature: 0.35,
+      context,
+    });
+
+    if (modelText) {
+      const parsed = parseJson(modelText, sceneReactionSchema);
+      if (parsed) {
+        const boundedTensionDelta = Math.max(
+          -35,
+          Math.min(35, parsed.tensionDelta ?? 0),
+        );
+        const targetTension = parsed.tension !== undefined
+          ? clampTension(parsed.tension)
+          : clampTension(input.scene.tension + boundedTensionDelta);
+
+        return {
+          npcBeat: parsed.npcBeat ? trimLines(parsed.npcBeat) : undefined,
+          consequence: parsed.consequence
+            ? trimLines(parsed.consequence)
+            : undefined,
+          reward: parsed.reward ? trimLines(parsed.reward) : undefined,
+          goalStatus: parsed.goalStatus ?? "advanced",
+          failForward: parsed.failForward ?? true,
+          tensionShift: parsed.tensionShift ?? "stable",
+          tensionDelta: boundedTensionDelta,
+          sceneMode: parsed.sceneMode,
+          closeScene: parsed.closeScene ?? false,
+          sceneSummary: parsed.sceneSummary
+            ? trimLines(parsed.sceneSummary)
+            : undefined,
+          tension: targetTension,
+          tensionReason: parsed.tensionReason
+            ? trimLines(parsed.tensionReason)
+            : undefined,
+          reasoning: parsed.reasoning?.map((note) => trimLines(note)).filter((note) => note.length > 0) ?? [],
+          debug: {
+            tension: targetTension,
+            secrets: [],
+            pacingNotes: parsed.pacingNotes ?? [],
+            continuityWarnings: parsed.continuityWarnings ?? [],
+            aiRequests: [],
+            recentDecisions: [],
+          },
+        };
+      }
+    }
+
+    return buildSceneReactionFallback(input);
   }
 
   public async decideOutcomeCheckForPlayerAction(
@@ -326,7 +487,6 @@ export class StorytellerService {
       if (parsed) {
         const normalized = refineModelOutcomeDecision(
           parsed,
-          actionText,
           input.transcriptTail,
         );
         return {
@@ -377,7 +537,54 @@ export class StorytellerService {
     runtimeConfig: RuntimeConfig,
     context?: StorytellerRequestContext,
   ): Promise<string | null> {
+    const imageCacheKey = hashCacheKey(
+      JSON.stringify({
+        model: this.options.models.imageGenerator,
+        fallbackModel: this.options.models.imageGeneratorFallback,
+        introProse: scene.introProse,
+        orientationBullets: scene.orientationBullets,
+        summary: scene.summary ?? null,
+        mode: scene.mode,
+        tension: scene.tension,
+      }),
+    );
+    const cachedImageUrl = this.readFromCache(this.imageCache, imageCacheKey);
+    if (cachedImageUrl !== undefined) {
+      return cachedImageUrl;
+    }
+
+    if (this.costControls.disableImageGeneration) {
+      this.writeToCache(
+        this.imageCache,
+        imageCacheKey,
+        null,
+        this.costControls.imageCacheTtlMs,
+      );
+      if (context) {
+        this.options.onAiRequest?.({
+          adventureId: context.adventureId,
+          requestId: createAiRequestId(),
+          createdAtIso: new Date().toISOString(),
+          agent: "image_generator",
+          kind: "image",
+          model: this.options.models.imageGenerator,
+          timeoutMs: runtimeConfig.imageTimeoutMs,
+          attempt: 1,
+          fallback: false,
+          status: "failed",
+          error: "Image generation disabled by configuration.",
+        });
+      }
+      return null;
+    }
+
     if (!this.options.openRouterClient.hasApiKey()) {
+      this.writeToCache(
+        this.imageCache,
+        imageCacheKey,
+        null,
+        this.costControls.imageCacheTtlMs,
+      );
       if (context) {
         this.options.onAiRequest?.({
           adventureId: context.adventureId,
@@ -402,7 +609,7 @@ export class StorytellerService {
       context,
     );
 
-    return runImageModelRequest(
+    const imageUrl = await runImageModelRequest(
       {
         openRouterClient: this.options.openRouterClient,
         onAiRequest: this.options.onAiRequest,
@@ -416,6 +623,13 @@ export class StorytellerService {
         context,
       },
     );
+    this.writeToCache(
+      this.imageCache,
+      imageCacheKey,
+      imageUrl,
+      this.costControls.imageCacheTtlMs,
+    );
+    return imageUrl;
   }
 
   private async callTextModel(
@@ -458,5 +672,38 @@ export class StorytellerService {
     }
 
     return normalized;
+  }
+
+  private readFromCache<T>(
+    cache: Map<string, { expiresAtMs: number; value: T }>,
+    key: string,
+  ): T | undefined {
+    const cached = cache.get(key);
+    if (!cached) {
+      return undefined;
+    }
+
+    if (cached.expiresAtMs <= Date.now()) {
+      cache.delete(key);
+      return undefined;
+    }
+
+    return cached.value;
+  }
+
+  private writeToCache<T>(
+    cache: Map<string, { expiresAtMs: number; value: T }>,
+    key: string,
+    value: T,
+    ttlMs: number,
+  ): void {
+    if (ttlMs <= 0) {
+      return;
+    }
+
+    cache.set(key, {
+      expiresAtMs: Date.now() + ttlMs,
+      value,
+    });
   }
 }

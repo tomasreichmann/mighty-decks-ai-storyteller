@@ -12,6 +12,8 @@ import type {
   ContinuityResult,
   PitchInput,
   PitchOption,
+  SceneReactionInput,
+  SceneReactionResult,
   SceneStartInput,
   SceneStartResult,
   StorytellerService,
@@ -35,6 +37,10 @@ interface StorytellerMockOverrides {
   generateSceneStart?: (input: SceneStartInput, runtimeConfig: RuntimeConfig) => Promise<SceneStartResult>;
   updateContinuity?: (transcript: AdventureState["transcript"], runtimeConfig: RuntimeConfig) => Promise<ContinuityResult>;
   narrateAction?: (input: ActionResponseInput, runtimeConfig: RuntimeConfig) => Promise<ActionResponseResult>;
+  resolveSceneReaction?: (
+    input: SceneReactionInput,
+    runtimeConfig: RuntimeConfig,
+  ) => Promise<SceneReactionResult>;
   decideOutcomeCheckForPlayerAction?: (
     input: {
       actorCharacterName: string;
@@ -64,6 +70,7 @@ interface StorytellerMockController {
     pitchInputs: PitchInput[][];
     sceneStarts: SceneStartInput[];
     narrateActions: ActionResponseInput[];
+    sceneReactions: SceneReactionInput[];
     continuityUpdates: AdventureState["transcript"][];
   };
 }
@@ -73,6 +80,7 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
     pitchInputs: [] as PitchInput[][],
     sceneStarts: [] as SceneStartInput[],
     narrateActions: [] as ActionResponseInput[],
+    sceneReactions: [] as SceneReactionInput[],
     continuityUpdates: [] as AdventureState["transcript"][],
   };
 
@@ -142,6 +150,28 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
           tension: 62,
           secrets: [],
           pacingNotes: ["Escalate a consequence on the next turn."],
+          continuityWarnings: [],
+          aiRequests: [],
+        },
+      };
+    },
+    resolveSceneReaction: async (input: SceneReactionInput) => {
+      calls.sceneReactions.push(input);
+      if (overrides.resolveSceneReaction) {
+        return overrides.resolveSceneReaction(input, baseRuntimeConfig);
+      }
+
+      return {
+        goalStatus: "advanced",
+        failForward: true,
+        tensionShift: "stable",
+        tensionDelta: 0,
+        closeScene: false,
+        tension: input.scene.tension,
+        debug: {
+          tension: input.scene.tension,
+          secrets: [],
+          pacingNotes: [],
           continuityWarnings: [],
           aiRequests: [],
         },
@@ -775,5 +805,217 @@ test("stores session summary in state only and does not duplicate it into transc
   assert.equal(
     state.transcript.some((entry) => entry.text.startsWith("Session summary:")),
     false,
+  );
+});
+
+test("enforces high-tension turn order and gates rewards until goal completion", async () => {
+  const storyteller = createStorytellerMock({
+    narrateAction: async ({ actorCharacterName }) => ({
+      text: `${actorCharacterName} drives the action forward under pressure.`,
+      closeScene: false,
+      debug: {
+        tension: 70,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+    resolveSceneReaction: async ({ turnNumber }) => {
+      if (turnNumber === 1) {
+        return {
+          goalStatus: "advanced",
+          reward: "A heavy satchel of coin drops from the enemy belt.",
+          failForward: true,
+          tensionShift: "rise",
+          tensionDelta: 22,
+          sceneMode: "high_tension",
+          npcBeat: "Two reinforcements rush in through the side door.",
+          closeScene: false,
+          tension: 74,
+          debug: {
+            tension: 74,
+            secrets: [],
+            pacingNotes: [],
+            continuityWarnings: [],
+            aiRequests: [],
+          },
+        };
+      }
+
+      return {
+        goalStatus: "completed",
+        reward: "You recover a coded keyring and enemy insignia.",
+        failForward: true,
+        tensionShift: "stable",
+        tensionDelta: 0,
+        sceneMode: "high_tension",
+        npcBeat: "The commander falls back to regroup.",
+        closeScene: false,
+        tension: 68,
+        debug: {
+          tension: 68,
+          secrets: [],
+          pacingNotes: [],
+          continuityWarnings: [],
+          aiRequests: [],
+        },
+      };
+    },
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  joinPlayer(manager, "player-2", "Jordan");
+  submitSetup(manager, "player-1", "Nyra Flint", "High-pressure showdown.");
+  submitSetup(manager, "player-2", "Cass Varn", "Urban pursuit under fire.");
+
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-2",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+  await manager.castVote({
+    adventureId,
+    playerId: "player-2",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I attack the captain and force them off balance.",
+  });
+  await flushMicrotasks();
+
+  let state = manager.getAdventure(adventureId);
+  assert.ok(state?.currentScene);
+  assert.equal(state.currentScene?.mode, "high_tension");
+  assert.equal(state.currentScene?.activeActorPlayerId, "player-2");
+  const latestStorytellerAfterFirst = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "storyteller");
+  assert.ok(latestStorytellerAfterFirst);
+  assert.equal(latestStorytellerAfterFirst?.text.includes("Reward:"), false);
+  assert.equal(
+    latestStorytellerAfterFirst?.text.includes(
+      "A heavy satchel of coin drops from the enemy belt.",
+    ),
+    false,
+  );
+
+  await assert.rejects(
+    () =>
+      manager.submitAction({
+        adventureId,
+        playerId: "player-1",
+        text: "I strike again before anyone else can move.",
+      }),
+    /high tension turn order active/i,
+  );
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-2",
+    text: "I finish the captain and grab whatever falls from their belt.",
+  });
+  await flushMicrotasks();
+
+  state = manager.getAdventure(adventureId);
+  const latestStorytellerAfterSecond = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "storyteller");
+  assert.ok(latestStorytellerAfterSecond);
+  assert.equal(latestStorytellerAfterSecond?.text.includes("Reward:"), false);
+  assert.equal(
+    latestStorytellerAfterSecond?.text.includes(
+      "You recover a coded keyring and enemy insignia.",
+    ),
+    true,
+  );
+});
+
+test("enforces fail-forward consequence when dangerous failure would stall progress", async () => {
+  const storyteller = createStorytellerMock({
+    narrateAction: async () => ({
+      text: "The attempt backfires and the lock almost snaps shut for good.",
+      closeScene: false,
+      debug: {
+        tension: 62,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+    resolveSceneReaction: async () => ({
+      goalStatus: "blocked",
+      failForward: true,
+      tensionShift: "rise",
+      tensionDelta: 8,
+      closeScene: false,
+      debug: {
+        tension: 68,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Break into a sealed safehouse.");
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I force the sealed door with everything I have.",
+  });
+  await flushMicrotasks();
+
+  const state = manager.getAdventure(adventureId);
+  const latestStoryteller = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "storyteller");
+  assert.ok(latestStoryteller);
+  assert.equal(latestStoryteller?.text.includes("Consequence:"), false);
+  assert.equal(
+    latestStoryteller?.text.includes("Progress comes at a price"),
+    true,
   );
 });

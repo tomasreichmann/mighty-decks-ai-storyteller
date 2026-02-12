@@ -45,6 +45,7 @@ const storyteller = new StorytellerService({
     imageGenerator: env.models.imageGenerator,
     imageGeneratorFallback: env.models.imageGeneratorFallback,
   },
+  costControls: env.costControls,
   onAiRequest: (entry) => {
     manager?.appendAiRequestLog(entry);
   },

@@ -52,11 +52,27 @@ export const NarratedSceneCard = ({
           </div>
         </div>
       </div>
-      <Panel>
+      <Panel className="-mt-4">
         <Text variant="quote" color="iron" className="text-base">
           {scene.introProse}
         </Text>
       </Panel>
+      {scene.mode === "high_tension" ? (
+        <Message label="Turn Order" color="curse">
+          <Text variant="body" color="iron-light" className="text-sm">
+            High tension.{" "}
+            {scene.activeActorName
+              ? `${scene.activeActorName} acts next.`
+              : "Next actor is being determined."}
+          </Text>
+        </Message>
+      ) : (
+        <Message label="Scene Pace" color="cloth">
+          <Text variant="body" color="iron-light" className="text-sm">
+            Low tension. Players may act freely while the queue is clear.
+          </Text>
+        </Message>
+      )}
       {scene.summary ? (
         <Message label="Scene Summary" color="monster">
           <Text variant="body" color="iron-light" className="text-sm">

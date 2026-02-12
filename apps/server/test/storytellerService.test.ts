@@ -36,6 +36,8 @@ const models: StorytellerModelConfig = {
   narrativeDirectorFallback: "google/gemini-2.5-flash",
   sceneController: "google/gemini-2.5-flash-lite",
   sceneControllerFallback: "google/gemini-2.5-flash",
+  outcomeDecider: "google/gemini-2.5-flash-lite",
+  outcomeDeciderFallback: "google/gemini-2.5-flash",
   continuityKeeper: "google/gemini-2.5-flash-lite",
   continuityKeeperFallback: "deepseek/deepseek-v3.2",
   pitchGenerator: "deepseek/deepseek-v3.2",
@@ -80,6 +82,8 @@ const createOpenRouterStub = (
 const baseScene: ScenePublic = {
   sceneId: "scene-test-1",
   imagePending: true,
+  mode: "low_tension",
+  tension: 48,
   introProse:
     "The air hangs heavy with silence where the Gilded Stein tavern once stood, leaving a lone keg in the empty lot.",
   orientationBullets: [
@@ -88,6 +92,15 @@ const baseScene: ScenePublic = {
     "Exits: taste the ale, inspect the lot, question nearby witnesses.",
   ],
 };
+
+const basePitchInputs = [
+  {
+    displayName: "Alex",
+    characterName: "Nyra Flint",
+    visualDescription: "A storm-chaser in patched leather with brass goggles.",
+    adventurePreference: "High-pressure occult mystery.",
+  },
+];
 
 test("uses loose scene controller parsing when JSON parsing fails", async () => {
   const openRouter = createOpenRouterStub({
@@ -264,4 +277,207 @@ test("does not retry image generation on permanent 4xx failures", async () => {
 
   assert.equal(imageUrl, null);
   assert.equal(openRouter.calls.generateImage.length, 1);
+});
+
+test("supports disabling image generation via cost controls", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () => "Cinematic image prompt.",
+    generateImage: async () => "https://cdn.example.com/disabled-should-not-call.png",
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+    costControls: {
+      disableImageGeneration: true,
+    },
+  });
+
+  const imageUrl = await service.generateSceneImage(baseScene, defaultRuntimeConfig);
+
+  assert.equal(imageUrl, null);
+  assert.equal(openRouter.calls.completeText.length, 0);
+  assert.equal(openRouter.calls.generateImage.length, 0);
+});
+
+test("caches image generation results with TTL", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () => "Cinematic image prompt.",
+    generateImage: async () => "https://cdn.example.com/cached-scene.png",
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+    costControls: {
+      imageCacheTtlMs: 60_000,
+    },
+  });
+
+  const firstUrl = await service.generateSceneImage(baseScene, defaultRuntimeConfig);
+  const secondUrl = await service.generateSceneImage(baseScene, defaultRuntimeConfig);
+
+  assert.equal(firstUrl, "https://cdn.example.com/cached-scene.png");
+  assert.equal(secondUrl, "https://cdn.example.com/cached-scene.png");
+  assert.equal(openRouter.calls.completeText.length, 1);
+  assert.equal(openRouter.calls.generateImage.length, 1);
+});
+
+test("caches generated pitch options with TTL", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify([
+        {
+          title: "Ash Market",
+          description:
+            "Memories are traded for survival and the party must stop tomorrow's disaster from being sold.",
+        },
+        {
+          title: "Lanterns Below",
+          description:
+            "An underground rail delivers impossible cargo and the party must trace its source tonight.",
+        },
+        {
+          title: "Salt Clock",
+          description:
+            "The tide clock fails and the party races rival crews before dawn floods the district.",
+        },
+      ]),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+    costControls: {
+      pitchCacheTtlMs: 60_000,
+    },
+  });
+
+  const firstPitches = await service.generateAdventurePitches(
+    basePitchInputs,
+    defaultRuntimeConfig,
+  );
+  const secondPitches = await service.generateAdventurePitches(
+    basePitchInputs,
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(firstPitches.length, 3);
+  assert.equal(secondPitches.length, 3);
+  assert.deepEqual(secondPitches, firstPitches);
+  assert.equal(openRouter.calls.completeText.length, 1);
+});
+
+test("uses expanded narration budget for information requests", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        text: "You find etched floor marks pointing to a hidden maintenance hatch and smell lamp oil from the south wall vents.",
+        closeScene: false,
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  await service.narrateAction(
+    {
+      pitchTitle: "The Vanishing Keg",
+      pitchDescription: "A city tavern disappears and leaves one full keg behind.",
+      actorCharacterName: "Nyra Flint",
+      actionText: "I inspect the floor around the keg for hidden mechanisms.",
+      turnNumber: 1,
+      responseMode: "expanded",
+      scene: baseScene,
+      transcriptTail: [],
+      rollingSummary: "The tavern vanished overnight.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(openRouter.calls.completeText.length, 1);
+  assert.equal(openRouter.calls.completeText[0]?.maxTokens, 820);
+});
+
+test("parses scene reaction and keeps reward tied to goal completion", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        goalStatus: "completed",
+        reward: "You recover a ring of encrypted guard keys from the fallen captain.",
+        npcBeat: "A rival scavenger rushes in after hearing the clash.",
+        failForward: true,
+        tensionShift: "fall",
+        tensionDelta: -12,
+        closeScene: false,
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const reaction = await service.resolveSceneReaction(
+    {
+      pitchTitle: "The Vanishing Keg",
+      pitchDescription: "A city tavern disappears and leaves one full keg behind.",
+      actorCharacterName: "Nyra Flint",
+      actionText: "I finish off the captain and search the body.",
+      actionResponseText:
+        "Nyra drives the blade through a gap in the captain's armor and drops him.",
+      turnNumber: 2,
+      scene: baseScene,
+      transcriptTail: [],
+      rollingSummary: "The captain is nearly defeated.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(reaction.goalStatus, "completed");
+  assert.equal(
+    reaction.reward,
+    "You recover a ring of encrypted guard keys from the fallen captain.",
+  );
+  assert.equal(reaction.tensionShift, "fall");
+});
+
+test("parses outcome decision intent and response mode from AI output", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        intent: "information_request",
+        responseMode: "expanded",
+        shouldCheck: false,
+        reason: "Pure information probe with no immediate contested stakes.",
+        triggers: {
+          threat: false,
+          uncertainty: false,
+          highReward: false,
+        },
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "What signs show who broke in first?",
+      turnNumber: 2,
+      scene: baseScene,
+      transcriptTail: [],
+      rollingSummary: "The crew is mapping clues in the lot.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "information_request");
+  assert.equal(decision.responseMode, "expanded");
+  assert.equal(decision.shouldCheck, false);
 });

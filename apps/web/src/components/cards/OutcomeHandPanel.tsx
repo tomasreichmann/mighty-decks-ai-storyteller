@@ -92,6 +92,7 @@ export const OutcomeHandPanel = ({
       <div
         className={cn(
           "relative transition-[height,margin] overflow-hidden -mx-4 duration-300 ease-out",
+          "[mask-image:linear-gradient(to_bottom,_black_0%,_black_90%,_transparent_100%)]",
           isExpanded
             ? "h-[180px] sm:h-[250px]  md:h-[330px] pb-0"
             : "h-[180px] sm:h-[200px]  md:h-[220px] -mb-[100px]",
@@ -101,7 +102,6 @@ export const OutcomeHandPanel = ({
           className={cn(
             "absolute left-1/2 translate-x-[-50%] top-4 z-0 flex items-end justify-center transition-transform duration-500 ease-out",
             "scale-[0.4] translate-y-[3%] sm:scale-[0.6] sm:translate-y-[5%] md:scale-[0.8] md:translate-y-[8%] origin-top",
-            /* isExpanded ? "translate-y-[0%]" : "translate-y-[0%]", */
           )}
         >
           {outcomeCardSlugOrder.map((slug, index) => {

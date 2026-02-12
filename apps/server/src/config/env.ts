@@ -27,6 +27,12 @@ const envSchema = z.object({
   OR_TEXT_PITCH_MODEL: z.string().min(1).default("deepseek/deepseek-v3.2"),
   OR_IMAGE_MODEL: z.string().min(1).default("black-forest-labs/flux.2-klein-4b"),
   OR_IMAGE_MODEL_FALLBACK: z.string().min(1).optional(),
+  DISABLE_IMAGE_GENERATION: z
+    .string()
+    .optional()
+    .transform((value) => value === "true"),
+  PITCH_CACHE_TTL_MS: z.coerce.number().int().min(0).default(0),
+  IMAGE_CACHE_TTL_MS: z.coerce.number().int().min(0).default(0),
   DEBUG_MODE: z
     .string()
     .optional()
@@ -67,6 +73,11 @@ export const env = {
   maxActiveAdventures: parsed.MAX_ACTIVE_ADVENTURES,
   clientIdleTimeoutMs: parsed.CLIENT_IDLE_TIMEOUT_MS,
   debugLogDir: parsed.DEBUG_LOG_DIR,
+  costControls: {
+    disableImageGeneration: parsed.DISABLE_IMAGE_GENERATION ?? false,
+    pitchCacheTtlMs: parsed.PITCH_CACHE_TTL_MS,
+    imageCacheTtlMs: parsed.IMAGE_CACHE_TTL_MS,
+  },
   runtimeConfigDefaults: {
     textCallTimeoutMs: parsed.TEXT_CALL_TIMEOUT_MS,
     turnDeadlineMs: parsed.TURN_DEADLINE_MS,

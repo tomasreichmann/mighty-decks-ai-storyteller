@@ -1,17 +1,36 @@
-import type { SceneDebug } from "@mighty-decks/spec/adventureState";
+import type { SceneDebug, ScenePublic } from "@mighty-decks/spec/adventureState";
 import { Section } from "./common/Section";
 import { Text } from "./common/Text";
+import { Message } from "./common/Message";
 
 interface DebugPanelProps {
   debug: SceneDebug;
+  scene?: ScenePublic;
+  showAiRequestDetails?: boolean;
 }
 
-export const DebugPanel = ({ debug }: DebugPanelProps): JSX.Element => {
+export const DebugPanel = ({
+  debug,
+  scene,
+  showAiRequestDetails = false,
+}: DebugPanelProps): JSX.Element => {
+  const recentDecisions = debug.recentDecisions.slice(-6).reverse();
+
   return (
     <Section className="stack relative paper-shadow">
       <Text as="h3" variant="h3" color="iron">
         Debug Panel
       </Text>
+      {scene ? (
+        <Message label="Scene Control" color="cloth">
+          <Text variant="body" color="iron-light">
+            Mode: {scene.mode} | Tension: {scene.tension}
+          </Text>
+          <Text variant="body" color="iron-light">
+            Active actor: {scene.activeActorName ?? "none"}
+          </Text>
+        </Message>
+      ) : null}
       <Text variant="body" color="iron-light">
         Tension: {debug.tension ?? "n/a"}
       </Text>
@@ -24,6 +43,43 @@ export const DebugPanel = ({ debug }: DebugPanelProps): JSX.Element => {
       <Text variant="body" color="iron-light">
         Continuity warnings: {debug.continuityWarnings.join(", ") || "none"}
       </Text>
+      <Text variant="body" color="iron-light">
+        AI requests tracked: {debug.aiRequests.length}
+      </Text>
+      {showAiRequestDetails ? (
+        <Message label="AI Requests" color="curse">
+          <Text variant="body" color="iron-light" className="text-sm">
+            {debug.aiRequests
+              .slice(-8)
+              .map((entry) => `${entry.agent} ${entry.status} (${entry.model})`)
+              .join(" | ") || "none"}
+          </Text>
+        </Message>
+      ) : null}
+      <Message label="Decision Log" color="gold">
+        {recentDecisions.length === 0 ? (
+          <Text variant="body" color="iron-light" className="text-sm">
+            No turn decisions captured yet.
+          </Text>
+        ) : (
+          <div className="stack gap-2">
+            {recentDecisions.map((decision) => (
+              <div key={decision.decisionId} className="rounded-sm border border-kac-iron-dark/30 p-2">
+                <Text variant="body" color="iron-light" className="text-sm">
+                  Turn {decision.turnNumber}: {decision.actorName} | {decision.modeBefore} to {decision.modeAfter} |{" "}
+                  {decision.tensionBefore} to {decision.tensionAfter}
+                </Text>
+                <Text variant="body" color="iron-light" className="text-xs">
+                  goal={decision.goalStatus}, response={decision.responseMode}, outcomeCheck={decision.outcomeCheckTriggered ? "yes" : "no"}, reward={decision.rewardGranted ? "yes" : "no"}, failForward={decision.failForwardApplied ? "yes" : "no"}
+                </Text>
+                <Text variant="body" color="iron-light" className="text-xs">
+                  {decision.reasoning.join(" | ") || "No reasoning notes recorded."}
+                </Text>
+              </div>
+            ))}
+          </div>
+        )}
+      </Message>
     </Section>
   );
 };

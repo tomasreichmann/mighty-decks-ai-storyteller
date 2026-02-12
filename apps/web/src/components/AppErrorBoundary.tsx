@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Text } from "./common/Text";
+import { Message } from "./common/Message";
 
 interface AppErrorBoundaryProps {
   children: ReactNode;
@@ -37,18 +38,15 @@ export class AppErrorBoundary extends Component<
 
     return (
       <main className="app-shell py-8">
-        <section className="rounded-lg border border-rose-300 bg-rose-50 p-4">
-          <Text as="h1" variant="h3" className="text-rose-800">
-            App crashed while rendering
-          </Text>
-          <Text variant="body" className="mt-2 text-sm text-rose-700">
+        <Message color="curse" label="App crashed while rendering">
+          <Text variant="body" color="curse">
             This usually means a runtime error in the web app. Please share the
             message below.
           </Text>
           <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-rose-200 bg-white p-3 text-xs text-kac-iron">
             {this.state.error.stack ?? this.state.error.message}
           </pre>
-        </section>
+        </Message>
       </main>
     );
   }

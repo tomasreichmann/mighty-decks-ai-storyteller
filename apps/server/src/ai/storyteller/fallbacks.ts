@@ -52,6 +52,7 @@ export const toDebugState = (source: {
   pacingNotes: source.pacingNotes ?? [],
   continuityWarnings: source.continuityWarnings ?? [],
   aiRequests: [],
+  recentDecisions: [],
 });
 
 export const buildFallbackPitches = (inputs: PitchInput[]): PitchOption[] => {

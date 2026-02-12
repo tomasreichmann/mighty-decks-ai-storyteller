@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdventureHeader } from "../components/AdventureHeader";
 import { ConnectionDiagnostics } from "../components/ConnectionDiagnostics";
@@ -13,6 +13,9 @@ import { TranscriptFeed } from "../components/TranscriptFeed";
 import { useAdventureSession } from "../hooks/useAdventureSession";
 import { Message } from "../components/common/Message";
 import { Text } from "../components/common/Text";
+import { Button } from "../components/common/Button";
+
+type TranscriptVerbosity = "full" | "table" | "story";
 
 export const ScreenPage = (): JSX.Element => {
   const navigate = useNavigate();
@@ -59,6 +62,24 @@ export const ScreenPage = (): JSX.Element => {
   );
   const connectionStatus = connected ? "connected" : "reconnecting";
   const showLobbyState = phase === "lobby" && Boolean(adventure);
+  const [transcriptVerbosity, setTranscriptVerbosity] =
+    useState<TranscriptVerbosity>("table");
+  const [showAiRequestDetails, setShowAiRequestDetails] = useState(false);
+  const filteredTranscriptEntries = useMemo(() => {
+    const entries = adventure?.transcript ?? [];
+    if (!adventure?.debugMode || transcriptVerbosity === "full") {
+      return entries;
+    }
+
+    const withoutAiDebug = entries.filter(
+      (entry) => !(entry.kind === "system" && entry.author === "AI Debug"),
+    );
+    if (transcriptVerbosity === "table") {
+      return withoutAiDebug;
+    }
+
+    return withoutAiDebug.filter((entry) => entry.kind !== "system");
+  }, [adventure?.debugMode, adventure?.transcript, transcriptVerbosity]);
 
   return (
     <main className="app-shell stack py-6 gap-4">
@@ -109,6 +130,54 @@ export const ScreenPage = (): JSX.Element => {
 
       {phase === "play" ? (
         <>
+          {adventure?.debugMode ? (
+            <Message label="Debug Controls" color="cloth">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant={
+                    transcriptVerbosity === "full" ? "solid" : "ghost"
+                  }
+                  color="cloth"
+                  onClick={() => setTranscriptVerbosity("full")}
+                >
+                  Full Transcript
+                </Button>
+                <Button
+                  size="sm"
+                  variant={
+                    transcriptVerbosity === "table" ? "solid" : "ghost"
+                  }
+                  color="cloth"
+                  onClick={() => setTranscriptVerbosity("table")}
+                >
+                  Hide AI Debug
+                </Button>
+                <Button
+                  size="sm"
+                  variant={
+                    transcriptVerbosity === "story" ? "solid" : "ghost"
+                  }
+                  color="cloth"
+                  onClick={() => setTranscriptVerbosity("story")}
+                >
+                  Story Only
+                </Button>
+                <Button
+                  size="sm"
+                  variant={showAiRequestDetails ? "solid" : "ghost"}
+                  color="gold"
+                  onClick={() =>
+                    setShowAiRequestDetails((current) => !current)
+                  }
+                >
+                  {showAiRequestDetails
+                    ? "Hide AI Request Detail"
+                    : "Show AI Request Detail"}
+                </Button>
+              </div>
+            </Message>
+          ) : null}
           {adventure?.activeVote ? (
             <GenericVotePanel
               vote={adventure.activeVote}
@@ -117,7 +186,7 @@ export const ScreenPage = (): JSX.Element => {
             />
           ) : null}
           <TranscriptFeed
-            entries={adventure?.transcript ?? []}
+            entries={filteredTranscriptEntries}
             scene={adventure?.currentScene}
             pendingLabel={thinking.active ? thinking.label : undefined}
           />
@@ -131,7 +200,11 @@ export const ScreenPage = (): JSX.Element => {
             <LatencyMetricsCard metrics={adventure.latencyMetrics} />
           ) : null}
           {adventure?.debugMode && adventure.debugScene ? (
-            <DebugPanel debug={adventure.debugScene} />
+            <DebugPanel
+              debug={adventure.debugScene}
+              scene={adventure.currentScene}
+              showAiRequestDetails={showAiRequestDetails}
+            />
           ) : null}
         </>
       ) : null}
@@ -139,7 +212,7 @@ export const ScreenPage = (): JSX.Element => {
       {phase === "ending" ? (
         <>
           <TranscriptFeed
-            entries={adventure?.transcript ?? []}
+            entries={filteredTranscriptEntries}
             scene={adventure?.currentScene}
           />
           <SessionSummaryCard

@@ -38,11 +38,8 @@ if (testFiles.length === 0) {
   process.exit(1);
 }
 
-const tsxBin = process.platform === "win32"
-  ? resolve(process.cwd(), "node_modules", ".bin", "tsx.cmd")
-  : resolve(process.cwd(), "node_modules", ".bin", "tsx");
-
-const result = spawnSync(tsxBin, ["--test", ...testFiles], {
+const tsxCliPath = resolve(process.cwd(), "node_modules", "tsx", "dist", "cli.mjs");
+const result = spawnSync(process.execPath, [tsxCliPath, "--test", ...testFiles], {
   cwd: process.cwd(),
   stdio: "inherit",
   windowsHide: true,

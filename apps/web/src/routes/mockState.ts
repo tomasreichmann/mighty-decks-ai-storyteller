@@ -64,6 +64,8 @@ export const mockVote: ActiveVote = {
 export const mockScene: ScenePublic = {
   sceneId: "scene-1",
   imagePending: true,
+  mode: "low_tension",
+  tension: 52,
   introProse:
     "Rain hammers the observatory glass while the brass doors lock behind you. The clocktower below has gone silent.",
   orientationBullets: [
@@ -120,6 +122,7 @@ export const mockState: AdventureState = {
     pacingNotes: ["Offer hard choice within 2 turns"],
     continuityWarnings: [],
     aiRequests: [],
+    recentDecisions: [],
   },
   runtimeConfig: mockRuntimeConfig,
   latencyMetrics: {
@@ -145,4 +148,5 @@ export const mockDebugScene: SceneDebug = mockState.debugScene ?? {
   pacingNotes: [],
   continuityWarnings: [],
   aiRequests: [],
+  recentDecisions: [],
 };

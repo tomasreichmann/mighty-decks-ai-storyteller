@@ -48,6 +48,9 @@ interface SocketParticipantLink {
 interface ActionQueueItem {
   playerId: string;
   text: string;
+  intent: "information_request" | "direct_action";
+  responseMode: "concise" | "expanded";
+  outcomeCheckTriggered: boolean;
 }
 
 interface AdventureRuntimeState {
@@ -154,6 +157,12 @@ const buildOutcomeNarrationHint = (card: OutcomeCardType): string =>
 const isAiDebugTranscriptEntry = (entry: TranscriptEntry): boolean =>
   entry.kind === "system" && entry.author === AI_DEBUG_AUTHOR;
 
+const HIGH_TENSION_THRESHOLD = 65;
+const LOW_TENSION_THRESHOLD = 40;
+
+const clampTension = (value: number): number =>
+  Math.max(0, Math.min(100, value));
+
 const percentile90 = (values: number[]): number => {
   if (values.length === 0) {
     return 0;
@@ -190,12 +199,7 @@ export class AdventureManager {
       return;
     }
 
-    const debugScene = adventure.debugScene ?? {
-      secrets: [],
-      pacingNotes: [],
-      continuityWarnings: [],
-      aiRequests: [],
-    };
+    const debugScene = adventure.debugScene ?? this.createEmptyDebugScene();
 
     const requestEntry: AiRequestLogEntry = {
       requestId: event.requestId,
@@ -366,6 +370,20 @@ export class AdventureManager {
       }
     }
 
+    if (
+      adventure.currentScene?.mode === "high_tension" &&
+      adventure.currentScene.activeActorPlayerId === link.playerId
+    ) {
+      this.updateActiveActorForScene(adventure, undefined, "high_tension");
+      if (adventure.currentScene.activeActorName) {
+        this.appendTranscriptEntry(adventure, {
+          kind: "system",
+          author: "System",
+          text: `Turn order updates after disconnect. ${adventure.currentScene.activeActorName} acts next.`,
+        });
+      }
+    }
+
     void this.maybeResolveActiveVoteEarly(link.adventureId);
     void this.maybeStartAdventurePitchVote(link.adventureId);
     return adventure;
@@ -482,6 +500,18 @@ export class AdventureManager {
       throw new Error("only connected players can submit actions");
     }
 
+    if (
+      adventure.currentScene.mode === "high_tension" &&
+      adventure.currentScene.activeActorPlayerId &&
+      adventure.currentScene.activeActorPlayerId !== parsed.playerId
+    ) {
+      const activeActorName =
+        adventure.currentScene.activeActorName ?? "the active player";
+      throw new Error(
+        `high tension turn order active; wait for ${activeActorName} to act`,
+      );
+    }
+
     const runtime = this.ensureRuntime(adventure.adventureId);
     if (
       runtime.processingAction ||
@@ -500,11 +530,7 @@ export class AdventureManager {
       throw new Error("action text is empty");
     }
 
-    const configuredCharacterName = player.setup?.characterName?.trim();
-    const playerAuthor =
-      configuredCharacterName && configuredCharacterName.length > 0
-        ? configuredCharacterName
-        : player.displayName;
+    const playerAuthor = this.getCharacterDisplayName(player);
 
     this.appendTranscriptEntry(adventure, {
       kind: "player",
@@ -550,6 +576,9 @@ export class AdventureManager {
         runtime.pendingOutcomeAction = {
           playerId: parsed.playerId,
           text: actionText,
+          intent: decision.intent,
+          responseMode: decision.responseMode,
+          outcomeCheckTriggered: true,
         };
 
         const checkId = createId("oc");
@@ -578,6 +607,9 @@ export class AdventureManager {
       runtime.actionQueue.push({
         playerId: parsed.playerId,
         text: actionText,
+        intent: decision.intent,
+        responseMode: decision.responseMode,
+        outcomeCheckTriggered: false,
       });
       this.notifyAdventureUpdated(refreshedAdventure.adventureId);
 
@@ -674,6 +706,9 @@ export class AdventureManager {
       runtime.actionQueue.push({
         playerId: pendingAction.playerId,
         text: `${pendingAction.text}\nOutcome guidance: ${playedCardContext}`,
+        intent: pendingAction.intent,
+        responseMode: pendingAction.responseMode,
+        outcomeCheckTriggered: pendingAction.outcomeCheckTriggered,
       });
       runtime.pendingOutcomeAction = null;
     }
@@ -784,6 +819,193 @@ export class AdventureManager {
     return adventure.roster.filter(
       (entry) => entry.role === "player" && entry.connected,
     );
+  }
+
+  private createEmptyDebugScene(): NonNullable<AdventureState["debugScene"]> {
+    return {
+      secrets: [],
+      pacingNotes: [],
+      continuityWarnings: [],
+      aiRequests: [],
+      recentDecisions: [],
+    };
+  }
+
+  private getCharacterDisplayName(
+    entry: AdventureState["roster"][number],
+  ): string {
+    const characterName = entry.setup?.characterName?.trim();
+    if (characterName && characterName.length > 0) {
+      return characterName;
+    }
+
+    return entry.displayName;
+  }
+
+  private enforceFailForwardConsequence(
+    modelConsequence: string | undefined,
+    failForward: boolean,
+  ): string | undefined {
+    if (modelConsequence && modelConsequence.trim().length > 0) {
+      return this.sanitizeNarrationBeat(modelConsequence);
+    }
+
+    if (!failForward) {
+      return undefined;
+    }
+
+    return "Progress comes at a price: the push lands, but the group is left exposed to the next threat.";
+  }
+
+  private sanitizeNarrationBeat(value: string | undefined): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const cleaned = value
+      .trim()
+      .replace(/^(consequence|npc\s*move|reward)\s*:\s*/i, "")
+      .replace(/\s+/g, " ");
+
+    return cleaned.length > 0 ? cleaned : undefined;
+  }
+
+  private buildPlayerVisibleStorytellerText(
+    baseText: string,
+    consequence: string | undefined,
+    reward: string | undefined,
+    npcBeat: string | undefined,
+  ): string {
+    const sections = [
+      baseText.trim(),
+      this.sanitizeNarrationBeat(consequence),
+      /* this.sanitizeNarrationBeat(reward),
+      this.sanitizeNarrationBeat(npcBeat), */
+    ].filter((section): section is string =>
+      Boolean(section && section.length > 0),
+    );
+
+    return sections.join("\n\n");
+  }
+
+  private resolveNextTension(
+    currentTension: number,
+    shift: "rise" | "fall" | "stable",
+    modelDelta: number,
+    explicitTension?: number,
+  ): number {
+    if (explicitTension !== undefined) {
+      return clampTension(explicitTension);
+    }
+
+    const normalizedDelta =
+      shift === "rise"
+        ? modelDelta > 0
+          ? modelDelta
+          : 10
+        : shift === "fall"
+          ? modelDelta < 0
+            ? modelDelta
+            : -10
+          : modelDelta;
+    const next = currentTension + normalizedDelta;
+    return clampTension(next);
+  }
+
+  private resolveNextSceneMode(
+    currentMode: "low_tension" | "high_tension",
+    nextTension: number,
+    suggestedMode?: "low_tension" | "high_tension",
+  ): "low_tension" | "high_tension" {
+    if (suggestedMode) {
+      return suggestedMode;
+    }
+    if (nextTension >= HIGH_TENSION_THRESHOLD) {
+      return "high_tension";
+    }
+    if (nextTension <= LOW_TENSION_THRESHOLD) {
+      return "low_tension";
+    }
+
+    return currentMode;
+  }
+
+  private updateActiveActorForScene(
+    adventure: AdventureState,
+    actingPlayerId: string | undefined,
+    mode: "low_tension" | "high_tension",
+  ): void {
+    if (!adventure.currentScene) {
+      return;
+    }
+
+    if (mode !== "high_tension") {
+      delete adventure.currentScene.activeActorPlayerId;
+      delete adventure.currentScene.activeActorName;
+      return;
+    }
+
+    const connectedPlayers = this.getConnectedPlayers(adventure);
+    if (connectedPlayers.length === 0) {
+      delete adventure.currentScene.activeActorPlayerId;
+      delete adventure.currentScene.activeActorName;
+      return;
+    }
+
+    let nextIndex = 0;
+    if (actingPlayerId) {
+      const actingIndex = connectedPlayers.findIndex(
+        (entry) => entry.playerId === actingPlayerId,
+      );
+      if (actingIndex >= 0) {
+        nextIndex = (actingIndex + 1) % connectedPlayers.length;
+      }
+    } else if (adventure.currentScene.activeActorPlayerId) {
+      const existingIndex = connectedPlayers.findIndex(
+        (entry) =>
+          entry.playerId === adventure.currentScene?.activeActorPlayerId,
+      );
+      if (existingIndex >= 0) {
+        nextIndex = existingIndex;
+      }
+    }
+
+    const nextActor = connectedPlayers[nextIndex] ?? connectedPlayers[0];
+    if (!nextActor) {
+      delete adventure.currentScene.activeActorPlayerId;
+      delete adventure.currentScene.activeActorName;
+      return;
+    }
+
+    adventure.currentScene.activeActorPlayerId = nextActor.playerId;
+    adventure.currentScene.activeActorName =
+      this.getCharacterDisplayName(nextActor);
+  }
+
+  private appendDecisionLog(
+    adventure: AdventureState,
+    decision: Omit<
+      NonNullable<AdventureState["debugScene"]>["recentDecisions"][number],
+      "decisionId" | "createdAtIso"
+    >,
+  ): void {
+    if (!adventure.debugMode) {
+      return;
+    }
+
+    const currentDebug = adventure.debugScene ?? this.createEmptyDebugScene();
+    const decisionEntry = {
+      decisionId: createId("decision"),
+      createdAtIso: new Date().toISOString(),
+      ...decision,
+    };
+
+    adventure.debugScene = {
+      ...currentDebug,
+      recentDecisions: [...currentDebug.recentDecisions, decisionEntry].slice(
+        -40,
+      ),
+    };
   }
 
   private assertAdventureOpen(adventure: AdventureState): void {
@@ -1144,19 +1366,16 @@ export class AdventureManager {
     const pitchDescription =
       runtime.selectedPitch?.description ??
       "A dangerous opportunity appears and demands action before the window closes.";
-    const partyMembers = this.getConnectedPlayers(adventure).map((entry) => {
-      const characterName = entry.setup?.characterName?.trim();
-      if (characterName && characterName.length > 0) {
-        return characterName;
-      }
-
-      return entry.displayName;
-    });
+    const partyMembers = this.getConnectedPlayers(adventure).map((entry) =>
+      this.getCharacterDisplayName(entry),
+    );
 
     const sceneId = createId("scene");
     adventure.currentScene = scenePublicSchema.parse({
       sceneId,
       imagePending: false,
+      mode: "low_tension",
+      tension: 35,
       introProse: PENDING_SCENE_INTRO,
       orientationBullets: PENDING_SCENE_BULLETS,
     });
@@ -1197,9 +1416,20 @@ export class AdventureManager {
       refreshedAdventure.currentScene = scenePublicSchema.parse({
         sceneId,
         imagePending: true,
+        mode:
+          (sceneStart.debug.tension ?? 45) >= HIGH_TENSION_THRESHOLD
+            ? "high_tension"
+            : "low_tension",
+        tension: clampTension(sceneStart.debug.tension ?? 45),
         introProse: sceneStart.introProse,
         orientationBullets: sceneStart.orientationBullets,
       });
+
+      this.updateActiveActorForScene(
+        refreshedAdventure,
+        undefined,
+        refreshedAdventure.currentScene.mode,
+      );
       if (refreshedAdventure.debugMode) {
         const existingAiRequests =
           refreshedAdventure.debugScene?.aiRequests ?? [];
@@ -1216,6 +1446,17 @@ export class AdventureManager {
         author: "Storyteller",
         text: sceneStart.playerPrompt,
       });
+
+      if (
+        refreshedAdventure.currentScene.mode === "high_tension" &&
+        refreshedAdventure.currentScene.activeActorName
+      ) {
+        this.appendTranscriptEntry(refreshedAdventure, {
+          kind: "player",
+          author: refreshedAdventure.currentScene.activeActorName,
+          text: `acts next.`,
+        });
+      }
 
       await this.refreshContinuity(adventureId);
       this.notifyAdventureUpdated(adventureId);
@@ -1294,15 +1535,19 @@ export class AdventureManager {
         });
 
         let actionResponse: ActionResponseResult;
+        let sceneReaction: Awaited<
+          ReturnType<StorytellerService["resolveSceneReaction"]>
+        > | null = null;
         const startedAtMs = Date.now();
         try {
           const actingPlayer = this.getRosterEntry(
             adventure,
             actionItem.playerId,
           );
-          const actorCharacterName =
-            actingPlayer.setup?.characterName?.trim() ||
-            actingPlayer.displayName;
+          const actorCharacterName = this.getCharacterDisplayName(actingPlayer);
+          const transcriptTail = this.getNarrativeTranscript(
+            adventure.transcript,
+          ).slice(-14);
 
           try {
             actionResponse = await this.options.storyteller.narrateAction(
@@ -1314,10 +1559,9 @@ export class AdventureManager {
                 actorCharacterName,
                 actionText: actionItem.text,
                 turnNumber: runtime.sceneTurnCounter + 1,
+                responseMode: actionItem.responseMode,
                 scene: adventure.currentScene,
-                transcriptTail: this.getNarrativeTranscript(
-                  adventure.transcript,
-                ).slice(-14),
+                transcriptTail,
                 rollingSummary: runtime.rollingSummary,
               },
               adventure.runtimeConfig,
@@ -1335,36 +1579,185 @@ export class AdventureManager {
                 ],
                 continuityWarnings: [],
                 aiRequests: [],
+                recentDecisions: [],
               },
             };
+          }
+          try {
+            if (
+              typeof this.options.storyteller.resolveSceneReaction ===
+              "function"
+            ) {
+              sceneReaction =
+                await this.options.storyteller.resolveSceneReaction(
+                  {
+                    pitchTitle:
+                      runtime.selectedPitch?.title ?? "Uncharted Trouble",
+                    pitchDescription:
+                      runtime.selectedPitch?.description ??
+                      "A dangerous opportunity appears and demands action before the window closes.",
+                    actorCharacterName,
+                    actionText: actionItem.text,
+                    actionResponseText: actionResponse.text,
+                    turnNumber: runtime.sceneTurnCounter + 1,
+                    scene: adventure.currentScene,
+                    transcriptTail,
+                    rollingSummary: runtime.rollingSummary,
+                  },
+                  adventure.runtimeConfig,
+                  { adventureId },
+                );
+            }
+          } catch {
+            sceneReaction = null;
           }
 
           runtime.sceneTurnCounter += 1;
           const elapsedMs = Date.now() - startedAtMs;
           this.recordLatency(adventure, elapsedMs, runtime);
 
+          const enforcedConsequence = this.enforceFailForwardConsequence(
+            sceneReaction?.consequence,
+            sceneReaction?.failForward ?? true,
+          );
+          const sanitizedNpcBeat = this.sanitizeNarrationBeat(
+            sceneReaction?.npcBeat,
+          );
+          const sanitizedReward = this.sanitizeNarrationBeat(
+            sceneReaction?.reward,
+          );
+          const rewardGranted =
+            sceneReaction?.goalStatus === "completed" &&
+            Boolean(sanitizedReward);
+          const storytellerText = this.buildPlayerVisibleStorytellerText(
+            actionResponse.text,
+            enforcedConsequence,
+            rewardGranted ? sanitizedReward : undefined,
+            sanitizedNpcBeat,
+          );
+
+          const previousMode = adventure.currentScene.mode;
+          const previousTension = adventure.currentScene.tension;
+          const nextTension = this.resolveNextTension(
+            previousTension,
+            sceneReaction?.tensionShift ?? "stable",
+            sceneReaction?.tensionDelta ?? 0,
+            sceneReaction?.tension,
+          );
+          const nextMode = this.resolveNextSceneMode(
+            previousMode,
+            nextTension,
+            sceneReaction?.sceneMode,
+          );
+          adventure.currentScene.tension = nextTension;
+          adventure.currentScene.mode = nextMode;
+          this.updateActiveActorForScene(
+            adventure,
+            actionItem.playerId,
+            nextMode,
+          );
+
           this.appendTranscriptEntry(adventure, {
             kind: "storyteller",
             author: "Storyteller",
-            text: actionResponse.text,
+            text: storytellerText,
           });
           this.hooks.onStorytellerResponse?.(adventureId, {
-            text: actionResponse.text,
+            text: storytellerText,
           });
 
+          if (nextMode !== previousMode) {
+            this.appendTranscriptEntry(adventure, {
+              kind: "system",
+              author: "System",
+              text:
+                nextMode === "high_tension"
+                  ? "Tension spikes. Turn order tightens and immediate actions matter."
+                  : "Immediate pressure drops. Freeform action resumes.",
+            });
+          }
+          if (
+            nextMode === "high_tension" &&
+            adventure.currentScene.activeActorName
+          ) {
+            this.appendTranscriptEntry(adventure, {
+              kind: "system",
+              author: "System",
+              text: `High tension turn order: ${adventure.currentScene.activeActorName} acts next.`,
+            });
+          }
+
           if (adventure.debugMode) {
-            const existingAiRequests = adventure.debugScene?.aiRequests ?? [];
+            const currentDebug =
+              adventure.debugScene ?? this.createEmptyDebugScene();
+            const existingAiRequests = currentDebug.aiRequests ?? [];
+            const mergedPacing = [
+              ...(actionResponse.debug.pacingNotes ?? []),
+              ...(sceneReaction?.debug.pacingNotes ?? []),
+            ];
+            const mergedWarnings = Array.from(
+              new Set([
+                ...(actionResponse.debug.continuityWarnings ?? []),
+                ...(sceneReaction?.debug.continuityWarnings ?? []),
+              ]),
+            );
             adventure.debugScene = {
               ...actionResponse.debug,
+              tension: nextTension,
+              pacingNotes: mergedPacing,
+              continuityWarnings: mergedWarnings,
               aiRequests: existingAiRequests,
+              recentDecisions: currentDebug.recentDecisions ?? [],
             };
           }
+
+          this.appendDecisionLog(adventure, {
+            turnNumber: runtime.sceneTurnCounter,
+            actorName: actorCharacterName,
+            responseMode: actionItem.responseMode,
+            outcomeCheckTriggered: actionItem.outcomeCheckTriggered,
+            goalStatus: sceneReaction?.goalStatus ?? "advanced",
+            rewardGranted,
+            failForwardApplied: Boolean(enforcedConsequence),
+            modeBefore: previousMode,
+            modeAfter: nextMode,
+            tensionBefore: previousTension,
+            tensionAfter: nextTension,
+            reasoning: [
+              `Intent classified by AI as ${actionItem.intent}.`,
+              ...(sceneReaction?.reasoning ?? []),
+              ...(sceneReaction?.tensionReason
+                ? [`Tension reason: ${sceneReaction.tensionReason}`]
+                : []),
+              ...(sanitizedNpcBeat
+                ? [
+                    "NPC agenda beat executed.",
+                    `NPC beat detail: ${sanitizedNpcBeat}`,
+                  ]
+                : []),
+              ...(enforcedConsequence
+                ? [
+                    "Fail-forward cost applied to keep momentum.",
+                    `Consequence detail: ${enforcedConsequence}`,
+                  ]
+                : []),
+              ...(rewardGranted && sanitizedReward
+                ? [
+                    "Reward granted after goal completion.",
+                    `Reward detail: ${sanitizedReward}`,
+                  ]
+                : []),
+            ],
+          });
 
           await this.refreshContinuity(adventureId);
           this.notifyAdventureUpdated(adventureId);
 
-          if (actionResponse.closeScene) {
+          const shouldCloseScene =
+            actionResponse.closeScene || sceneReaction?.closeScene === true;
+          if (shouldCloseScene) {
             const sceneSummary =
+              sceneReaction?.sceneSummary ??
               actionResponse.sceneSummary ??
               "The group resolves the immediate pressure and must choose whether to continue or end.";
             await this.beginSceneTransitionVote(adventureId, sceneSummary);
@@ -1425,12 +1818,7 @@ export class AdventureManager {
     runtime.rollingSummary = continuity.rollingSummary;
 
     if (adventure.debugMode) {
-      const currentDebug = adventure.debugScene ?? {
-        secrets: [],
-        pacingNotes: [],
-        continuityWarnings: [],
-        aiRequests: [],
-      };
+      const currentDebug = adventure.debugScene ?? this.createEmptyDebugScene();
       adventure.debugScene = {
         ...currentDebug,
         continuityWarnings: continuity.continuityWarnings,

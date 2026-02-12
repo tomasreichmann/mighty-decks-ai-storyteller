@@ -64,6 +64,10 @@ export const scenePublicSchema = z.object({
   sceneId: z.string().min(1),
   imageUrl: z.string().url().optional(),
   imagePending: z.boolean().default(false),
+  mode: z.enum(["low_tension", "high_tension"]).default("low_tension"),
+  tension: z.number().min(0).max(100).default(35),
+  activeActorPlayerId: z.string().min(1).optional(),
+  activeActorName: z.string().min(1).max(100).optional(),
   introProse: z.string().min(1),
   orientationBullets: z.array(z.string().min(1)).min(2).max(4),
   summary: z.string().optional(),
@@ -134,6 +138,26 @@ export const sceneDebugSchema = z.object({
   pacingNotes: z.array(z.string()).default([]),
   continuityWarnings: z.array(z.string()).default([]),
   aiRequests: z.array(aiRequestLogEntrySchema).default([]),
+  recentDecisions: z
+    .array(
+      z.object({
+        decisionId: z.string().min(1),
+        createdAtIso: z.string().datetime(),
+        turnNumber: z.number().int().min(1),
+        actorName: z.string().min(1).max(100),
+        responseMode: z.enum(["concise", "expanded"]),
+        outcomeCheckTriggered: z.boolean().default(false),
+        goalStatus: z.enum(["advanced", "completed", "blocked"]),
+        rewardGranted: z.boolean().default(false),
+        failForwardApplied: z.boolean().default(false),
+        modeBefore: z.enum(["low_tension", "high_tension"]),
+        modeAfter: z.enum(["low_tension", "high_tension"]),
+        tensionBefore: z.number().min(0).max(100),
+        tensionAfter: z.number().min(0).max(100),
+        reasoning: z.array(z.string()).default([]),
+      }),
+    )
+    .default([]),
 });
 export type SceneDebug = z.infer<typeof sceneDebugSchema>;
 

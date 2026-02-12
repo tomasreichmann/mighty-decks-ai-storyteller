@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import type { PlayerSetup } from "@mighty-decks/spec/adventureState";
 import { ActionComposer } from "../components/ActionComposer";
 import { AdventureHeader } from "../components/AdventureHeader";
 import { OutcomeHandPanel } from "../components/cards/OutcomeHandPanel";
@@ -12,6 +13,14 @@ import { useAdventureSession } from "../hooks/useAdventureSession";
 import { cn } from "../utils/cn";
 import { Message } from "../components/common/Message";
 import { Text } from "../components/common/Text";
+
+const formatSetupForDebug = (setup: PlayerSetup | null | undefined): string => {
+  if (!setup) {
+    return "none";
+  }
+
+  return `${setup.characterName} (visual:${setup.visualDescription.length}, pref:${setup.adventurePreference.length})`;
+};
 
 export const PlayerPage = (): JSX.Element => {
   const navigate = useNavigate();
@@ -36,6 +45,7 @@ export const PlayerPage = (): JSX.Element => {
     serverUrlWarning,
     thinking,
     identity,
+    setupDebug,
     submitSetup,
     toggleReady,
     castVote,
@@ -80,7 +90,8 @@ export const PlayerPage = (): JSX.Element => {
     thinking.active &&
     thinking.label.toLowerCase().includes("generating adventure pitches");
   const showLateJoinSetup =
-    (phase === "vote" || phase === "play") &&
+    phase === "play" &&
+    !adventure?.activeVote &&
     !adventure?.closed &&
     Boolean(participant?.connected) &&
     needsCharacterSetup;
@@ -100,6 +111,11 @@ export const PlayerPage = (): JSX.Element => {
     !adventure?.activeVote &&
     !adventure?.activeOutcomeCheck &&
     hasCharacterSetup;
+  const waitingForHighTensionTurn =
+    phase === "play" &&
+    adventure?.currentScene?.mode === "high_tension" &&
+    Boolean(adventure.currentScene.activeActorPlayerId) &&
+    adventure.currentScene.activeActorPlayerId !== identity.playerId;
   const activeOutcomeCheck = adventure?.activeOutcomeCheck;
   const activeOutcomeTarget = useMemo(
     () =>
@@ -115,6 +131,58 @@ export const PlayerPage = (): JSX.Element => {
   );
   const connectionStatus = connected ? "connected" : "reconnecting";
   const showLobbySetup = phase === "lobby" && Boolean(adventure);
+  const playerDebugLines = useMemo(() => {
+    if (!adventure?.debugMode) {
+      return [];
+    }
+
+    const rosterSummary = adventure.roster
+      .map((entry) =>
+        [
+          entry.playerId,
+          entry.role,
+          entry.connected ? "connected" : "disconnected",
+          entry.setup ? "setup:yes" : "setup:no",
+          `name:${entry.setup?.characterName ?? "-"}`,
+        ].join("|"),
+      )
+      .join(" || ");
+
+    return [
+      `identity.playerId=${identity.playerId}`,
+      `participant.playerId=${participant?.playerId ?? "missing"}`,
+      `phase=${phase}`,
+      `activeVote=${adventure.activeVote ? "true" : "false"}`,
+      `participant.connected=${participant?.connected ? "true" : "false"}`,
+      `hasCharacterSetup=${hasCharacterSetup ? "true" : "false"}`,
+      `needsCharacterSetup=${needsCharacterSetup ? "true" : "false"}`,
+      `showLateJoinSetup=${showLateJoinSetup ? "true" : "false"}`,
+      `participant.setup=${formatSetupForDebug(participant?.setup)}`,
+      `cachedSetup=${formatSetupForDebug(setupDebug.cachedSetup)}`,
+      `pendingSetupOverride=${formatSetupForDebug(setupDebug.pendingSetupOverride)}`,
+      `submitCount=${setupDebug.submitCount}`,
+      `autoResubmitCount=${setupDebug.autoResubmitCount}`,
+      `lastSubmitAt=${setupDebug.lastSubmitAtIso ?? "never"}`,
+      `lastServerSetupAt=${setupDebug.lastServerSetupAtIso ?? "never"}`,
+      `roster=${rosterSummary}`,
+    ];
+  }, [
+    adventure,
+    hasCharacterSetup,
+    identity.playerId,
+    needsCharacterSetup,
+    participant?.connected,
+    participant?.playerId,
+    participant?.setup,
+    phase,
+    setupDebug.autoResubmitCount,
+    setupDebug.cachedSetup,
+    setupDebug.lastServerSetupAtIso,
+    setupDebug.lastSubmitAtIso,
+    setupDebug.pendingSetupOverride,
+    setupDebug.submitCount,
+    showLateJoinSetup,
+  ]);
 
   return (
     <main
@@ -141,6 +209,19 @@ export const PlayerPage = (): JSX.Element => {
           navigate(`/adventure/${nextAdventureId}/player`);
         }}
       />
+
+      {adventure?.debugMode ? (
+        <Message
+          label="Player Debug"
+          color="cloth"
+          contentClassName="font-mono text-[11px] leading-4 max-h-[200px] overflow-y-auto"
+        >
+          {playerDebugLines.join("\n")}
+          {setupDebug.trace.length > 0
+            ? `\n\nsetup_trace:\n${setupDebug.trace.slice(-12).join("\n")}`
+            : ""}
+        </Message>
+      ) : null}
 
       {showLobbySetup ? (
         <>
@@ -202,14 +283,13 @@ export const PlayerPage = (): JSX.Element => {
               disabled={!canVote}
             />
           ) : null}
-          <div className="min-h-0 flex-1">
+          <div className="flex-1 basis-auto shrink-0">
             <TranscriptFeed
               entries={adventure?.transcript ?? []}
               scene={adventure?.currentScene}
               scrollable={true}
               autoScrollToBottom={true}
               pendingLabel={thinking.active ? thinking.label : undefined}
-              className="h-full"
             />
           </div>
           <div className="shrink-0 relative">
@@ -234,11 +314,19 @@ export const PlayerPage = (): JSX.Element => {
               )}
             >
               <ActionComposer
-                canSend={canSendAction}
+                canSend={canSendAction && !waitingForHighTensionTurn}
                 allowDrafting={hasCharacterSetup}
                 onSend={submitAction}
                 onEndSession={!adventure?.closed ? endSession : undefined}
               />
+              {waitingForHighTensionTurn ? (
+                <Message label="Turn Order" color="cloth">
+                  Waiting for{" "}
+                  {adventure?.currentScene?.activeActorName ??
+                    "the active player"}{" "}
+                  to act.
+                </Message>
+              ) : null}
             </div>
           </div>
         </>
