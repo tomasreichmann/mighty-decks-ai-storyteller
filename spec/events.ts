@@ -75,6 +75,12 @@ export type ContinueAdventurePayload = z.infer<
   typeof continueAdventurePayloadSchema
 >;
 
+export const closeAdventurePayloadSchema = z.object({
+  adventureId: z.string().min(1),
+  playerId: z.string().min(1),
+});
+export type CloseAdventurePayload = z.infer<typeof closeAdventurePayloadSchema>;
+
 export const updateRuntimeConfigPayloadSchema = z.object({
   adventureId: z.string().min(1),
   playerId: z.string().min(1),
@@ -107,6 +113,7 @@ export type ClientToServerEventName =
   | "play_outcome_card"
   | "end_session"
   | "continue_adventure"
+  | "close_adventure"
   | "update_runtime_config";
 
 export type ServerToClientEventName =
@@ -131,6 +138,7 @@ export interface ClientToServerEvents {
   play_outcome_card: (payload: PlayOutcomeCardPayload) => void;
   end_session: (payload: EndSessionPayload) => void;
   continue_adventure: (payload: ContinueAdventurePayload) => void;
+  close_adventure: (payload: CloseAdventurePayload) => void;
   update_runtime_config: (payload: UpdateRuntimeConfigPayload) => void;
 }
 

@@ -18,6 +18,7 @@ import {
 } from "@mighty-decks/spec/adventureState";
 import {
   castVotePayloadSchema,
+  closeAdventurePayloadSchema,
   continueAdventurePayloadSchema,
   endSessionPayloadSchema,
   joinAdventurePayloadSchema,
@@ -275,11 +276,7 @@ export class AdventureManager {
 
     let adventure = this.adventures.get(adventureId);
     if (!adventure) {
-      const activeAdventures = Array.from(this.adventures.values()).filter(
-        (candidate) =>
-          !candidate.closed &&
-          candidate.roster.some((entry) => entry.connected),
-      );
+      const activeAdventures = this.listActiveAdventures();
       if (activeAdventures.length >= this.options.maxActiveAdventures) {
         const activeIds = activeAdventures
           .map((candidate) => candidate.adventureId)
@@ -790,6 +787,29 @@ export class AdventureManager {
     return adventure;
   }
 
+  public closeAdventureRecord(payload: unknown): void {
+    const parsed = closeAdventurePayloadSchema.parse(payload);
+    const adventure = this.requireAdventure(parsed.adventureId);
+    const requester = this.getRosterEntry(adventure, parsed.playerId);
+    if (!requester.connected) {
+      throw new Error("only connected participants can close adventure");
+    }
+    if (!adventure.closed && adventure.phase !== "ending") {
+      throw new Error("adventure can only be closed from ending phase");
+    }
+
+    this.clearVoteTimer(adventure.adventureId);
+    this.options.diagnosticsLogger?.closeSession(adventure.adventureId);
+    this.adventures.delete(adventure.adventureId);
+    this.runtimeByAdventure.delete(adventure.adventureId);
+
+    for (const [socketId, link] of this.socketLinks.entries()) {
+      if (link.adventureId === adventure.adventureId) {
+        this.socketLinks.delete(socketId);
+      }
+    }
+  }
+
   public updateRuntimeConfig(payload: unknown): {
     adventure: AdventureState;
     runtimeConfig: RuntimeConfig;
@@ -825,6 +845,12 @@ export class AdventureManager {
 
   public listAdventures(): AdventureState[] {
     return Array.from(this.adventures.values());
+  }
+
+  public listActiveAdventures(): AdventureState[] {
+    return Array.from(this.adventures.values()).filter((adventure) =>
+      this.isAdventureActiveForCap(adventure),
+    );
   }
 
   public getParticipantForSocket(
@@ -885,6 +911,14 @@ export class AdventureManager {
       aiRequests: [],
       recentDecisions: [],
     };
+  }
+
+  private isAdventureActiveForCap(adventure: AdventureState): boolean {
+    if (adventure.closed || adventure.phase === "ending") {
+      return false;
+    }
+
+    return adventure.roster.some((entry) => entry.connected);
   }
 
   private getCharacterDisplayName(

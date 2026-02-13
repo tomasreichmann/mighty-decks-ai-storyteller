@@ -7,6 +7,7 @@ interface SessionSummaryCardProps {
   forwardHook?: string;
   onContinueAdventure?: () => void;
   onStartNewAdventure?: () => void;
+  onCloseAdventure?: () => void;
 }
 
 export const SessionSummaryCard = ({
@@ -14,6 +15,7 @@ export const SessionSummaryCard = ({
   forwardHook,
   onContinueAdventure,
   onStartNewAdventure,
+  onCloseAdventure,
 }: SessionSummaryCardProps): JSX.Element => {
   const resolvedForwardHook =
     forwardHook?.trim().length
@@ -47,6 +49,16 @@ export const SessionSummaryCard = ({
             onClick={onStartNewAdventure}
           >
             Start a new Adventure
+          </Button>
+        ) : null}
+        {onCloseAdventure ? (
+          <Button
+            size="sm"
+            variant="solid"
+            color="blood"
+            onClick={onCloseAdventure}
+          >
+            Close Adventure
           </Button>
         ) : null}
       </div>

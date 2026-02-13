@@ -49,6 +49,7 @@ export interface UseAdventureSessionResult {
   playOutcomeCard: (checkId: string, card: OutcomeCardType) => void;
   endSession: () => void;
   continueAdventure: () => void;
+  closeAdventure: () => void;
   updateRuntimeConfig: (runtimeConfig: RuntimeConfig) => void;
   reconnect: () => void;
 }
@@ -694,6 +695,12 @@ export const useAdventureSession = ({
     },
     continueAdventure: () => {
       socket.emit("continue_adventure", {
+        adventureId,
+        playerId: identity.playerId,
+      });
+    },
+    closeAdventure: () => {
+      socket.emit("close_adventure", {
         adventureId,
         playerId: identity.playerId,
       });

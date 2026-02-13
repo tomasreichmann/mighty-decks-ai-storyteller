@@ -56,6 +56,7 @@ export const PlayerPage = (): JSX.Element => {
     playOutcomeCard,
     endSession,
     continueAdventure,
+    closeAdventure,
     reconnect,
   } = useAdventureSession({
     adventureId,
@@ -363,6 +364,10 @@ export const PlayerPage = (): JSX.Element => {
             onContinueAdventure={continueAdventure}
             onStartNewAdventure={() => {
               navigate(`/adventure/${createAdventureId()}/player`);
+            }}
+            onCloseAdventure={() => {
+              closeAdventure();
+              navigate("/");
             }}
           />
         </>

@@ -865,6 +865,43 @@ test("can continue an ended adventure and start a follow-up scene", async () => 
   assert.equal(storyteller.calls.sceneStarts.length, 1);
 });
 
+test("ended adventures do not count toward active cap and can be closed/removed", async () => {
+  const storyteller = createStorytellerMock();
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Arcane tavern mystery.");
+
+  await manager.endSession({
+    adventureId,
+    playerId: "player-1",
+  });
+
+  let state = manager.getAdventure(adventureId);
+  assert.ok(state);
+  assert.equal(state.closed, true);
+  assert.equal(manager.listActiveAdventures().length, 0);
+
+  manager.joinAdventure(
+    {
+      adventureId: "adv-new-session",
+      playerId: "player-2",
+      displayName: "Jordan",
+      role: "player",
+    },
+    "socket-player-2",
+  );
+  assert.ok(manager.getAdventure("adv-new-session"));
+
+  manager.closeAdventureRecord({
+    adventureId,
+    playerId: "player-1",
+  });
+
+  state = manager.getAdventure(adventureId);
+  assert.equal(state, null);
+});
+
 test("enforces high-tension turn order and gates rewards until goal completion", async () => {
   const storyteller = createStorytellerMock({
     narrateAction: async ({ actorCharacterName }) => ({

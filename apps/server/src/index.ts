@@ -79,9 +79,10 @@ app.get("/health", async () => {
 });
 
 app.get("/adventures", async () => {
+  const activeAdventures = manager.listActiveAdventures();
   return {
-    count: manager.listAdventures().length,
-    adventures: manager.listAdventures().map((adventure) => ({
+    count: activeAdventures.length,
+    adventures: activeAdventures.map((adventure) => ({
       adventureId: adventure.adventureId,
       phase: adventure.phase,
       connectedPlayers: adventure.roster.filter(

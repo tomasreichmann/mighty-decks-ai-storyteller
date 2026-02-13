@@ -42,6 +42,7 @@ export const ScreenPage = (): JSX.Element => {
     thinking,
     updateRuntimeConfig,
     continueAdventure,
+    closeAdventure,
     reconnect,
   } = useAdventureSession({
     adventureId,
@@ -225,6 +226,10 @@ export const ScreenPage = (): JSX.Element => {
             onContinueAdventure={continueAdventure}
             onStartNewAdventure={() => {
               navigate(`/adventure/${createAdventureId()}/screen`);
+            }}
+            onCloseAdventure={() => {
+              closeAdventure();
+              navigate("/");
             }}
           />
         </>

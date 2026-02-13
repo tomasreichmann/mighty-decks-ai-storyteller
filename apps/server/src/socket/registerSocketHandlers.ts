@@ -1,6 +1,7 @@
 import type { AdventureState, TranscriptEntry } from "@mighty-decks/spec/adventureState";
 import {
   castVotePayloadSchema,
+  closeAdventurePayloadSchema,
   continueAdventurePayloadSchema,
   endSessionPayloadSchema,
   joinAdventurePayloadSchema,
@@ -369,6 +370,22 @@ export const registerSocketHandlers = (
             error instanceof Error
               ? error.message
               : "Could not continue adventure.",
+        });
+      }
+    });
+
+    socket.on("close_adventure", (rawPayload) => {
+      const payload = withValidation(socket, closeAdventurePayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+
+      try {
+        manager.closeAdventureRecord(payload);
+        io.in(payload.adventureId).socketsLeave(payload.adventureId);
+      } catch (error) {
+        socket.emit("storyteller_response", {
+          text: error instanceof Error ? error.message : "Could not close adventure.",
         });
       }
     });
