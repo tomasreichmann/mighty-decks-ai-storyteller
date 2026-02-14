@@ -8,6 +8,7 @@ import {
   leaveAdventurePayloadSchema,
   playOutcomeCardPayloadSchema,
   submitActionPayloadSchema,
+  submitMetagameQuestionPayloadSchema,
   submitSetupPayloadSchema,
   toggleReadyPayloadSchema,
   updateRuntimeConfigPayloadSchema,
@@ -35,7 +36,7 @@ const sanitizeAdventureForRole = (
   adventure: AdventureState,
   role: "player" | "screen" | undefined,
 ): AdventureState => {
-  if (role === "screen") {
+  if (role === "screen" && adventure.debugMode) {
     return adventure;
   }
 
@@ -318,6 +319,28 @@ export const registerSocketHandlers = (
       } catch (error) {
         socket.emit("storyteller_response", {
           text: error instanceof Error ? error.message : "Could not submit action.",
+        });
+      }
+    });
+
+    socket.on("submit_metagame_question", async (rawPayload) => {
+      const payload = withValidation(
+        socket,
+        submitMetagameQuestionPayloadSchema,
+        rawPayload,
+      );
+      if (!payload) {
+        return;
+      }
+
+      try {
+        await manager.submitMetagameQuestion(payload);
+      } catch (error) {
+        socket.emit("storyteller_response", {
+          text:
+            error instanceof Error
+              ? error.message
+              : "Could not submit metagame question.",
         });
       }
     });

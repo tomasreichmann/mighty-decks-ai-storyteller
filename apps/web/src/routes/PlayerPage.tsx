@@ -15,6 +15,7 @@ import { Label } from "../components/common/Label";
 import { Message } from "../components/common/Message";
 import { Text } from "../components/common/Text";
 import { createAdventureId } from "../lib/ids";
+import { PendingIndicator } from "../components/PendingIndicator";
 
 const formatSetupForDebug = (setup: PlayerSetup | null | undefined): string => {
   if (!setup) {
@@ -53,6 +54,7 @@ export const PlayerPage = (): JSX.Element => {
     toggleReady,
     castVote,
     submitAction,
+    submitMetagameQuestion,
     playOutcomeCard,
     endSession,
     continueAdventure,
@@ -195,7 +197,7 @@ export const PlayerPage = (): JSX.Element => {
       className={cn(
         "app-shell py-6",
         phase === "play"
-          ? "flex h-[100dvh] min-h-0 flex-col gap-3"
+          ? "flex max-h-[100dvh] min-h-0 flex-col gap-3"
           : "stack gap-4",
       )}
     >
@@ -204,6 +206,7 @@ export const PlayerPage = (): JSX.Element => {
         role="player"
         phase={phase}
         connectionStatus={connectionStatus}
+        costMetrics={adventure?.aiCostMetrics}
       />
       <ConnectionDiagnostics
         connected={connected}
@@ -250,6 +253,7 @@ export const PlayerPage = (): JSX.Element => {
             readyPlayers={readyPlayers}
             initialSetup={participant?.setup}
             adventureGenerationInProgress={adventureGenerationInProgress}
+            disableReadyAction={disconnectedDueToInactivity}
             onSubmit={submitSetup}
             onToggleReady={toggleReady}
           />
@@ -257,7 +261,7 @@ export const PlayerPage = (): JSX.Element => {
       ) : null}
       {phase === "lobby" && !adventure ? (
         <Message label="System" color="cloth">
-          Joining adventure session...
+          <PendingIndicator color="cloth" /> Joining adventure session
         </Message>
       ) : null}
 
@@ -301,7 +305,7 @@ export const PlayerPage = (): JSX.Element => {
               disabled={!canVote}
             />
           ) : null}
-          <div className="relative flex-1 basis-[50vh] shrink-0 min-h-[50vh] flex flex-col">
+          <div className="relative flex-1 basis-[30vh] shrink-0 min-h-[30vh] flex flex-col">
             <TranscriptFeed
               className="h-full"
               entries={adventure?.transcript ?? []}
@@ -337,6 +341,7 @@ export const PlayerPage = (): JSX.Element => {
                 canSend={canSendAction && !waitingForHighTensionTurn}
                 allowDrafting={hasCharacterSetup}
                 onSend={submitAction}
+                onSendMetagame={submitMetagameQuestion}
                 onEndSession={!adventure?.closed ? endSession : undefined}
               />
               {waitingForHighTensionTurn ? (

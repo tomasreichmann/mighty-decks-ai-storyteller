@@ -1,4 +1,7 @@
-import type { SceneDebug, ScenePublic } from "@mighty-decks/spec/adventureState";
+import type {
+  SceneDebug,
+  ScenePublic,
+} from "@mighty-decks/spec/adventureState";
 import { Section } from "./common/Section";
 import { Text } from "./common/Text";
 import { Message } from "./common/Message";
@@ -17,35 +20,32 @@ export const DebugPanel = ({
   const recentDecisions = debug.recentDecisions.slice(-6).reverse();
 
   return (
-    <Section className="stack relative paper-shadow">
-      <Text as="h3" variant="h3" color="iron">
+    <Section className="stack relative paper-shadow gap-4">
+      <Text as="h3" variant="h3" color="iron" className="mt-4 -mb-2">
         Debug Panel
       </Text>
       {scene ? (
-        <Message label="Scene Control" color="cloth">
+        <Message label="Scene Control" color="cloth" className="stack gap-2">
           <Text variant="body" color="iron-light">
             Mode: {scene.mode} | Tension: {scene.tension}
           </Text>
           <Text variant="body" color="iron-light">
             Active actor: {scene.activeActorName ?? "none"}
           </Text>
+          <Text variant="body" color="iron-light">
+            Secrets: {debug.secrets.join(", ") || "none"}
+          </Text>
+          <Text variant="body" color="iron-light">
+            Pacing: {debug.pacingNotes.join(", ") || "none"}
+          </Text>
+          <Text variant="body" color="iron-light">
+            Continuity warnings: {debug.continuityWarnings.join(", ") || "none"}
+          </Text>
+          <Text variant="body" color="iron-light">
+            AI requests tracked: {debug.aiRequests.length}
+          </Text>
         </Message>
       ) : null}
-      <Text variant="body" color="iron-light">
-        Tension: {debug.tension ?? "n/a"}
-      </Text>
-      <Text variant="body" color="iron-light">
-        Secrets: {debug.secrets.join(", ") || "none"}
-      </Text>
-      <Text variant="body" color="iron-light">
-        Pacing: {debug.pacingNotes.join(", ") || "none"}
-      </Text>
-      <Text variant="body" color="iron-light">
-        Continuity warnings: {debug.continuityWarnings.join(", ") || "none"}
-      </Text>
-      <Text variant="body" color="iron-light">
-        AI requests tracked: {debug.aiRequests.length}
-      </Text>
       {showAiRequestDetails ? (
         <Message label="AI Requests" color="curse">
           <Text variant="body" color="iron-light" className="text-sm">
@@ -64,16 +64,21 @@ export const DebugPanel = ({
         ) : (
           <div className="stack gap-2">
             {recentDecisions.map((decision) => (
-              <div key={decision.decisionId} className="rounded-sm border border-kac-iron-dark/30 p-2">
+              <div key={decision.decisionId}>
                 <Text variant="body" color="iron-light" className="text-sm">
-                  Turn {decision.turnNumber}: {decision.actorName} | {decision.modeBefore} to {decision.modeAfter} |{" "}
+                  Turn {decision.turnNumber}: {decision.actorName} |{" "}
+                  {decision.modeBefore} to {decision.modeAfter} |{" "}
                   {decision.tensionBefore} to {decision.tensionAfter}
                 </Text>
                 <Text variant="body" color="iron-light" className="text-xs">
-                  goal={decision.goalStatus}, response={decision.responseMode}, outcomeCheck={decision.outcomeCheckTriggered ? "yes" : "no"}, reward={decision.rewardGranted ? "yes" : "no"}, failForward={decision.failForwardApplied ? "yes" : "no"}
+                  goal={decision.goalStatus}, response={decision.responseMode},
+                  outcomeCheck={decision.outcomeCheckTriggered ? "yes" : "no"},
+                  reward={decision.rewardGranted ? "yes" : "no"}, failForward=
+                  {decision.failForwardApplied ? "yes" : "no"}
                 </Text>
                 <Text variant="body" color="iron-light" className="text-xs">
-                  {decision.reasoning.join(" | ") || "No reasoning notes recorded."}
+                  {decision.reasoning.join(" | ") ||
+                    "No reasoning notes recorded."}
                 </Text>
               </div>
             ))}

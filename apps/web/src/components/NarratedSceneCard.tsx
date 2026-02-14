@@ -19,6 +19,7 @@ export const NarratedSceneCard = ({
   const prose = isClosing
     ? scene.closingProse ?? scene.summary ?? scene.introProse
     : scene.introProse;
+  const turnOrderActive = Boolean(scene.activeActorPlayerId);
 
   return (
     <Section className="stack gap-2">
@@ -75,13 +76,20 @@ export const NarratedSceneCard = ({
         </Message>
       ) : (
         <>
-          {scene.mode === "high_tension" ? (
+          {scene.mode === "high_tension" && turnOrderActive ? (
             <Message label="Turn Order" color="curse">
               <Text variant="body" color="iron-light" className="text-sm">
                 High tension.{" "}
                 {scene.activeActorName
                   ? `${scene.activeActorName} acts next.`
                   : "Next actor is being determined."}
+              </Text>
+            </Message>
+          ) : scene.mode === "high_tension" ? (
+            <Message label="Scene Pace" color="curse">
+              <Text variant="body" color="iron-light" className="text-sm">
+                High tension. Pressure is elevated, but players may act freely
+                until someone is under direct scrutiny.
               </Text>
             </Message>
           ) : (

@@ -9,6 +9,7 @@ import { TranscriptItem } from "./TranscriptItem";
 import { cn } from "../utils/cn";
 import { Message } from "./common/Message";
 import { Text } from "./common/Text";
+import { PendingIndicator } from "./PendingIndicator";
 
 interface TranscriptFeedProps {
   entries: TranscriptEntry[];
@@ -143,10 +144,13 @@ export const TranscriptFeed = ({
               label="Status"
               color="gold"
               className="min-w-0 max-w-full"
-              contentClassName="text-sm italic text-kac-iron-light"
+              contentClassName="text-sm text-kac-iron-light"
             >
-              <span className="mr-2 inline-block h-2.5 w-2.5 animate-pulse bg-kac-blood align-middle shadow-[1px_1px_0_0_#121b23]" />
-              {pendingLabel}
+              <PendingIndicator
+                label={pendingLabel}
+                color="gold"
+                indicatorClassName="scale-[0.88]"
+              />
             </Message>
           ) : null}
           <div ref={endRef} />

@@ -1,12 +1,14 @@
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "../../utils/cn";
-import { Label } from "./Label";
+import { Label, LabelVariant } from "./Label";
 
 interface BaseDepressedInputProps {
   label: string;
+  labelColor?: LabelVariant;
   id?: string;
   className?: string;
   controlClassName?: string;
+  showCharCount?: boolean;
 }
 
 type DepressedSingleLineInputProps = BaseDepressedInputProps &
@@ -32,8 +34,62 @@ const inputDepthClassName =
 const inputStateClassName =
   "placeholder:text-kac-steel-dark/70 disabled:cursor-not-allowed disabled:opacity-60";
 
+const toCharacterString = (value: unknown): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.join("");
+  }
+
+  return "";
+};
+
+const resolveCharacterCountClassName = (
+  characterCount: number,
+  maxLength?: number,
+): string => {
+  if (typeof maxLength !== "number" || maxLength <= 0) {
+    return "text-black";
+  }
+
+  const usageRatio = characterCount / maxLength;
+  if (usageRatio >= 1) {
+    return "text-kac-blood";
+  }
+
+  if (usageRatio >= 0.75) {
+    return "text-kac-fire-dark";
+  }
+
+  return "text-black";
+};
+
+const buildCharacterCountLabel = (
+  characterCount: number,
+  maxLength?: number,
+): string => {
+  if (typeof maxLength === "number" && maxLength > 0) {
+    return `${characterCount} / ${maxLength} characters`;
+  }
+
+  return `${characterCount} characters`;
+};
+
 export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
-  const { label, id, className = "", controlClassName = "" } = props;
+  const {
+    label,
+    id,
+    labelColor,
+    className = "",
+    controlClassName = "",
+    showCharCount = false,
+  } = props;
 
   const fallbackId = label.toLowerCase().replace(/\s+/g, "-");
   const inputId = id ?? fallbackId;
@@ -50,7 +106,10 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
   );
 
   const labelElement = (
-    <Label className="-mb-2 -ml-1 relative self-start [z-index:2]">
+    <Label
+      variant={labelColor}
+      className="-mb-2 -ml-1 relative self-start z-20"
+    >
       {label}
     </Label>
   );
@@ -62,8 +121,20 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
       id: _ignoredId,
       className: _ignoredClassName,
       controlClassName: _ignoredControlClassName,
+      showCharCount: _ignoredShowCharCount,
       ...textAreaProps
     } = props;
+    const characterCount = toCharacterString(
+      textAreaProps.value ?? textAreaProps.defaultValue,
+    ).length;
+    const characterCountLabel = buildCharacterCountLabel(
+      characterCount,
+      textAreaProps.maxLength,
+    );
+    const characterCountClassName = resolveCharacterCountClassName(
+      characterCount,
+      textAreaProps.maxLength,
+    );
 
     return (
       <label htmlFor={inputId} className={labelClassName}>
@@ -76,6 +147,16 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
           />
           <div className="focusHighlight"></div>
         </div>
+        {showCharCount ? (
+          <p
+            className={cn(
+              "text-xs font-ui leading-none tracking-normal mt-0.5",
+              characterCountClassName,
+            )}
+          >
+            {characterCountLabel}
+          </p>
+        ) : null}
       </label>
     );
   }
@@ -85,8 +166,20 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
     id: _ignoredId,
     className: _ignoredClassName,
     controlClassName: _ignoredControlClassName,
+    showCharCount: _ignoredShowCharCount,
     ...inputProps
   } = props;
+  const characterCount = toCharacterString(
+    inputProps.value ?? inputProps.defaultValue,
+  ).length;
+  const characterCountLabel = buildCharacterCountLabel(
+    characterCount,
+    inputProps.maxLength,
+  );
+  const characterCountClassName = resolveCharacterCountClassName(
+    characterCount,
+    inputProps.maxLength,
+  );
 
   return (
     <label htmlFor={inputId} className={labelClassName}>
@@ -95,6 +188,16 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
         <input id={inputId} className={controlClasses} {...inputProps} />
         <div className="focusHighlight"></div>
       </div>
+      {showCharCount ? (
+        <p
+          className={cn(
+            "text-xs font-ui leading-none tracking-normal mt-0.5",
+            characterCountClassName,
+          )}
+        >
+          {characterCountLabel}
+        </p>
+      ) : null}
     </label>
   );
 };

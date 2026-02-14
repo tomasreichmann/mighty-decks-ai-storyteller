@@ -25,6 +25,7 @@ import {
   JoinAdventurePayload,
   playOutcomeCardPayloadSchema,
   submitActionPayloadSchema,
+  submitMetagameQuestionPayloadSchema,
   submitSetupPayloadSchema,
   toggleReadyPayloadSchema,
   updateRuntimeConfigPayloadSchema,
@@ -52,7 +53,10 @@ interface ActionQueueItem {
   text: string;
   intent: "information_request" | "direct_action";
   responseMode: "concise" | "expanded";
+  detailLevel: "concise" | "standard" | "expanded";
   outcomeCheckTriggered: boolean;
+  allowHardDenyWithoutOutcomeCheck: boolean;
+  hardDenyReason: string;
   sceneClosureAction?: boolean;
 }
 
@@ -75,6 +79,7 @@ interface AdventureRuntimeState {
   selectedPitch: { title: string; description: string } | null;
   rollingSummary: string;
   latencySamplesMs: number[];
+  finalizedAiRequestIds: Set<string>;
 }
 
 export interface AdventureManagerHooks {
@@ -117,6 +122,8 @@ const createId = (prefix: string): string =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 const AI_DEBUG_AUTHOR = "AI Debug";
+const METAGAME_QUESTION_PREFIX = "[Metagame]";
+const METAGAME_STORYTELLER_AUTHOR = "Storyteller (Metagame)";
 const PENDING_SCENE_INTRO =
   "A new scene is taking shape. The storyteller is framing stakes and pressure.";
 const PENDING_SCENE_BULLETS = [
@@ -166,6 +173,19 @@ const buildOutcomeNarrationHint = (card: OutcomeCardType): string =>
 const isAiDebugTranscriptEntry = (entry: TranscriptEntry): boolean =>
   entry.kind === "system" && entry.author === AI_DEBUG_AUTHOR;
 
+const isMetagameTranscriptEntry = (entry: TranscriptEntry): boolean => {
+  if (
+    entry.kind === "player" &&
+    entry.text.trimStart().startsWith(METAGAME_QUESTION_PREFIX)
+  ) {
+    return true;
+  }
+
+  return (
+    entry.kind === "storyteller" && entry.author === METAGAME_STORYTELLER_AUTHOR
+  );
+};
+
 const HIGH_TENSION_THRESHOLD = 65;
 const LOW_TENSION_THRESHOLD = 40;
 
@@ -204,11 +224,9 @@ export class AdventureManager {
 
   public appendAiRequestLog(event: AiRequestDebugEvent): void {
     const adventure = this.adventures.get(event.adventureId);
-    if (!adventure || !adventure.debugMode) {
+    if (!adventure) {
       return;
     }
-
-    const debugScene = adventure.debugScene ?? this.createEmptyDebugScene();
 
     const requestEntry: AiRequestLogEntry = {
       requestId: event.requestId,
@@ -223,7 +241,18 @@ export class AdventureManager {
       prompt: event.prompt,
       response: event.response,
       error: event.error,
+      usage: event.usage,
     };
+
+    const costMetricsChanged = this.recordAiRequestCost(adventure, requestEntry);
+    if (!adventure.debugMode) {
+      if (costMetricsChanged) {
+        this.notifyAdventureUpdated(adventure.adventureId);
+      }
+      return;
+    }
+
+    const debugScene = adventure.debugScene ?? this.createEmptyDebugScene();
 
     adventure.debugScene = {
       ...debugScene,
@@ -256,12 +285,18 @@ export class AdventureManager {
     } else if (event.error) {
       details.push(`Error:\n${event.error}`);
     }
+    const usageSummary = this.formatAiRequestUsageSummary(requestEntry);
+    if (usageSummary) {
+      details.push(`Usage:\n${usageSummary}`);
+    }
 
     const transcriptText = details.join("\n\n");
     this.appendTranscriptEntry(adventure, {
       kind: "system",
       author: AI_DEBUG_AUTHOR,
       text: transcriptText,
+    }, {
+      aiRequest: requestEntry,
     });
 
     this.notifyAdventureUpdated(adventure.adventureId);
@@ -375,11 +410,8 @@ export class AdventureManager {
       }
     }
 
-    if (
-      adventure.currentScene?.mode === "high_tension" &&
-      adventure.currentScene.activeActorPlayerId === link.playerId
-    ) {
-      this.updateActiveActorForScene(adventure, undefined, "high_tension");
+    if (adventure.currentScene?.activeActorPlayerId === link.playerId) {
+      this.updateActiveActorForScene(adventure, undefined, true);
       if (adventure.currentScene.activeActorName) {
         this.appendTranscriptEntry(adventure, {
           kind: "system",
@@ -506,7 +538,6 @@ export class AdventureManager {
     }
 
     if (
-      adventure.currentScene.mode === "high_tension" &&
       adventure.currentScene.activeActorPlayerId &&
       adventure.currentScene.activeActorPlayerId !== parsed.playerId
     ) {
@@ -550,7 +581,10 @@ export class AdventureManager {
         text: actionText,
         intent: "direct_action",
         responseMode: "concise",
+        detailLevel: "standard",
         outcomeCheckTriggered: false,
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
         sceneClosureAction: true,
       });
       this.notifyAdventureUpdated(adventure.adventureId);
@@ -576,6 +610,7 @@ export class AdventureManager {
             actionText,
             turnNumber: runtime.sceneTurnCounter + 1,
             scene: adventure.currentScene,
+            sceneDebug: adventure.debugScene,
             transcriptTail: this.getNarrativeTranscript(
               adventure.transcript,
             ).slice(-14),
@@ -601,7 +636,10 @@ export class AdventureManager {
           text: actionText,
           intent: decision.intent,
           responseMode: decision.responseMode,
+          detailLevel: decision.detailLevel,
           outcomeCheckTriggered: true,
+          allowHardDenyWithoutOutcomeCheck: false,
+          hardDenyReason: "",
         };
 
         const checkId = createId("oc");
@@ -632,7 +670,11 @@ export class AdventureManager {
         text: actionText,
         intent: decision.intent,
         responseMode: decision.responseMode,
+        detailLevel: decision.detailLevel,
         outcomeCheckTriggered: false,
+        allowHardDenyWithoutOutcomeCheck:
+          decision.allowHardDenyWithoutOutcomeCheck,
+        hardDenyReason: decision.hardDenyReason,
       });
       this.notifyAdventureUpdated(refreshedAdventure.adventureId);
 
@@ -644,6 +686,107 @@ export class AdventureManager {
     } finally {
       runtime.processingOutcomeDecision = false;
       if (!runtime.processingAction) {
+        this.hooks.onStorytellerThinking?.(adventure.adventureId, {
+          active: false,
+          label: "",
+        });
+      }
+    }
+  }
+
+  public async submitMetagameQuestion(
+    payload: unknown,
+  ): Promise<AdventureState> {
+    const parsed = submitMetagameQuestionPayloadSchema.parse(payload);
+    const adventure = this.requireAdventure(parsed.adventureId);
+    this.assertAdventureOpen(adventure);
+    this.assertPhase(
+      adventure,
+      ["play"],
+      "metagame questions can only be asked during play phase",
+    );
+
+    const player = this.getRosterEntry(adventure, parsed.playerId);
+    if (player.role !== "player" || !player.connected) {
+      throw new Error("only connected players can ask metagame questions");
+    }
+
+    if (!adventure.currentScene) {
+      throw new Error("no active scene");
+    }
+
+    const questionText = parsed.text.trim();
+    if (questionText.length === 0) {
+      throw new Error("metagame question is empty");
+    }
+
+    const runtime = this.ensureRuntime(adventure.adventureId);
+    const playerAuthor = this.getCharacterDisplayName(player);
+
+    this.appendTranscriptEntry(adventure, {
+      kind: "player",
+      author: playerAuthor,
+      text: `${METAGAME_QUESTION_PREFIX} ${questionText}`,
+    });
+    this.notifyAdventureUpdated(adventure.adventureId);
+
+    const shouldEmitThinkingState =
+      !runtime.processingAction && !runtime.processingOutcomeDecision;
+    if (shouldEmitThinkingState) {
+      this.hooks.onStorytellerThinking?.(adventure.adventureId, {
+        active: true,
+        label: "Answering metagame question...",
+      });
+    }
+
+    try {
+      const answer = await this.options.storyteller.answerMetagameQuestion(
+        {
+          actorCharacterName: playerAuthor,
+          questionText,
+          pitchTitle: runtime.selectedPitch?.title ?? "Uncharted Trouble",
+          pitchDescription:
+            runtime.selectedPitch?.description ??
+            "A dangerous opportunity appears and demands action before the window closes.",
+          scene: adventure.currentScene,
+          sceneDebug: adventure.debugScene,
+          transcriptTail: adventure.transcript.slice(-18),
+          rollingSummary: runtime.rollingSummary,
+          activeVoteSummary: adventure.activeVote
+            ? `${adventure.activeVote.kind}: ${adventure.activeVote.title}`
+            : "none",
+          activeOutcomeSummary: adventure.activeOutcomeCheck
+            ? `${adventure.activeOutcomeCheck.prompt} | targets: ${adventure.activeOutcomeCheck.targets
+                .map(
+                  (target) =>
+                    `${target.displayName} (${target.playedCard ?? "pending"})`,
+                )
+                .join(", ")}`
+            : "none",
+          pendingSceneClosureSummary:
+            runtime.pendingSceneClosure?.summary ?? "none",
+        },
+        adventure.runtimeConfig,
+        { adventureId: adventure.adventureId },
+      );
+
+      const refreshedAdventure = this.adventures.get(adventure.adventureId);
+      if (!refreshedAdventure || refreshedAdventure.closed) {
+        return adventure;
+      }
+
+      this.appendTranscriptEntry(refreshedAdventure, {
+        kind: "storyteller",
+        author: METAGAME_STORYTELLER_AUTHOR,
+        text: answer,
+      });
+      this.hooks.onStorytellerResponse?.(refreshedAdventure.adventureId, {
+        text: answer,
+      });
+      this.notifyAdventureUpdated(refreshedAdventure.adventureId);
+      return refreshedAdventure;
+    } finally {
+      if (shouldEmitThinkingState) {
         this.hooks.onStorytellerThinking?.(adventure.adventureId, {
           active: false,
           label: "",
@@ -731,7 +874,11 @@ export class AdventureManager {
         text: `${pendingAction.text}\nOutcome guidance: ${playedCardContext}`,
         intent: pendingAction.intent,
         responseMode: pendingAction.responseMode,
+        detailLevel: pendingAction.detailLevel,
         outcomeCheckTriggered: pendingAction.outcomeCheckTriggered,
+        allowHardDenyWithoutOutcomeCheck:
+          pendingAction.allowHardDenyWithoutOutcomeCheck,
+        hardDenyReason: pendingAction.hardDenyReason,
       });
       runtime.pendingOutcomeAction = null;
     }
@@ -890,6 +1037,7 @@ export class AdventureManager {
       selectedPitch: null,
       rollingSummary: "",
       latencySamplesMs: [],
+      finalizedAiRequestIds: new Set<string>(),
     };
     this.runtimeByAdventure.set(adventureId, created);
     return created;
@@ -956,6 +1104,32 @@ export class AdventureManager {
     return cleaned.length > 0 ? cleaned : undefined;
   }
 
+  private enforceActionAgencyGuardrail(
+    text: string,
+    actionItem: ActionQueueItem,
+    actorCharacterName: string,
+  ): string {
+    const trimmedText = text.trim();
+    if (trimmedText.length === 0) {
+      return trimmedText;
+    }
+
+    if (
+      actionItem.sceneClosureAction ||
+      actionItem.outcomeCheckTriggered ||
+      actionItem.allowHardDenyWithoutOutcomeCheck
+    ) {
+      return trimmedText;
+    }
+
+    const followUp =
+      actionItem.intent === "information_request"
+        ? `${actorCharacterName} still gains actionable clarity and can choose an immediate next move.`
+        : `${actorCharacterName} still creates a narrow opening that can be exploited on the next action.`;
+
+    return `${trimmedText}\n\n${followUp}`;
+  }
+
   private buildPlayerVisibleStorytellerText(
     baseText: string,
     reward: string | undefined,
@@ -998,9 +1172,16 @@ export class AdventureManager {
     currentMode: "low_tension" | "high_tension",
     nextTension: number,
     suggestedMode?: "low_tension" | "high_tension",
+    tensionBand?: "low" | "medium" | "high",
   ): "low_tension" | "high_tension" {
     if (suggestedMode) {
       return suggestedMode;
+    }
+    if (tensionBand === "high") {
+      return "high_tension";
+    }
+    if (tensionBand === "low") {
+      return "low_tension";
     }
     if (nextTension >= HIGH_TENSION_THRESHOLD) {
       return "high_tension";
@@ -1012,16 +1193,27 @@ export class AdventureManager {
     return currentMode;
   }
 
+  private resolveTurnOrderRequirement(
+    sceneMode: "low_tension" | "high_tension",
+    turnOrderRequired?: boolean,
+  ): boolean {
+    if (typeof turnOrderRequired === "boolean") {
+      return turnOrderRequired;
+    }
+
+    return sceneMode === "high_tension";
+  }
+
   private updateActiveActorForScene(
     adventure: AdventureState,
     actingPlayerId: string | undefined,
-    mode: "low_tension" | "high_tension",
+    turnOrderRequired: boolean,
   ): void {
     if (!adventure.currentScene) {
       return;
     }
 
-    if (mode !== "high_tension") {
+    if (!turnOrderRequired) {
       delete adventure.currentScene.activeActorPlayerId;
       delete adventure.currentScene.activeActorName;
       return;
@@ -1147,12 +1339,18 @@ export class AdventureManager {
   private getNarrativeTranscript(
     entries: TranscriptEntry[],
   ): TranscriptEntry[] {
-    return entries.filter((entry) => !isAiDebugTranscriptEntry(entry));
+    return entries.filter(
+      (entry) =>
+        !isAiDebugTranscriptEntry(entry) && !isMetagameTranscriptEntry(entry),
+    );
   }
 
   private appendTranscriptEntry(
     adventure: AdventureState,
     entry: Pick<TranscriptEntry, "kind" | "author" | "text">,
+    options: {
+      aiRequest?: AiRequestLogEntry;
+    } = {},
   ): TranscriptEntry {
     const transcriptEntry = transcriptEntrySchema.parse({
       entryId: createId("t"),
@@ -1160,6 +1358,7 @@ export class AdventureManager {
       author: entry.author,
       text: entry.text,
       createdAtIso: new Date().toISOString(),
+      aiRequest: options.aiRequest,
     });
 
     adventure.transcript.push(transcriptEntry);
@@ -1169,6 +1368,74 @@ export class AdventureManager {
     });
     this.hooks.onTranscriptAppend?.(adventure.adventureId, transcriptEntry);
     return transcriptEntry;
+  }
+
+  private recordAiRequestCost(
+    adventure: AdventureState,
+    request: AiRequestLogEntry,
+  ): boolean {
+    if (request.status === "started") {
+      return false;
+    }
+
+    const runtime = this.ensureRuntime(adventure.adventureId);
+    if (runtime.finalizedAiRequestIds.has(request.requestId)) {
+      return false;
+    }
+    runtime.finalizedAiRequestIds.add(request.requestId);
+
+    const current = adventure.aiCostMetrics;
+    const usage = request.usage;
+    const promptTokens = usage?.promptTokens ?? 0;
+    const completionTokens = usage?.completionTokens ?? 0;
+    const totalTokens = usage?.totalTokens ?? (promptTokens + completionTokens);
+    const hasCost = typeof usage?.costCredits === "number";
+
+    adventure.aiCostMetrics = {
+      totalCostCredits: current.totalCostCredits + (usage?.costCredits ?? 0),
+      trackedRequestCount: current.trackedRequestCount + 1,
+      missingCostRequestCount:
+        current.missingCostRequestCount + (hasCost ? 0 : 1),
+      totalPromptTokens: current.totalPromptTokens + promptTokens,
+      totalCompletionTokens: current.totalCompletionTokens + completionTokens,
+      totalTokens: current.totalTokens + totalTokens,
+      updatedAtIso: new Date().toISOString(),
+    };
+    return true;
+  }
+
+  private formatAiRequestUsageSummary(request: AiRequestLogEntry): string | null {
+    const usage = request.usage;
+    if (!usage) {
+      return null;
+    }
+
+    const lines: string[] = [];
+    if (typeof usage.costCredits === "number") {
+      lines.push(`Cost (credits): ${usage.costCredits.toFixed(6)}`);
+    }
+    if (typeof usage.upstreamInferenceCostCredits === "number") {
+      lines.push(
+        `Upstream inference cost (credits): ${usage.upstreamInferenceCostCredits.toFixed(6)}`,
+      );
+    }
+    if (typeof usage.promptTokens === "number") {
+      lines.push(`Prompt tokens: ${usage.promptTokens}`);
+    }
+    if (typeof usage.completionTokens === "number") {
+      lines.push(`Completion tokens: ${usage.completionTokens}`);
+    }
+    if (typeof usage.totalTokens === "number") {
+      lines.push(`Total tokens: ${usage.totalTokens}`);
+    }
+    if (typeof usage.cachedTokens === "number") {
+      lines.push(`Cached tokens: ${usage.cachedTokens}`);
+    }
+    if (typeof usage.reasoningTokens === "number") {
+      lines.push(`Reasoning tokens: ${usage.reasoningTokens}`);
+    }
+
+    return lines.length > 0 ? lines.join("\n") : null;
   }
 
   private async maybeStartAdventurePitchVote(
@@ -1511,18 +1778,14 @@ export class AdventureManager {
       this.updateActiveActorForScene(
         refreshedAdventure,
         undefined,
-        refreshedAdventure.currentScene.mode,
+        refreshedAdventure.currentScene.mode === "high_tension",
       );
-      if (refreshedAdventure.debugMode) {
-        const existingAiRequests =
-          refreshedAdventure.debugScene?.aiRequests ?? [];
-        refreshedAdventure.debugScene = {
-          ...sceneStart.debug,
-          aiRequests: existingAiRequests,
-        };
-      } else {
-        refreshedAdventure.debugScene = undefined;
-      }
+      const existingAiRequests =
+        refreshedAdventure.debugScene?.aiRequests ?? [];
+      refreshedAdventure.debugScene = {
+        ...sceneStart.debug,
+        aiRequests: existingAiRequests,
+      };
 
       this.appendTranscriptEntry(refreshedAdventure, {
         kind: "storyteller",
@@ -1687,6 +1950,11 @@ export class AdventureManager {
                 actionText: actionItem.text,
                 turnNumber: runtime.sceneTurnCounter + 1,
                 responseMode: actionItem.responseMode,
+                detailLevel: actionItem.detailLevel,
+                outcomeCheckTriggered: actionItem.outcomeCheckTriggered,
+                allowHardDenyWithoutOutcomeCheck:
+                  actionItem.allowHardDenyWithoutOutcomeCheck,
+                hardDenyReason: actionItem.hardDenyReason,
                 scene: adventure.currentScene,
                 transcriptTail,
                 rollingSummary: runtime.rollingSummary,
@@ -1710,6 +1978,14 @@ export class AdventureManager {
               },
             };
           }
+          actionResponse = {
+            ...actionResponse,
+            text: this.enforceActionAgencyGuardrail(
+              actionResponse.text,
+              actionItem,
+              actorCharacterName,
+            ),
+          };
           try {
             if (
               !actionItem.sceneClosureAction &&
@@ -1792,23 +2068,32 @@ export class AdventureManager {
 
           const previousMode = adventure.currentScene.mode;
           const previousTension = adventure.currentScene.tension;
-          const nextTension = this.resolveNextTension(
+          const previousTurnOrderRequired = Boolean(
+            adventure.currentScene.activeActorPlayerId,
+          );
+          const computedNextTension = this.resolveNextTension(
             previousTension,
             sceneReaction?.tensionShift ?? "stable",
             sceneReaction?.tensionDelta ?? 0,
             sceneReaction?.tension,
           );
+          const nextTension = computedNextTension;
           const nextMode = this.resolveNextSceneMode(
             previousMode,
             nextTension,
             sceneReaction?.sceneMode,
+            sceneReaction?.tensionBand,
+          );
+          const nextTurnOrderRequired = this.resolveTurnOrderRequirement(
+            nextMode,
+            sceneReaction?.turnOrderRequired,
           );
           adventure.currentScene.tension = nextTension;
           adventure.currentScene.mode = nextMode;
           this.updateActiveActorForScene(
             adventure,
-            actionItem.playerId,
-            nextMode,
+            nextTurnOrderRequired ? actionItem.playerId : undefined,
+            nextTurnOrderRequired,
           );
           const shouldCloseScene =
             actionResponse.closeScene || sceneReaction?.closeScene === true;
@@ -1828,13 +2113,15 @@ export class AdventureManager {
               author: "System",
               text:
                 nextMode === "high_tension"
-                  ? "Tension spikes. Turn order tightens and immediate actions matter."
+                  ? nextTurnOrderRequired
+                    ? "Tension spikes. Turn order tightens and immediate actions matter."
+                    : "Pressure rises, but no one is under direct scrutiny yet."
                   : "Immediate pressure drops. Freeform action resumes.",
             });
           }
           if (
             !shouldCloseScene &&
-            nextMode === "high_tension" &&
+            nextTurnOrderRequired &&
             adventure.currentScene.activeActorName
           ) {
             this.appendTranscriptEntry(adventure, {
@@ -1842,31 +2129,39 @@ export class AdventureManager {
               author: "System",
               text: `High tension turn order: ${adventure.currentScene.activeActorName} acts next.`,
             });
+          } else if (
+            !shouldCloseScene &&
+            previousTurnOrderRequired &&
+            !nextTurnOrderRequired
+          ) {
+            this.appendTranscriptEntry(adventure, {
+              kind: "system",
+              author: "System",
+              text: "Direct scrutiny ends. Players may act freely while the queue is clear.",
+            });
           }
 
-          if (adventure.debugMode) {
-            const currentDebug =
-              adventure.debugScene ?? this.createEmptyDebugScene();
-            const existingAiRequests = currentDebug.aiRequests ?? [];
-            const mergedPacing = [
-              ...(actionResponse.debug.pacingNotes ?? []),
-              ...(sceneReaction?.debug.pacingNotes ?? []),
-            ];
-            const mergedWarnings = Array.from(
-              new Set([
-                ...(actionResponse.debug.continuityWarnings ?? []),
-                ...(sceneReaction?.debug.continuityWarnings ?? []),
-              ]),
-            );
-            adventure.debugScene = {
-              ...actionResponse.debug,
-              tension: nextTension,
-              pacingNotes: mergedPacing,
-              continuityWarnings: mergedWarnings,
-              aiRequests: existingAiRequests,
-              recentDecisions: currentDebug.recentDecisions ?? [],
-            };
-          }
+          const currentDebug =
+            adventure.debugScene ?? this.createEmptyDebugScene();
+          const existingAiRequests = currentDebug.aiRequests ?? [];
+          const mergedPacing = [
+            ...(actionResponse.debug.pacingNotes ?? []),
+            ...(sceneReaction?.debug.pacingNotes ?? []),
+          ];
+          const mergedWarnings = Array.from(
+            new Set([
+              ...(actionResponse.debug.continuityWarnings ?? []),
+              ...(sceneReaction?.debug.continuityWarnings ?? []),
+            ]),
+          );
+          adventure.debugScene = {
+            ...actionResponse.debug,
+            tension: nextTension,
+            pacingNotes: mergedPacing,
+            continuityWarnings: mergedWarnings,
+            aiRequests: existingAiRequests,
+            recentDecisions: currentDebug.recentDecisions ?? [],
+          };
 
           this.appendDecisionLog(adventure, {
             turnNumber: runtime.sceneTurnCounter,
@@ -1881,7 +2176,6 @@ export class AdventureManager {
             tensionBefore: previousTension,
             tensionAfter: nextTension,
             reasoning: [
-              `Intent classified by AI as ${actionItem.intent}.`,
               ...(sceneReaction?.reasoning ?? []),
               ...(sceneReaction?.tensionReason
                 ? [`Tension reason: ${sceneReaction.tensionReason}`]
@@ -1988,13 +2282,11 @@ export class AdventureManager {
     );
     runtime.rollingSummary = continuity.rollingSummary;
 
-    if (adventure.debugMode) {
-      const currentDebug = adventure.debugScene ?? this.createEmptyDebugScene();
-      adventure.debugScene = {
-        ...currentDebug,
-        continuityWarnings: continuity.continuityWarnings,
-      };
-    }
+    const currentDebug = adventure.debugScene ?? this.createEmptyDebugScene();
+    adventure.debugScene = {
+      ...currentDebug,
+      continuityWarnings: continuity.continuityWarnings,
+    };
   }
 
   private async beginSceneTransitionVote(
@@ -2018,8 +2310,9 @@ export class AdventureManager {
       runtime.pendingSceneClosure = null;
     }
     adventure.currentScene.summary = sceneSummary;
-    adventure.currentScene.closingProse =
-      closingProse?.trim().length ? closingProse.trim() : sceneSummary;
+    adventure.currentScene.closingProse = closingProse?.trim().length
+      ? closingProse.trim()
+      : sceneSummary;
     adventure.currentScene.closingImagePending = true;
     delete adventure.currentScene.closingImageUrl;
     this.appendTranscriptEntry(adventure, {

@@ -213,3 +213,120 @@ h6 {
     transparent 100%
   );
 }
+
+.message-highlight {
+  --message-highlight-rgb: 255 210 59;
+  box-shadow:
+    0 0 0 0 rgb(var(--message-highlight-rgb) / 0.18),
+    4px 4px 0 0 #121b23;
+  animation: message-highlight-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes message-highlight-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgb(var(--message-highlight-rgb) / 0.16),
+      4px 4px 0 0 #121b23;
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px rgb(var(--message-highlight-rgb) / 0.32),
+      4px 4px 0 0 #121b23;
+  }
+}
+
+.highlight-stroke-animate-infinite {
+  stroke-dashoffset: 0;
+  animation: highlight-stroke-offset-infinite 3s ease-in-out infinite;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes highlight-stroke-offset-infinite {
+  from {
+    stroke-dashoffset: 5000;
+  }
+  40% {
+    stroke-dashoffset: 0;
+  }
+  60% {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -5000;
+  }
+}
+
+.highlight-stroke-animate {
+  stroke-dashoffset: 0;
+  animation: highlight-stroke-offset 1s ease-in-out;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes highlight-stroke-offset {
+  from {
+    stroke-dashoffset: 5000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.hover-gloss {
+  position: relative;
+  overflow: hidden;
+}
+.hover-gloss::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  height: 150%;
+  pointer-events: none;
+  background-size: 100% 100%;
+  background-position: 0% 0%;
+  background-repeat: no-repeat;
+  opacity: 0;
+  z-index: 50;
+  transform: translate(-50%, -100%) rotate(45deg);
+  background-image: linear-gradient(
+    to right,
+    #ffffff80 0%,
+    #ffffff80 25%,
+    transparent 25%,
+    transparent 30%,
+    #ffffff80 30%,
+    #ffffff80 100%
+  );
+  transition:
+    transform 0.75s ease-in-out,
+    opacity 0.2s ease-in-out;
+}
+.hover-gloss:hover::after {
+  opacity: 1;
+  transform: translate(200%, 100%) rotate(45deg);
+}
+
+.pending-indicator-dot {
+  transform-origin: center bottom;
+  animation: pending-dot-bounce 0.25s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes pending-dot-bounce {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0) scaleX(1) scaleY(1);
+  }
+  20% {
+    transform: translateY(-3px) scaleX(0.96) scaleY(1.04);
+  }
+  34% {
+    transform: translateY(0) scaleX(1.14) scaleY(0.86);
+  }
+  44% {
+    transform: translateY(-1px) scaleX(0.99) scaleY(1.01);
+  }
+}

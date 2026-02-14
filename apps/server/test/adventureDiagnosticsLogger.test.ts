@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
 import {
+  defaultAiCostMetrics,
   defaultLatencyMetrics,
   defaultRuntimeConfig,
   type AdventureState,
@@ -18,6 +19,10 @@ const createAdventure = (adventureId: string): AdventureState => ({
   runtimeConfig: defaultRuntimeConfig,
   latencyMetrics: {
     ...defaultLatencyMetrics,
+    updatedAtIso: new Date().toISOString(),
+  },
+  aiCostMetrics: {
+    ...defaultAiCostMetrics,
     updatedAtIso: new Date().toISOString(),
   },
   debugMode: true,

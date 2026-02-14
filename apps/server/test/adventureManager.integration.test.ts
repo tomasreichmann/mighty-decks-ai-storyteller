@@ -9,7 +9,9 @@ import { AdventureManager, type AdventureManagerOptions } from "../src/adventure
 import type {
   ActionResponseInput,
   ActionResponseResult,
+  AiRequestDebugEvent,
   ContinuityResult,
+  MetagameQuestionInput,
   PitchInput,
   PitchOption,
   SceneReactionInput,
@@ -37,6 +39,10 @@ interface StorytellerMockOverrides {
   generateSceneStart?: (input: SceneStartInput, runtimeConfig: RuntimeConfig) => Promise<SceneStartResult>;
   updateContinuity?: (transcript: AdventureState["transcript"], runtimeConfig: RuntimeConfig) => Promise<ContinuityResult>;
   narrateAction?: (input: ActionResponseInput, runtimeConfig: RuntimeConfig) => Promise<ActionResponseResult>;
+  answerMetagameQuestion?: (
+    input: MetagameQuestionInput,
+    runtimeConfig: RuntimeConfig,
+  ) => Promise<string>;
   resolveSceneReaction?: (
     input: SceneReactionInput,
     runtimeConfig: RuntimeConfig,
@@ -52,8 +58,13 @@ interface StorytellerMockOverrides {
     },
     runtimeConfig: RuntimeConfig,
   ) => Promise<{
+    intent: "information_request" | "direct_action";
+    responseMode: "concise" | "expanded";
+    detailLevel?: "concise" | "standard" | "expanded";
     shouldCheck: boolean;
     reason: string;
+    allowHardDenyWithoutOutcomeCheck: boolean;
+    hardDenyReason: string;
     triggers: {
       threat: boolean;
       uncertainty: boolean;
@@ -75,6 +86,7 @@ interface StorytellerMockController {
     pitchInputs: PitchInput[][];
     sceneStarts: SceneStartInput[];
     narrateActions: ActionResponseInput[];
+    metagameQuestions: MetagameQuestionInput[];
     sceneReactions: SceneReactionInput[];
     continuityUpdates: AdventureState["transcript"][];
   };
@@ -85,6 +97,7 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
     pitchInputs: [] as PitchInput[][],
     sceneStarts: [] as SceneStartInput[],
     narrateActions: [] as ActionResponseInput[],
+    metagameQuestions: [] as MetagameQuestionInput[],
     sceneReactions: [] as SceneReactionInput[],
     continuityUpdates: [] as AdventureState["transcript"][],
   };
@@ -160,6 +173,14 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
         },
       };
     },
+    answerMetagameQuestion: async (input: MetagameQuestionInput) => {
+      calls.metagameQuestions.push(input);
+      if (overrides.answerMetagameQuestion) {
+        return overrides.answerMetagameQuestion(input, baseRuntimeConfig);
+      }
+
+      return "Truthfully: the lock held because the ward key was still active on the far side.";
+    },
     resolveSceneReaction: async (input: SceneReactionInput) => {
       calls.sceneReactions.push(input);
       if (overrides.resolveSceneReaction) {
@@ -184,12 +205,28 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
     },
     decideOutcomeCheckForPlayerAction: async (input) => {
       if (overrides.decideOutcomeCheckForPlayerAction) {
-        return overrides.decideOutcomeCheckForPlayerAction(input, baseRuntimeConfig);
+        const overrideDecision = await overrides.decideOutcomeCheckForPlayerAction(
+          input,
+          baseRuntimeConfig,
+        );
+        return {
+          ...overrideDecision,
+          detailLevel:
+            overrideDecision.detailLevel ??
+            (overrideDecision.responseMode === "expanded"
+              ? "expanded"
+              : "standard"),
+        };
       }
 
       return {
+        intent: "direct_action",
+        responseMode: "concise",
+        detailLevel: "standard",
         shouldCheck: false,
         reason: "No immediate dramatic risk or major upside warrants an Outcome card.",
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
         triggers: {
           threat: false,
           uncertainty: false,
@@ -290,6 +327,74 @@ const submitSetup = (
     },
   });
 };
+
+test("tracks per-request AI cost metrics and attaches request metadata to debug transcript entries", () => {
+  const storyteller = createStorytellerMock();
+  const manager = createManager(storyteller.storyteller);
+
+  joinScreen(manager);
+
+  const startedEvent: AiRequestDebugEvent = {
+    requestId: "req-cost-1",
+    createdAtIso: new Date().toISOString(),
+    adventureId,
+    agent: "narrative_director",
+    kind: "text",
+    model: "deepseek/deepseek-v3.2",
+    timeoutMs: 20000,
+    attempt: 1,
+    fallback: false,
+    status: "started",
+    prompt: "Tell me a scene opening.",
+  };
+  manager.appendAiRequestLog(startedEvent);
+
+  const succeededEvent: AiRequestDebugEvent = {
+    ...startedEvent,
+    status: "succeeded",
+    response: "The tower goes silent.",
+    usage: {
+      promptTokens: 420,
+      completionTokens: 88,
+      totalTokens: 508,
+      costCredits: 0.0048,
+    },
+  };
+  manager.appendAiRequestLog(succeededEvent);
+
+  const failedEvent: AiRequestDebugEvent = {
+    requestId: "req-cost-2",
+    createdAtIso: new Date().toISOString(),
+    adventureId,
+    agent: "scene_controller",
+    kind: "text",
+    model: "google/gemini-2.5-flash-lite",
+    timeoutMs: 20000,
+    attempt: 1,
+    fallback: false,
+    status: "failed",
+    error: "No text returned by provider.",
+  };
+  manager.appendAiRequestLog(failedEvent);
+
+  const state = manager.getAdventure(adventureId);
+  assert.ok(state);
+  assert.equal(state.aiCostMetrics.totalCostCredits, 0.0048);
+  assert.equal(state.aiCostMetrics.trackedRequestCount, 2);
+  assert.equal(state.aiCostMetrics.missingCostRequestCount, 1);
+  assert.equal(state.aiCostMetrics.totalPromptTokens, 420);
+  assert.equal(state.aiCostMetrics.totalCompletionTokens, 88);
+  assert.equal(state.aiCostMetrics.totalTokens, 508);
+
+  const requestMetadataEntry = state.transcript.find(
+    (entry) =>
+      entry.author === "AI Debug" &&
+      entry.aiRequest?.requestId === "req-cost-1" &&
+      entry.aiRequest.status === "succeeded",
+  );
+  assert.ok(requestMetadataEntry);
+  assert.equal(requestMetadataEntry?.aiRequest?.usage?.costCredits, 0.0048);
+});
 
 test("starts adventure pitch vote from connected ready players and forwards setup context", async () => {
   const storyteller = createStorytellerMock();
@@ -486,6 +591,87 @@ test("enforces queue lock during storyteller turn and records player transcript 
   );
 });
 
+test("answers metagame questions even while the action queue is busy", async () => {
+  let resolveNarration: ((value: ActionResponseResult) => void) | null = null;
+  const storyteller = createStorytellerMock({
+    narrateAction: async () =>
+      new Promise<ActionResponseResult>((resolve) => {
+        resolveNarration = resolve;
+      }),
+    answerMetagameQuestion: async () =>
+      "Truthfully: the inner ward stayed active, so the door could not be opened yet.",
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Clockwork disaster mystery.");
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  const actionPromise = manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I reroute power through the flooded relay trunk.",
+  });
+  await flushMicrotasks();
+
+  await manager.submitMetagameQuestion({
+    adventureId,
+    playerId: "player-1",
+    text: "Why did I not have to play an Outcome card right now?",
+  });
+
+  const state = manager.getAdventure(adventureId);
+  assert.ok(state);
+  assert.equal(storyteller.calls.metagameQuestions.length, 1);
+  assert.equal(
+    state.transcript.some(
+      (entry) =>
+        entry.kind === "player" &&
+        entry.text.includes("[Metagame] Why did I not have to play an Outcome card right now?"),
+    ),
+    true,
+  );
+  assert.equal(
+    state.transcript.some(
+      (entry) =>
+        entry.kind === "storyteller" &&
+        entry.author === "Storyteller (Metagame)" &&
+        entry.text.includes("inner ward stayed active"),
+    ),
+    true,
+  );
+
+  assert.ok(resolveNarration);
+  resolveNarration({
+    text: "The power reroute catches and the relay trunk hums alive.",
+    closeScene: false,
+    debug: {
+      tension: 65,
+      secrets: [],
+      pacingNotes: [],
+      continuityWarnings: [],
+      aiRequests: [],
+    },
+  });
+  await flushMicrotasks();
+  await actionPromise;
+});
+
 test("allows late joiners to submit setup during play", async () => {
   const storyteller = createStorytellerMock();
   const manager = createManager(storyteller.storyteller);
@@ -541,6 +727,72 @@ test("allows late joiners to submit setup during play", async () => {
     .find((entry) => entry.kind === "player");
   assert.ok(latestPlayerEntry);
   assert.equal(latestPlayerEntry.author, "Cass Varn");
+});
+
+test("excludes metagame transcript entries from storyteller and continuity context", async () => {
+  const storyteller = createStorytellerMock({
+    answerMetagameQuestion: async () =>
+      "Truthfully: the sealed chamber contains the backup relay core.",
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Clockwork disaster mystery.");
+
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitMetagameQuestion({
+    adventureId,
+    playerId: "player-1",
+    text: "What was behind the door I could not open?",
+  });
+  await flushMicrotasks();
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I secure the relay room and mark every sealed hatch.",
+  });
+  await flushMicrotasks();
+
+  assert.ok(storyteller.calls.narrateActions.length > 0);
+  const narrateContext = storyteller.calls.narrateActions[0]?.transcriptTail ?? [];
+  assert.equal(
+    narrateContext.some((entry) => entry.text.includes("[Metagame]")),
+    false,
+  );
+  assert.equal(
+    narrateContext.some((entry) => entry.author === "Storyteller (Metagame)"),
+    false,
+  );
+
+  assert.ok(storyteller.calls.continuityUpdates.length > 0);
+  const latestContinuityTranscript =
+    storyteller.calls.continuityUpdates[storyteller.calls.continuityUpdates.length - 1] ?? [];
+  assert.equal(
+    latestContinuityTranscript.some((entry) => entry.text.includes("[Metagame]")),
+    false,
+  );
+  assert.equal(
+    latestContinuityTranscript.some((entry) => entry.author === "Storyteller (Metagame)"),
+    false,
+  );
 });
 
 test("excludes AI debug transcript entries from storyteller and continuity context", async () => {
@@ -1046,6 +1298,101 @@ test("enforces high-tension turn order and gates rewards until goal completion",
   );
 });
 
+test("keeps low-scrutiny no-check turns out of high-tension turn order", async () => {
+  const storyteller = createStorytellerMock({
+    decideOutcomeCheckForPlayerAction: async () => ({
+      intent: "information_request",
+      responseMode: "expanded",
+      shouldCheck: false,
+      reason: "Observation-only action with no immediate contest.",
+      allowHardDenyWithoutOutcomeCheck: false,
+      hardDenyReason: "",
+      triggers: {
+        threat: false,
+        uncertainty: false,
+        highReward: false,
+      },
+    }),
+    narrateAction: async ({ actorCharacterName }) => ({
+      text: `${actorCharacterName} quietly reads the ward lattice and maps a safer route.`,
+      closeScene: false,
+      debug: {
+        tension: 70,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+    resolveSceneReaction: async () => ({
+      goalStatus: "advanced",
+      failForward: false,
+      tensionShift: "rise",
+      tensionDelta: 18,
+      tensionBand: "medium",
+      sceneMode: "high_tension",
+      turnOrderRequired: false,
+      closeScene: false,
+      tension: 78,
+      tensionReason:
+        "Aggressive escalation suggestion from scene controller despite no direct scrutiny.",
+      debug: {
+        tension: 78,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(
+    manager,
+    "player-1",
+    "Nyra Flint",
+    "Infiltrate the gala without drawing attention.",
+  );
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "What can I discern about the ward rhythm before stepping in?",
+  });
+  await flushMicrotasks();
+
+  const state = manager.getAdventure(adventureId);
+  assert.ok(state?.currentScene);
+  assert.equal(state.currentScene?.mode, "high_tension");
+  assert.equal(state.currentScene?.activeActorPlayerId, undefined);
+
+  const hasTurnOrderSystemLine = (state?.transcript ?? []).some(
+    (entry) =>
+      entry.kind === "system" &&
+      entry.author === "System" &&
+      (entry.text.startsWith("Tension spikes.") ||
+        entry.text.startsWith("High tension turn order:")),
+  );
+  assert.equal(hasTurnOrderSystemLine, false);
+});
+
 test("does not inject generic fail-forward placeholder when consequence detail is missing", async () => {
   const storyteller = createStorytellerMock({
     narrateAction: async () => ({
@@ -1120,11 +1467,160 @@ test("does not inject generic fail-forward placeholder when consequence detail i
   );
 });
 
+test("softens hard denial when no Outcome card is required", async () => {
+  const storyteller = createStorytellerMock({
+    decideOutcomeCheckForPlayerAction: async () => ({
+      intent: "direct_action",
+      responseMode: "concise",
+      shouldCheck: false,
+      reason: "Defensive repositioning without immediate swing stakes.",
+      allowHardDenyWithoutOutcomeCheck: false,
+      hardDenyReason: "",
+      triggers: {
+        threat: false,
+        uncertainty: false,
+        highReward: false,
+      },
+    }),
+    narrateAction: async ({ actorCharacterName }) => ({
+      text: `${actorCharacterName} cannot retreat; no way out is visible.`,
+      closeScene: false,
+      debug: {
+        tension: 82,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Escape a collapsing reactor bay.");
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I retreat to cover and assess the route out.",
+  });
+  await flushMicrotasks();
+
+  const state = manager.getAdventure(adventureId);
+  const latestStoryteller = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "storyteller");
+  assert.ok(latestStoryteller);
+  assert.equal(
+    latestStoryteller?.text.includes(
+      "still creates a narrow opening that can be exploited on the next action",
+    ),
+    true,
+  );
+  const latestDecisionReasoning =
+    state?.debugScene?.recentDecisions.at(-1)?.reasoning ?? [];
+  assert.equal(
+    latestDecisionReasoning.some((line) =>
+      line.includes("Intent classified by AI as"),
+    ),
+    false,
+  );
+});
+
+test("keeps hard denial when impossible action is explicitly flagged", async () => {
+  const storyteller = createStorytellerMock({
+    decideOutcomeCheckForPlayerAction: async () => ({
+      intent: "direct_action",
+      responseMode: "concise",
+      shouldCheck: false,
+      reason: "Action is impossible against current sealed blast door geometry.",
+      allowHardDenyWithoutOutcomeCheck: true,
+      hardDenyReason:
+        "Impossible right now: a sealed blast door and collapsed hull leave no physical retreat path.",
+      triggers: {
+        threat: false,
+        uncertainty: false,
+        highReward: false,
+      },
+    }),
+    narrateAction: async ({ actorCharacterName }) => ({
+      text: `${actorCharacterName} cannot retreat; no way out is visible.`,
+      closeScene: false,
+      debug: {
+        tension: 84,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Escape a collapsing reactor bay.");
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I retreat to cover and assess the route out.",
+  });
+  await flushMicrotasks();
+
+  const state = manager.getAdventure(adventureId);
+  const latestStoryteller = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "storyteller");
+  assert.ok(latestStoryteller);
+  assert.equal(
+    latestStoryteller?.text.includes(
+      "still creates a narrow opening that can be exploited on the next action",
+    ),
+    false,
+  );
+});
+
 test("records played outcome cards as player-labeled transcript entries", async () => {
   const storyteller = createStorytellerMock({
     decideOutcomeCheckForPlayerAction: async () => ({
+      intent: "direct_action",
+      responseMode: "concise",
       shouldCheck: true,
       reason: "Direct confrontation under immediate threat requires an Outcome card.",
+      allowHardDenyWithoutOutcomeCheck: false,
+      hardDenyReason: "",
       triggers: {
         threat: true,
         uncertainty: true,

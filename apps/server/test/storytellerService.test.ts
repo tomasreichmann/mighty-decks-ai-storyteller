@@ -93,6 +93,11 @@ const baseScene: ScenePublic = {
     "Exits: taste the ale, inspect the lot, question nearby witnesses.",
   ],
 };
+const highTensionScene: ScenePublic = {
+  ...baseScene,
+  mode: "high_tension",
+  tension: 78,
+};
 
 const basePitchInputs = [
   {
@@ -399,7 +404,51 @@ test("uses expanded narration budget for information requests", async () => {
   );
 
   assert.equal(openRouter.calls.completeText.length, 1);
-  assert.equal(openRouter.calls.completeText[0]?.maxTokens, 820);
+  assert.equal(openRouter.calls.completeText[0]?.maxTokens, 1100);
+});
+
+test("accepts plain prose narration output without requiring JSON", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      "Veleslava scans the crowded stalls, tracing sigils she once saw in her family's chapel. A weathered map case bears a raven mark that might connect to her lineage.",
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const result = await service.narrateAction(
+    {
+      pitchTitle: "Echoes in the Black Market",
+      pitchDescription:
+        "Veleslava navigates a hidden auction to recover clues about her family.",
+      actorCharacterName: "Veleslava \"Vela\" Morozovna",
+      actionText: "I want to inspect the merchandise if anything looks familiar.",
+      turnNumber: 3,
+      responseMode: "concise",
+      detailLevel: "concise",
+      outcomeCheckTriggered: false,
+      allowHardDenyWithoutOutcomeCheck: false,
+      hardDenyReason: "",
+      scene: baseScene,
+      transcriptTail: [],
+      rollingSummary: "Vela is searching the market for traces of her family.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(
+    result.text.includes(
+      "commits to the action, shifting the situation and forcing an urgent follow-up choice",
+    ),
+    false,
+  );
+  assert.equal(
+    result.text.includes("weathered map case bears a raven mark"),
+    true,
+  );
+  assert.equal(result.closeScene, false);
 });
 
 test("parses scene reaction and keeps reward tied to goal completion", async () => {
@@ -412,6 +461,8 @@ test("parses scene reaction and keeps reward tied to goal completion", async () 
         failForward: true,
         tensionShift: "fall",
         tensionDelta: -12,
+        tensionBand: "medium",
+        turnOrderRequired: false,
         closeScene: false,
       }),
   });
@@ -443,6 +494,8 @@ test("parses scene reaction and keeps reward tied to goal completion", async () 
     "You recover a ring of encrypted guard keys from the fallen captain.",
   );
   assert.equal(reaction.tensionShift, "fall");
+  assert.equal(reaction.tensionBand, "medium");
+  assert.equal(reaction.turnOrderRequired, false);
 });
 
 test("parses outcome decision intent and response mode from AI output", async () => {
@@ -479,8 +532,300 @@ test("parses outcome decision intent and response mode from AI output", async ()
   );
 
   assert.equal(decision.intent, "information_request");
+  assert.equal(decision.detailLevel, "expanded");
   assert.equal(decision.responseMode, "expanded");
   assert.equal(decision.shouldCheck, false);
+  assert.equal(
+    openRouter.calls.completeText[0]?.prompt.includes("Scene mode: low_tension"),
+    true,
+  );
+});
+
+test("parses loose outcome decision output when JSON formatting is broken", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      [
+        "intent: direct_action",
+        "detailLevel: standard",
+        "responseMode: concise",
+        "shouldCheck: false",
+        "reason: Repositioning under watchful pressure without direct contest.",
+        "allowHardDenyWithoutOutcomeCheck: false",
+        "hardDenyReason: ",
+        "threat: false",
+        "uncertainty: false",
+        "highReward: false",
+      ].join("\n"),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I reposition closer to the service stairs.",
+      turnNumber: 3,
+      scene: highTensionScene,
+      transcriptTail: [],
+      rollingSummary: "The hall is tense but no one has directly engaged Nyra.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.detailLevel, "standard");
+  assert.equal(decision.responseMode, "concise");
+  assert.equal(decision.shouldCheck, false);
+});
+
+test("retries once with parse error context when outcome decision JSON is invalid", async () => {
+  let callCount = 0;
+  const openRouter = createOpenRouterStub({
+    completeText: async () => {
+      callCount += 1;
+      if (callCount === 1) {
+        return "intent=information_request; shouldCheck=false; malformed";
+      }
+
+      return JSON.stringify({
+        intent: "information_request",
+        detailLevel: "expanded",
+        responseMode: "expanded",
+        shouldCheck: false,
+        reason: "Player is gathering information with no immediate stakes.",
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
+        triggers: {
+          threat: false,
+          uncertainty: false,
+          highReward: false,
+        },
+      });
+    },
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I inspect the ward seams for hidden triggers.",
+      turnNumber: 4,
+      scene: baseScene,
+      transcriptTail: [],
+      rollingSummary: "Nyra is probing the scene for clues.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(openRouter.calls.completeText.length, 2);
+  assert.equal(
+    openRouter.calls.completeText[1]?.prompt.includes("Parse error:"),
+    true,
+  );
+  assert.equal(
+    openRouter.calls.completeText[1]?.prompt.includes("Required fields:"),
+    true,
+  );
+  assert.equal(decision.intent, "information_request");
+  assert.equal(decision.detailLevel, "expanded");
+  assert.equal(decision.shouldCheck, false);
+});
+
+test("does not override model no-check decisions for direct actions in high tension", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        intent: "direct_action",
+        responseMode: "concise",
+        shouldCheck: false,
+        reason: "Quick move to reposition and push forward.",
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
+        triggers: {
+          threat: false,
+          uncertainty: false,
+          highReward: false,
+        },
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I sprint straight through the crossfire to grab the detonator.",
+      turnNumber: 4,
+      scene: highTensionScene,
+      transcriptTail: [],
+      rollingSummary: "Crossfire pins the team in a collapsing hallway.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.detailLevel, "standard");
+  assert.equal(decision.shouldCheck, false);
+  assert.equal(decision.reason, "Quick move to reposition and push forward.");
+  assert.equal(decision.allowHardDenyWithoutOutcomeCheck, false);
+});
+
+test("does not force outcome checks for low-scrutiny direct actions in high tension", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        intent: "direct_action",
+        responseMode: "concise",
+        shouldCheck: false,
+        reason: "Stealthy movement with no active opposition in this moment.",
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
+        triggers: {
+          threat: false,
+          uncertainty: false,
+          highReward: false,
+        },
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I move quietly through the servant corridor while no one is looking.",
+      turnNumber: 4,
+      scene: highTensionScene,
+      transcriptTail: [],
+      rollingSummary: "The guards are currently focused on the ballroom and have not noticed Nyra.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.detailLevel, "standard");
+  assert.equal(decision.shouldCheck, false);
+});
+
+test("uses conservative fallback outcome behavior when outcome classifier is unavailable", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () => null,
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I break cover and rush the unstable control console.",
+      turnNumber: 3,
+      scene: {
+        ...highTensionScene,
+        tension: 92,
+      },
+      transcriptTail: [],
+      rollingSummary: "The chamber is collapsing and alarms are blaring.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.detailLevel, "standard");
+  assert.equal(decision.shouldCheck, false);
+  assert.equal(decision.triggers.threat, false);
+  assert.equal(decision.triggers.uncertainty, false);
+});
+
+test("keeps fallback outcome checks off for low-scrutiny actions without direct threat cues", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () => null,
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I quietly inspect the ward glyphs from the shadows.",
+      turnNumber: 3,
+      scene: highTensionScene,
+      transcriptTail: [],
+      rollingSummary: "No one has detected Nyra yet and there is no active pursuit in this beat.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.detailLevel, "standard");
+  assert.equal(decision.shouldCheck, false);
+  assert.equal(decision.triggers.threat, false);
+});
+
+test("answers metagame questions with internal context prompt", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      "Truthfully: the locked door hid a relay core chamber that stayed sealed until the ward key was disabled.",
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const answer = await service.answerMetagameQuestion(
+    {
+      actorCharacterName: "Nyra Flint",
+      questionText: "What was behind the locked door?",
+      pitchTitle: "The Vanishing Keg",
+      pitchDescription: "A city tavern disappears and leaves one full keg behind.",
+      scene: baseScene,
+      sceneDebug: {
+        tension: 52,
+        secrets: ["The locked door concealed a relay core chamber."],
+        pacingNotes: ["Keep pressure on the flooding timeline."],
+        continuityWarnings: [],
+        aiRequests: [],
+        recentDecisions: [],
+      },
+      transcriptTail: [],
+      rollingSummary: "The party is uncovering why the tavern vanished.",
+      activeVoteSummary: "none",
+      activeOutcomeSummary: "none",
+      pendingSceneClosureSummary: "none",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(
+    answer,
+    "Truthfully: the locked door hid a relay core chamber that stayed sealed until the ward key was disabled.",
+  );
+  assert.equal(openRouter.calls.completeText.length, 1);
+  assert.equal(
+    openRouter.calls.completeText[0]?.prompt.includes(
+      "Internal secrets: The locked door concealed a relay core chamber.",
+    ),
+    true,
+  );
 });
 
 test("crafts session forward hook via AI output", async () => {

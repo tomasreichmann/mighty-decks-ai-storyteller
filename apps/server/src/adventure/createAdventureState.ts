@@ -1,5 +1,6 @@
 import {
   AdventureState,
+  defaultAiCostMetrics,
   defaultLatencyMetrics,
   RuntimeConfig,
 } from "@mighty-decks/spec/adventureState";
@@ -17,6 +18,10 @@ export const createInitialAdventureState = (
     runtimeConfig,
     latencyMetrics: {
       ...defaultLatencyMetrics,
+      updatedAtIso: new Date().toISOString(),
+    },
+    aiCostMetrics: {
+      ...defaultAiCostMetrics,
       updatedAtIso: new Date().toISOString(),
     },
     debugMode,

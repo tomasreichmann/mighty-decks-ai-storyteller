@@ -21,11 +21,23 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().min(1).default("http://localhost:5173"),
   OPENROUTER_API_KEY: z.string().optional(),
   OR_TEXT_NARRATIVE_MODEL: z.string().min(1).default("deepseek/deepseek-v3.2"),
-  OR_TEXT_SCENE_MODEL: z.string().min(1).default("google/gemini-2.5-flash-lite"),
-  OR_TEXT_OUTCOME_MODEL: z.string().min(1).default("google/gemini-2.5-flash-lite"),
-  OR_TEXT_CONTINUITY_MODEL: z.string().min(1).default("google/gemini-2.5-flash-lite"),
+  OR_TEXT_SCENE_MODEL: z
+    .string()
+    .min(1)
+    .default("google/gemini-2.5-flash-lite"),
+  OR_TEXT_OUTCOME_MODEL: z
+    .string()
+    .min(1)
+    .default("google/gemini-2.5-flash-lite"),
+  OR_TEXT_CONTINUITY_MODEL: z
+    .string()
+    .min(1)
+    .default("google/gemini-2.5-flash-lite"),
   OR_TEXT_PITCH_MODEL: z.string().min(1).default("deepseek/deepseek-v3.2"),
-  OR_IMAGE_MODEL: z.string().min(1).default("black-forest-labs/flux.2-klein-4b"),
+  OR_IMAGE_MODEL: z
+    .string()
+    .min(1)
+    .default("black-forest-labs/flux.2-klein-4b"),
   OR_IMAGE_MODEL_FALLBACK: z.string().min(1).optional(),
   DISABLE_IMAGE_GENERATION: z
     .string()
@@ -39,27 +51,28 @@ const envSchema = z.object({
     .transform((value) => value === "true"),
   MAX_ACTIVE_ADVENTURES: z.coerce.number().int().min(1).default(1),
   CLIENT_IDLE_TIMEOUT_MS: z.coerce.number().int().min(60_000).default(900_000),
-  TEXT_CALL_TIMEOUT_MS: z.coerce.number().int().min(1000).default(20000),
+  TEXT_CALL_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000),
   TURN_DEADLINE_MS: z.coerce.number().int().min(2000).default(18000),
   IMAGE_TIMEOUT_MS: z.coerce.number().int().min(1000).default(180000),
   AI_RETRY_COUNT: z.coerce.number().int().min(0).max(3).default(1),
-  VOTE_TIMEOUT_MS: z.coerce.number().int().min(5000).default(20000),
+  VOTE_TIMEOUT_MS: z.coerce.number().int().min(5000).default(60000),
   DEBUG_LOG_DIR: z.string().min(1).default("logs/adventures"),
 });
 
 const parsed = envSchema.parse(process.env);
 
-const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, "");
+const normalizeOrigin = (origin: string): string =>
+  origin.trim().replace(/\/+$/, "");
 
 export const env = {
   port: parsed.PORT,
-  corsOrigins: parsed.CORS_ORIGINS
-    .split(",")
+  corsOrigins: parsed.CORS_ORIGINS.split(",")
     .map((origin) => normalizeOrigin(origin))
     .filter(Boolean),
-  openRouterApiKey: parsed.OPENROUTER_API_KEY && parsed.OPENROUTER_API_KEY.trim().length > 0
-    ? parsed.OPENROUTER_API_KEY.trim()
-    : null,
+  openRouterApiKey:
+    parsed.OPENROUTER_API_KEY && parsed.OPENROUTER_API_KEY.trim().length > 0
+      ? parsed.OPENROUTER_API_KEY.trim()
+      : null,
   models: {
     narrativeDirector: parsed.OR_TEXT_NARRATIVE_MODEL,
     sceneController: parsed.OR_TEXT_SCENE_MODEL,

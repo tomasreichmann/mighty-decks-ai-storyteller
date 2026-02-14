@@ -15,6 +15,7 @@ interface ChatCompletionResponse {
       }>;
     };
   }>;
+  usage?: unknown;
 }
 
 interface ImageGenerationResponse {
@@ -28,6 +29,7 @@ interface ImageGenerationResponse {
   }>;
   output?: Array<string | { url?: string; b64_json?: string }>;
   url?: string;
+  usage?: unknown;
 }
 
 type MessageContent = string | Array<{ type?: string; text?: string }> | undefined;
@@ -44,6 +46,26 @@ interface ImageRequest {
   model: string;
   prompt: string;
   timeoutMs: number;
+}
+
+export interface OpenRouterUsage {
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  cachedTokens?: number;
+  reasoningTokens?: number;
+  costCredits?: number;
+  upstreamInferenceCostCredits?: number;
+}
+
+export interface OpenRouterTextResult {
+  text: string | null;
+  usage?: OpenRouterUsage;
+}
+
+export interface OpenRouterImageResult {
+  imageUrl: string | null;
+  usage?: OpenRouterUsage;
 }
 
 export interface OpenRouterClientOptions {
@@ -90,6 +112,129 @@ const parseJsonSafe = (raw: string): unknown | null => {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
+
+const readNonnegativeInt = (value: unknown): number | undefined => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return undefined;
+  }
+
+  return Math.round(value);
+};
+
+const readNonnegativeNumber = (value: unknown): number | undefined => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return undefined;
+  }
+
+  return value;
+};
+
+const readValueAtPath = (
+  record: Record<string, unknown>,
+  path: string[],
+): unknown => {
+  let current: unknown = record;
+  for (const segment of path) {
+    if (!isRecord(current)) {
+      return undefined;
+    }
+
+    current = current[segment];
+  }
+
+  return current;
+};
+
+const readFirstIntAtPaths = (
+  record: Record<string, unknown>,
+  paths: string[][],
+): number | undefined => {
+  for (const path of paths) {
+    const value = readValueAtPath(record, path);
+    const parsed = readNonnegativeInt(value);
+    if (parsed !== undefined) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+};
+
+const readFirstNumberAtPaths = (
+  record: Record<string, unknown>,
+  paths: string[][],
+): number | undefined => {
+  for (const path of paths) {
+    const value = readValueAtPath(record, path);
+    const parsed = readNonnegativeNumber(value);
+    if (parsed !== undefined) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+};
+
+const readUsage = (payload: unknown): OpenRouterUsage | undefined => {
+  if (!isRecord(payload)) {
+    return undefined;
+  }
+
+  const usage = payload.usage;
+  if (!isRecord(usage)) {
+    return undefined;
+  }
+
+  const promptTokens = readFirstIntAtPaths(usage, [
+    ["prompt_tokens"],
+    ["input_tokens"],
+  ]);
+  const completionTokens = readFirstIntAtPaths(usage, [
+    ["completion_tokens"],
+    ["output_tokens"],
+  ]);
+  const totalTokens = readFirstIntAtPaths(usage, [["total_tokens"]]);
+  const cachedTokens = readFirstIntAtPaths(usage, [
+    ["prompt_tokens_details", "cached_tokens"],
+    ["input_tokens_details", "cached_tokens"],
+    ["cache_read_input_tokens"],
+  ]);
+  const reasoningTokens = readFirstIntAtPaths(usage, [
+    ["completion_tokens_details", "reasoning_tokens"],
+    ["output_tokens_details", "reasoning_tokens"],
+    ["reasoning_tokens"],
+  ]);
+  const costCredits = readFirstNumberAtPaths(usage, [
+    ["cost"],
+    ["total_cost"],
+  ]);
+  const upstreamInferenceCostCredits = readFirstNumberAtPaths(usage, [
+    ["upstream_inference_cost"],
+  ]);
+
+  const hasAnyUsage = [
+    promptTokens,
+    completionTokens,
+    totalTokens,
+    cachedTokens,
+    reasoningTokens,
+    costCredits,
+    upstreamInferenceCostCredits,
+  ].some((value) => value !== undefined);
+  if (!hasAnyUsage) {
+    return undefined;
+  }
+
+  return {
+    promptTokens,
+    completionTokens,
+    totalTokens,
+    cachedTokens,
+    reasoningTokens,
+    costCredits,
+    upstreamInferenceCostCredits,
+  };
+};
 
 const readImageCandidate = (candidate: unknown): string | null => {
   if (typeof candidate === "string" && candidate.trim().length > 0) {
@@ -206,6 +351,13 @@ export class OpenRouterClient {
   }
 
   public async completeText(request: TextRequest): Promise<string | null> {
+    const result = await this.completeTextWithMetadata(request);
+    return result?.text ?? null;
+  }
+
+  public async completeTextWithMetadata(
+    request: TextRequest,
+  ): Promise<OpenRouterTextResult | null> {
     if (!this.options.apiKey) {
       return null;
     }
@@ -236,14 +388,28 @@ export class OpenRouterClient {
 
     const data = (await response.json()) as ChatCompletionResponse;
     const message = data.choices?.[0]?.message?.content;
+    const usage = readUsage(data);
     if (!message) {
-      return null;
+      return {
+        text: null,
+        usage,
+      };
     }
 
-    return parseMessageContent(message);
+    return {
+      text: parseMessageContent(message),
+      usage,
+    };
   }
 
   public async generateImage(request: ImageRequest): Promise<string | null> {
+    const result = await this.generateImageWithMetadata(request);
+    return result?.imageUrl ?? null;
+  }
+
+  public async generateImageWithMetadata(
+    request: ImageRequest,
+  ): Promise<OpenRouterImageResult | null> {
     if (!this.options.apiKey) {
       return null;
     }
@@ -262,7 +428,7 @@ export class OpenRouterClient {
   private async generateImageWithModalities(
     request: ImageRequest,
     modalities: Array<"image" | "text">,
-  ): Promise<string | null> {
+  ): Promise<OpenRouterImageResult | null> {
     const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
       method: "POST",
       signal: createTimeoutSignal(request.timeoutMs),
@@ -302,7 +468,10 @@ export class OpenRouterClient {
 
     const imageUrl = extractImageUrl(data);
     if (imageUrl) {
-      return imageUrl;
+      return {
+        imageUrl,
+        usage: readUsage(data),
+      };
     }
 
     throw new Error(

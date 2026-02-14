@@ -152,11 +152,11 @@ Create `.env.local` (not committed):
 - `OR_TEXT_CONTINUITY_MODEL=...`
 - `OR_TEXT_PITCH_MODEL=...`
 - `OR_IMAGE_MODEL=black-forest-labs/flux.2-klein-4b`
-- `TEXT_CALL_TIMEOUT_MS=10000`
+- `TEXT_CALL_TIMEOUT_MS=30000`
 - `TURN_DEADLINE_MS=18000`
 - `IMAGE_TIMEOUT_MS=30000`
 - `AI_RETRY_COUNT=1`
-- `VOTE_TIMEOUT_MS=20000`
+- `VOTE_TIMEOUT_MS=60000`
 - `MAX_ACTIVE_ADVENTURES=1` # local/dev default
 - `DEBUG_MODE=false`
 

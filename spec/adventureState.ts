@@ -119,6 +119,17 @@ export type AiRequestAgent = z.infer<typeof aiRequestAgentSchema>;
 export const aiRequestStatusSchema = z.enum(["started", "succeeded", "failed", "timeout"]);
 export type AiRequestStatus = z.infer<typeof aiRequestStatusSchema>;
 
+export const aiRequestUsageSchema = z.object({
+  promptTokens: z.number().int().nonnegative().optional(),
+  completionTokens: z.number().int().nonnegative().optional(),
+  totalTokens: z.number().int().nonnegative().optional(),
+  cachedTokens: z.number().int().nonnegative().optional(),
+  reasoningTokens: z.number().int().nonnegative().optional(),
+  costCredits: z.number().nonnegative().optional(),
+  upstreamInferenceCostCredits: z.number().nonnegative().optional(),
+});
+export type AiRequestUsage = z.infer<typeof aiRequestUsageSchema>;
+
 export const aiRequestLogEntrySchema = z.object({
   requestId: z.string().min(1),
   createdAtIso: z.string().datetime(),
@@ -132,6 +143,7 @@ export const aiRequestLogEntrySchema = z.object({
   prompt: z.string().min(1).optional(),
   response: z.string().min(1).optional(),
   error: z.string().min(1).optional(),
+  usage: aiRequestUsageSchema.optional(),
 });
 export type AiRequestLogEntry = z.infer<typeof aiRequestLogEntrySchema>;
 
@@ -170,6 +182,7 @@ export const transcriptEntrySchema = z.object({
   author: z.string().min(1),
   text: z.string().min(1),
   createdAtIso: z.string().datetime(),
+  aiRequest: aiRequestLogEntrySchema.optional(),
 });
 export type TranscriptEntry = z.infer<typeof transcriptEntrySchema>;
 
@@ -190,6 +203,17 @@ export const latencyMetricsSchema = z.object({
 });
 export type LatencyMetrics = z.infer<typeof latencyMetricsSchema>;
 
+export const aiCostMetricsSchema = z.object({
+  totalCostCredits: z.number().nonnegative(),
+  trackedRequestCount: z.number().int().nonnegative(),
+  missingCostRequestCount: z.number().int().nonnegative(),
+  totalPromptTokens: z.number().int().nonnegative(),
+  totalCompletionTokens: z.number().int().nonnegative(),
+  totalTokens: z.number().int().nonnegative(),
+  updatedAtIso: z.string().datetime(),
+});
+export type AiCostMetrics = z.infer<typeof aiCostMetricsSchema>;
+
 export const adventureStateSchema = z.object({
   adventureId: z.string().min(1),
   phase: adventurePhaseSchema,
@@ -203,6 +227,7 @@ export const adventureStateSchema = z.object({
   debugScene: sceneDebugSchema.optional(),
   runtimeConfig: runtimeConfigSchema,
   latencyMetrics: latencyMetricsSchema,
+  aiCostMetrics: aiCostMetricsSchema,
   debugMode: z.boolean().default(false),
   closed: z.boolean().default(false),
 });
@@ -220,5 +245,15 @@ export const defaultLatencyMetrics: LatencyMetrics = {
   actionCount: 0,
   averageMs: 0,
   p90Ms: 0,
+  updatedAtIso: new Date(0).toISOString(),
+};
+
+export const defaultAiCostMetrics: AiCostMetrics = {
+  totalCostCredits: 0,
+  trackedRequestCount: 0,
+  missingCostRequestCount: 0,
+  totalPromptTokens: 0,
+  totalCompletionTokens: 0,
+  totalTokens: 0,
   updatedAtIso: new Date(0).toISOString(),
 };

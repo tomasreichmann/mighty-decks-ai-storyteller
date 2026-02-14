@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { ActiveVote } from "@mighty-decks/spec/adventureState";
 import { Button } from "./common/Button";
 import { Section } from "./common/Section";
-import { cn } from "../utils/cn";
 import { Text } from "./common/Text";
+import { Message } from "./common/Message";
+import { Highlight } from "./common/Highlight";
 
 interface GenericVotePanelProps {
   vote: ActiveVote;
@@ -54,31 +55,31 @@ export const GenericVotePanel = ({
     <Section className="stack">
       <div>
         <Text as="h3" variant="h3" color="iron">
-          {vote.title}
+          <span className="relative">
+            <span className="inline-block relative rotate-[-2deg]">
+              {vote.title}
+            </span>
+            <Highlight
+              lineCount={1}
+              animate="once"
+              brushHeight={8}
+              className="absolute left-1/2 bottom-[25%] -translate-x-1/2 w-[130%] h-[25%] -z-10"
+            />
+          </span>
         </Text>
         <Text variant="body" color="iron-light">
           {vote.prompt}
         </Text>
       </div>
-      <Text
-        variant="h3"
-        color="steel-dark"
-        className="tracking-widest opacity-90"
-      >
-        Time till vote closes: {Math.min(secondsRemaining, timeoutDisplay)}s
-      </Text>
       <div className="grid gap-2">
         {vote.options.map((option) => {
           const selected = localSelection === option.optionId;
           return (
-            <label
+            <Message
+              label={option.title}
               key={option.optionId}
-              className={cn(
-                "border-[3px] border-b-[6px] p-3 text-sm shadow-[3px_3px_0_0_#121b23]",
-                selected
-                  ? "border-kac-iron bg-gradient-to-b from-kac-cloth-lightest to-kac-cloth-light"
-                  : "border-kac-iron bg-gradient-to-b from-[#fffdf5] to-kac-bone-light",
-              )}
+              color={selected ? "gold" : "bone"}
+              as="label"
             >
               <input
                 type="radio"
@@ -98,7 +99,7 @@ export const GenericVotePanel = ({
               <Text variant="body" color="steel-dark" className="mt-1 text-sm">
                 {option.description}
               </Text>
-            </label>
+            </Message>
           );
         })}
       </div>
@@ -111,7 +112,9 @@ export const GenericVotePanel = ({
           }}
           disabled={!localSelection || disabled}
         >
-          Cast Vote ({Math.min(secondsRemaining, timeoutDisplay)}s)
+          Cast Vote
+          <br />
+          {Math.min(secondsRemaining, timeoutDisplay)}s
         </Button>
         <Text
           variant="note"

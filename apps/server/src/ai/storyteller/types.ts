@@ -1,6 +1,7 @@
 import type {
   AiRequestAgent,
   AiRequestStatus,
+  AiRequestUsage,
   RuntimeConfig,
   SceneDebug,
   ScenePublic,
@@ -17,6 +18,8 @@ export interface StorytellerCostControls {
   pitchCacheTtlMs?: number;
   imageCacheTtlMs?: number;
 }
+
+export type NarrativeDetailLevel = "concise" | "standard" | "expanded";
 
 export interface StorytellerServiceOptions {
   openRouterClient: OpenRouterClient;
@@ -44,6 +47,7 @@ export interface AiRequestDebugEvent {
   prompt?: string;
   response?: string;
   error?: string;
+  usage?: AiRequestUsage;
 }
 
 export interface PitchInput {
@@ -86,6 +90,10 @@ export interface ActionResponseInput {
   actionText: string;
   turnNumber: number;
   responseMode: "concise" | "expanded";
+  detailLevel?: NarrativeDetailLevel;
+  outcomeCheckTriggered: boolean;
+  allowHardDenyWithoutOutcomeCheck: boolean;
+  hardDenyReason: string;
   scene: ScenePublic;
   transcriptTail: TranscriptEntry[];
   rollingSummary: string;
@@ -119,6 +127,8 @@ export interface SceneReactionResult {
   tensionShift: "rise" | "fall" | "stable";
   tensionDelta: number;
   sceneMode?: "low_tension" | "high_tension";
+  turnOrderRequired?: boolean;
+  tensionBand?: "low" | "medium" | "high";
   closeScene: boolean;
   sceneSummary?: string;
   tension?: number;
@@ -132,6 +142,7 @@ export interface OutcomeCheckDecisionInput {
   actionText: string;
   turnNumber: number;
   scene: ScenePublic;
+  sceneDebug?: SceneDebug;
   transcriptTail: TranscriptEntry[];
   rollingSummary: string;
 }
@@ -139,13 +150,30 @@ export interface OutcomeCheckDecisionInput {
 export interface OutcomeCheckDecisionResult {
   intent: "information_request" | "direct_action";
   responseMode: "concise" | "expanded";
+  detailLevel: NarrativeDetailLevel;
   shouldCheck: boolean;
   reason: string;
+  allowHardDenyWithoutOutcomeCheck: boolean;
+  hardDenyReason: string;
   triggers: {
     threat: boolean;
     uncertainty: boolean;
     highReward: boolean;
   };
+}
+
+export interface MetagameQuestionInput {
+  actorCharacterName: string;
+  questionText: string;
+  pitchTitle: string;
+  pitchDescription: string;
+  scene: ScenePublic;
+  sceneDebug?: SceneDebug;
+  transcriptTail: TranscriptEntry[];
+  rollingSummary: string;
+  activeVoteSummary: string;
+  activeOutcomeSummary: string;
+  pendingSceneClosureSummary: string;
 }
 
 export interface TextModelRequest {

@@ -26,7 +26,7 @@ export const continuitySchema = z.object({
 });
 
 export const actionResponseSchema = z.object({
-  text: z.string().min(1).max(900),
+  text: z.string().min(1).max(1400),
   closeScene: z.boolean(),
   sceneSummary: z.string().max(500).optional(),
   tension: z.number().min(0).max(100).optional(),
@@ -44,6 +44,8 @@ export const sceneReactionSchema = z.object({
   tensionShift: z.enum(["rise", "fall", "stable"]).default("stable"),
   tensionDelta: z.number().int().min(-35).max(35).default(0),
   sceneMode: z.enum(["low_tension", "high_tension"]).optional(),
+  turnOrderRequired: z.boolean().optional(),
+  tensionBand: z.enum(["low", "medium", "high"]).optional(),
   closeScene: z.boolean().default(false),
   sceneSummary: z.string().max(500).optional(),
   tension: z.number().min(0).max(100).optional(),
@@ -55,9 +57,12 @@ export const sceneReactionSchema = z.object({
 
 export const outcomeCheckDecisionSchema = z.object({
   intent: z.enum(["information_request", "direct_action"]),
-  responseMode: z.enum(["concise", "expanded"]),
+  responseMode: z.enum(["concise", "expanded"]).optional(),
+  detailLevel: z.enum(["concise", "standard", "expanded"]).optional(),
   shouldCheck: z.boolean(),
   reason: z.string().min(1).max(180),
+  allowHardDenyWithoutOutcomeCheck: z.boolean().default(false),
+  hardDenyReason: z.string().max(180).default(""),
   triggers: z.object({
     threat: z.boolean(),
     uncertainty: z.boolean(),

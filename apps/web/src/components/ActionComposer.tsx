@@ -4,12 +4,14 @@ import { Section } from "./common/Section";
 import { DepressedInput } from "./common/DepressedInput";
 import { Text } from "./common/Text";
 import { Message } from "./common/Message";
+import { Toggle } from "./common/Toggle";
 
 interface ActionComposerProps {
   connected: boolean;
   canSend: boolean;
   allowDrafting: boolean;
   onSend: (text: string) => void;
+  onSendMetagame: (text: string) => void;
   onEndSession?: () => void;
 }
 
@@ -18,12 +20,14 @@ export const ActionComposer = ({
   canSend,
   allowDrafting,
   onSend,
+  onSendMetagame,
   onEndSession,
 }: ActionComposerProps): JSX.Element => {
   const [draft, setDraft] = useState("");
+  const [metagameEnabled, setMetagameEnabled] = useState(false);
   const disconnected = !connected;
-  const canDraftNow = allowDrafting && !disconnected;
-  const canSendNow = canSend && !disconnected;
+  const canDraftNow = !disconnected && (metagameEnabled || allowDrafting);
+  const canSendNow = !disconnected && (metagameEnabled || canSend);
 
   const submitDraft = (): void => {
     const text = draft.trim();
@@ -31,7 +35,11 @@ export const ActionComposer = ({
       return;
     }
 
-    onSend(text);
+    if (metagameEnabled) {
+      onSendMetagame(text);
+    } else {
+      onSend(text);
+    }
     setDraft("");
   };
 
@@ -59,21 +67,26 @@ export const ActionComposer = ({
         {disconnected ? (
           <div
             aria-hidden="true"
-            className="absolute inset-0 z-20 rounded-sm border-2 border-kac-iron/40 bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]"
+            className="absolute inset-0 z-20 rounded-sm bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]"
           />
         ) : null}
         <form className="stack" onSubmit={handleSubmit}>
           <DepressedInput
             multiline
-            label="Your action"
+            label={metagameEnabled ? "Ask a Storyteller" : "Your action"}
+            labelColor={metagameEnabled ? "curse" : "gold"}
             rows={3}
-            placeholder="I climb the broken stair and listen at the brass door."
+            placeholder={
+              metagameEnabled
+                ? "What was behind the door that I could not open?"
+                : "I climb the broken stair and listen at the brass door."
+            }
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={handleKeyDown}
             disabled={!canDraftNow}
           />
-          <div className="flex items-center gap-2 paper-shadow">
+          <div className="flex items-end gap-2 paper-shadow">
             {onEndSession ? (
               <Button
                 variant="solid"
@@ -90,30 +103,47 @@ export const ActionComposer = ({
                 End Session
               </Button>
             ) : null}
-            <div className="flex-1 flex flex-col items-end">
-              <Text
-                variant="note"
-                color="steel-dark"
-                className="normal-case tracking-normal"
-              >
-                Press Enter to send. Shift+Enter for newline.
-              </Text>
-              {!canSend && !disconnected ? (
-                <Text
-                  variant="note"
-                  color="steel-dark"
-                  className="normal-case tracking-normal"
-                >
-                  You can draft while waiting for the queue.
-                </Text>
-              ) : null}
-            </div>
+            <div className="flex-1 flex flex-col items-end"></div>
+            <Toggle
+              checked={metagameEnabled}
+              onCheckedChange={setMetagameEnabled}
+              label="Metagame"
+              labelVariant="emphasised"
+              className="min-w-[128px] shrink-0"
+            />
             <Button
               type="submit"
               disabled={!canSendNow || draft.trim().length === 0}
             >
               Send
             </Button>
+          </div>
+          <div className="flex flex-col items-end mt-2 paper-shadow min-h-[2.2em]">
+            <Text
+              variant="note"
+              color="steel-dark"
+              className="normal-case tracking-normal"
+            >
+              Press Enter to send. Shift+Enter for newline.
+            </Text>
+            {metagameEnabled ? (
+              <Text
+                variant="note"
+                color="steel-dark"
+                className="normal-case tracking-normal"
+              >
+                Metagame mode bypasses turn-order and queue locks.
+              </Text>
+            ) : null}
+            {!metagameEnabled && !canSend && !disconnected ? (
+              <Text
+                variant="note"
+                color="steel-dark"
+                className="normal-case tracking-normal"
+              >
+                You can draft while waiting for the queue.
+              </Text>
+            ) : null}
           </div>
         </form>
       </div>

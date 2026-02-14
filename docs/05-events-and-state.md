@@ -185,6 +185,7 @@ Rules:
 ### Player actions
 
 - `submit_action`
+- `submit_metagame_question`
 
 Purpose:
 
@@ -195,6 +196,7 @@ Rules:
 - only allowed in `play` phase
 - server enqueues action
 - submissions blocked while queue is processing (drafting is allowed)
+- metagame questions bypass queue and turn-order locks; they request an out-of-character truthful answer using scene internal context
 
 ---
 

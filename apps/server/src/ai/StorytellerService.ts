@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { z } from "zod";
 import type {
   RuntimeConfig,
   ScenePublic,
@@ -24,12 +25,14 @@ import {
 import {
   parseJson,
   parseLooseActionResponse,
+  parseLooseOutcomeCheckDecision,
   parseLooseSceneReaction,
   parseLooseSceneStart,
 } from "./storyteller/parsers";
 import {
   buildAdventurePitchesPrompt,
   buildContinuityPrompt,
+  buildMetagameQuestionPrompt,
   buildNarrateActionPrompt,
   buildOutcomeCheckPrompt,
   buildSceneReactionPrompt,
@@ -58,6 +61,7 @@ import type {
   ActionResponseInput,
   ActionResponseResult,
   ContinuityResult,
+  MetagameQuestionInput,
   OutcomeCheckDecisionInput,
   OutcomeCheckDecisionResult,
   PitchInput,
@@ -77,6 +81,7 @@ export type {
   ActionResponseResult,
   AiRequestDebugEvent,
   ContinuityResult,
+  MetagameQuestionInput,
   OutcomeCheckDecisionInput,
   OutcomeCheckDecisionResult,
   PitchInput,
@@ -102,6 +107,147 @@ const normalizeCostControls = (
   imageCacheTtlMs: Math.max(0, controls?.imageCacheTtlMs ?? 0),
 });
 
+const SCENE_START_SCHEMA_GUIDE = [
+  "introProse: string",
+  "orientationBullets: string[2-4]",
+  "playerPrompt: string",
+  "tension?: number 0-100",
+  "secrets?: string[]",
+  "pacingNotes?: string[]",
+  "continuityWarnings?: string[]",
+].join("\n");
+
+const CONTINUITY_SCHEMA_GUIDE = [
+  "rollingSummary: string",
+  "continuityWarnings: string[]",
+].join("\n");
+
+const SCENE_REACTION_SCHEMA_GUIDE = [
+  "npcBeat?: string",
+  "consequence?: string",
+  "reward?: string",
+  "goalStatus: 'advanced' | 'completed' | 'blocked'",
+  "failForward: boolean",
+  "tensionShift: 'rise' | 'fall' | 'stable'",
+  "tensionDelta: integer -35..35",
+  "tensionBand?: 'low' | 'medium' | 'high'",
+  "sceneMode?: 'low_tension' | 'high_tension'",
+  "turnOrderRequired?: boolean",
+  "closeScene: boolean",
+  "sceneSummary?: string",
+  "tension?: number 0-100",
+  "tensionReason?: string",
+  "reasoning?: string[]",
+  "pacingNotes?: string[]",
+  "continuityWarnings?: string[]",
+].join("\n");
+
+const OUTCOME_DECISION_SCHEMA_GUIDE = [
+  "intent: 'information_request' | 'direct_action'",
+  "detailLevel?: 'concise' | 'standard' | 'expanded'",
+  "responseMode?: 'concise' | 'expanded'",
+  "shouldCheck: boolean",
+  "reason: string",
+  "allowHardDenyWithoutOutcomeCheck: boolean",
+  "hardDenyReason: string",
+  "triggers: { threat: boolean, uncertainty: boolean, highReward: boolean }",
+].join("\n");
+
+const stripCodeFence = (raw: string): string =>
+  raw
+    .trim()
+    .replace(/^```(?:json|markdown|md|text)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
+
+const extractJsonCandidate = (raw: string): string | null => {
+  const cleaned = stripCodeFence(raw);
+  if (cleaned.startsWith("{") || cleaned.startsWith("[")) {
+    return cleaned;
+  }
+
+  const objectStart = cleaned.indexOf("{");
+  const objectEnd = cleaned.lastIndexOf("}");
+  if (objectStart >= 0 && objectEnd > objectStart) {
+    return cleaned.slice(objectStart, objectEnd + 1);
+  }
+
+  const arrayStart = cleaned.indexOf("[");
+  const arrayEnd = cleaned.lastIndexOf("]");
+  if (arrayStart >= 0 && arrayEnd > arrayStart) {
+    return cleaned.slice(arrayStart, arrayEnd + 1);
+  }
+
+  return null;
+};
+
+const formatZodIssuePath = (path: (string | number)[]): string => {
+  if (path.length === 0) {
+    return "$";
+  }
+
+  return path
+    .map((segment) =>
+      typeof segment === "number" ? `[${segment}]` : `.${segment}`,
+    )
+    .join("")
+    .replace(/^\./, "");
+};
+
+const describeStructuredParseFailure = <T>(
+  raw: string,
+  schema: z.ZodType<T>,
+): string => {
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) {
+    return "Response was empty.";
+  }
+
+  const candidate = extractJsonCandidate(raw);
+  if (!candidate) {
+    return "No JSON object or array was found in the response.";
+  }
+
+  try {
+    const parsed = JSON.parse(candidate) as unknown;
+    const validation = schema.safeParse(parsed);
+    if (!validation.success) {
+      const issue = validation.error.issues[0];
+      if (issue) {
+        return `Schema validation failed at '${formatZodIssuePath(
+          issue.path,
+        )}': ${issue.message}`;
+      }
+
+      return "Schema validation failed.";
+    }
+
+    return "JSON parsed but did not match required schema.";
+  } catch (error) {
+    return error instanceof Error
+      ? `JSON parse error: ${error.message}`
+      : "JSON parse error.";
+  }
+};
+
+const normalizeNarrativeText = (value: string): string =>
+  trimLines(
+    value
+      .trim()
+      .replace(/^```(?:markdown|md|text)?/i, "")
+      .replace(/```$/i, "")
+      .trim(),
+  );
+
+const looksJsonLike = (value: string): boolean => {
+  const trimmed = value.trim();
+  return (
+    trimmed.startsWith("{") ||
+    trimmed.startsWith("[") ||
+    /^```json/i.test(trimmed)
+  );
+};
+
 const buildSceneReactionFallback = (
   input: SceneReactionInput,
 ): SceneReactionResult => {
@@ -111,6 +257,8 @@ const buildSceneReactionFallback = (
     tensionShift: "stable",
     tensionDelta: 0,
     sceneMode: input.scene.mode,
+    turnOrderRequired: input.scene.mode === "high_tension",
+    tensionBand: input.scene.mode === "high_tension" ? "high" : "low",
     tension: clampTension(input.scene.tension),
     reasoning: [
       "Fallback reaction used because Scene Controller output was unavailable or unparsable.",
@@ -215,20 +363,8 @@ export class StorytellerService {
     context?: StorytellerRequestContext,
   ): Promise<SceneStartResult> {
     const prompt = buildSceneStartPrompt(this.promptTemplates, input);
-
-    const modelText = await this.callTextModel({
-      agent: "scene_controller",
-      primaryModel: this.options.models.sceneController,
-      fallbackModel: this.options.models.sceneControllerFallback,
-      prompt,
-      runtimeConfig,
-      maxTokens: 650,
-      temperature: 0.7,
-      context,
-    });
-
-    if (modelText) {
-      const parsed = parseJson(modelText, sceneStartSchema);
+    const parseSceneStart = (raw: string): SceneStartResult | null => {
+      const parsed = parseJson(raw, sceneStartSchema);
       if (parsed) {
         return {
           introProse: trimLines(parsed.introProse),
@@ -240,7 +376,7 @@ export class StorytellerService {
         };
       }
 
-      const looseParsed = parseLooseSceneStart(modelText);
+      const looseParsed = parseLooseSceneStart(raw);
       if (looseParsed?.introProse) {
         return {
           introProse: looseParsed.introProse,
@@ -254,6 +390,44 @@ export class StorytellerService {
             buildFallbackScenePlayerPrompt(input.partyMembers),
           debug: toDebugState(looseParsed),
         };
+      }
+
+      return null;
+    };
+
+    const modelText = await this.callTextModel({
+      agent: "scene_controller",
+      primaryModel: this.options.models.sceneController,
+      fallbackModel: this.options.models.sceneControllerFallback,
+      prompt,
+      runtimeConfig,
+      maxTokens: 650,
+      temperature: 0.7,
+      context,
+    });
+
+    if (modelText) {
+      const parsedResult = parseSceneStart(modelText);
+      if (parsedResult) {
+        return parsedResult;
+      }
+
+      const repairedText = await this.retryStructuredJsonOnce({
+        agent: "scene_controller",
+        primaryModel: this.options.models.sceneController,
+        fallbackModel: this.options.models.sceneControllerFallback,
+        runtimeConfig,
+        maxTokens: 650,
+        context,
+        schemaGuide: SCENE_START_SCHEMA_GUIDE,
+        parseError: describeStructuredParseFailure(modelText, sceneStartSchema),
+        invalidResponse: modelText,
+      });
+      if (repairedText) {
+        const repairedResult = parseSceneStart(repairedText);
+        if (repairedResult) {
+          return repairedResult;
+        }
       }
     }
 
@@ -282,6 +456,17 @@ export class StorytellerService {
     context?: StorytellerRequestContext,
   ): Promise<ContinuityResult> {
     const prompt = buildContinuityPrompt(this.promptTemplates, transcript);
+    const parseContinuity = (raw: string): ContinuityResult | null => {
+      const parsed = parseJson(raw, continuitySchema);
+      if (!parsed) {
+        return null;
+      }
+
+      return {
+        rollingSummary: trimLines(parsed.rollingSummary),
+        continuityWarnings: parsed.continuityWarnings ?? [],
+      };
+    };
 
     const modelText = await this.callTextModel({
       agent: "continuity_keeper",
@@ -295,12 +480,27 @@ export class StorytellerService {
     });
 
     if (modelText) {
-      const parsed = parseJson(modelText, continuitySchema);
-      if (parsed) {
-        return {
-          rollingSummary: trimLines(parsed.rollingSummary),
-          continuityWarnings: parsed.continuityWarnings ?? [],
-        };
+      const parsedResult = parseContinuity(modelText);
+      if (parsedResult) {
+        return parsedResult;
+      }
+
+      const repairedText = await this.retryStructuredJsonOnce({
+        agent: "continuity_keeper",
+        primaryModel: this.options.models.continuityKeeper,
+        fallbackModel: this.options.models.continuityKeeperFallback,
+        runtimeConfig,
+        maxTokens: 350,
+        context,
+        schemaGuide: CONTINUITY_SCHEMA_GUIDE,
+        parseError: describeStructuredParseFailure(modelText, continuitySchema),
+        invalidResponse: modelText,
+      });
+      if (repairedText) {
+        const repairedResult = parseContinuity(repairedText);
+        if (repairedResult) {
+          return repairedResult;
+        }
       }
     }
 
@@ -323,8 +523,16 @@ export class StorytellerService {
     runtimeConfig: RuntimeConfig,
     context?: StorytellerRequestContext,
   ): Promise<ActionResponseResult> {
+    const detailLevel =
+      input.detailLevel ??
+      (input.responseMode === "expanded" ? "expanded" : "standard");
     const prompt = buildNarrateActionPrompt(this.promptTemplates, input);
-    const maxTokens = input.responseMode === "expanded" ? 820 : 550;
+    const maxTokens =
+      detailLevel === "expanded"
+        ? 1100
+        : detailLevel === "standard"
+          ? 760
+          : 550;
 
     const modelText = await this.callTextModel({
       agent: "narrative_director",
@@ -361,6 +569,23 @@ export class StorytellerService {
           debug: toDebugState(looseParsed),
         };
       }
+
+      const narrativeText = normalizeNarrativeText(modelText);
+      if (narrativeText.length > 0 && !looksJsonLike(modelText)) {
+        return {
+          text: narrativeText.slice(0, 1400),
+          closeScene: false,
+          sceneSummary: undefined,
+          debug: {
+            tension: clampTension(input.scene.tension),
+            secrets: [],
+            pacingNotes: [],
+            continuityWarnings: [],
+            aiRequests: [],
+            recentDecisions: [],
+          },
+        };
+      }
     }
 
     const responseText = input.responseMode === "expanded"
@@ -388,20 +613,8 @@ export class StorytellerService {
     context?: StorytellerRequestContext,
   ): Promise<SceneReactionResult> {
     const prompt = buildSceneReactionPrompt(this.promptTemplates, input);
-
-    const modelText = await this.callTextModel({
-      agent: "scene_controller",
-      primaryModel: this.options.models.sceneController,
-      fallbackModel: this.options.models.sceneControllerFallback,
-      prompt,
-      runtimeConfig,
-      maxTokens: 320,
-      temperature: 0.35,
-      context,
-    });
-
-    if (modelText) {
-      const parsed = parseJson(modelText, sceneReactionSchema);
+    const parseSceneReaction = (raw: string): SceneReactionResult | null => {
+      const parsed = parseJson(raw, sceneReactionSchema);
       if (parsed) {
         const boundedTensionDelta = Math.max(
           -35,
@@ -422,6 +635,8 @@ export class StorytellerService {
           tensionShift: parsed.tensionShift ?? "stable",
           tensionDelta: boundedTensionDelta,
           sceneMode: parsed.sceneMode,
+          turnOrderRequired: parsed.turnOrderRequired,
+          tensionBand: parsed.tensionBand,
           closeScene: parsed.closeScene ?? false,
           sceneSummary: parsed.sceneSummary
             ? trimLines(parsed.sceneSummary)
@@ -430,7 +645,10 @@ export class StorytellerService {
           tensionReason: parsed.tensionReason
             ? trimLines(parsed.tensionReason)
             : undefined,
-          reasoning: parsed.reasoning?.map((note) => trimLines(note)).filter((note) => note.length > 0) ?? [],
+          reasoning:
+            parsed.reasoning
+              ?.map((note) => trimLines(note))
+              .filter((note) => note.length > 0) ?? [],
           debug: {
             tension: targetTension,
             secrets: [],
@@ -442,7 +660,7 @@ export class StorytellerService {
         };
       }
 
-      const looseParsed = parseLooseSceneReaction(modelText);
+      const looseParsed = parseLooseSceneReaction(raw);
       if (looseParsed) {
         const rawDelta = looseParsed.tensionDelta ?? 0;
         const boundedTensionDelta = Math.max(-35, Math.min(35, rawDelta));
@@ -451,7 +669,9 @@ export class StorytellerService {
           : clampTension(input.scene.tension + boundedTensionDelta);
 
         return {
-          npcBeat: looseParsed.npcBeat ? trimLines(looseParsed.npcBeat) : undefined,
+          npcBeat: looseParsed.npcBeat
+            ? trimLines(looseParsed.npcBeat)
+            : undefined,
           consequence: looseParsed.consequence
             ? trimLines(looseParsed.consequence)
             : undefined,
@@ -461,6 +681,8 @@ export class StorytellerService {
           tensionShift: looseParsed.tensionShift ?? "stable",
           tensionDelta: boundedTensionDelta,
           sceneMode: looseParsed.sceneMode,
+          turnOrderRequired: looseParsed.turnOrderRequired,
+          tensionBand: looseParsed.tensionBand,
           closeScene: looseParsed.closeScene ?? false,
           sceneSummary: looseParsed.sceneSummary
             ? trimLines(looseParsed.sceneSummary)
@@ -483,6 +705,44 @@ export class StorytellerService {
           },
         };
       }
+
+      return null;
+    };
+
+    const modelText = await this.callTextModel({
+      agent: "scene_controller",
+      primaryModel: this.options.models.sceneController,
+      fallbackModel: this.options.models.sceneControllerFallback,
+      prompt,
+      runtimeConfig,
+      maxTokens: 320,
+      temperature: 0.35,
+      context,
+    });
+
+    if (modelText) {
+      const parsedResult = parseSceneReaction(modelText);
+      if (parsedResult) {
+        return parsedResult;
+      }
+
+      const repairedText = await this.retryStructuredJsonOnce({
+        agent: "scene_controller",
+        primaryModel: this.options.models.sceneController,
+        fallbackModel: this.options.models.sceneControllerFallback,
+        runtimeConfig,
+        maxTokens: 320,
+        context,
+        schemaGuide: SCENE_REACTION_SCHEMA_GUIDE,
+        parseError: describeStructuredParseFailure(modelText, sceneReactionSchema),
+        invalidResponse: modelText,
+      });
+      if (repairedText) {
+        const repairedResult = parseSceneReaction(repairedText);
+        if (repairedResult) {
+          return repairedResult;
+        }
+      }
     }
 
     return buildSceneReactionFallback(input);
@@ -503,10 +763,55 @@ export class StorytellerService {
       actionText,
       recentNarrative,
     );
+    const parseOutcomeDecision = (
+      raw: string,
+    ): OutcomeCheckDecisionResult | null => {
+      const parsed = parseJson(raw, outcomeCheckDecisionSchema);
+      if (parsed) {
+        const normalized = refineModelOutcomeDecision(
+          parsed,
+          input,
+        );
+        return {
+          ...normalized,
+          reason: trimLines(normalized.reason).slice(0, 180),
+        };
+      }
+
+      const looseParsed = parseLooseOutcomeCheckDecision(raw);
+      if (looseParsed?.intent && typeof looseParsed.shouldCheck === "boolean") {
+        const normalized = refineModelOutcomeDecision(
+          {
+            intent: looseParsed.intent,
+            responseMode: looseParsed.responseMode,
+            detailLevel: looseParsed.detailLevel,
+            shouldCheck: looseParsed.shouldCheck,
+            reason:
+              looseParsed.reason ??
+              "Outcome classifier returned a partial decision.",
+            allowHardDenyWithoutOutcomeCheck:
+              looseParsed.allowHardDenyWithoutOutcomeCheck,
+            hardDenyReason: looseParsed.hardDenyReason,
+            triggers: {
+              threat: Boolean(looseParsed.triggers?.threat),
+              uncertainty: Boolean(looseParsed.triggers?.uncertainty),
+              highReward: Boolean(looseParsed.triggers?.highReward),
+            },
+          },
+          input,
+        );
+        return {
+          ...normalized,
+          reason: trimLines(normalized.reason).slice(0, 180),
+        };
+      }
+
+      return null;
+    };
 
     const fastRuntimeConfig = {
       ...runtimeConfig,
-      textCallTimeoutMs: Math.min(runtimeConfig.textCallTimeoutMs, 2500),
+      textCallTimeoutMs: Math.min(runtimeConfig.textCallTimeoutMs, 4500),
       aiRetryCount: 0,
     };
 
@@ -516,26 +821,73 @@ export class StorytellerService {
       fallbackModel: this.options.models.outcomeDeciderFallback,
       prompt,
       runtimeConfig: fastRuntimeConfig,
-      maxTokens: 90,
+      maxTokens: 260,
       temperature: 0,
       context,
     });
 
     if (modelText) {
-      const parsed = parseJson(modelText, outcomeCheckDecisionSchema);
-      if (parsed) {
-        const normalized = refineModelOutcomeDecision(
-          parsed,
-          input.transcriptTail,
-        );
-        return {
-          ...normalized,
-          reason: trimLines(normalized.reason).slice(0, 180),
-        };
+      const parsedResult = parseOutcomeDecision(modelText);
+      if (parsedResult) {
+        return parsedResult;
+      }
+
+      const repairedText = await this.retryStructuredJsonOnce({
+        agent: "outcome_decider",
+        primaryModel: this.options.models.outcomeDecider,
+        fallbackModel: this.options.models.outcomeDeciderFallback,
+        runtimeConfig: fastRuntimeConfig,
+        maxTokens: 260,
+        context,
+        schemaGuide: OUTCOME_DECISION_SCHEMA_GUIDE,
+        parseError: describeStructuredParseFailure(
+          modelText,
+          outcomeCheckDecisionSchema,
+        ),
+        invalidResponse: modelText,
+      });
+      if (repairedText) {
+        const repairedResult = parseOutcomeDecision(repairedText);
+        if (repairedResult) {
+          return repairedResult;
+        }
       }
     }
 
     return decideOutcomeCheckByHeuristic(input);
+  }
+
+  public async answerMetagameQuestion(
+    input: MetagameQuestionInput,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<string> {
+    const prompt = buildMetagameQuestionPrompt(this.promptTemplates, input);
+
+    const modelText = await this.callTextModel({
+      agent: "narrative_director",
+      primaryModel: this.options.models.narrativeDirector,
+      fallbackModel: this.options.models.narrativeDirectorFallback,
+      prompt,
+      runtimeConfig,
+      maxTokens: 380,
+      temperature: 0.2,
+      context,
+    });
+
+    const parsedModelText = modelText
+      ? trimLines(modelText).replace(/^["'`]+|["'`]+$/g, "")
+      : "";
+    if (parsedModelText.length > 0) {
+      return parsedModelText.slice(0, 1000);
+    }
+
+    const fallbackSecret = input.sceneDebug?.secrets?.[0];
+    if (fallbackSecret && fallbackSecret.trim().length > 0) {
+      return `Truthfully: ${fallbackSecret.trim()}`;
+    }
+
+    return "I cannot answer that truthfully from the current recorded context. Ask again after the scene reveals more internal details.";
   }
 
   public async summarizeSession(
@@ -725,6 +1077,45 @@ export class StorytellerService {
       },
       request,
     );
+  }
+
+  private async retryStructuredJsonOnce(
+    request: {
+      agent: TextModelRequest["agent"];
+      primaryModel: string;
+      fallbackModel: string;
+      runtimeConfig: RuntimeConfig;
+      maxTokens: number;
+      context?: StorytellerRequestContext;
+      schemaGuide: string;
+      parseError: string;
+      invalidResponse: string;
+    },
+  ): Promise<string | null> {
+    const repairPrompt = [
+      "Your previous response failed strict JSON parsing.",
+      `Parse error: ${request.parseError}`,
+      "Return corrected JSON only.",
+      "Do not include markdown fences, explanation, or extra keys.",
+      "Required fields:",
+      request.schemaGuide,
+      "Previous invalid response:",
+      request.invalidResponse.slice(0, 2600),
+    ].join("\n");
+
+    return this.callTextModel({
+      agent: request.agent,
+      primaryModel: request.primaryModel,
+      fallbackModel: request.fallbackModel,
+      prompt: repairPrompt,
+      runtimeConfig: {
+        ...request.runtimeConfig,
+        aiRetryCount: 0,
+      },
+      maxTokens: Math.max(220, request.maxTokens),
+      temperature: 0,
+      context: request.context,
+    });
   }
 
   private async buildSceneImagePrompt(

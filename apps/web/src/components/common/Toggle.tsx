@@ -1,12 +1,11 @@
 import { cn } from "../../utils/cn";
-import { Label, type LabelVariant } from "./Label";
-import { Text } from "./Text";
+import { Text, TextVariant } from "./Text";
 
 export interface ToggleProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
-  label?: string;
-  labelVariant?: LabelVariant;
+  label?: React.ReactNode;
+  labelVariant?: TextVariant;
   description?: string;
   id?: string;
   name?: string;
@@ -18,7 +17,7 @@ export const Toggle = ({
   checked,
   onCheckedChange,
   label,
-  labelVariant = "cloth",
+  labelVariant = "body",
   description,
   id,
   name,
@@ -35,14 +34,6 @@ export const Toggle = ({
 
   return (
     <div className={cn("stack gap-1", className)}>
-      {label ? (
-        <Label
-          variant={labelVariant}
-          className="self-start -mb-1.5 [z-index:2] relative"
-        >
-          {label}
-        </Label>
-      ) : null}
       <button
         id={id}
         type="button"
@@ -53,7 +44,16 @@ export const Toggle = ({
         onClick={handleToggle}
         className={cn("appearance-none")}
       >
-        <span className="flex items-center gap-3">
+        <span className="flex items-center gap-2">
+          {label ? (
+            <Text
+              as="span"
+              variant={labelVariant}
+              className="[z-index:2] relative"
+            >
+              {label}
+            </Text>
+          ) : null}
           <span
             aria-hidden="true"
             className={cn(
@@ -73,14 +73,9 @@ export const Toggle = ({
               )}
             />
           </span>
-          <span
-            className={cn(
-              "font-ui text-xs font-bold uppercase tracking-[0.08em]",
-              checked ? "text-kac-cloth-dark" : "text-kac-steel-dark",
-            )}
-          >
+          <Text as="span" variant="emphasised">
             {checked ? "On" : "Off"}
-          </span>
+          </Text>
         </span>
       </button>
       {description ? (

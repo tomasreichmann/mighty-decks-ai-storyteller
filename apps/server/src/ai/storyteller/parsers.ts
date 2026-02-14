@@ -284,6 +284,8 @@ export interface LooseSceneReaction {
   tensionShift?: "rise" | "fall" | "stable";
   tensionDelta?: number;
   sceneMode?: "low_tension" | "high_tension";
+  turnOrderRequired?: boolean;
+  tensionBand?: "low" | "medium" | "high";
   closeScene?: boolean;
   sceneSummary?: string;
   tension?: number;
@@ -291,6 +293,21 @@ export interface LooseSceneReaction {
   reasoning?: string[];
   pacingNotes?: string[];
   continuityWarnings?: string[];
+}
+
+export interface LooseOutcomeCheckDecision {
+  intent?: "information_request" | "direct_action";
+  responseMode?: "concise" | "expanded";
+  detailLevel?: "concise" | "standard" | "expanded";
+  shouldCheck?: boolean;
+  reason?: string;
+  allowHardDenyWithoutOutcomeCheck?: boolean;
+  hardDenyReason?: string;
+  triggers?: {
+    threat?: boolean;
+    uncertainty?: boolean;
+    highReward?: boolean;
+  };
 }
 
 export const parseLooseSceneStart = (raw: string): LooseSceneStart | null => {
@@ -474,6 +491,7 @@ export const parseLooseSceneReaction = (
   const goalStatusRaw = records.scalars.get("goalstatus");
   const tensionShiftRaw = records.scalars.get("tensionshift");
   const sceneModeRaw = records.scalars.get("scenemode");
+  const tensionBandRaw = records.scalars.get("tensionband");
   const goalStatus = goalStatusRaw && (
     goalStatusRaw === "advanced" ||
     goalStatusRaw === "completed" ||
@@ -494,6 +512,13 @@ export const parseLooseSceneReaction = (
   )
     ? sceneModeRaw
     : undefined;
+  const tensionBand = tensionBandRaw && (
+    tensionBandRaw === "low" ||
+    tensionBandRaw === "medium" ||
+    tensionBandRaw === "high"
+  )
+    ? tensionBandRaw
+    : undefined;
 
   const reaction: LooseSceneReaction = {
     npcBeat: records.scalars.get("npcbeat"),
@@ -504,6 +529,8 @@ export const parseLooseSceneReaction = (
     tensionShift,
     tensionDelta: parseLooseNumber(records.scalars.get("tensiondelta")),
     sceneMode,
+    turnOrderRequired: parseLooseBoolean(records.scalars.get("turnorderrequired")),
+    tensionBand,
     closeScene: parseLooseBoolean(records.scalars.get("closescene")),
     sceneSummary: records.scalars.get("scenesummary"),
     tension: parseLooseNumber(records.scalars.get("tension")),
@@ -520,6 +547,8 @@ export const parseLooseSceneReaction = (
       reaction.goalStatus ||
       reaction.tensionShift ||
       reaction.sceneMode ||
+      reaction.turnOrderRequired !== undefined ||
+      reaction.tensionBand ||
       reaction.tension !== undefined ||
       reaction.tensionDelta !== undefined ||
       reaction.tensionReason ||
@@ -531,6 +560,75 @@ export const parseLooseSceneReaction = (
   );
 
   return hasUsefulField ? reaction : null;
+};
+
+export const parseLooseOutcomeCheckDecision = (
+  raw: string,
+): LooseOutcomeCheckDecision | null => {
+  const records = parseLooseKeyValueRecords(raw);
+  const intentRaw = records.scalars.get("intent");
+  const responseModeRaw = records.scalars.get("responsemode");
+  const detailLevelRaw = records.scalars.get("detaillevel");
+  const reason =
+    records.scalars.get("reason") ?? records.scalars.get("rationale");
+
+  const intent = intentRaw && (
+    intentRaw === "information_request" || intentRaw === "direct_action"
+  )
+    ? intentRaw
+    : undefined;
+  const responseMode = responseModeRaw && (
+    responseModeRaw === "concise" || responseModeRaw === "expanded"
+  )
+    ? responseModeRaw
+    : undefined;
+  const detailLevel = detailLevelRaw && (
+    detailLevelRaw === "concise" ||
+    detailLevelRaw === "standard" ||
+    detailLevelRaw === "expanded"
+  )
+    ? detailLevelRaw
+    : undefined;
+  const shouldCheck = parseLooseBoolean(records.scalars.get("shouldcheck"));
+  const allowHardDenyWithoutOutcomeCheck = parseLooseBoolean(
+    records.scalars.get("allowharddenywithoutoutcomecheck"),
+  );
+  const hardDenyReason = records.scalars.get("harddenyreason");
+  const threat = parseLooseBoolean(records.scalars.get("threat"));
+  const uncertainty = parseLooseBoolean(records.scalars.get("uncertainty"));
+  const highReward = parseLooseBoolean(records.scalars.get("highreward"));
+
+  const hasUsefulField = Boolean(
+    intent ||
+      responseMode ||
+      detailLevel ||
+      shouldCheck !== undefined ||
+      reason ||
+      allowHardDenyWithoutOutcomeCheck !== undefined ||
+      hardDenyReason ||
+      threat !== undefined ||
+      uncertainty !== undefined ||
+      highReward !== undefined,
+  );
+
+  if (!hasUsefulField) {
+    return null;
+  }
+
+  return {
+    intent,
+    responseMode,
+    detailLevel,
+    shouldCheck,
+    reason: reason ? trimLines(reason) : undefined,
+    allowHardDenyWithoutOutcomeCheck,
+    hardDenyReason,
+    triggers: {
+      threat,
+      uncertainty,
+      highReward,
+    },
+  };
 };
 
 export const parseJson = <T>(raw: string, schema: z.ZodType<T>): T | null => {

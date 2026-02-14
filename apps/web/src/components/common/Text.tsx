@@ -28,12 +28,12 @@ export type TextColor =
   | "blood"
   | "paper";
 
-interface TextProps extends PropsWithChildren {
+export type TextProps = PropsWithChildren & {
   variant?: TextVariant;
   color?: TextColor;
   as?: ElementType;
   className?: string;
-}
+};
 
 const variantClassMap: Record<TextVariant, string> = {
   h1: "font-heading font-bold text-4xl/none sm:text-5xl/none tracking-tight transform rotate(1deg) skewX(-5deg) ",
@@ -81,7 +81,7 @@ export const Text = ({
   className = "",
   children,
 }: TextProps): JSX.Element => {
-  const Component = as ?? variantTagMap[variant];
+  const Component = as ?? variantTagMap[variant] ?? variantTagMap.body;
 
   return (
     <Component

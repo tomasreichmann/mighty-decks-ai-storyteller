@@ -46,6 +46,7 @@ export interface UseAdventureSessionResult {
   toggleReady: (ready: boolean) => void;
   castVote: (optionId: string) => void;
   submitAction: (text: string) => void;
+  submitMetagameQuestion: (text: string) => void;
   playOutcomeCard: (checkId: string, card: OutcomeCardType) => void;
   endSession: () => void;
   continueAdventure: () => void;
@@ -674,6 +675,13 @@ export const useAdventureSession = ({
     },
     submitAction: (text: string) => {
       socket.emit("submit_action", {
+        adventureId,
+        playerId: identity.playerId,
+        text,
+      });
+    },
+    submitMetagameQuestion: (text: string) => {
+      socket.emit("submit_metagame_question", {
         adventureId,
         playerId: identity.playerId,
         text,

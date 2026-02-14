@@ -127,6 +127,7 @@ export const OutcomeHandPanel = ({
                   className={cn(
                     "relative origin-bottom transition-transform duration-200",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/70",
+
                     selectionRequired
                       ? "pointer-events-auto"
                       : "pointer-events-none",
@@ -140,6 +141,8 @@ export const OutcomeHandPanel = ({
                     {...props}
                     className={cn(
                       "shadow-xl mx-10 border-x-[3px] border-y-[2px] border-kac-iron shadow-[2px_4px_0_0_#121b23]",
+                      selectionRequired &&
+                        "hover-gloss transition:duration-300 hover:brightness-110",
                       cardDisabled && "brightness-90",
                     )}
                   />

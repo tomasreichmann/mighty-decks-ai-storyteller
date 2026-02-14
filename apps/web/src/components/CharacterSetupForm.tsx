@@ -7,7 +7,8 @@ import { generateUuid } from "../lib/randomId";
 import { Label } from "./common/Label";
 import { Text } from "./common/Text";
 import { Panel } from "./common/Panel";
-import { Message } from "./common/Message";
+import { Highlight } from "./common/Highlight";
+import { PendingIndicator } from "./PendingIndicator";
 
 type SetupMode = "ready_gate" | "profile_only";
 
@@ -18,6 +19,7 @@ interface CharacterSetupFormProps {
   readyPlayers: number;
   initialSetup?: PlayerSetup | null;
   adventureGenerationInProgress?: boolean;
+  disableReadyAction?: boolean;
   onSubmit: (setup: PlayerSetup) => void;
   onToggleReady: (ready: boolean) => void;
 }
@@ -107,6 +109,7 @@ export const CharacterSetupForm = ({
   readyPlayers,
   initialSetup = null,
   adventureGenerationInProgress = false,
+  disableReadyAction = false,
   onSubmit,
   onToggleReady,
 }: CharacterSetupFormProps): JSX.Element => {
@@ -212,12 +215,25 @@ export const CharacterSetupForm = ({
   return (
     <Section>
       <form className="stack gap-4 mt-8" onSubmit={handleSubmit}>
-        <Text variant="h2">Your Character</Text>
+        <Text variant="h2" className="-mb-2 relative">
+          <span className="relative">
+            <span className="inline-block relative rotate-[-2deg]">
+              Your Character
+            </span>
+            <Highlight
+              lineCount={1}
+              animate="once"
+              brushHeight={8}
+              className="absolute left-1/2 bottom-[25%] -translate-x-1/2 w-[130%] h-[25%] -z-10"
+            />
+          </span>
+        </Text>
         <DepressedInput
           id="character-name"
           label="What do they call your character?"
           placeholder="Nyra Flint"
           maxLength={100}
+          showCharCount
           value={characterName}
           onChange={(event) => setCharacterName(event.target.value)}
           disabled={setupLocked}
@@ -230,6 +246,7 @@ export const CharacterSetupForm = ({
           placeholder="A storm-chaser in patched leather with brass goggles."
           rows={3}
           maxLength={400}
+          showCharCount
           value={visualDescription}
           onChange={(event) => setVisualDescription(event.target.value)}
           disabled={setupLocked}
@@ -243,6 +260,7 @@ export const CharacterSetupForm = ({
             placeholder="A tense mystery with weird weather and ruins."
             rows={3}
             maxLength={500}
+            showCharCount
             value={adventurePreference}
             onChange={(event) => setAdventurePreference(event.target.value)}
             disabled={setupLocked}
@@ -309,7 +327,10 @@ export const CharacterSetupForm = ({
             <>
               {showReadyControls ? (
                 <>
-                  <Button type="submit" disabled={!canReady || isReady}>
+                  <Button
+                    type="submit"
+                    disabled={!canReady || isReady || disableReadyAction}
+                  >
                     I am ready
                   </Button>
                   {showNotReadyButton ? (
@@ -325,9 +346,11 @@ export const CharacterSetupForm = ({
                   ) : null}
                 </>
               ) : (
-                <Message color="cloth">
-                  Adventure generation is in progress. Please wait.
-                </Message>
+                <Text variant="emphasised" color="cloth">
+                  <PendingIndicator color="cloth" /> Adventure generation is in
+                  progress.
+                  Please wait.
+                </Text>
               )}
               <div>
                 <Text variant="emphasised">

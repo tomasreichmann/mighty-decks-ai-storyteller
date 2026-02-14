@@ -43,6 +43,60 @@ const isModeratedImageFailure = (error: unknown): boolean => {
   return /Request Moderated/i.test(error.message);
 };
 
+const completeTextWithUsage = async (
+  client: OpenRouterClient,
+  request: {
+    model: string;
+    prompt: string;
+    timeoutMs: number;
+    maxTokens: number;
+    temperature: number;
+  },
+): Promise<{ text: string | null; usage?: AiRequestDebugEvent["usage"] } | null> => {
+  const metadataClient = client as OpenRouterClient & {
+    completeTextWithMetadata?: (request: {
+      model: string;
+      prompt: string;
+      timeoutMs: number;
+      maxTokens: number;
+      temperature: number;
+    }) => Promise<{ text: string | null; usage?: AiRequestDebugEvent["usage"] } | null>;
+  };
+  if (typeof metadataClient.completeTextWithMetadata === "function") {
+    return metadataClient.completeTextWithMetadata(request);
+  }
+
+  const text = await client.completeText(request);
+  return {
+    text,
+  };
+};
+
+const generateImageWithUsage = async (
+  client: OpenRouterClient,
+  request: {
+    model: string;
+    prompt: string;
+    timeoutMs: number;
+  },
+): Promise<{ imageUrl: string | null; usage?: AiRequestDebugEvent["usage"] } | null> => {
+  const metadataClient = client as OpenRouterClient & {
+    generateImageWithMetadata?: (request: {
+      model: string;
+      prompt: string;
+      timeoutMs: number;
+    }) => Promise<{ imageUrl: string | null; usage?: AiRequestDebugEvent["usage"] } | null>;
+  };
+  if (typeof metadataClient.generateImageWithMetadata === "function") {
+    return metadataClient.generateImageWithMetadata(request);
+  }
+
+  const imageUrl = await client.generateImage(request);
+  return {
+    imageUrl,
+  };
+};
+
 export const runTextModelRequest = async (
   dependencies: ModelRunnerDependencies,
   request: TextModelRequest,
@@ -90,14 +144,20 @@ export const runTextModelRequest = async (
       }
 
       try {
-        const output = await dependencies.openRouterClient.completeText({
-          model,
-          prompt: request.prompt,
-          timeoutMs: request.runtimeConfig.textCallTimeoutMs,
-          maxTokens: request.maxTokens,
-          temperature: request.temperature,
-        });
+        const completion = await completeTextWithUsage(
+          dependencies.openRouterClient,
+          {
+            model,
+            prompt: request.prompt,
+            timeoutMs: request.runtimeConfig.textCallTimeoutMs,
+            maxTokens: request.maxTokens,
+            temperature: request.temperature,
+          },
+        );
+        const output = completion?.text;
+        const usage = completion?.usage;
         if (output && output.trim().length > 0) {
+          const trimmedOutput = output.trim();
           if (request.context) {
             emitAiRequest(dependencies, {
               adventureId: request.context.adventureId,
@@ -110,10 +170,11 @@ export const runTextModelRequest = async (
               attempt: attempt + 1,
               fallback: model !== request.primaryModel,
               status: "succeeded",
-              response: shorten(output.trim(), 1800),
+              response: shorten(trimmedOutput, 1800),
+              usage,
             });
           }
-          return output.trim();
+          return trimmedOutput;
         }
 
         if (request.context) {
@@ -129,6 +190,7 @@ export const runTextModelRequest = async (
             fallback: model !== request.primaryModel,
             status: "failed",
             error: "No text returned by provider.",
+            usage,
           });
         }
       } catch (error) {
@@ -198,20 +260,25 @@ export const runImageModelRequest = async (
           agent: request.agent,
           kind: "image",
           model,
+          prompt: request.prompt,
           timeoutMs: request.runtimeConfig.imageTimeoutMs,
           attempt: attempt + 1,
           fallback: useFallbackModel,
           status: "started",
-          prompt: request.prompt,
         });
       }
 
       try {
-        const imageUrl = await dependencies.openRouterClient.generateImage({
-          model,
-          prompt: request.prompt,
-          timeoutMs: request.runtimeConfig.imageTimeoutMs,
-        });
+        const generated = await generateImageWithUsage(
+          dependencies.openRouterClient,
+          {
+            model,
+            prompt: request.prompt,
+            timeoutMs: request.runtimeConfig.imageTimeoutMs,
+          },
+        );
+        const imageUrl = generated?.imageUrl;
+        const usage = generated?.usage;
         if (imageUrl) {
           if (request.context) {
             emitAiRequest(dependencies, {
@@ -226,6 +293,7 @@ export const runImageModelRequest = async (
               fallback: useFallbackModel,
               status: "succeeded",
               response: imageUrl,
+              usage,
             });
           }
           return imageUrl;
@@ -244,6 +312,7 @@ export const runImageModelRequest = async (
             fallback: useFallbackModel,
             status: "failed",
             error: "No image returned by provider.",
+            usage,
           });
         }
       } catch (error) {

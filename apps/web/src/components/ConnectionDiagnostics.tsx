@@ -161,17 +161,22 @@ export const ConnectionDiagnostics = ({
 
   if (showInactivityDisconnectCard) {
     return (
-      <Message label="Disconnected" color="curse" className="stack gap-2">
-        <Text variant="emphasised" color="curse" className="mt-2">
+      <Message
+        label="Disconnected"
+        highlighted
+        color="curse"
+        className="stack gap-2"
+      >
+        <Text variant="emphasised" color="curse">
           You have been disconnected due to inactivity.
         </Text>
         {onReconnect ? (
           <Button
             variant="solid"
-            color="cloth"
+            color="gold"
             size="sm"
             onClick={onReconnect}
-            className="self-start"
+            className="self-start absolute -right-6 -bottom-4"
           >
             Reconnect
           </Button>

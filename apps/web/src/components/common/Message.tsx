@@ -1,4 +1,8 @@
-import type { PropsWithChildren, ReactNode } from "react";
+import type {
+  CSSProperties,
+  PropsWithChildren,
+  ReactNode,
+} from "react";
 import { cn } from "../../utils/cn";
 import { Label, type LabelVariant } from "./Label";
 import type { ButtonColors } from "./Button";
@@ -144,20 +148,82 @@ const resolveMessageTone = (color: MessageColor): MessageTone => {
   }
 };
 
-interface MessageProps extends PropsWithChildren {
+const resolveMessageHighlightRgb = (color: MessageColor): string => {
+  switch (color) {
+    case "fire":
+    case "fire-light":
+    case "fire-lightest":
+    case "fire-dark":
+      return "245 0 0";
+    case "bone":
+    case "bone-light":
+    case "bone-dark":
+    case "bone-darker":
+      return "236 184 123";
+    case "skin":
+    case "skin-light":
+    case "skin-dark":
+      return "247 173 174";
+    case "cloth":
+    case "cloth-light":
+    case "cloth-lightest":
+    case "cloth-dark":
+      return "92 119 178";
+    case "curse":
+    case "curse-light":
+    case "curse-lighter":
+    case "curse-lightest":
+    case "curse-dark":
+      return "242 1 112";
+    case "monster":
+    case "monster-light":
+    case "monster-lightest":
+    case "monster-dark":
+      return "78 195 66";
+    case "blood":
+    case "blood-light":
+    case "blood-lighter":
+    case "blood-lightest":
+    case "blood-dark":
+      return "227 19 44";
+    case "iron":
+    case "iron-light":
+    case "iron-dark":
+    case "steel":
+    case "steel-light":
+    case "steel-dark":
+      return "101 115 139";
+    case "gold":
+    case "gold-light":
+    case "gold-dark":
+    case "gold-darker":
+    default:
+      return "255 210 59";
+  }
+};
+
+export type MessageProps = PropsWithChildren<{
+  as?: React.ElementType;
   label?: ReactNode;
   color?: MessageColor;
+  highlighted?: boolean;
   labelVariant?: LabelVariant;
   rotateLabel?: boolean;
   onLabelClick?: () => void;
   className?: string;
   contentClassName?: string;
   labelClassName?: string;
-}
+}>;
+
+type MessageHighlightStyle = CSSProperties & {
+  "--message-highlight-rgb"?: string;
+};
 
 export const Message = ({
+  as,
   label,
   color = "bone",
+  highlighted = false,
   labelVariant,
   rotateLabel = true,
   onLabelClick,
@@ -167,12 +233,17 @@ export const Message = ({
   children,
 }: MessageProps): JSX.Element => {
   const tone = resolveMessageTone(color);
+  const highlightStyle: MessageHighlightStyle | undefined = highlighted
+    ? { "--message-highlight-rgb": resolveMessageHighlightRgb(color) }
+    : undefined;
 
+  const Component = as ?? "article";
   return (
-    <article
+    <Component
+      style={highlightStyle}
       className={cn(
         "min-w-0 max-w-full px-2 py-2 pr-4",
-        "shadow-[4px_4px_0_0_#121b23]",
+        highlighted ? "message-highlight" : "shadow-[4px_4px_0_0_#121b23]",
         "rounded-sm",
         tone.container,
         className,
@@ -220,6 +291,6 @@ export const Message = ({
           {children}
         </div>
       </div>
-    </article>
+    </Component>
   );
 };

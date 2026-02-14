@@ -4,6 +4,7 @@ import { LandingHero } from "../components/LandingHero";
 /* import { OutcomeCardShowcase } from "../components/OutcomeCardShowcase"; */
 import { createAdventureId } from "../lib/ids";
 import { Text } from "../components/common/Text";
+import { Heading } from "../components/common/Heading";
 
 export const LandingPage = (): JSX.Element => {
   const navigate = useNavigate();
@@ -16,20 +17,20 @@ export const LandingPage = (): JSX.Element => {
   return (
     <main className="app-shell stack py-10 gap-4">
       <LandingHero />
-      {/* 
-      <OutcomeCardShowcase /> */}
+
       <div className="flex flex-row justify-center">
         <CreateAdventureCTA onCreate={handleCreateAdventure} />
       </div>
 
       <div className="flex flex-col min-w-0 gap-4 mt-4 max-w-3xl mx-auto">
-        <Text
+        <Heading
           variant="h2"
           color="iron-light"
           className="text-center font-md-title tracking-normal rotate-[-2deg] skew-x-[-10deg]"
+          highlightProps={{ color: "monster-light" }}
         >
           Sample adventure
-        </Text>
+        </Heading>
         <section className="stack gap-2 mt-2">
           <div className="relative aspect-video overflow-hidden -m-1 border border-kac-steel-dark/40 bg-kac-steel skew-clip-mask">
             <img

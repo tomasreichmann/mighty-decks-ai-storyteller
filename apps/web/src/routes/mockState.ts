@@ -132,6 +132,15 @@ export const mockState: AdventureState = {
     p90Ms: 6120,
     updatedAtIso: new Date(now).toISOString(),
   },
+  aiCostMetrics: {
+    totalCostCredits: 0.0184,
+    trackedRequestCount: 11,
+    missingCostRequestCount: 2,
+    totalPromptTokens: 9630,
+    totalCompletionTokens: 2512,
+    totalTokens: 12142,
+    updatedAtIso: new Date(now).toISOString(),
+  },
   debugMode: true,
   closed: false,
 };

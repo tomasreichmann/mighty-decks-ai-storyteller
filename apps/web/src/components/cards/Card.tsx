@@ -100,7 +100,7 @@ export const Card = ({
   return (
     <article
       className={cn(
-        "relative isolate aspect-[204/332] w-[204px] max-w-full overflow-hidden rounded-[0.55rem]",
+        "relative aspect-[204/332] w-[204px] max-w-full overflow-hidden rounded-[0.55rem]",
         "border border-[#c7a47f]/65 bg-kac-bone-light shadow-[0_1px_0_0_#a98965]",
         "font-ui text-kac-iron-light",
         "flex flex-col justify-center items-stretch",

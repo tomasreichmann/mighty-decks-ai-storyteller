@@ -92,6 +92,7 @@ export const ScreenPage = (): JSX.Element => {
         role="screen"
         phase={phase}
         connectionStatus={connectionStatus}
+        costMetrics={adventure?.aiCostMetrics}
       />
       <ConnectionDiagnostics
         connected={connected}
@@ -140,9 +141,7 @@ export const ScreenPage = (): JSX.Element => {
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  variant={
-                    transcriptVerbosity === "full" ? "solid" : "ghost"
-                  }
+                  variant={transcriptVerbosity === "full" ? "solid" : "ghost"}
                   color="cloth"
                   onClick={() => setTranscriptVerbosity("full")}
                 >
@@ -150,9 +149,7 @@ export const ScreenPage = (): JSX.Element => {
                 </Button>
                 <Button
                   size="sm"
-                  variant={
-                    transcriptVerbosity === "table" ? "solid" : "ghost"
-                  }
+                  variant={transcriptVerbosity === "table" ? "solid" : "ghost"}
                   color="cloth"
                   onClick={() => setTranscriptVerbosity("table")}
                 >
@@ -160,9 +157,7 @@ export const ScreenPage = (): JSX.Element => {
                 </Button>
                 <Button
                   size="sm"
-                  variant={
-                    transcriptVerbosity === "story" ? "solid" : "ghost"
-                  }
+                  variant={transcriptVerbosity === "story" ? "solid" : "ghost"}
                   color="cloth"
                   onClick={() => setTranscriptVerbosity("story")}
                 >
@@ -172,9 +167,7 @@ export const ScreenPage = (): JSX.Element => {
                   size="sm"
                   variant={showAiRequestDetails ? "solid" : "ghost"}
                   color="gold"
-                  onClick={() =>
-                    setShowAiRequestDetails((current) => !current)
-                  }
+                  onClick={() => setShowAiRequestDetails((current) => !current)}
                 >
                   {showAiRequestDetails
                     ? "Hide AI Request Detail"
@@ -195,6 +188,13 @@ export const ScreenPage = (): JSX.Element => {
             scene={adventure?.currentScene}
             pendingLabel={thinking.active ? thinking.label : undefined}
           />
+          {adventure?.debugMode && adventure.debugScene ? (
+            <DebugPanel
+              debug={adventure.debugScene}
+              scene={adventure.currentScene}
+              showAiRequestDetails={showAiRequestDetails}
+            />
+          ) : null}
           {adventure ? (
             <RuntimeConfigPanel
               config={adventure.runtimeConfig}
@@ -203,13 +203,6 @@ export const ScreenPage = (): JSX.Element => {
           ) : null}
           {adventure ? (
             <LatencyMetricsCard metrics={adventure.latencyMetrics} />
-          ) : null}
-          {adventure?.debugMode && adventure.debugScene ? (
-            <DebugPanel
-              debug={adventure.debugScene}
-              scene={adventure.currentScene}
-              showAiRequestDetails={showAiRequestDetails}
-            />
           ) : null}
         </>
       ) : null}

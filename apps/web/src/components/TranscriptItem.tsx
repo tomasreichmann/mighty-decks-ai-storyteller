@@ -9,6 +9,8 @@ interface TranscriptItemProps {
 
 const AI_DEBUG_AUTHOR = "AI Debug";
 const AI_IMAGE_SUCCESS_MARKER = "[AI SUCCEEDED] image_generator image";
+const METAGAME_QUESTION_PREFIX = "[Metagame]";
+const METAGAME_STORYTELLER_AUTHOR = "Storyteller (Metagame)";
 
 const entryStyles: Record<
   TranscriptEntry["kind"],
@@ -154,9 +156,64 @@ const extractAiDebugImageUrl = (text: string): string | null => {
   return null;
 };
 
+const formatCredits = (value: number): string => {
+  if (value >= 1) {
+    return value.toFixed(2);
+  }
+
+  if (value >= 0.01) {
+    return value.toFixed(4);
+  }
+
+  return value.toFixed(6);
+};
+
+const formatCount = (value: number): string =>
+  new Intl.NumberFormat("en-US").format(value);
+
+const formatAiRequestSummary = (entry: TranscriptEntry): string | null => {
+  const request = entry.aiRequest;
+  if (!request) {
+    return null;
+  }
+
+  const labelParts = [request.agent, request.model].filter(
+    (value) => value.trim().length > 0,
+  );
+  const metricParts: string[] = [];
+  if (typeof request.usage?.costCredits === "number") {
+    metricParts.push(`${formatCredits(request.usage.costCredits)} cr`);
+  }
+  if (typeof request.usage?.totalTokens === "number") {
+    metricParts.push(`${formatCount(request.usage.totalTokens)} tok`);
+  } else {
+    const promptTokens = request.usage?.promptTokens ?? 0;
+    const completionTokens = request.usage?.completionTokens ?? 0;
+    const total = promptTokens + completionTokens;
+    if (total > 0) {
+      metricParts.push(`${formatCount(total)} tok`);
+    }
+  }
+
+  if (metricParts.length === 0) {
+    metricParts.push(request.status);
+  }
+
+  const label = labelParts.length > 0 ? labelParts.join(" · ") : "AI request";
+  return `${label} | ${metricParts.join(" | ")}`;
+};
+
 export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
   const isAiDebug = entry.kind === "system" && entry.author === AI_DEBUG_AUTHOR;
+  const isMetagameQuestion =
+    entry.kind === "player" &&
+    entry.text.trimStart().startsWith(METAGAME_QUESTION_PREFIX);
+  const isMetagameAnswer =
+    entry.kind === "storyteller" &&
+    entry.author === METAGAME_STORYTELLER_AUTHOR;
+  const isMetagameEntry = isMetagameQuestion || isMetagameAnswer;
   const aiDebugImageUrl = isAiDebug ? extractAiDebugImageUrl(entry.text) : null;
+  const aiRequestSummary = formatAiRequestSummary(entry);
   const style = isAiDebug
     ? {
         label: "AI Debug",
@@ -165,6 +222,13 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
         textClassName: "text-xs text-kac-iron-light",
         authorClassName: "text-kac-curse-dark",
       }
+    : isMetagameEntry
+      ? {
+          ...entryStyles[entry.kind],
+          label: "Metagame",
+          messageColor: "cloth" as const,
+          labelVariant: "cloth" as const,
+        }
     : entryStyles[entry.kind];
   const authorLabel =
     !isAiDebug &&
@@ -183,9 +247,14 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
     >
       {isAiDebug ? (
         <>
-          <pre className="max-h-[300px] w-full min-w-0 overflow-x-auto overflow-y-auto whitespace-pre p-2 font-mono text-xs text-kac-iron">
+          <pre className="max-h-[200px] w-full min-w-0 overflow-x-auto overflow-y-auto whitespace-pre p-2 font-mono text-xs text-kac-iron">
             {entry.text}
           </pre>
+          {aiRequestSummary ? (
+            <p className="mt-2 text-[11px] text-kac-curse-dark">
+              {aiRequestSummary}
+            </p>
+          ) : null}
           {aiDebugImageUrl ? (
             <div className="mt-2 overflow-hidden">
               <img
@@ -198,14 +267,21 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
           ) : null}
         </>
       ) : (
-        <p
-          className={cn(
-            "min-w-0 whitespace-pre-wrap leading-relaxed",
-            style.textClassName,
-          )}
-        >
-          <span>{entry.text}</span>
-        </p>
+        <>
+          <p
+            className={cn(
+              "min-w-0 whitespace-pre-wrap leading-relaxed",
+              style.textClassName,
+            )}
+          >
+            <span>{entry.text}</span>
+          </p>
+          {aiRequestSummary ? (
+            <p className="mt-2 text-[11px] text-kac-iron-dark/70">
+              {aiRequestSummary}
+            </p>
+          ) : null}
+        </>
       )}
     </Message>
   );

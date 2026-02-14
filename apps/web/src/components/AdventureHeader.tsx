@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { AiCostMetrics } from "@mighty-decks/spec/adventureState";
 import { Section } from "./common/Section";
 import { Button } from "./common/Button";
 import { ShareLinkOverlay } from "./ShareLinkOverlay";
@@ -11,6 +12,7 @@ interface AdventureHeaderProps {
   role?: "player" | "screen";
   phase?: string;
   connectionStatus?: "connected" | "reconnecting" | "offline";
+  costMetrics?: AiCostMetrics;
 }
 
 const connectionStatusMeta: Record<
@@ -19,17 +21,17 @@ const connectionStatusMeta: Record<
 > = {
   connected: {
     label: "Connected",
-    dot: "bg-kac-monster-dark",
+    dot: "bg-kac-monster-dark border border-ink shadow-[2px_2px_0_0_#121b23]",
     text: "text-kac-monster-darker",
   },
   reconnecting: {
     label: "Reconnecting...",
-    dot: "bg-kac-gold-dark",
+    dot: "bg-kac-gold-dark border border-ink shadow-[2px_2px_0_0_#121b23]",
     text: "text-kac-gold-darker",
   },
   offline: {
     label: "Offline",
-    dot: "bg-kac-blood",
+    dot: "bg-kac-blood border border-ink shadow-[2px_2px_0_0_#121b23]",
     text: "text-kac-blood-darker",
   },
 };
@@ -69,11 +71,30 @@ const titles = {
   screen: { short: "💻", long: "Share Screen" },
 };
 
+// OpenRouter usage is denominated in USD-based credits (1 credit ~= $1.00).
+const USD_PER_CREDIT = 1;
+
+const formatCredits = (value: number): string => {
+  if (value >= 1) {
+    return value.toFixed(2);
+  }
+
+  if (value >= 0.01) {
+    return value.toFixed(4);
+  }
+
+  return value.toFixed(6);
+};
+
+const formatUsdEstimate = (creditCost: number): string =>
+  `$${(creditCost * USD_PER_CREDIT).toFixed(3)}`;
+
 export const AdventureHeader = ({
   adventureId,
   role,
   phase,
   connectionStatus,
+  costMetrics,
 }: AdventureHeaderProps): JSX.Element => {
   const [shareOrigin, setShareOrigin] = useState(() => {
     if (typeof window === "undefined") {
@@ -145,6 +166,12 @@ export const AdventureHeader = ({
   const shareTitle =
     activeShareTarget === "player" ? titles.player.long : titles.screen.long;
   const shareUrl = activeShareTarget ? shareLinks[activeShareTarget] : "";
+  const totalCostLabel = costMetrics
+    ? `${formatCredits(costMetrics.totalCostCredits)} cr`
+    : null;
+  const totalUsdEstimateLabel = costMetrics
+    ? formatUsdEstimate(costMetrics.totalCostCredits)
+    : null;
 
   return (
     <>
@@ -167,6 +194,16 @@ export const AdventureHeader = ({
             <span className={cn("h-3 w-3 rounded-full", statusMeta.dot)} />
             {statusMeta.label}
             {connectionStatus !== "offline" ? <> as {role}</> : null}
+          </Text>
+        ) : null}
+        {costMetrics && totalCostLabel && totalUsdEstimateLabel ? (
+          <Text as="span" variant="note">
+            📈 {totalCostLabel} (est. {totalUsdEstimateLabel}) (
+            {costMetrics.trackedRequestCount} req
+            {costMetrics.missingCostRequestCount > 0
+              ? `, ${costMetrics.missingCostRequestCount} missing`
+              : ""}
+            )
           </Text>
         ) : null}
         <div className="flex-1 shrink-0 basis-auto flex flex-wrap justify-end items-center relative paper-shadow gap-x-4">

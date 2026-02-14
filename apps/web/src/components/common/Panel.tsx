@@ -7,6 +7,7 @@ export type PanelProps = PropsWithChildren<{
   as?: ElementType;
   tone?: PanelTone;
   className?: string;
+  disabled?: boolean;
   contentClassName?: string;
 }> &
   Omit<JSX.IntrinsicElements["section"], "children">;
@@ -24,6 +25,7 @@ export const Panel = ({
   tone = "bone",
   className = "",
   contentClassName = "",
+  disabled = false,
   children,
   ...restProps
 }: PanelProps): JSX.Element => {
@@ -40,6 +42,8 @@ export const Panel = ({
           "px-3 py-3 shadow-[inset_1px_1px_0_0_#fffaf0,inset_-1px_-1px_0_0_#d6c1a1]",
           contentToneClassMap[tone],
           contentClassName,
+          disabled &&
+            "pointer-events-none disabled:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]",
         )}
       >
         {children}
