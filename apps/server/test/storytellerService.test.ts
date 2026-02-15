@@ -513,8 +513,7 @@ test("parses scene reaction and keeps reward tied to goal completion", async () 
         reward: "You recover a ring of encrypted guard keys from the fallen captain.",
         npcBeat: "A rival scavenger rushes in after hearing the clash.",
         failForward: true,
-        tensionShift: "fall",
-        tensionDelta: -12,
+        tension: 36,
         tensionBand: "medium",
         turnOrderRequired: false,
         closeScene: false,
@@ -547,7 +546,7 @@ test("parses scene reaction and keeps reward tied to goal completion", async () 
     reaction.reward,
     "You recover a ring of encrypted guard keys from the fallen captain.",
   );
-  assert.equal(reaction.tensionShift, "fall");
+  assert.equal(reaction.tension, 36);
   assert.equal(reaction.tensionBand, "medium");
   assert.equal(reaction.turnOrderRequired, false);
 });

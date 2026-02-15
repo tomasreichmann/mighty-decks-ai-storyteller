@@ -41,8 +41,6 @@ export const sceneReactionSchema = z.object({
   reward: z.string().min(1).max(320).optional(),
   goalStatus: z.enum(["advanced", "completed", "blocked"]).default("advanced"),
   failForward: z.boolean().default(true),
-  tensionShift: z.enum(["rise", "fall", "stable"]).default("stable"),
-  tensionDelta: z.number().int().min(-35).max(35).default(0),
   sceneMode: z.enum(["low_tension", "high_tension"]).optional(),
   turnOrderRequired: z.boolean().optional(),
   tensionBand: z.enum(["low", "medium", "high"]).optional(),

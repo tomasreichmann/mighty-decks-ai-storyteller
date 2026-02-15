@@ -1141,30 +1141,6 @@ export class AdventureManager {
     return sections.join("\n\n");
   }
 
-  private resolveNextTension(
-    currentTension: number,
-    shift: "rise" | "fall" | "stable",
-    modelDelta: number,
-    explicitTension?: number,
-  ): number {
-    if (explicitTension !== undefined) {
-      return clampTension(explicitTension);
-    }
-
-    const normalizedDelta =
-      shift === "rise"
-        ? modelDelta > 0
-          ? modelDelta
-          : 10
-        : shift === "fall"
-          ? modelDelta < 0
-            ? modelDelta
-            : -10
-          : modelDelta;
-    const next = currentTension + normalizedDelta;
-    return clampTension(next);
-  }
-
   private resolveNextSceneMode(
     currentMode: "low_tension" | "high_tension",
     nextTension: number,
@@ -2137,13 +2113,9 @@ export class AdventureManager {
           const previousTurnOrderRequired = Boolean(
             adventure.currentScene.activeActorPlayerId,
           );
-          const computedNextTension = this.resolveNextTension(
-            previousTension,
-            sceneReaction?.tensionShift ?? "stable",
-            sceneReaction?.tensionDelta ?? 0,
-            sceneReaction?.tension,
+          const nextTension = clampTension(
+            sceneReaction?.tension ?? previousTension,
           );
-          const nextTension = computedNextTension;
           const nextMode = this.resolveNextSceneMode(
             previousMode,
             nextTension,

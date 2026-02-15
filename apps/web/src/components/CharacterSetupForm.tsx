@@ -9,6 +9,7 @@ import { Text } from "./common/Text";
 import { Panel } from "./common/Panel";
 import { Highlight } from "./common/Highlight";
 import { PendingIndicator } from "./PendingIndicator";
+import { cn } from "../utils/cn";
 
 type SetupMode = "ready_gate" | "profile_only";
 
@@ -267,7 +268,9 @@ export const CharacterSetupForm = ({
           />
         ) : null}
         <Panel className="relative">
-          <Label className="absolute -top-2 -left-2">Saved Presets</Label>
+          <Label variant="cloth" className="absolute -top-2 -left-2">
+            Saved Presets
+          </Label>
           <Button
             type="button"
             size="sm"
@@ -275,7 +278,7 @@ export const CharacterSetupForm = ({
             color="cloth"
             onClick={handleSavePreset}
             disabled={!canReady}
-            className="absolute -top-2 -right-2"
+            className="absolute -top-4 -right-2"
           >
             Save as Preset
           </Button>
@@ -322,17 +325,43 @@ export const CharacterSetupForm = ({
             )}
           </div>
         </Panel>
-        <Panel contentClassName="flex flex-row flex-wrap items-center gap-4">
+        <div className="flex flex-row flex-wrap justify-end items-center gap-4 -m-4 p-4 overflow-hidden">
           {isReadyGateMode ? (
             <>
+              <div className="text-right">
+                <Text variant="emphasised">
+                  {readyPlayers} / {connectedPlayers} connected players are
+                  ready.
+                </Text>
+                <Text
+                  variant="note"
+                  color="steel-dark"
+                  className="normal-case tracking-normal"
+                >
+                  {adventureGenerationInProgress
+                    ? "We will be pitching adventures shortly..."
+                    : "We will begin when all connected players are ready."}
+                </Text>
+              </div>
               {showReadyControls ? (
                 <>
-                  <Button
-                    type="submit"
-                    disabled={!canReady || isReady || disableReadyAction}
-                  >
-                    I am ready
-                  </Button>
+                  <div className="relative group">
+                    <Button
+                      type="submit"
+                      disabled={!canReady || isReady || disableReadyAction}
+                      className="relative z-10"
+                    >
+                      I am ready
+                    </Button>
+                    <Highlight
+                      color="gold"
+                      animate="infinite"
+                      lineCount={4}
+                      canvasWidth={600}
+                      brushHeight={20}
+                      className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[150%] h-[150%] hidden group-hover:block opacity-0 group-hover:opacity-50"
+                    />
+                  </div>
                   {showNotReadyButton ? (
                     <Button
                       type="button"
@@ -348,31 +377,12 @@ export const CharacterSetupForm = ({
               ) : (
                 <Text variant="emphasised" color="cloth">
                   <PendingIndicator color="cloth" /> Adventure generation is in
-                  progress.
-                  Please wait.
+                  progress. Please wait.
                 </Text>
               )}
-              <div>
-                <Text variant="emphasised">
-                  {readyPlayers} / {connectedPlayers} connected players are
-                  ready.
-                </Text>
-                <Text
-                  variant="note"
-                  color="steel-dark"
-                  className="normal-case tracking-normal"
-                >
-                  {adventureGenerationInProgress
-                    ? "We will be pitching adventures shortly..."
-                    : "We will begin when all connected players are ready."}
-                </Text>
-              </div>
             </>
           ) : (
             <>
-              <Button type="submit" disabled={!canReady}>
-                Save character
-              </Button>
               <Text
                 variant="note"
                 color="steel-dark"
@@ -381,9 +391,22 @@ export const CharacterSetupForm = ({
                 Adventure is already underway. Add your character details to
                 join in.
               </Text>
+              <div className="relative group">
+                <Button type="submit" disabled={!canReady} className="z-10">
+                  Save character
+                </Button>
+                <Highlight
+                  color="gold"
+                  animate="infinite"
+                  lineCount={4}
+                  canvasWidth={600}
+                  brushHeight={20}
+                  className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[150%] h-[150%] hidden group-hover:block opacity-0 group-hover:opacity-50"
+                />
+              </div>
             </>
           )}
-        </Panel>
+        </div>
       </form>
     </Section>
   );

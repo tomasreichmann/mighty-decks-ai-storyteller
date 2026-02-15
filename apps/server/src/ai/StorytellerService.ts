@@ -130,8 +130,6 @@ const SCENE_REACTION_SCHEMA_GUIDE = [
   "reward?: string",
   "goalStatus: 'advanced' | 'completed' | 'blocked'",
   "failForward: boolean",
-  "tensionShift: 'rise' | 'fall' | 'stable'",
-  "tensionDelta: integer -35..35",
   "tensionBand?: 'low' | 'medium' | 'high'",
   "sceneMode?: 'low_tension' | 'high_tension'",
   "turnOrderRequired?: boolean",
@@ -256,8 +254,6 @@ const buildSceneReactionFallback = (
   return {
     goalStatus: "advanced",
     failForward: false,
-    tensionShift: "stable",
-    tensionDelta: 0,
     sceneMode: input.scene.mode,
     turnOrderRequired: input.scene.mode === "high_tension",
     tensionBand: input.scene.mode === "high_tension" ? "high" : "low",
@@ -620,13 +616,9 @@ export class StorytellerService {
     const parseSceneReaction = (raw: string): SceneReactionResult | null => {
       const parsed = parseJson(raw, sceneReactionSchema);
       if (parsed) {
-        const boundedTensionDelta = Math.max(
-          -35,
-          Math.min(35, parsed.tensionDelta ?? 0),
-        );
         const targetTension = parsed.tension !== undefined
           ? clampTension(parsed.tension)
-          : clampTension(input.scene.tension + boundedTensionDelta);
+          : clampTension(input.scene.tension);
 
         return {
           npcBeat: parsed.npcBeat ? trimLines(parsed.npcBeat) : undefined,
@@ -636,8 +628,6 @@ export class StorytellerService {
           reward: parsed.reward ? trimLines(parsed.reward) : undefined,
           goalStatus: parsed.goalStatus ?? "advanced",
           failForward: parsed.failForward ?? true,
-          tensionShift: parsed.tensionShift ?? "stable",
-          tensionDelta: boundedTensionDelta,
           sceneMode: parsed.sceneMode,
           turnOrderRequired: parsed.turnOrderRequired,
           tensionBand: parsed.tensionBand,
@@ -666,11 +656,21 @@ export class StorytellerService {
 
       const looseParsed = parseLooseSceneReaction(raw);
       if (looseParsed) {
-        const rawDelta = looseParsed.tensionDelta ?? 0;
-        const boundedTensionDelta = Math.max(-35, Math.min(35, rawDelta));
+        const rawLegacyDelta = looseParsed.legacyTensionDelta ?? 0;
+        const boundedLegacyDelta = Math.max(-35, Math.min(35, rawLegacyDelta));
+        const normalizedLegacyDelta =
+          looseParsed.legacyTensionShift === "rise"
+            ? boundedLegacyDelta > 0
+              ? boundedLegacyDelta
+              : 10
+            : looseParsed.legacyTensionShift === "fall"
+              ? boundedLegacyDelta < 0
+                ? boundedLegacyDelta
+                : -10
+              : boundedLegacyDelta;
         const targetTension = looseParsed.tension !== undefined
           ? clampTension(looseParsed.tension)
-          : clampTension(input.scene.tension + boundedTensionDelta);
+          : clampTension(input.scene.tension + normalizedLegacyDelta);
 
         return {
           npcBeat: looseParsed.npcBeat
@@ -682,8 +682,6 @@ export class StorytellerService {
           reward: looseParsed.reward ? trimLines(looseParsed.reward) : undefined,
           goalStatus: looseParsed.goalStatus ?? "advanced",
           failForward: looseParsed.failForward ?? true,
-          tensionShift: looseParsed.tensionShift ?? "stable",
-          tensionDelta: boundedTensionDelta,
           sceneMode: looseParsed.sceneMode,
           turnOrderRequired: looseParsed.turnOrderRequired,
           tensionBand: looseParsed.tensionBand,

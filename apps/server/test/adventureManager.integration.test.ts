@@ -190,8 +190,6 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
       return {
         goalStatus: "advanced",
         failForward: true,
-        tensionShift: "stable",
-        tensionDelta: 0,
         closeScene: false,
         tension: input.scene.tension,
         debug: {
@@ -1237,8 +1235,6 @@ test("enforces high-tension turn order and gates rewards until goal completion",
           goalStatus: "advanced",
           reward: "A heavy satchel of coin drops from the enemy belt.",
           failForward: true,
-          tensionShift: "rise",
-          tensionDelta: 22,
           sceneMode: "high_tension",
           npcBeat: "Two reinforcements rush in through the side door.",
           closeScene: false,
@@ -1257,8 +1253,6 @@ test("enforces high-tension turn order and gates rewards until goal completion",
         goalStatus: "completed",
         reward: "You recover a coded keyring and enemy insignia.",
         failForward: true,
-        tensionShift: "stable",
-        tensionDelta: 0,
         sceneMode: "high_tension",
         npcBeat: "The commander falls back to regroup.",
         closeScene: false,
@@ -1391,8 +1385,6 @@ test("keeps low-scrutiny no-check turns out of high-tension turn order", async (
     resolveSceneReaction: async () => ({
       goalStatus: "advanced",
       failForward: false,
-      tensionShift: "rise",
-      tensionDelta: 18,
       tensionBand: "medium",
       sceneMode: "high_tension",
       turnOrderRequired: false,
@@ -1473,9 +1465,8 @@ test("does not inject generic fail-forward placeholder when consequence detail i
     resolveSceneReaction: async () => ({
       goalStatus: "blocked",
       failForward: true,
-      tensionShift: "rise",
-      tensionDelta: 8,
       closeScene: false,
+      tension: 68,
       debug: {
         tension: 68,
         secrets: [],
@@ -1784,9 +1775,8 @@ test("requires a final finishing move before scene transition vote opens", async
     resolveSceneReaction: async () => ({
       goalStatus: "advanced",
       failForward: false,
-      tensionShift: "stable",
-      tensionDelta: 0,
       closeScene: false,
+      tension: 80,
       debug: {
         tension: 80,
         secrets: [],

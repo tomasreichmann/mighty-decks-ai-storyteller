@@ -281,14 +281,14 @@ export interface LooseSceneReaction {
   reward?: string;
   goalStatus?: "advanced" | "completed" | "blocked";
   failForward?: boolean;
-  tensionShift?: "rise" | "fall" | "stable";
-  tensionDelta?: number;
   sceneMode?: "low_tension" | "high_tension";
   turnOrderRequired?: boolean;
   tensionBand?: "low" | "medium" | "high";
   closeScene?: boolean;
   sceneSummary?: string;
   tension?: number;
+  legacyTensionShift?: "rise" | "fall" | "stable";
+  legacyTensionDelta?: number;
   tensionReason?: string;
   reasoning?: string[];
   pacingNotes?: string[];
@@ -499,7 +499,7 @@ export const parseLooseSceneReaction = (
   )
     ? goalStatusRaw
     : undefined;
-  const tensionShift = tensionShiftRaw && (
+  const legacyTensionShift = tensionShiftRaw && (
     tensionShiftRaw === "rise" ||
     tensionShiftRaw === "fall" ||
     tensionShiftRaw === "stable"
@@ -526,8 +526,8 @@ export const parseLooseSceneReaction = (
     reward: records.scalars.get("reward"),
     goalStatus,
     failForward: parseLooseBoolean(records.scalars.get("failforward")),
-    tensionShift,
-    tensionDelta: parseLooseNumber(records.scalars.get("tensiondelta")),
+    legacyTensionShift,
+    legacyTensionDelta: parseLooseNumber(records.scalars.get("tensiondelta")),
     sceneMode,
     turnOrderRequired: parseLooseBoolean(records.scalars.get("turnorderrequired")),
     tensionBand,
@@ -545,12 +545,12 @@ export const parseLooseSceneReaction = (
       reaction.consequence ||
       reaction.reward ||
       reaction.goalStatus ||
-      reaction.tensionShift ||
+      reaction.legacyTensionShift ||
       reaction.sceneMode ||
       reaction.turnOrderRequired !== undefined ||
       reaction.tensionBand ||
       reaction.tension !== undefined ||
-      reaction.tensionDelta !== undefined ||
+      reaction.legacyTensionDelta !== undefined ||
       reaction.tensionReason ||
       reaction.reasoning?.length ||
       reaction.pacingNotes?.length ||

@@ -176,8 +176,6 @@ export const buildSceneReactionPrompt = (
     "reward?: string",
     "goalStatus: 'advanced' | 'completed' | 'blocked'",
     "failForward: boolean",
-    "tensionShift: 'rise' | 'fall' | 'stable'",
-    "tensionDelta: integer -35..35",
     "tensionBand?: 'low' | 'medium' | 'high'",
     "sceneMode?: 'low_tension' | 'high_tension'",
     "turnOrderRequired?: boolean",

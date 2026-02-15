@@ -134,8 +134,6 @@ export interface SceneReactionResult {
   reward?: string;
   goalStatus: "advanced" | "completed" | "blocked";
   failForward: boolean;
-  tensionShift: "rise" | "fall" | "stable";
-  tensionDelta: number;
   sceneMode?: "low_tension" | "high_tension";
   turnOrderRequired?: boolean;
   tensionBand?: "low" | "medium" | "high";
