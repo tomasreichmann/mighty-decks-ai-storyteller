@@ -62,6 +62,7 @@ import type {
   ActionResponseResult,
   ContinuityResult,
   MetagameQuestionInput,
+  NarrateActionOptions,
   OutcomeCheckDecisionInput,
   OutcomeCheckDecisionResult,
   PitchInput,
@@ -82,6 +83,7 @@ export type {
   AiRequestDebugEvent,
   ContinuityResult,
   MetagameQuestionInput,
+  NarrateActionOptions,
   OutcomeCheckDecisionInput,
   OutcomeCheckDecisionResult,
   PitchInput,
@@ -522,6 +524,7 @@ export class StorytellerService {
     input: ActionResponseInput,
     runtimeConfig: RuntimeConfig,
     context?: StorytellerRequestContext,
+    options?: NarrateActionOptions,
   ): Promise<ActionResponseResult> {
     const detailLevel =
       input.detailLevel ??
@@ -543,6 +546,7 @@ export class StorytellerService {
       maxTokens,
       temperature: 0.75,
       context,
+      onStreamChunk: options?.onChunk,
     });
 
     if (modelText) {
@@ -909,7 +913,7 @@ export class StorytellerService {
     });
 
     if (modelText) {
-      return trimLines(modelText).slice(0, 900);
+      return normalizeNarrativeText(modelText).slice(0, 900);
     }
 
     const storytellerLines = transcript
@@ -947,7 +951,7 @@ export class StorytellerService {
     });
 
     const parsedModelText = modelText
-      ? trimLines(modelText).replace(/^["'`]+|["'`]+$/g, "")
+      ? normalizeNarrativeText(modelText).replace(/^["'`]+|["'`]+$/g, "")
       : "";
     if (parsedModelText.length > 0) {
       return parsedModelText.slice(0, 280);

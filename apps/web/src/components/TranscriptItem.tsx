@@ -1,4 +1,6 @@
 import type { TranscriptEntry } from "@mighty-decks/spec/adventureState";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { cn } from "../utils/cn";
 import { Message, type MessageColor } from "./common/Message";
 import { type LabelVariant } from "./common/Label";
@@ -199,8 +201,52 @@ const formatAiRequestSummary = (entry: TranscriptEntry): string | null => {
     metricParts.push(request.status);
   }
 
-  const label = labelParts.length > 0 ? labelParts.join(" · ") : "AI request";
+  const label = labelParts.length > 0 ? labelParts.join(" | ") : "AI request";
   return `${label} | ${metricParts.join(" | ")}`;
+};
+
+const markdownComponents = {
+  p: ({ children }: { children?: React.ReactNode }) => (
+    <p className="min-w-0 whitespace-pre-wrap leading-relaxed">{children}</p>
+  ),
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <ul className="ml-5 list-disc space-y-1">{children}</ul>
+  ),
+  ol: ({ children }: { children?: React.ReactNode }) => (
+    <ol className="ml-5 list-decimal space-y-1">{children}</ol>
+  ),
+  li: ({ children }: { children?: React.ReactNode }) => <li>{children}</li>,
+  blockquote: ({ children }: { children?: React.ReactNode }) => (
+    <blockquote className="border-l-2 border-kac-gold-dark/40 pl-3 italic">
+      {children}
+    </blockquote>
+  ),
+  code: ({ children }: { children?: React.ReactNode }) => (
+    <code className="rounded bg-kac-bone-light/60 px-1 py-0.5 font-mono text-[0.9em]">
+      {children}
+    </code>
+  ),
+  pre: ({ children }: { children?: React.ReactNode }) => (
+    <pre className="overflow-x-auto rounded bg-kac-bone-light/60 p-2 font-mono text-xs">
+      {children}
+    </pre>
+  ),
+  a: ({
+    href,
+    children,
+  }: {
+    href?: string;
+    children?: React.ReactNode;
+  }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="underline decoration-kac-gold-dark/70 underline-offset-2"
+    >
+      {children}
+    </a>
+  ),
 };
 
 export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
@@ -268,14 +314,19 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
         </>
       ) : (
         <>
-          <p
+          <div
             className={cn(
-              "min-w-0 whitespace-pre-wrap leading-relaxed",
+              "min-w-0 leading-relaxed",
               style.textClassName,
             )}
           >
-            <span>{entry.text}</span>
-          </p>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents}
+            >
+              {entry.text}
+            </ReactMarkdown>
+          </div>
           {aiRequestSummary ? (
             <p className="mt-2 text-[11px] text-kac-iron-dark/70">
               {aiRequestSummary}

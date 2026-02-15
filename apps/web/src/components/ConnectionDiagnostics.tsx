@@ -165,7 +165,8 @@ export const ConnectionDiagnostics = ({
         label="Disconnected"
         highlighted
         color="curse"
-        className="stack gap-2"
+        className="self-start"
+        contentClassName="stack gap-2"
       >
         <Text variant="emphasised" color="curse">
           You have been disconnected due to inactivity.
@@ -176,7 +177,7 @@ export const ConnectionDiagnostics = ({
             color="gold"
             size="sm"
             onClick={onReconnect}
-            className="self-start absolute -right-6 -bottom-4"
+            className="self-end -mt-5 -mr-6 relative top-4"
           >
             Reconnect
           </Button>

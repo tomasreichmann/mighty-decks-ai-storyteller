@@ -51,6 +51,7 @@ const completeTextWithUsage = async (
     timeoutMs: number;
     maxTokens: number;
     temperature: number;
+    onStreamChunk?: (chunk: string) => void;
   },
 ): Promise<{ text: string | null; usage?: AiRequestDebugEvent["usage"] } | null> => {
   const metadataClient = client as OpenRouterClient & {
@@ -61,7 +62,28 @@ const completeTextWithUsage = async (
       maxTokens: number;
       temperature: number;
     }) => Promise<{ text: string | null; usage?: AiRequestDebugEvent["usage"] } | null>;
+    completeTextStreamWithMetadata?: (
+      request: {
+        model: string;
+        prompt: string;
+        timeoutMs: number;
+        maxTokens: number;
+        temperature: number;
+      },
+      onChunk: (chunk: string) => void,
+    ) => Promise<{ text: string | null; usage?: AiRequestDebugEvent["usage"] } | null>;
   };
+
+  if (
+    request.onStreamChunk &&
+    typeof metadataClient.completeTextStreamWithMetadata === "function"
+  ) {
+    return metadataClient.completeTextStreamWithMetadata(
+      request,
+      request.onStreamChunk,
+    );
+  }
+
   if (typeof metadataClient.completeTextWithMetadata === "function") {
     return metadataClient.completeTextWithMetadata(request);
   }
@@ -152,6 +174,7 @@ export const runTextModelRequest = async (
             timeoutMs: request.runtimeConfig.textCallTimeoutMs,
             maxTokens: request.maxTokens,
             temperature: request.temperature,
+            onStreamChunk: request.onStreamChunk,
           },
         );
         const output = completion?.text;

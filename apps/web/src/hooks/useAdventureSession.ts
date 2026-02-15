@@ -6,13 +6,18 @@ import type {
   RosterEntry,
   RuntimeConfig,
 } from "@mighty-decks/spec/adventureState";
-import type { TranscriptAppendPayload } from "@mighty-decks/spec/events";
+import type {
+  StorytellerThinkingPayload,
+  StorytellerResponseChunkPayload,
+  TranscriptAppendPayload,
+} from "@mighty-decks/spec/events";
 import { getClientIdentity, type ClientIdentity } from "../lib/ids";
 import { createSocketClient, getServerUrlWarning, resolveServerUrl } from "../lib/socket";
 
 interface ThinkingState {
   active: boolean;
   label: string;
+  showInTranscript?: boolean;
 }
 
 interface UseAdventureSessionOptions {
@@ -68,9 +73,77 @@ const appendTranscriptEntry = (
     return currentState;
   }
 
+  const transcriptWithoutStreaming =
+    entry.kind === "storyteller"
+      ? currentState.transcript.filter(
+          (candidate) => candidate.entryId !== STREAMING_STORYTELLER_ENTRY_ID,
+        )
+      : currentState.transcript;
+
   return {
     ...currentState,
-    transcript: [...currentState.transcript, entry],
+    transcript: [...transcriptWithoutStreaming, entry],
+  };
+};
+
+const STREAMING_STORYTELLER_ENTRY_ID = "streaming-storyteller";
+
+const updateStreamingStorytellerEntry = (
+  currentState: AdventureState | null,
+  text: string,
+): AdventureState | null => {
+  if (!currentState) {
+    return currentState;
+  }
+
+  const existingIndex = currentState.transcript.findIndex(
+    (entry) => entry.entryId === STREAMING_STORYTELLER_ENTRY_ID,
+  );
+
+  if (text.length === 0) {
+    if (existingIndex < 0) {
+      return currentState;
+    }
+
+    const nextTranscript = currentState.transcript.filter(
+      (entry) => entry.entryId !== STREAMING_STORYTELLER_ENTRY_ID,
+    );
+    return {
+      ...currentState,
+      transcript: nextTranscript,
+    };
+  }
+
+  if (existingIndex >= 0) {
+    const existingEntry = currentState.transcript[existingIndex];
+    if (existingEntry?.text === text) {
+      return currentState;
+    }
+
+    const nextTranscript = [...currentState.transcript];
+    nextTranscript[existingIndex] = {
+      ...nextTranscript[existingIndex],
+      text,
+      createdAtIso: new Date().toISOString(),
+    };
+    return {
+      ...currentState,
+      transcript: nextTranscript,
+    };
+  }
+
+  return {
+    ...currentState,
+    transcript: [
+      ...currentState.transcript,
+      {
+        entryId: STREAMING_STORYTELLER_ENTRY_ID,
+        kind: "storyteller",
+        author: "Storyteller",
+        text,
+        createdAtIso: new Date().toISOString(),
+      },
+    ],
   };
 };
 
@@ -183,6 +256,7 @@ export const useAdventureSession = ({
   const [thinking, setThinking] = useState<ThinkingState>({
     active: false,
     label: "Storyteller is thinking...",
+    showInTranscript: false,
   });
   const [lastStorytellerResponse, setLastStorytellerResponse] = useState<string | null>(null);
   const [pendingSetupOverride, setPendingSetupOverrideState] = useState<PlayerSetup | null>(null);
@@ -198,6 +272,7 @@ export const useAdventureSession = ({
   const [setupDebugTrace, setSetupDebugTrace] = useState<string[]>([]);
   const receivedAdventureStateRef = useRef(false);
   const latestAdventureStateRef = useRef<AdventureState | null>(null);
+  const storytellerStreamBufferRef = useRef("");
 
   const setInactivityDisconnect = useCallback((value: boolean): void => {
     disconnectedDueToInactivityRef.current = value;
@@ -364,15 +439,19 @@ export const useAdventureSession = ({
         identity.playerId,
         pendingOverride,
       );
-      setAdventure(withOverride);
-      latestAdventureStateRef.current = withOverride;
-      const ownEntry = withOverride.roster.find(
+      const withStreamingBuffer = updateStreamingStorytellerEntry(
+        withOverride,
+        storytellerStreamBufferRef.current,
+      ) ?? withOverride;
+      setAdventure(withStreamingBuffer);
+      latestAdventureStateRef.current = withStreamingBuffer;
+      const ownEntry = withStreamingBuffer.roster.find(
         (entry) => entry.playerId === identity.playerId,
       );
       appendSetupDebug(
         [
-          `adventure_state phase=${withOverride.phase}`,
-          `vote=${withOverride.activeVote ? "active" : "none"}`,
+          `adventure_state phase=${withStreamingBuffer.phase}`,
+          `vote=${withStreamingBuffer.activeVote ? "active" : "none"}`,
           `participant=${ownEntry ? "present" : "missing"}`,
           `participant_setup_effective=${formatSetupForDebug(ownEntry?.setup)}`,
           `participant_setup_server=${formatSetupForDebug(rawOwnEntry?.setup)}`,
@@ -395,7 +474,7 @@ export const useAdventureSession = ({
       ) {
         setPendingSetupOverride(null, "adventure_state_ack");
       }
-      maybeAutoResubmitSetup(withOverride.phase, rawOwnEntry);
+      maybeAutoResubmitSetup(withStreamingBuffer.phase, rawOwnEntry);
       setInactivityDisconnect(false);
       setConnectionError(null);
     };
@@ -470,6 +549,9 @@ export const useAdventureSession = ({
     };
 
     const handleTranscriptAppend = (entry: TranscriptAppendPayload): void => {
+      if (entry.kind === "storyteller") {
+        storytellerStreamBufferRef.current = "";
+      }
       setAdventure((current) => appendTranscriptEntry(current, entry));
     };
 
@@ -510,7 +592,7 @@ export const useAdventureSession = ({
       appendSetupDebug(`phase_changed phase=${phase}`);
     };
 
-    const handleThinking = (nextThinking: ThinkingState): void => {
+    const handleThinking = (nextThinking: StorytellerThinkingPayload): void => {
       setThinking(nextThinking);
     };
 
@@ -536,6 +618,27 @@ export const useAdventureSession = ({
       }
     };
 
+    const handleStorytellerResponseChunk = (
+      payload: StorytellerResponseChunkPayload,
+    ): void => {
+      if (payload.reset) {
+        storytellerStreamBufferRef.current = "";
+        setAdventure((current) => updateStreamingStorytellerEntry(current, ""));
+      }
+
+      if (payload.text.length > 0) {
+        storytellerStreamBufferRef.current += payload.text;
+        const nextText = storytellerStreamBufferRef.current;
+        setAdventure((current) =>
+          updateStreamingStorytellerEntry(current, nextText),
+        );
+      }
+
+      if (payload.done) {
+        storytellerStreamBufferRef.current = "";
+      }
+    };
+
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("adventure_state", handleAdventureState);
@@ -548,6 +651,7 @@ export const useAdventureSession = ({
     socket.on("phase_changed", handlePhaseChanged);
     socket.on("storyteller_thinking", handleThinking);
     socket.on("storyteller_response", handleStorytellerResponse);
+    socket.on("storyteller_response_chunk", handleStorytellerResponseChunk);
     socket.on("connect_error", handleConnectError);
 
     // In React StrictMode (dev), effects mount/unmount once immediately.
@@ -576,6 +680,7 @@ export const useAdventureSession = ({
       socket.off("phase_changed", handlePhaseChanged);
       socket.off("storyteller_thinking", handleThinking);
       socket.off("storyteller_response", handleStorytellerResponse);
+      socket.off("storyteller_response_chunk", handleStorytellerResponseChunk);
       socket.off("connect_error", handleConnectError);
       socket.disconnect();
     };

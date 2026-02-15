@@ -407,6 +407,60 @@ test("uses expanded narration budget for information requests", async () => {
   assert.equal(openRouter.calls.completeText[0]?.maxTokens, 1100);
 });
 
+test("narrateAction prompt includes closure pacing guidance and binding directives", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      "You push the collapsing relay online and force the chamber toward a decisive end.",
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  await service.narrateAction(
+    {
+      pitchTitle: "The Vanishing Keg",
+      pitchDescription: "A city tavern disappears and leaves one full keg behind.",
+      actorCharacterName: "Nyra Flint",
+      actionText: "I force the ward relay to lock and trap the leak in this chamber.",
+      actionIntent: "direct_action",
+      directActionCountInScene: 27,
+      turnNumber: 27,
+      responseMode: "concise",
+      detailLevel: "standard",
+      outcomeCheckTriggered: false,
+      allowHardDenyWithoutOutcomeCheck: false,
+      hardDenyReason: "",
+      bindingDirectives: [
+        "Nyra Flint: Stop hard-denying success outcomes and keep momentum.",
+      ],
+      scene: baseScene,
+      transcriptTail: [],
+      rollingSummary: "Nyra has repeatedly advanced the core objective under pressure.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  const prompt = openRouter.calls.completeText[0]?.prompt ?? "";
+  assert.equal(
+    prompt.includes(
+      "Scene pacing target: close most scenes within 20-40 resolved direct actions.",
+    ),
+    true,
+  );
+  assert.equal(
+    prompt.includes("Resolved direct actions in this scene: 27"),
+    true,
+  );
+  assert.equal(
+    prompt.includes(
+      "Nyra Flint: Stop hard-denying success outcomes and keep momentum.",
+    ),
+    true,
+  );
+});
+
 test("accepts plain prose narration output without requiring JSON", async () => {
   const openRouter = createOpenRouterStub({
     completeText: async () =>
@@ -858,4 +912,70 @@ test("crafts session forward hook via AI output", async () => {
     "As the district calms, a hidden signal from beneath the vanished tavern begins pulsing again, drawing the crew toward a deeper breach.",
   );
   assert.equal(openRouter.calls.completeText.length, 1);
+});
+
+test("summarizeSession preserves markdown content and strips outer fences", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      [
+        "```markdown",
+        "### Session Aftermath",
+        "The crew stabilized the district and exposed the relay sabotage.",
+        "",
+        "- They secured the chamber controls.",
+        "- They failed to identify the signal origin.",
+        "```",
+      ].join("\n"),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const summary = await service.summarizeSession(
+    [
+      {
+        entryId: "t-1",
+        kind: "storyteller",
+        author: "Storyteller",
+        text: "The crew closes the breach, but the beacon keeps pulsing.",
+        createdAtIso: new Date().toISOString(),
+      },
+    ],
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(summary.includes("```"), false);
+  assert.equal(summary.includes("### Session Aftermath"), true);
+  assert.equal(summary.includes("- They secured the chamber controls."), true);
+});
+
+test("craftSessionForwardHook preserves markdown emphasis and strips outer fences", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      "```markdown\n**A buried signal** pulses again beneath the district, daring the crew to descend before rival scavengers seize it.\n```",
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const hook = await service.craftSessionForwardHook(
+    [
+      {
+        entryId: "t-1",
+        kind: "storyteller",
+        author: "Storyteller",
+        text: "The crew secures the chamber, but a buried beacon still hums.",
+        createdAtIso: new Date().toISOString(),
+      },
+    ],
+    "The team shut down the immediate threat and restored control of the chamber.",
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(hook.includes("```"), false);
+  assert.equal(hook.startsWith("**A buried signal**"), true);
 });

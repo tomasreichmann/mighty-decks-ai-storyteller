@@ -186,7 +186,11 @@ export const ScreenPage = (): JSX.Element => {
           <TranscriptFeed
             entries={filteredTranscriptEntries}
             scene={adventure?.currentScene}
-            pendingLabel={thinking.active ? thinking.label : undefined}
+            pendingLabel={
+              thinking.active && thinking.showInTranscript
+                ? thinking.label
+                : undefined
+            }
           />
           {adventure?.debugMode && adventure.debugScene ? (
             <DebugPanel

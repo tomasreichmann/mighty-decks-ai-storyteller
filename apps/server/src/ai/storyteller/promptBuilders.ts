@@ -23,6 +23,22 @@ const composePrompt = (
     .filter((section) => section.length > 0)
     .join("\n");
 
+const formatBindingDirectives = (directives: string[] | undefined): string[] => {
+  const cleaned = (directives ?? [])
+    .map((directive) => directive.trim())
+    .filter((directive) => directive.length > 0)
+    .slice(-8);
+
+  if (cleaned.length === 0) {
+    return ["Binding metagame directives: none"];
+  }
+
+  return [
+    "Binding metagame directives (must follow unless impossible from established facts):",
+    ...cleaned.map((directive, index) => `${index + 1}. ${directive}`),
+  ];
+};
+
 export const buildAdventurePitchesPrompt = (
   promptTemplates: PromptTemplateMap,
   inputs: PitchInput[],
@@ -89,13 +105,13 @@ export const buildNarrateActionPrompt = (
   input: ActionResponseInput,
 ): string =>
   composePrompt(promptTemplates, "narrative_director", [
-    "You are the Narrative Director for a GM-less story game.",
-    "You are an external narrator, never a character in the scene.",
-    "Respond in concise, fail-forward prose.",
-    "Never speak in first person as any player character.",
+    "You are the Narrator for a GM-less story game.",
+    "Your goal is to make the game fun and engaging.",
+    "Respond in concise prose in lightweight markdown format; no JSON.",
+    "Respond to the acting player character in 2nd person, you can mention other characters in 3rd person by their character's name.",
     "Do not roleplay dialogue as the acting player character.",
-    "NPC dialogue in direct quotes is allowed when it strengthens clarity or dramatic pressure; keep quotes brief and purposeful.",
-    "Keep player characters in third-person narration by their exact names.",
+    "NPC dialogue in direct quotes is allowed for clarity or drama; keep quotes brief and purposeful.",
+    "Reward player for good roleplay or smart actions.",
     "detailLevel controls scope: concise=fast beat, standard=clear development, expanded=richer detail with multiple actionable facts.",
     "If responseMode is expanded, favor expanded detailLevel unless contradicted by explicit detailLevel guidance.",
     "If responseMode is concise, keep pacing tight unless detailLevel is expanded.",
@@ -106,9 +122,12 @@ export const buildNarrateActionPrompt = (
     "When outcomeCheckTriggered=false and hardDenyWithoutOutcomeCheck=false, end with one explicit actionable next move sentence.",
     "If hardDenyWithoutOutcomeCheck=true, explain the blocker briefly using known public/internal facts and give one actionable next move.",
     "Judge feasibility semantically from context, not by exact wording or keyword cues.",
-    "Return narration text only (plain text or lightweight markdown).",
-    "Do not return JSON.",
     "Never output session summaries or labels like 'Scene 1'/'Scene 2'/'Session Summary'.",
+    "Scene pacing target: close most scenes within 20-40 resolved direct actions.",
+    "If this is a direct action and resolved direct actions are between 20 and 30, start converging unresolved threads toward a clear endgame beat.",
+    "If this is a direct action and resolved direct actions are between 31 and 40, strongly favor decisive progress that sets up immediate scene closure.",
+    "If this is a direct action and resolved direct actions exceed 40, prioritize closure-ready outcomes unless the core objective is clearly still unresolved.",
+    ...formatBindingDirectives(input.bindingDirectives),
     `Response mode: ${input.responseMode}`,
     `Detail level target: ${
       input.detailLevel ??
@@ -120,6 +139,8 @@ export const buildNarrateActionPrompt = (
     `Scene mode: ${input.scene.mode}`,
     `Scene tension: ${input.scene.tension}`,
     `Acting player character: ${input.actorCharacterName}`,
+    `Action intent: ${input.actionIntent ?? "unknown"}`,
+    `Resolved direct actions in this scene: ${input.directActionCountInScene ?? "unknown"}`,
     `Turn number in scene: ${input.turnNumber}`,
     `Rolling continuity summary: ${input.rollingSummary}`,
     `Player action: ${input.actionText}`,
@@ -139,11 +160,13 @@ export const buildSceneReactionPrompt = (
 ): string =>
   composePrompt(promptTemplates, "scene_controller", [
     "You are the Scene Controller for a GM-less story game.",
-    "Decide world reaction after the player's resolved action.",
+    "Decide world reaction after the player's resolved action to make it fun and engaging.",
     "Always keep play moving. Never dead-end mandatory progress.",
-    "Rewards are granted only when goalStatus is completed.",
     "Treat tension as beat-level scrutiny and urgency, not ambient tone alone.",
     "Do not escalate tension just because prior tension is high.",
+    "Scene pacing target: close most scenes within 20-40 resolved direct actions.",
+    "If resolved direct actions are >=20 and the core objective is materially secured with immediate danger stabilized, bias closeScene=true.",
+    "If resolved direct actions are >40, closeScene should usually be true unless the core objective is clearly unresolved or a fresh immediate threat just emerged.",
     "tensionBand meaning: low=no direct scrutiny, medium=watchful pressure without direct contest, high=direct confrontation/pursuit/countdown pressure now.",
     "turnOrderRequired must be true only when immediate exchanges need strict action order this beat.",
     "High tension can coexist with turnOrderRequired=false when pressure is indirect or not directly contesting the actor right now.",
@@ -166,15 +189,17 @@ export const buildSceneReactionPrompt = (
     "pacingNotes?: string[]",
     "continuityWarnings?: string[]",
     "Write npcBeat/consequence/reward as short in-world narration lines we can show players.",
-    "Do not use meta labels or phrasing like 'Consequence:', 'NPC Move:', 'Reward:', 'raises urgency', or 'forces a response'.",
-    "If goalStatus is not completed, reward must be omitted.",
+    /* "Do not use meta labels or phrasing like 'Consequence:', 'NPC Move:', 'Reward:', 'raises urgency', or 'forces a response'.", */
     "If outcome is a failure or heavy cost, provide consequence and failForward=true.",
     "NPC beat should show NPC agenda pressure, not just mirror player action.",
+    ...formatBindingDirectives(input.bindingDirectives),
     `Pitch title: ${input.pitchTitle}`,
     `Pitch description: ${input.pitchDescription}`,
     `Scene intro: ${input.scene.introProse}`,
     `Scene mode: ${input.scene.mode}`,
     `Current tension: ${input.scene.tension}`,
+    `Action intent: ${input.actionIntent ?? "unknown"}`,
+    `Resolved direct actions in this scene: ${input.directActionCountInScene ?? "unknown"}`,
     `Acting character: ${input.actorCharacterName}`,
     `Turn number: ${input.turnNumber}`,
     `Player action: ${input.actionText}`,
@@ -216,8 +241,8 @@ export const buildOutcomeCheckPrompt = (
     "Set allowHardDenyWithoutOutcomeCheck=true only when the action is outlandish or impossible right now from known public/internal facts.",
     "Hard denial without an Outcome card must be rare.",
     "When allowHardDenyWithoutOutcomeCheck=true, include hardDenyReason with the concrete blocker and keep shouldCheck=false.",
-    "Do not trigger based only on ambient scene danger.",
     "Avoid repeated checks on consecutive low-stakes actions.",
+    "Respect binding metagame directives while classifying stakes.",
     "Output compact JSON only. No markdown fences, no commentary, no extra keys.",
     "Return JSON only with keys:",
     "intent: 'information_request' | 'direct_action'",
@@ -240,6 +265,7 @@ export const buildOutcomeCheckPrompt = (
       input.sceneDebug?.continuityWarnings?.join(" | ") || "none"
     }`,
     `Internal pacing notes: ${input.sceneDebug?.pacingNotes?.join(" | ") || "none"}`,
+    ...formatBindingDirectives(input.bindingDirectives),
     "Recent narrative context:",
     recentNarrative,
   ]);
@@ -249,13 +275,18 @@ export const buildMetagameQuestionPrompt = (
   input: MetagameQuestionInput,
 ): string =>
   composePrompt(promptTemplates, "narrative_director", [
-    "You are answering an out-of-character metagame question from a player.",
+    "You are answering an out-of-character metagame question from a player or calibrating the game based on player feedback.",
     "Answer truthfully using the internal session context provided below.",
     "If the player asks for hidden details, reveal them directly.",
     "Do not preserve mystery in metagame mode.",
+    "Do not defend or justify previous adjudications.",
+    "When the player gives feedback, acknowledge it and state concrete future adjustment(s).",
+    "Prefer acceptance and actionable calibration over argument.",
     "If the answer is genuinely unknown from the supplied context, say exactly what is unknown.",
     "Keep the reply practical and concise (max 140 words).",
+    "Accomomodate the player's feedback as best as you can.",
     "Return plain text only.",
+    ...formatBindingDirectives(input.bindingDirectives),
     `Player asking: ${input.actorCharacterName}`,
     `Question: ${input.questionText}`,
     `Pitch title: ${input.pitchTitle}`,
@@ -282,9 +313,10 @@ export const buildSessionSummaryPrompt = (
   transcript: TranscriptEntry[],
 ): string =>
   composePrompt(promptTemplates, "scene_controller", [
-    "Write a concise end-of-session summary in 4-6 sentences.",
+    "Write a concise end-of-session summary in 4-6 sentences using lightweight markdown.",
     "Focus on what the players attempted, what changed, and unresolved threads.",
-    "Avoid bullet points.",
+    "Use markdown paragraphs and optional emphasis only.",
+    "No code fences or JSON.",
     "Transcript:",
     compactTranscript(transcript),
   ]);
@@ -296,9 +328,10 @@ export const buildSessionForwardHookPrompt = (
 ): string =>
   composePrompt(promptTemplates, "scene_controller", [
     "Write a forward-looking hook for what may happen next in this adventure.",
-    "Return plain text only.",
+    "Return lightweight markdown only.",
     "Output exactly one sentence between 12 and 30 words.",
-    "No markdown, no bullet points, no labels, no quotes.",
+    "No code fences, no bullet points, no labels, no quotes.",
+    "Optional emphasis is allowed.",
     "Focus on unresolved danger, mystery, or opportunity.",
     `Session summary: ${sessionSummary}`,
     "Recent transcript:",
@@ -314,6 +347,7 @@ export const buildSceneImagePromptRequest = (
     "Return plain text only as one continuous prompt, 45-90 words.",
     "Include subject, environment, mood, lighting, composition, and camera framing.",
     "Avoid dialogue, game terms, markdown, JSON, bullet points, and field labels.",
+    "Infer style from scene intro.",
     "Do not include text overlays, UI elements, logos, or watermarks.",
     `Scene intro: ${scene.introProse}`,
     scene.summary ? `Scene resolution: ${scene.summary}` : "",

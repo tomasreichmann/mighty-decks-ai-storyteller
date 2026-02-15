@@ -18,6 +18,24 @@ interface ChatCompletionResponse {
   usage?: unknown;
 }
 
+interface ChatCompletionStreamChunk {
+  choices?: Array<{
+    delta?: {
+      content?: string | Array<{
+        type?: string;
+        text?: string;
+      }>;
+    };
+    message?: {
+      content?: string | Array<{
+        type?: string;
+        text?: string;
+      }>;
+    };
+  }>;
+  usage?: unknown;
+}
+
 interface ImageGenerationResponse {
   data?: Array<{
     url?: string;
@@ -91,6 +109,18 @@ const parseMessageContent = (rawContent: MessageContent): string | null => {
     .trim();
 
   return flattened.length > 0 ? flattened : null;
+};
+
+const parseDeltaContent = (rawContent: MessageContent): string => {
+  if (typeof rawContent === "string") {
+    return rawContent;
+  }
+
+  if (!Array.isArray(rawContent)) {
+    return "";
+  }
+
+  return rawContent.map((part) => part.text ?? "").join("");
 };
 
 const createTimeoutSignal = (timeoutMs: number): AbortSignal => {
@@ -398,6 +428,112 @@ export class OpenRouterClient {
 
     return {
       text: parseMessageContent(message),
+      usage,
+    };
+  }
+
+  public async completeTextStreamWithMetadata(
+    request: TextRequest,
+    onChunk: (chunk: string) => void,
+  ): Promise<OpenRouterTextResult | null> {
+    if (!this.options.apiKey) {
+      return null;
+    }
+
+    const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+      method: "POST",
+      signal: createTimeoutSignal(request.timeoutMs),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.options.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: request.model,
+        messages: [
+          {
+            role: "user",
+            content: request.prompt,
+          },
+        ],
+        max_tokens: request.maxTokens,
+        temperature: request.temperature,
+        stream: true,
+        stream_options: {
+          include_usage: true,
+        },
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      return null;
+    }
+
+    const decoder = new TextDecoder();
+    const reader = response.body.getReader();
+    let aggregate = "";
+    let pending = "";
+    let usage: OpenRouterUsage | undefined;
+
+    const processLine = (line: string): void => {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("data:")) {
+        return;
+      }
+
+      const payload = trimmed.slice("data:".length).trim();
+      if (payload.length === 0 || payload === "[DONE]") {
+        return;
+      }
+
+      const parsed = parseJsonSafe(payload) as ChatCompletionStreamChunk | null;
+      if (!parsed) {
+        return;
+      }
+
+      const chunkUsage = readUsage(parsed);
+      if (chunkUsage) {
+        usage = chunkUsage;
+      }
+
+      const delta = parseDeltaContent(
+        parsed.choices?.[0]?.delta?.content ??
+          parsed.choices?.[0]?.message?.content,
+      );
+      if (delta.length === 0) {
+        return;
+      }
+
+      aggregate += delta;
+      onChunk(delta);
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      pending += decoder.decode(value, { stream: true });
+      let newlineIndex = pending.indexOf("\n");
+      while (newlineIndex >= 0) {
+        const line = pending.slice(0, newlineIndex);
+        pending = pending.slice(newlineIndex + 1);
+        processLine(line);
+        newlineIndex = pending.indexOf("\n");
+      }
+    }
+
+    const finalChunk = decoder.decode();
+    if (finalChunk.length > 0) {
+      pending += finalChunk;
+    }
+    if (pending.trim().length > 0) {
+      processLine(pending);
+    }
+
+    const text = aggregate.trim().length > 0 ? aggregate : null;
+    return {
+      text,
       usage,
     };
   }

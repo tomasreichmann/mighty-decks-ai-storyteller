@@ -672,6 +672,70 @@ test("answers metagame questions even while the action queue is busy", async () 
   await actionPromise;
 });
 
+test("binds metagame feedback into subsequent action prompts", async () => {
+  const storyteller = createStorytellerMock({
+    answerMetagameQuestion: async () =>
+      "Understood. I will avoid hard denials after strong outcomes and provide concrete progress or compensation.",
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Clockwork disaster mystery.");
+  await manager.toggleReady({
+    adventureId,
+    playerId: "player-1",
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId: "player-1",
+    voteId,
+    optionId: firstOptionId,
+  });
+
+  await manager.submitMetagameQuestion({
+    adventureId,
+    playerId: "player-1",
+    text: "Stop hard-denying success outcomes. Keep momentum and compensation.",
+  });
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I force the relay hatch and stabilize the conduit.",
+  });
+  await flushMicrotasks();
+
+  const firstNarrationInput = storyteller.calls.narrateActions.at(-1);
+  assert.ok(firstNarrationInput);
+  assert.equal(firstNarrationInput?.actionIntent, "direct_action");
+  assert.equal(firstNarrationInput?.directActionCountInScene, 1);
+  assert.equal(
+    firstNarrationInput?.bindingDirectives?.some((directive) =>
+      directive.includes(
+        "Nyra Flint: Stop hard-denying success outcomes. Keep momentum and compensation.",
+      ),
+    ),
+    true,
+  );
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I push deeper and lock the surge into the regulator spine.",
+  });
+  await flushMicrotasks();
+
+  const secondNarrationInput = storyteller.calls.narrateActions.at(-1);
+  assert.ok(secondNarrationInput);
+  assert.equal(secondNarrationInput?.directActionCountInScene, 2);
+});
+
 test("allows late joiners to submit setup during play", async () => {
   const storyteller = createStorytellerMock();
   const manager = createManager(storyteller.storyteller);
@@ -1529,9 +1593,15 @@ test("softens hard denial when no Outcome card is required", async () => {
   assert.ok(latestStoryteller);
   assert.equal(
     latestStoryteller?.text.includes(
-      "still creates a narrow opening that can be exploited on the next action",
+      "Nyra Flint cannot retreat; no way out is visible.",
     ),
     true,
+  );
+  assert.equal(
+    latestStoryteller?.text.includes(
+      "still creates a narrow opening that can be exploited on the next action",
+    ),
+    false,
   );
   const latestDecisionReasoning =
     state?.debugScene?.recentDecisions.at(-1)?.reasoning ?? [];

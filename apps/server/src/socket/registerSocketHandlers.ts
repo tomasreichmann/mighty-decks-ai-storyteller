@@ -160,6 +160,9 @@ export const registerSocketHandlers = (
     onStorytellerResponse: (adventureId, payload) => {
       io.to(adventureId).emit("storyteller_response", payload);
     },
+    onStorytellerResponseChunk: (adventureId, payload) => {
+      io.to(adventureId).emit("storyteller_response_chunk", payload);
+    },
   });
 
   io.on("connection", (socket) => {

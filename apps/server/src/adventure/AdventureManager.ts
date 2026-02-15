@@ -30,6 +30,7 @@ import {
   toggleReadyPayloadSchema,
   updateRuntimeConfigPayloadSchema,
 } from "@mighty-decks/spec/events";
+import type { StorytellerThinkingPayload } from "@mighty-decks/spec/events";
 import type { TranscriptEntry } from "@mighty-decks/spec/adventureState";
 import type {
   AiRequestDebugEvent,
@@ -65,6 +66,13 @@ interface PendingSceneClosure {
   requestedAtIso: string;
 }
 
+interface MetagameDirective {
+  directiveId: string;
+  createdAtIso: string;
+  actorName: string;
+  text: string;
+}
+
 interface AdventureRuntimeState {
   voteTimer: NodeJS.Timeout | null;
   votesByPlayerId: Map<string, string>;
@@ -76,8 +84,10 @@ interface AdventureRuntimeState {
   pitchVoteInProgress: boolean;
   sceneCounter: number;
   sceneTurnCounter: number;
+  sceneDirectActionCounter: number;
   selectedPitch: { title: string; description: string } | null;
   rollingSummary: string;
+  metagameDirectives: MetagameDirective[];
   latencySamplesMs: number[];
   finalizedAiRequestIds: Set<string>;
 }
@@ -88,11 +98,15 @@ export interface AdventureManagerHooks {
   onTranscriptAppend?: (adventureId: string, entry: TranscriptEntry) => void;
   onStorytellerThinking?: (
     adventureId: string,
-    payload: { active: boolean; label: string },
+    payload: StorytellerThinkingPayload,
   ) => void;
   onStorytellerResponse?: (
     adventureId: string,
     payload: { text: string },
+  ) => void;
+  onStorytellerResponseChunk?: (
+    adventureId: string,
+    payload: { text: string; reset?: boolean; done?: boolean },
   ) => void;
 }
 
@@ -600,6 +614,7 @@ export class AdventureManager {
     this.hooks.onStorytellerThinking?.(adventure.adventureId, {
       active: true,
       label: "Assessing stakes...",
+      showInTranscript: false,
     });
 
     try {
@@ -609,6 +624,7 @@ export class AdventureManager {
             actorCharacterName: playerAuthor,
             actionText,
             turnNumber: runtime.sceneTurnCounter + 1,
+            bindingDirectives: this.getBindingDirectiveTexts(runtime),
             scene: adventure.currentScene,
             sceneDebug: adventure.debugScene,
             transcriptTail: this.getNarrativeTranscript(
@@ -689,6 +705,7 @@ export class AdventureManager {
         this.hooks.onStorytellerThinking?.(adventure.adventureId, {
           active: false,
           label: "",
+          showInTranscript: false,
         });
       }
     }
@@ -722,6 +739,7 @@ export class AdventureManager {
 
     const runtime = this.ensureRuntime(adventure.adventureId);
     const playerAuthor = this.getCharacterDisplayName(player);
+    this.appendMetagameDirective(runtime, playerAuthor, questionText);
 
     this.appendTranscriptEntry(adventure, {
       kind: "player",
@@ -736,6 +754,7 @@ export class AdventureManager {
       this.hooks.onStorytellerThinking?.(adventure.adventureId, {
         active: true,
         label: "Answering metagame question...",
+        showInTranscript: true,
       });
     }
 
@@ -744,6 +763,7 @@ export class AdventureManager {
         {
           actorCharacterName: playerAuthor,
           questionText,
+          bindingDirectives: this.getBindingDirectiveTexts(runtime),
           pitchTitle: runtime.selectedPitch?.title ?? "Uncharted Trouble",
           pitchDescription:
             runtime.selectedPitch?.description ??
@@ -790,6 +810,7 @@ export class AdventureManager {
         this.hooks.onStorytellerThinking?.(adventure.adventureId, {
           active: false,
           label: "",
+          showInTranscript: true,
         });
       }
     }
@@ -1034,8 +1055,10 @@ export class AdventureManager {
       pitchVoteInProgress: false,
       sceneCounter: 0,
       sceneTurnCounter: 0,
+      sceneDirectActionCounter: 0,
       selectedPitch: null,
       rollingSummary: "",
+      metagameDirectives: [],
       latencySamplesMs: [],
       finalizedAiRequestIds: new Set<string>(),
     };
@@ -1102,32 +1125,6 @@ export class AdventureManager {
       .replace(/\s+/g, " ");
 
     return cleaned.length > 0 ? cleaned : undefined;
-  }
-
-  private enforceActionAgencyGuardrail(
-    text: string,
-    actionItem: ActionQueueItem,
-    actorCharacterName: string,
-  ): string {
-    const trimmedText = text.trim();
-    if (trimmedText.length === 0) {
-      return trimmedText;
-    }
-
-    if (
-      actionItem.sceneClosureAction ||
-      actionItem.outcomeCheckTriggered ||
-      actionItem.allowHardDenyWithoutOutcomeCheck
-    ) {
-      return trimmedText;
-    }
-
-    const followUp =
-      actionItem.intent === "information_request"
-        ? `${actorCharacterName} still gains actionable clarity and can choose an immediate next move.`
-        : `${actorCharacterName} still creates a narrow opening that can be exploited on the next action.`;
-
-    return `${trimmedText}\n\n${followUp}`;
   }
 
   private buildPlayerVisibleStorytellerText(
@@ -1345,6 +1342,44 @@ export class AdventureManager {
     );
   }
 
+  private appendMetagameDirective(
+    runtime: AdventureRuntimeState,
+    actorName: string,
+    text: string,
+  ): void {
+    const normalizedText = text.trim().replace(/\s+/g, " ");
+    if (normalizedText.length === 0) {
+      return;
+    }
+
+    const duplicate = runtime.metagameDirectives.find(
+      (directive) => directive.text.toLowerCase() === normalizedText.toLowerCase(),
+    );
+    if (duplicate) {
+      return;
+    }
+
+    runtime.metagameDirectives.push({
+      directiveId: createId("mg"),
+      createdAtIso: new Date().toISOString(),
+      actorName,
+      text: normalizedText,
+    });
+
+    if (runtime.metagameDirectives.length > 12) {
+      runtime.metagameDirectives.splice(
+        0,
+        runtime.metagameDirectives.length - 12,
+      );
+    }
+  }
+
+  private getBindingDirectiveTexts(runtime: AdventureRuntimeState): string[] {
+    return runtime.metagameDirectives
+      .slice(-8)
+      .map((directive) => `${directive.actorName}: ${directive.text}`);
+  }
+
   private appendTranscriptEntry(
     adventure: AdventureState,
     entry: Pick<TranscriptEntry, "kind" | "author" | "text">,
@@ -1471,6 +1506,7 @@ export class AdventureManager {
       this.hooks.onStorytellerThinking?.(adventureId, {
         active: true,
         label: "Generating adventure pitches...",
+        showInTranscript: false,
       });
 
       const pitchInputs: PitchInput[] = connectedPlayers.map((entry) => ({
@@ -1525,6 +1561,7 @@ export class AdventureManager {
       this.hooks.onStorytellerThinking?.(adventureId, {
         active: false,
         label: "",
+        showInTranscript: false,
       });
       runtime.pitchVoteInProgress = false;
     }
@@ -1707,6 +1744,7 @@ export class AdventureManager {
     const runtime = this.ensureRuntime(adventureId);
     runtime.sceneCounter += 1;
     runtime.sceneTurnCounter = 0;
+    runtime.sceneDirectActionCounter = 0;
     runtime.pendingOutcomeAction = null;
     runtime.pendingSceneClosure = null;
     runtime.processingOutcomeDecision = false;
@@ -1734,6 +1772,7 @@ export class AdventureManager {
     this.hooks.onStorytellerThinking?.(adventureId, {
       active: true,
       label: `Framing scene ${runtime.sceneCounter}...`,
+      showInTranscript: true,
     });
 
     try {
@@ -1812,6 +1851,7 @@ export class AdventureManager {
       this.hooks.onStorytellerThinking?.(adventureId, {
         active: false,
         label: "",
+        showInTranscript: true,
       });
     }
   }
@@ -1922,6 +1962,7 @@ export class AdventureManager {
         this.hooks.onStorytellerThinking?.(adventureId, {
           active: true,
           label: "Storyteller is thinking...",
+          showInTranscript: false,
         });
 
         let actionResponse: ActionResponseResult;
@@ -1929,6 +1970,10 @@ export class AdventureManager {
           ReturnType<StorytellerService["resolveSceneReaction"]>
         > | null = null;
         const startedAtMs = Date.now();
+        this.hooks.onStorytellerResponseChunk?.(adventureId, {
+          text: "",
+          reset: true,
+        });
         try {
           const actingPlayer = this.getRosterEntry(
             adventure,
@@ -1938,6 +1983,11 @@ export class AdventureManager {
           const transcriptTail = this.getNarrativeTranscript(
             adventure.transcript,
           ).slice(-14);
+          const bindingDirectives = this.getBindingDirectiveTexts(runtime);
+          const directActionCountInScene =
+            actionItem.intent === "direct_action" && !actionItem.sceneClosureAction
+              ? runtime.sceneDirectActionCounter + 1
+              : runtime.sceneDirectActionCounter;
 
           try {
             actionResponse = await this.options.storyteller.narrateAction(
@@ -1948,6 +1998,8 @@ export class AdventureManager {
                   "A dangerous opportunity appears and demands action before the window closes.",
                 actorCharacterName,
                 actionText: actionItem.text,
+                actionIntent: actionItem.intent,
+                directActionCountInScene,
                 turnNumber: runtime.sceneTurnCounter + 1,
                 responseMode: actionItem.responseMode,
                 detailLevel: actionItem.detailLevel,
@@ -1955,12 +2007,24 @@ export class AdventureManager {
                 allowHardDenyWithoutOutcomeCheck:
                   actionItem.allowHardDenyWithoutOutcomeCheck,
                 hardDenyReason: actionItem.hardDenyReason,
+                bindingDirectives,
                 scene: adventure.currentScene,
                 transcriptTail,
                 rollingSummary: runtime.rollingSummary,
               },
               adventure.runtimeConfig,
               { adventureId },
+              {
+                onChunk: (chunk) => {
+                  if (chunk.length === 0) {
+                    return;
+                  }
+
+                  this.hooks.onStorytellerResponseChunk?.(adventureId, {
+                    text: chunk,
+                  });
+                },
+              },
             );
           } catch {
             actionResponse = {
@@ -1980,11 +2044,7 @@ export class AdventureManager {
           }
           actionResponse = {
             ...actionResponse,
-            text: this.enforceActionAgencyGuardrail(
-              actionResponse.text,
-              actionItem,
-              actorCharacterName,
-            ),
+            text: actionResponse.text.trim(),
           };
           try {
             if (
@@ -2002,8 +2062,11 @@ export class AdventureManager {
                       "A dangerous opportunity appears and demands action before the window closes.",
                     actorCharacterName,
                     actionText: actionItem.text,
+                    actionIntent: actionItem.intent,
+                    directActionCountInScene,
                     actionResponseText: actionResponse.text,
                     turnNumber: runtime.sceneTurnCounter + 1,
+                    bindingDirectives,
                     scene: adventure.currentScene,
                     transcriptTail,
                     rollingSummary: runtime.rollingSummary,
@@ -2017,6 +2080,9 @@ export class AdventureManager {
           }
 
           runtime.sceneTurnCounter += 1;
+          if (actionItem.intent === "direct_action" && !actionItem.sceneClosureAction) {
+            runtime.sceneDirectActionCounter += 1;
+          }
           const elapsedMs = Date.now() - startedAtMs;
           this.recordLatency(adventure, elapsedMs, runtime);
 
@@ -2230,9 +2296,14 @@ export class AdventureManager {
             break;
           }
         } finally {
+          this.hooks.onStorytellerResponseChunk?.(adventureId, {
+            text: "",
+            done: true,
+          });
           this.hooks.onStorytellerThinking?.(adventureId, {
             active: false,
             label: "",
+            showInTranscript: false,
           });
         }
       }

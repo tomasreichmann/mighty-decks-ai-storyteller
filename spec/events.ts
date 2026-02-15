@@ -112,6 +112,24 @@ export type RuntimeConfigUpdatedPayload = z.infer<typeof runtimeConfigUpdatedPay
 export const latencyMetricsUpdatePayloadSchema = latencyMetricsSchema;
 export type LatencyMetricsUpdatePayload = z.infer<typeof latencyMetricsUpdatePayloadSchema>;
 
+export const storytellerThinkingPayloadSchema = z.object({
+  active: z.boolean(),
+  label: z.string(),
+  showInTranscript: z.boolean().optional(),
+});
+export type StorytellerThinkingPayload = z.infer<
+  typeof storytellerThinkingPayloadSchema
+>;
+
+export const storytellerResponseChunkPayloadSchema = z.object({
+  text: z.string(),
+  reset: z.boolean().optional(),
+  done: z.boolean().optional(),
+});
+export type StorytellerResponseChunkPayload = z.infer<
+  typeof storytellerResponseChunkPayloadSchema
+>;
+
 export type ClientToServerEventName =
   | "join_adventure"
   | "leave_adventure"
@@ -136,7 +154,8 @@ export type ServerToClientEventName =
   | "latency_metrics_update"
   | "phase_changed"
   | "storyteller_thinking"
-  | "storyteller_response";
+  | "storyteller_response"
+  | "storyteller_response_chunk";
 
 export interface ClientToServerEvents {
   join_adventure: (payload: JoinAdventurePayload) => void;
@@ -162,6 +181,7 @@ export interface ServerToClientEvents {
   runtime_config_updated: (payload: RuntimeConfigUpdatedPayload) => void;
   latency_metrics_update: (payload: LatencyMetricsUpdatePayload) => void;
   phase_changed: (payload: AdventureStatePayload["phase"]) => void;
-  storyteller_thinking: (payload: { active: boolean; label: string }) => void;
+  storyteller_thinking: (payload: StorytellerThinkingPayload) => void;
   storyteller_response: (payload: { text: string }) => void;
+  storyteller_response_chunk: (payload: StorytellerResponseChunkPayload) => void;
 }

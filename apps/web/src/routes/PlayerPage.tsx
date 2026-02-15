@@ -312,7 +312,11 @@ export const PlayerPage = (): JSX.Element => {
               scene={adventure?.currentScene}
               scrollable={true}
               autoScrollToBottom={true}
-              pendingLabel={thinking.active ? thinking.label : undefined}
+              pendingLabel={
+                thinking.active && thinking.showInTranscript
+                  ? thinking.label
+                  : undefined
+              }
             />
           </div>
           <div className="shrink-0 relative">

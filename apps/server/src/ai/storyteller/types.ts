@@ -88,12 +88,15 @@ export interface ActionResponseInput {
   pitchDescription: string;
   actorCharacterName: string;
   actionText: string;
+  actionIntent?: "information_request" | "direct_action";
+  directActionCountInScene?: number;
   turnNumber: number;
   responseMode: "concise" | "expanded";
   detailLevel?: NarrativeDetailLevel;
   outcomeCheckTriggered: boolean;
   allowHardDenyWithoutOutcomeCheck: boolean;
   hardDenyReason: string;
+  bindingDirectives?: string[];
   scene: ScenePublic;
   transcriptTail: TranscriptEntry[];
   rollingSummary: string;
@@ -106,13 +109,20 @@ export interface ActionResponseResult {
   debug: SceneDebug;
 }
 
+export interface NarrateActionOptions {
+  onChunk?: (chunk: string) => void;
+}
+
 export interface SceneReactionInput {
   pitchTitle: string;
   pitchDescription: string;
   actorCharacterName: string;
   actionText: string;
+  actionIntent?: "information_request" | "direct_action";
+  directActionCountInScene?: number;
   actionResponseText: string;
   turnNumber: number;
+  bindingDirectives?: string[];
   scene: ScenePublic;
   transcriptTail: TranscriptEntry[];
   rollingSummary: string;
@@ -141,6 +151,7 @@ export interface OutcomeCheckDecisionInput {
   actorCharacterName: string;
   actionText: string;
   turnNumber: number;
+  bindingDirectives?: string[];
   scene: ScenePublic;
   sceneDebug?: SceneDebug;
   transcriptTail: TranscriptEntry[];
@@ -165,6 +176,7 @@ export interface OutcomeCheckDecisionResult {
 export interface MetagameQuestionInput {
   actorCharacterName: string;
   questionText: string;
+  bindingDirectives?: string[];
   pitchTitle: string;
   pitchDescription: string;
   scene: ScenePublic;
@@ -185,6 +197,7 @@ export interface TextModelRequest {
   maxTokens: number;
   temperature: number;
   context?: StorytellerRequestContext;
+  onStreamChunk?: (chunk: string) => void;
 }
 
 export interface ImageModelRequest {
