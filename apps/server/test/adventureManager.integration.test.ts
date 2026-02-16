@@ -1835,12 +1835,20 @@ test("requires a final finishing move before scene transition vote opens", async
   assert.ok(state?.currentScene);
   assert.equal(state.activeVote?.kind, "scene_transition");
   assert.equal(
-    state.currentScene?.closingProse?.includes("chamber finally falls silent"),
-    true,
+    state.currentScene?.closingProse,
+    undefined,
   );
   assert.equal(
-    state.currentScene?.summary,
-    "The core destabilizes and the immediate threat can be ended with one final decisive move.",
+    state.currentScene?.closingImagePending,
+    false,
+  );
+  assert.equal(
+    state.currentScene?.closingImageUrl,
+    undefined,
+  );
+  assert.equal(
+    state.currentScene?.summary?.includes("chamber finally falls silent"),
+    true,
   );
   assert.equal(
     state.transcript.some((entry) => entry.text.startsWith("Scene Summary:")),

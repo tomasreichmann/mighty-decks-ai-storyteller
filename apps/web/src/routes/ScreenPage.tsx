@@ -186,6 +186,7 @@ export const ScreenPage = (): JSX.Element => {
           <TranscriptFeed
             entries={filteredTranscriptEntries}
             scene={adventure?.currentScene}
+            characterPortraitsByName={adventure?.characterPortraitsByName}
             pendingLabel={
               thinking.active && thinking.showInTranscript
                 ? thinking.label
@@ -216,6 +217,7 @@ export const ScreenPage = (): JSX.Element => {
           <TranscriptFeed
             entries={filteredTranscriptEntries}
             scene={adventure?.currentScene}
+            characterPortraitsByName={adventure?.characterPortraitsByName}
           />
           <SessionSummaryCard
             summary={adventure?.sessionSummary ?? "Session ended."}

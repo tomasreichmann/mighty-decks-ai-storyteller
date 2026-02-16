@@ -10,6 +10,14 @@ import { StorytellerService } from "./ai/StorytellerService";
 import { AdventureManager } from "./adventure/AdventureManager";
 import { env } from "./config/env";
 import { AdventureDiagnosticsLogger } from "./diagnostics/AdventureDiagnosticsLogger";
+import { CharacterPortraitCache } from "./image/CharacterPortraitCache";
+import { CharacterPortraitService } from "./image/CharacterPortraitService";
+import { CachedSceneImageService } from "./image/CachedSceneImageService";
+import { FalClient } from "./image/FalClient";
+import { ImageGenerationService } from "./image/ImageGenerationService";
+import { ImageStore } from "./image/ImageStore";
+import { LeonardoClient } from "./image/LeonardoClient";
+import { registerImageRoutes } from "./image/registerImageRoutes";
 import { registerSocketHandlers } from "./socket/registerSocketHandlers";
 
 const app = Fastify({ logger: true });
@@ -21,6 +29,48 @@ await app.register(cors, {
 
 const openRouterClient = new OpenRouterClient({
   apiKey: env.openRouterApiKey,
+});
+const falClient = new FalClient({
+  apiKey: env.falApiKey,
+  apiBaseUrl: env.imageGeneration.falApiBaseUrl,
+  queueBaseUrl: env.imageGeneration.falQueueBaseUrl,
+  pollIntervalMs: env.imageGeneration.falPollIntervalMs,
+  pollTimeoutMs: env.imageGeneration.falPollTimeoutMs,
+});
+const leonardoClient = new LeonardoClient({
+  apiKey: env.leonardoApiKey,
+  baseUrl: env.imageGeneration.leonardoBaseUrl,
+  pollIntervalMs: env.imageGeneration.pollIntervalMs,
+  pollTimeoutMs: env.imageGeneration.pollTimeoutMs,
+});
+const imageStore = new ImageStore({
+  rootDir: env.imageGeneration.outputDir,
+  fileRouteBasePath: "/api/image/files",
+});
+await imageStore.initialize();
+const characterPortraitCache = new CharacterPortraitCache({
+  rootDir: env.imageGeneration.outputDir,
+  imageStore,
+});
+await characterPortraitCache.initialize();
+const imageGenerationService = new ImageGenerationService({
+  falClient,
+  leonardoClient,
+  imageStore,
+  maxActiveJobs: env.imageGeneration.maxActiveJobs,
+  rateLimitPerMinute: env.imageGeneration.rateLimitPerMinute,
+  downloadTimeoutMs: env.imageGeneration.pollTimeoutMs,
+});
+const cachedSceneImageService = new CachedSceneImageService({
+  imageGenerationService,
+});
+const characterPortraitService = new CharacterPortraitService({
+  falClient,
+  leonardoClient,
+  imageStore,
+  cache: characterPortraitCache,
+  openRouterClient,
+  disableImageGeneration: env.costControls.disableImageGeneration,
 });
 
 let manager: AdventureManager;
@@ -46,6 +96,7 @@ const storyteller = new StorytellerService({
     imageGeneratorFallback: env.models.imageGeneratorFallback,
   },
   costControls: env.costControls,
+  sceneImageGenerator: cachedSceneImageService,
   onAiRequest: (entry) => {
     manager?.appendAiRequestLog(entry);
   },
@@ -57,6 +108,7 @@ manager = new AdventureManager({
   runtimeConfigDefaults: env.runtimeConfigDefaults,
   storyteller,
   diagnosticsLogger,
+  characterPortraitService,
 });
 
 const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(app.server, {
@@ -69,6 +121,7 @@ const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(app.serv
 registerSocketHandlers(io, manager, {
   clientIdleTimeoutMs: env.clientIdleTimeoutMs,
 });
+registerImageRoutes(app, imageGenerationService);
 
 app.get("/health", async () => {
   return {

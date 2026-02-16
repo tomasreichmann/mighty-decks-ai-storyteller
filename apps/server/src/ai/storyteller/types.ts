@@ -19,6 +19,20 @@ export interface StorytellerCostControls {
   imageCacheTtlMs?: number;
 }
 
+export interface SceneImageGenerationResult {
+  imageUrl: string | null;
+  model: string;
+  fromCache: boolean;
+  error?: string;
+}
+
+export interface SceneImageGenerator {
+  generateImage(input: {
+    prompt: string;
+    timeoutMs: number;
+  }): Promise<SceneImageGenerationResult>;
+}
+
 export type NarrativeDetailLevel = "concise" | "standard" | "expanded";
 
 export interface StorytellerServiceOptions {
@@ -27,6 +41,7 @@ export interface StorytellerServiceOptions {
   promptTemplates?: Partial<PromptTemplateMap>;
   onAiRequest?: (entry: AiRequestDebugEvent) => void;
   costControls?: StorytellerCostControls;
+  sceneImageGenerator?: SceneImageGenerator;
 }
 
 export interface StorytellerRequestContext {

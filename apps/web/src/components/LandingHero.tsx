@@ -41,7 +41,7 @@ const landingProcessSteps: LandingProcessStep[] = [
     id: "play",
     text: "Play narrative scenes with an AI storyteller",
     tone: "fire",
-    imageUri: "/sample-scene-image.png",
+    imageUri: "/scenes/defeating-a-dragon.png",
     imageClassName: "object-cover scale-110 ",
   },
 ];
@@ -63,9 +63,9 @@ const ProcessArrow = (): JSX.Element => {
           <path d="M 0 100 L 100 50 L 0 0 L 30 50 Z" fill="url(#gradient)" />
           <svg height="0" width="0">
             <linearGradient id="gradient" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stop-color="#feecb4" stop-opacity="1" />
-              <stop offset="50%" stop-color="#ffd23b" stop-opacity="1" />
-              <stop offset="100%" stop-color="#886d15" stop-opacity="1" />
+              <stop offset="0%" stopColor="#feecb4" stopOpacity="1" />
+              <stop offset="50%" stopColor="#ffd23b" stopOpacity="1" />
+              <stop offset="100%" stopColor="#886d15" stopOpacity="1" />
             </linearGradient>
           </svg>
         </g>

@@ -1015,6 +1015,70 @@ export class StorytellerService {
       return null;
     }
 
+    const prompt = await this.buildSceneImagePrompt(
+      scene,
+      runtimeConfig,
+      context,
+    );
+
+    if (this.options.sceneImageGenerator) {
+      const requestId = createAiRequestId();
+      const createdAtIso = new Date().toISOString();
+      if (context) {
+        this.options.onAiRequest?.({
+          adventureId: context.adventureId,
+          requestId,
+          createdAtIso,
+          agent: "image_generator",
+          kind: "image",
+          model: this.options.models.imageGenerator,
+          prompt,
+          timeoutMs: runtimeConfig.imageTimeoutMs,
+          attempt: 1,
+          fallback: false,
+          status: "started",
+        });
+      }
+
+      const generated = await this.options.sceneImageGenerator.generateImage({
+        prompt,
+        timeoutMs: runtimeConfig.imageTimeoutMs,
+      });
+      const imageUrl = generated.imageUrl;
+
+      if (context) {
+        const isTimeout = Boolean(
+          generated.error &&
+            generated.error.toLowerCase().includes("timed out"),
+        );
+        this.options.onAiRequest?.({
+          adventureId: context.adventureId,
+          requestId,
+          createdAtIso,
+          agent: "image_generator",
+          kind: "image",
+          model: generated.model,
+          timeoutMs: runtimeConfig.imageTimeoutMs,
+          attempt: 1,
+          fallback: false,
+          status: imageUrl ? "succeeded" : isTimeout ? "timeout" : "failed",
+          response: imageUrl ?? undefined,
+          error:
+            imageUrl || !generated.error
+              ? undefined
+              : generated.error,
+        });
+      }
+
+      this.writeToCache(
+        this.imageCache,
+        imageCacheKey,
+        imageUrl,
+        this.costControls.imageCacheTtlMs,
+      );
+      return imageUrl;
+    }
+
     if (!this.options.openRouterClient.hasApiKey()) {
       this.writeToCache(
         this.imageCache,
@@ -1039,12 +1103,6 @@ export class StorytellerService {
       }
       return null;
     }
-
-    const prompt = await this.buildSceneImagePrompt(
-      scene,
-      runtimeConfig,
-      context,
-    );
 
     const imageUrl = await runImageModelRequest(
       {

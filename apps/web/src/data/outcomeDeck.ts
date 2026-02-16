@@ -146,8 +146,6 @@ const outcomeRecords = outcomeRows
       value !== null && value.slug.length > 0,
   );
 
-console.log("outcomeRecords", outcomeRecords);
-
 export const outcomeMap = arrayToMap(outcomeRecords, "slug") as {
   [key in OutcomeSlug]: OutcomeType & { count: number };
 };

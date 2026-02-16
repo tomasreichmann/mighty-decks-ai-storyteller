@@ -67,7 +67,7 @@ export const ActionComposer = ({
         {disconnected ? (
           <div
             aria-hidden="true"
-            className="absolute inset-0 z-20 rounded-sm bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]"
+            className="absolute inset-0 z-20 rounded-sm bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)] [mask-image:linear-gradient(to_bottom,_transparent_0%,_black_10%,_black_90%,_transparent_100%)]"
           />
         ) : null}
         <form className="stack" onSubmit={handleSubmit}>
@@ -148,7 +148,11 @@ export const ActionComposer = ({
         </form>
       </div>
       {disconnected ? (
-        <Message label="Connection" color="cloth">
+        <Message
+          label="Connection"
+          color="curse"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
+        >
           Disconnected from the server. Reconnect to send actions.
         </Message>
       ) : null}

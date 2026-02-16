@@ -310,6 +310,7 @@ export const PlayerPage = (): JSX.Element => {
               className="h-full"
               entries={adventure?.transcript ?? []}
               scene={adventure?.currentScene}
+              characterPortraitsByName={adventure?.characterPortraitsByName}
               scrollable={true}
               autoScrollToBottom={true}
               pendingLabel={
@@ -366,6 +367,7 @@ export const PlayerPage = (): JSX.Element => {
           <TranscriptFeed
             entries={adventure?.transcript ?? []}
             scene={adventure?.currentScene}
+            characterPortraitsByName={adventure?.characterPortraitsByName}
           />
           <SessionSummaryCard
             summary={adventure?.sessionSummary ?? "Session ended."}

@@ -14,6 +14,7 @@ export const createInitialAdventureState = (
     adventureId,
     phase: "lobby",
     roster: [],
+    characterPortraitsByName: {},
     transcript: [],
     runtimeConfig,
     latencyMetrics: {

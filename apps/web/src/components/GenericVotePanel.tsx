@@ -67,11 +67,11 @@ export const GenericVotePanel = ({
             />
           </span>
         </Text>
-        <Text variant="body" color="iron-light">
+        <Text variant="emphasised" color="iron-light">
           {vote.prompt}
         </Text>
       </div>
-      <div className="grid gap-2">
+      <div className="grid gap-2 mt-4">
         {vote.options.map((option) => {
           const selected = localSelection === option.optionId;
           return (

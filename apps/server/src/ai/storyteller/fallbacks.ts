@@ -32,7 +32,7 @@ export const buildFallbackImagePrompt = (scene: ScenePublic): string => {
     : "";
   return trimLines(
     [
-      "Cinematic fantasy illustration, no text overlay, no logo, no watermark.",
+      "painterly digital painting, cinematic fantasy illustration, no text overlay, no logo, no watermark.",
       `Primary moment: ${scene.introProse}`,
       summaryHint,
       `Scene cues: ${bulletHints}`,

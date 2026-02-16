@@ -4,6 +4,7 @@ import {
   AdventurePhase,
   AdventureState,
   AiRequestLogEntry,
+  characterPortraitEntrySchema,
   outcomeCardTypeSchema,
   OutcomeCardType,
   playerSetupSchema,
@@ -42,6 +43,8 @@ import type {
   AdventureDiagnosticEvent,
   AdventureDiagnosticsLogger,
 } from "../diagnostics/AdventureDiagnosticsLogger";
+import type { CharacterPortraitService } from "../image/CharacterPortraitService";
+import { CHARACTER_PORTRAIT_PLACEHOLDER_URL } from "../image/characterPortraitConfig";
 import { createInitialAdventureState } from "./createAdventureState";
 
 interface SocketParticipantLink {
@@ -64,6 +67,11 @@ interface ActionQueueItem {
 interface PendingSceneClosure {
   summary: string;
   requestedAtIso: string;
+}
+
+interface SceneTransitionVoteOptions {
+  showClosingCard?: boolean;
+  closingProse?: string;
 }
 
 interface MetagameDirective {
@@ -116,6 +124,7 @@ export interface AdventureManagerOptions {
   runtimeConfigDefaults: RuntimeConfig;
   storyteller: StorytellerService;
   diagnosticsLogger?: AdventureDiagnosticsLogger;
+  characterPortraitService?: CharacterPortraitService;
 }
 
 interface CastVoteResult {
@@ -214,6 +223,36 @@ const percentile90 = (values: number[]): number => {
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.max(0, Math.ceil(sorted.length * 0.9) - 1);
   return sorted[index] ?? 0;
+};
+
+const normalizeCharacterNameKey = (value: string): string =>
+  value
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
+const SCENE_TRANSITION_SUMMARY_FALLBACK =
+  "The group resolves the immediate pressure and must choose whether to continue or end.";
+
+const normalizeSceneTransitionSummary = (value: string): string => {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return normalized.length > 0 ? normalized : SCENE_TRANSITION_SUMMARY_FALLBACK;
+};
+
+const summarizeClosingNarration = (value: string): string | null => {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length === 0) {
+    return null;
+  }
+
+  const withoutTrailingPrompt = normalized
+    .replace(/\s+what do you do now\??\s*$/i, "")
+    .trim();
+  const candidate = withoutTrailingPrompt.length > 0
+    ? withoutTrailingPrompt
+    : normalized;
+  const firstSentenceMatch = candidate.match(/[^.!?]+[.!?]/);
+  return (firstSentenceMatch?.[0] ?? candidate).trim();
 };
 
 export class AdventureManager {
@@ -455,8 +494,24 @@ export class AdventureManager {
       throw new Error("only player role can submit setup");
     }
 
-    rosterEntry.setup = playerSetupSchema.parse(parsed.setup);
+    const setup = playerSetupSchema.parse(parsed.setup);
+    rosterEntry.setup = setup;
+    const characterNameKey = normalizeCharacterNameKey(setup.characterName);
+    this.setCharacterPortraitEntry(adventure, {
+      characterNameKey,
+      characterName: setup.characterName,
+      imageUrl: CHARACTER_PORTRAIT_PLACEHOLDER_URL,
+      status: "pending",
+      updatedAtIso: new Date().toISOString(),
+    });
     this.notifyAdventureUpdated(adventure.adventureId);
+    if (this.options.characterPortraitService) {
+      void this.resolveCharacterPortrait(adventure.adventureId, {
+        characterNameKey,
+        characterName: setup.characterName,
+        visualDescription: setup.visualDescription,
+      });
+    }
     return adventure;
   }
 
@@ -1356,6 +1411,71 @@ export class AdventureManager {
       .map((directive) => `${directive.actorName}: ${directive.text}`);
   }
 
+  private setCharacterPortraitEntry(
+    adventure: AdventureState,
+    entry: {
+      characterNameKey: string;
+      characterName: string;
+      imageUrl: string;
+      status: "placeholder" | "pending" | "ready" | "failed" | "disabled";
+      updatedAtIso: string;
+    },
+  ): void {
+    const parsedEntry = characterPortraitEntrySchema.parse(entry);
+    adventure.characterPortraitsByName = {
+      ...(adventure.characterPortraitsByName ?? {}),
+      [parsedEntry.characterNameKey]: parsedEntry,
+    };
+  }
+
+  private async resolveCharacterPortrait(
+    adventureId: string,
+    input: {
+      characterNameKey: string;
+      characterName: string;
+      visualDescription: string;
+    },
+  ): Promise<void> {
+    const portraitService = this.options.characterPortraitService;
+    if (!portraitService) {
+      return;
+    }
+
+    try {
+      const result = await portraitService.ensurePortrait({
+        characterName: input.characterName,
+        visualDescription: input.visualDescription,
+      });
+      const adventure = this.adventures.get(adventureId);
+      if (!adventure) {
+        return;
+      }
+
+      this.setCharacterPortraitEntry(adventure, {
+        characterNameKey: result.characterNameKey,
+        characterName: result.characterName,
+        imageUrl: result.imageUrl,
+        status: result.status,
+        updatedAtIso: new Date().toISOString(),
+      });
+      this.notifyAdventureUpdated(adventureId);
+    } catch {
+      const adventure = this.adventures.get(adventureId);
+      if (!adventure) {
+        return;
+      }
+
+      this.setCharacterPortraitEntry(adventure, {
+        characterNameKey: input.characterNameKey,
+        characterName: input.characterName,
+        imageUrl: CHARACTER_PORTRAIT_PLACEHOLDER_URL,
+        status: "failed",
+        updatedAtIso: new Date().toISOString(),
+      });
+      this.notifyAdventureUpdated(adventureId);
+    }
+  }
+
   private appendTranscriptEntry(
     adventure: AdventureState,
     entry: Pick<TranscriptEntry, "kind" | "author" | "text">,
@@ -2092,17 +2212,19 @@ export class AdventureManager {
 
             const sceneSummary =
               actionResponse.sceneSummary ??
+              summarizeClosingNarration(storytellerText) ??
               pendingSceneClosure?.summary ??
-              "The group resolves the immediate pressure and must choose whether to continue or end.";
+              SCENE_TRANSITION_SUMMARY_FALLBACK;
             runtime.pendingSceneClosure = null;
-            adventure.currentScene.closingProse = storytellerText;
 
             await this.refreshContinuity(adventureId);
             this.notifyAdventureUpdated(adventureId);
             await this.beginSceneTransitionVote(
               adventureId,
               sceneSummary,
-              storytellerText,
+              {
+                showClosingCard: false,
+              },
             );
             runtime.actionQueue = [];
             break;
@@ -2335,7 +2457,7 @@ export class AdventureManager {
   private async beginSceneTransitionVote(
     adventureId: string,
     sceneSummary: string,
-    closingProse?: string,
+    options: SceneTransitionVoteOptions = {},
   ): Promise<void> {
     const adventure = this.adventures.get(adventureId);
     if (
@@ -2352,19 +2474,32 @@ export class AdventureManager {
     if (runtime) {
       runtime.pendingSceneClosure = null;
     }
-    adventure.currentScene.summary = sceneSummary;
-    adventure.currentScene.closingProse = closingProse?.trim().length
-      ? closingProse.trim()
-      : sceneSummary;
-    adventure.currentScene.closingImagePending = true;
-    delete adventure.currentScene.closingImageUrl;
+    const normalizedSummary = normalizeSceneTransitionSummary(sceneSummary);
+    const showClosingCard = options.showClosingCard ?? true;
+
+    adventure.currentScene.summary = normalizedSummary;
+    if (showClosingCard) {
+      const closingProse = options.closingProse?.trim();
+      adventure.currentScene.closingProse =
+        closingProse && closingProse.length > 0
+          ? closingProse
+          : normalizedSummary;
+      adventure.currentScene.closingImagePending = true;
+      delete adventure.currentScene.closingImageUrl;
+    } else {
+      delete adventure.currentScene.closingProse;
+      adventure.currentScene.closingImagePending = false;
+      delete adventure.currentScene.closingImageUrl;
+    }
     this.appendTranscriptEntry(adventure, {
       kind: "system",
       author: "System",
       text: "Scene ended. Choose whether to continue this session with a new scene or end the session now.",
     });
 
-    void this.generateSceneClosingImage(adventureId, sceneId);
+    if (showClosingCard) {
+      void this.generateSceneClosingImage(adventureId, sceneId);
+    }
 
     this.startVote(
       adventure,

@@ -112,6 +112,7 @@ export const mockState: AdventureState = {
   adventureId: "adv-sample",
   phase: "lobby",
   roster: mockRoster,
+  characterPortraitsByName: {},
   activeVote: mockVote,
   currentScene: mockScene,
   transcript: mockTranscript,

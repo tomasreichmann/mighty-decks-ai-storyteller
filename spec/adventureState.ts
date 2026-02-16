@@ -28,6 +28,28 @@ export const rosterEntrySchema = playerIdentitySchema.extend({
 });
 export type RosterEntry = z.infer<typeof rosterEntrySchema>;
 
+export const characterPortraitStatusSchema = z.enum([
+  "placeholder",
+  "pending",
+  "ready",
+  "failed",
+  "disabled",
+]);
+export type CharacterPortraitStatus = z.infer<
+  typeof characterPortraitStatusSchema
+>;
+
+export const characterPortraitEntrySchema = z.object({
+  characterNameKey: z.string().min(1),
+  characterName: z.string().min(1).max(100),
+  imageUrl: z.string().min(1),
+  status: characterPortraitStatusSchema,
+  updatedAtIso: z.string().datetime(),
+});
+export type CharacterPortraitEntry = z.infer<
+  typeof characterPortraitEntrySchema
+>;
+
 export const voteKindSchema = z.enum(["adventure_pitch", "scene_transition"]);
 export type VoteKind = z.infer<typeof voteKindSchema>;
 
@@ -218,6 +240,9 @@ export const adventureStateSchema = z.object({
   adventureId: z.string().min(1),
   phase: adventurePhaseSchema,
   roster: z.array(rosterEntrySchema),
+  characterPortraitsByName: z
+    .record(characterPortraitEntrySchema)
+    .default({}),
   activeVote: activeVoteSchema.optional(),
   activeOutcomeCheck: activeOutcomeCheckSchema.optional(),
   currentScene: scenePublicSchema.optional(),

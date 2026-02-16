@@ -9,7 +9,6 @@ import { Text } from "./common/Text";
 import { Panel } from "./common/Panel";
 import { Highlight } from "./common/Highlight";
 import { PendingIndicator } from "./PendingIndicator";
-import { cn } from "../utils/cn";
 
 type SetupMode = "ready_gate" | "profile_only";
 

@@ -214,6 +214,10 @@ h6 {
   );
 }
 
+.transcript-avatar-seam {
+  margin-right: -2px;
+}
+
 .message-highlight {
   --message-highlight-rgb: 255 210 59;
   box-shadow:

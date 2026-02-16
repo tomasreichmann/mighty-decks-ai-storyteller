@@ -329,6 +329,42 @@ test("caches image generation results with TTL", async () => {
   assert.equal(openRouter.calls.generateImage.length, 1);
 });
 
+test("uses cached scene image generator when configured and skips OpenRouter image call", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () => "Painterly digital painting of a storm-lit cavern breach.",
+  });
+
+  const sceneImageGeneratorCalls: Array<{ prompt: string; timeoutMs: number }> =
+    [];
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+    sceneImageGenerator: {
+      generateImage: async ({ prompt, timeoutMs }) => {
+        sceneImageGeneratorCalls.push({ prompt, timeoutMs });
+        return {
+          imageUrl: "/api/image/files/scene-cached.png",
+          model: "fal-ai/flux-2/klein/9b",
+          fromCache: true,
+        };
+      },
+    },
+  });
+
+  const imageUrl = await service.generateSceneImage(baseScene, defaultRuntimeConfig);
+
+  assert.equal(imageUrl, "/api/image/files/scene-cached.png");
+  assert.equal(sceneImageGeneratorCalls.length, 1);
+  assert.equal(openRouter.calls.generateImage.length, 0);
+  assert.equal(
+    openRouter.calls.completeText[0]?.prompt.includes(
+      "Include the exact phrase 'painterly digital painting' once.",
+    ),
+    true,
+  );
+});
+
 test("caches generated pitch options with TTL", async () => {
   const openRouter = createOpenRouterStub({
     completeText: async () =>

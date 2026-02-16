@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef } from "react";
 import type {
+  AdventureState,
   ScenePublic,
   TranscriptEntry,
 } from "@mighty-decks/spec/adventureState";
@@ -15,6 +16,7 @@ interface TranscriptFeedProps {
   entries: TranscriptEntry[];
   condensed?: boolean;
   scene?: ScenePublic;
+  characterPortraitsByName?: AdventureState["characterPortraitsByName"];
   scrollable?: boolean;
   autoScrollToBottom?: boolean;
   pendingLabel?: string;
@@ -56,10 +58,33 @@ const findSceneClosingAnchorIndex = (entries: TranscriptEntry[]): number => {
   return -1;
 };
 
+const formatSceneClosedSummary = (summary: string | undefined): string => {
+  const normalized = summary?.replace(/\s+/g, " ").trim() ?? "";
+  if (normalized.length === 0) {
+    return "The immediate scene objective is resolved.";
+  }
+
+  const firstSentenceMatch = normalized.match(/[^.!?]+[.!?]/);
+  const firstSentence = (firstSentenceMatch?.[0] ?? normalized).trim();
+  const maxLength = 200;
+  if (firstSentence.length <= maxLength) {
+    return firstSentence;
+  }
+
+  return `${firstSentence.slice(0, maxLength - 3).trimEnd()}...`;
+};
+
+const normalizeCharacterNameKey = (value: string): string =>
+  value
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
 export const TranscriptFeed = ({
   entries,
   condensed = false,
   scene,
+  characterPortraitsByName,
   scrollable = false,
   autoScrollToBottom = false,
   pendingLabel,
@@ -89,17 +114,29 @@ export const TranscriptFeed = ({
   const hasClosingSceneCard = Boolean(
     scene &&
     ((scene.closingProse && scene.closingProse.trim().length > 0) ||
-      (scene.summary && scene.summary.trim().length > 0) ||
       scene.closingImagePending ||
       scene.closingImageUrl),
+  );
+  const hasSceneClosedSummary = Boolean(
+    scene &&
+      !hasClosingSceneCard &&
+      scene.summary &&
+      scene.summary.trim().length > 0,
+  );
+  const sceneClosedSummary = useMemo(
+    () => formatSceneClosedSummary(scene?.summary),
+    [scene?.summary],
   );
   const sceneAnchorIndex = useMemo(
     () => (scene ? findSceneAnchorIndex(maxEntries) : -1),
     [scene, maxEntries],
   );
   const sceneClosingAnchorIndex = useMemo(
-    () => (hasClosingSceneCard ? findSceneClosingAnchorIndex(maxEntries) : -1),
-    [hasClosingSceneCard, maxEntries],
+    () =>
+      scene && (hasClosingSceneCard || hasSceneClosedSummary)
+        ? findSceneClosingAnchorIndex(maxEntries)
+        : -1,
+    [hasClosingSceneCard, hasSceneClosedSummary, maxEntries, scene],
   );
   const transcriptTailSignature = useMemo(() => {
     const lastEntry = maxEntries[maxEntries.length - 1];
@@ -163,7 +200,16 @@ export const TranscriptFeed = ({
           ) : null}
           {maxEntries.map((entry, index) => (
             <Fragment key={entry.entryId}>
-              <TranscriptItem entry={entry} />
+              <TranscriptItem
+                entry={entry}
+                playerImageUrl={
+                  entry.kind === "player"
+                    ? characterPortraitsByName?.[
+                        normalizeCharacterNameKey(entry.author)
+                      ]?.imageUrl
+                    : undefined
+                }
+              />
               {scene && index === sceneAnchorIndex ? (
                 <NarratedSceneCard
                   key={`scene-${scene.sceneId}-intro-after-${entry.entryId}`}
@@ -179,6 +225,20 @@ export const TranscriptFeed = ({
                   variant="closing"
                 />
               ) : null}
+              {scene &&
+              hasSceneClosedSummary &&
+              index === sceneClosingAnchorIndex ? (
+                <Message
+                  key={`scene-${scene.sceneId}-closed-after-${entry.entryId}`}
+                  label="Scene Closed"
+                  color="monster"
+                  className="min-w-0 max-w-full"
+                >
+                  <Text variant="body" color="iron-light" className="text-sm">
+                    {sceneClosedSummary}
+                  </Text>
+                </Message>
+              ) : null}
             </Fragment>
           ))}
           {scene && sceneAnchorIndex < 0 ? (
@@ -186,6 +246,17 @@ export const TranscriptFeed = ({
           ) : null}
           {scene && hasClosingSceneCard && sceneClosingAnchorIndex < 0 ? (
             <NarratedSceneCard scene={scene} variant="closing" />
+          ) : null}
+          {scene && hasSceneClosedSummary && sceneClosingAnchorIndex < 0 ? (
+            <Message
+              label="Scene Closed"
+              color="monster"
+              className="min-w-0 max-w-full"
+            >
+              <Text variant="body" color="iron-light" className="text-sm">
+                {sceneClosedSummary}
+              </Text>
+            </Message>
           ) : null}
           {resolvedPendingLabel ? (
             <Message

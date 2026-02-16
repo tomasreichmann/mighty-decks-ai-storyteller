@@ -3,11 +3,33 @@ import { Section } from "./common/Section";
 import { Text } from "./common/Text";
 import { Panel } from "./common/Panel";
 import { Message } from "./common/Message";
+import { GeneratedImage } from "./GeneratedImage";
 
 interface NarratedSceneCardProps {
   scene: ScenePublic;
   variant?: "intro" | "closing";
 }
+
+const STATIC_IMAGE_PATH_PREFIXES = ["/scenes/", "/profiles/"];
+
+const resolveNarratedImageUrl = (imageUrl: string): string => {
+  if (
+    imageUrl.startsWith("http://") ||
+    imageUrl.startsWith("https://") ||
+    imageUrl.startsWith("data:")
+  ) {
+    return imageUrl;
+  }
+
+  if (
+    typeof window !== "undefined" &&
+    STATIC_IMAGE_PATH_PREFIXES.some((prefix) => imageUrl.startsWith(prefix))
+  ) {
+    return new URL(imageUrl, window.location.origin).toString();
+  }
+
+  return imageUrl;
+};
 
 export const NarratedSceneCard = ({
   scene,
@@ -16,8 +38,15 @@ export const NarratedSceneCard = ({
   const isClosing = variant === "closing";
   const imageUrl = isClosing ? scene.closingImageUrl : scene.imageUrl;
   const imagePending = isClosing ? scene.closingImagePending : scene.imagePending;
+  const image = imageUrl
+    ? {
+        imageId: `${scene.sceneId}-${variant}-image`,
+        imageUrl: resolveNarratedImageUrl(imageUrl),
+        alt: isClosing ? "Scene closing visual" : "Scene visual",
+      }
+    : null;
   const prose = isClosing
-    ? scene.closingProse ?? scene.summary ?? scene.introProse
+    ? scene.closingProse ?? scene.introProse
     : scene.introProse;
   const turnOrderActive = Boolean(scene.activeActorPlayerId);
 
@@ -37,28 +66,21 @@ export const NarratedSceneCard = ({
             className="absolute inset-[2px] overflow-hidden m-3 bg-kac-iron-dark skew-clip-mask"
             style={{ "--skew-offset": "4%" } as React.CSSProperties}
           >
+            <GeneratedImage
+              embedded
+              image={image}
+              pending={imagePending}
+              pendingLabel={
+                isClosing
+                  ? "Generating closing scene image..."
+                  : "Generating scene image..."
+              }
+              emptyLabel={isClosing ? "No closing image yet." : "No image yet."}
+              className="absolute inset-0"
+            />
             <div className="halftone-vignette-wrapper !z-50 !mix-blend-multiply">
               <div className="halftone-vignette"></div>
             </div>
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={isClosing ? "Scene closing visual" : "Scene visual"}
-                className="absolute h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <Text
-                  variant="emphasised"
-                  color="steel-light"
-                  className="text-sm"
-                >
-                  {imagePending
-                    ? "Generating scene image..."
-                    : "No image yet"}
-                </Text>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -67,14 +89,7 @@ export const NarratedSceneCard = ({
           {prose}
         </Text>
       </Panel>
-      {isClosing ? (
-        <Message label="Scene Closed" color="monster">
-          <Text variant="body" color="iron-light" className="text-sm">
-            {scene.summary ??
-              "The immediate scene objective is resolved. Vote to continue or end the session."}
-          </Text>
-        </Message>
-      ) : (
+      {isClosing ? null : (
         <>
           {scene.mode === "high_tension" && turnOrderActive ? (
             <Message label="Turn Order" color="curse">

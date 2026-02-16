@@ -7,3 +7,4 @@ dist
 .vite
 *.tsbuildinfo
 apps/server/logs
+.playwright-cli

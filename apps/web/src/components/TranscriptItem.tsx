@@ -1,18 +1,21 @@
 import type { TranscriptEntry } from "@mighty-decks/spec/adventureState";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { resolveServerUrl } from "../lib/socket";
 import { cn } from "../utils/cn";
 import { Message, type MessageColor } from "./common/Message";
 import { type LabelVariant } from "./common/Label";
 
 interface TranscriptItemProps {
   entry: TranscriptEntry;
+  playerImageUrl?: string;
 }
 
 const AI_DEBUG_AUTHOR = "AI Debug";
 const AI_IMAGE_SUCCESS_MARKER = "[AI SUCCEEDED] image_generator image";
 const METAGAME_QUESTION_PREFIX = "[Metagame]";
 const METAGAME_STORYTELLER_AUTHOR = "Storyteller (Metagame)";
+const PLAYER_PORTRAIT_PLACEHOLDER_URL = "/profiles/profile-placeholder.png";
 
 const entryStyles: Record<
   TranscriptEntry["kind"],
@@ -158,6 +161,18 @@ const extractAiDebugImageUrl = (text: string): string | null => {
   return null;
 };
 
+const resolvePlayerPortraitSrc = (imageUrl: string): string => {
+  if (
+    imageUrl.startsWith("http://") ||
+    imageUrl.startsWith("https://") ||
+    imageUrl.startsWith("data:")
+  ) {
+    return imageUrl;
+  }
+
+  return new URL(imageUrl, resolveServerUrl()).toString();
+};
+
 const formatCredits = (value: number): string => {
   if (value >= 1) {
     return value.toFixed(2);
@@ -231,13 +246,7 @@ const markdownComponents = {
       {children}
     </pre>
   ),
-  a: ({
-    href,
-    children,
-  }: {
-    href?: string;
-    children?: React.ReactNode;
-  }) => (
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
     <a
       href={href}
       target="_blank"
@@ -249,7 +258,10 @@ const markdownComponents = {
   ),
 };
 
-export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
+export const TranscriptItem = ({
+  entry,
+  playerImageUrl,
+}: TranscriptItemProps): JSX.Element => {
   const isAiDebug = entry.kind === "system" && entry.author === AI_DEBUG_AUTHOR;
   const isMetagameQuestion =
     entry.kind === "player" &&
@@ -275,22 +287,21 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
           messageColor: "cloth" as const,
           labelVariant: "cloth" as const,
         }
-    : entryStyles[entry.kind];
+      : entryStyles[entry.kind];
   const authorLabel =
     !isAiDebug &&
     (entry.kind === "player" ||
       (entry.kind === "system" && entry.author !== "System"))
       ? entry.author
       : null;
+  const messageClassName =
+    entry.kind === "player" ? undefined : style.className;
+  const playerPortraitSrc = resolvePlayerPortraitSrc(
+    playerImageUrl ?? PLAYER_PORTRAIT_PLACEHOLDER_URL,
+  );
 
-  return (
-    <Message
-      label={entry.kind === "player" && authorLabel ? authorLabel : style.label}
-      color={style.messageColor}
-      labelVariant={style.labelVariant}
-      className={cn("min-w-0 max-w-full", style.className)}
-      contentClassName="min-w-0"
-    >
+  const messageContent = (
+    <>
       {isAiDebug ? (
         <>
           <pre className="max-h-[200px] w-full min-w-0 overflow-x-auto overflow-y-auto whitespace-pre p-2 font-mono text-xs text-kac-iron">
@@ -314,12 +325,7 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
         </>
       ) : (
         <>
-          <div
-            className={cn(
-              "min-w-0 leading-relaxed",
-              style.textClassName,
-            )}
-          >
+          <div className={cn("min-w-0 leading-relaxed", style.textClassName)}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={markdownComponents}
@@ -334,6 +340,38 @@ export const TranscriptItem = ({ entry }: TranscriptItemProps): JSX.Element => {
           ) : null}
         </>
       )}
+    </>
+  );
+
+  const message = (
+    <Message
+      label={entry.kind === "player" && authorLabel ? authorLabel : style.label}
+      color={style.messageColor}
+      labelVariant={style.labelVariant}
+      className={cn("min-w-0 max-w-full", messageClassName)}
+      contentClassName="min-w-0"
+    >
+      {messageContent}
     </Message>
+  );
+
+  if (entry.kind !== "player") {
+    return message;
+  }
+
+  return (
+    <div className="flex w-full justify-end">
+      <div className="flex max-w-full items-stretch gap-0">
+        <div className="transcript-avatar-seam shrink-0 overflow-hidden border-2 border-r-0 border-kac-iron-dark bg-kac-bone-light bg-black shadow-[4px_4px_0_0_#121b23] -z-10 rotate-[-2deg]">
+          <img
+            src={playerPortraitSrc}
+            alt={entry.author}
+            loading="lazy"
+            className="h-full min-h-full w-12 object-cover"
+          />
+        </div>
+        {message}
+      </div>
+    </div>
   );
 };
