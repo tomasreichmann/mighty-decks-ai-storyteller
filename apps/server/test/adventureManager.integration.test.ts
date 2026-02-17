@@ -19,6 +19,7 @@ import type {
   SceneStartInput,
   SceneStartResult,
   StorytellerService,
+  TranscriptIllustrationImageInput,
 } from "../src/ai/StorytellerService";
 
 const adventureId = "adv-integration";
@@ -78,6 +79,10 @@ interface StorytellerMockOverrides {
     runtimeConfig: RuntimeConfig,
   ) => Promise<string>;
   generateSceneImage?: (scene: NonNullable<AdventureState["currentScene"]>, runtimeConfig: RuntimeConfig) => Promise<string | null>;
+  generateTranscriptIllustrationImage?: (
+    input: TranscriptIllustrationImageInput,
+    runtimeConfig: RuntimeConfig,
+  ) => Promise<string | null>;
 }
 
 interface StorytellerMockController {
@@ -89,6 +94,7 @@ interface StorytellerMockController {
     metagameQuestions: MetagameQuestionInput[];
     sceneReactions: SceneReactionInput[];
     continuityUpdates: AdventureState["transcript"][];
+    transcriptIllustrations: TranscriptIllustrationImageInput[];
   };
 }
 
@@ -100,6 +106,7 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
     metagameQuestions: [] as MetagameQuestionInput[],
     sceneReactions: [] as SceneReactionInput[],
     continuityUpdates: [] as AdventureState["transcript"][],
+    transcriptIllustrations: [] as TranscriptIllustrationImageInput[],
   };
 
   const storyteller = {
@@ -260,6 +267,19 @@ const createStorytellerMock = (overrides: StorytellerMockOverrides = {}): Storyt
 
       return null;
     },
+    generateTranscriptIllustrationImage: async (
+      input: TranscriptIllustrationImageInput,
+    ) => {
+      calls.transcriptIllustrations.push(input);
+      if (overrides.generateTranscriptIllustrationImage) {
+        return overrides.generateTranscriptIllustrationImage(
+          input,
+          baseRuntimeConfig,
+        );
+      }
+
+      return null;
+    },
   } as unknown as StorytellerService;
 
   return { storyteller, calls };
@@ -324,6 +344,29 @@ const submitSetup = (
       adventurePreference,
     },
   });
+};
+
+const startPlayPhaseForSinglePlayer = async (
+  manager: AdventureManager,
+  playerId: string,
+): Promise<void> => {
+  await manager.toggleReady({
+    adventureId,
+    playerId,
+    ready: true,
+  });
+
+  const voteId = manager.getAdventure(adventureId)?.activeVote?.voteId;
+  const firstOptionId = manager.getAdventure(adventureId)?.activeVote?.options[0]?.optionId;
+  assert.ok(voteId);
+  assert.ok(firstOptionId);
+  await manager.castVote({
+    adventureId,
+    playerId,
+    voteId,
+    optionId: firstOptionId,
+  });
+  await flushMicrotasks();
 };
 
 test("tracks per-request AI cost metrics and attaches request metadata to debug transcript entries", () => {
@@ -1071,6 +1114,250 @@ test("publishes pending scene, then prompts players without duplicating intro pr
   assert.ok(thinkingEvents.some((event) => !event.active));
 });
 
+test("manual transcript illustration request sets pending and ignores duplicate requests while pending", async () => {
+  let resolveIllustration:
+    | ((value: string | null) => void)
+    | null = null;
+  const storyteller = createStorytellerMock({
+    generateTranscriptIllustrationImage: async () =>
+      new Promise<string | null>((resolve) => {
+        resolveIllustration = resolve;
+      }),
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Arcane tavern mystery.");
+  await startPlayPhaseForSinglePlayer(manager, "player-1");
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I examine the relay inscriptions for a hidden reset pattern.",
+  });
+  await flushMicrotasks();
+
+  let state = manager.getAdventure(adventureId);
+  const targetEntry = [...(state?.transcript ?? [])]
+    .reverse()
+    .find(
+      (entry) => entry.kind === "storyteller" && entry.author === "Storyteller",
+    );
+  assert.ok(targetEntry);
+
+  manager.requestTranscriptIllustration({
+    adventureId,
+    playerId: "player-1",
+    entryId: targetEntry.entryId,
+  });
+  manager.requestTranscriptIllustration({
+    adventureId,
+    playerId: "player-1",
+    entryId: targetEntry.entryId,
+  });
+  await flushMicrotasks();
+
+  state = manager.getAdventure(adventureId);
+  assert.equal(
+    state?.transcriptIllustrationsByEntryId[targetEntry.entryId]?.pending,
+    true,
+  );
+  assert.equal(storyteller.calls.transcriptIllustrations.length, 1);
+
+  assert.ok(resolveIllustration);
+  resolveIllustration("https://cdn.example.com/manual-one.png");
+  await flushMicrotasks();
+
+  state = manager.getAdventure(adventureId);
+  const illustrationState =
+    state?.transcriptIllustrationsByEntryId[targetEntry.entryId];
+  assert.ok(illustrationState);
+  assert.equal(illustrationState?.pending, false);
+  assert.equal(illustrationState?.images.length, 1);
+  assert.equal(illustrationState?.images[0]?.source, "manual");
+});
+
+test("repeated manual transcript illustration requests append images to the same entry batch", async () => {
+  let imageCounter = 0;
+  const storyteller = createStorytellerMock({
+    generateTranscriptIllustrationImage: async () => {
+      imageCounter += 1;
+      return `https://cdn.example.com/manual-${imageCounter}.png`;
+    },
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Arcane tavern mystery.");
+  await startPlayPhaseForSinglePlayer(manager, "player-1");
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I trace the ward seams and call out what I find.",
+  });
+  await flushMicrotasks();
+
+  let state = manager.getAdventure(adventureId);
+  const targetEntry = [...(state?.transcript ?? [])]
+    .reverse()
+    .find(
+      (entry) => entry.kind === "storyteller" && entry.author === "Storyteller",
+    );
+  assert.ok(targetEntry);
+
+  manager.requestTranscriptIllustration({
+    adventureId,
+    playerId: "player-1",
+    entryId: targetEntry.entryId,
+  });
+  await flushMicrotasks();
+
+  manager.requestTranscriptIllustration({
+    adventureId,
+    playerId: "player-1",
+    entryId: targetEntry.entryId,
+  });
+  await flushMicrotasks();
+
+  state = manager.getAdventure(adventureId);
+  const illustrationState =
+    state?.transcriptIllustrationsByEntryId[targetEntry.entryId];
+  assert.ok(illustrationState);
+  assert.equal(illustrationState?.pending, false);
+  assert.equal(illustrationState?.images.length, 2);
+  assert.equal(illustrationState?.images[0]?.source, "manual");
+  assert.equal(illustrationState?.images[1]?.source, "manual");
+});
+
+test("auto transcript illustrations enforce per-scene cap and reset on a new scene", async () => {
+  let imageCounter = 0;
+  const storyteller = createStorytellerMock({
+    resolveSceneReaction: async ({ turnNumber, scene }) => ({
+      goalStatus: "advanced",
+      failForward: false,
+      closeScene: false,
+      tension: scene.tension,
+      shouldIllustrate: true,
+      subjectType: "item",
+      subjectLabel: `Artifact ${turnNumber}`,
+      reason: "Distinct artifact is introduced.",
+      debug: {
+        tension: scene.tension,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+    generateTranscriptIllustrationImage: async () => {
+      imageCounter += 1;
+      return `https://cdn.example.com/auto-cap-${imageCounter}.png`;
+    },
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Artifact vault breach.");
+  await startPlayPhaseForSinglePlayer(manager, "player-1");
+
+  for (let index = 0; index < 4; index += 1) {
+    await manager.submitAction({
+      adventureId,
+      playerId: "player-1",
+      text: `I push deeper into the vault wing ${index + 1}.`,
+    });
+    await flushMicrotasks();
+  }
+
+  assert.equal(storyteller.calls.transcriptIllustrations.length, 3);
+
+  await manager.endSession({
+    adventureId,
+    playerId: "player-1",
+  });
+  await manager.continueAdventure({
+    adventureId,
+    playerId: "player-1",
+  });
+  await flushMicrotasks();
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I inspect the first relic chamber in this new scene.",
+  });
+  await flushMicrotasks();
+
+  assert.equal(storyteller.calls.transcriptIllustrations.length, 4);
+});
+
+test("auto transcript illustrations dedupe repeated subjects per scene and reset on a new scene", async () => {
+  let imageCounter = 0;
+  const storyteller = createStorytellerMock({
+    resolveSceneReaction: async ({ scene }) => ({
+      goalStatus: "advanced",
+      failForward: false,
+      closeScene: false,
+      tension: scene.tension,
+      shouldIllustrate: true,
+      subjectType: "npc",
+      subjectLabel: "Captain Hush",
+      reason: "A notable npc enters the scene.",
+      debug: {
+        tension: scene.tension,
+        secrets: [],
+        pacingNotes: [],
+        continuityWarnings: [],
+        aiRequests: [],
+      },
+    }),
+    generateTranscriptIllustrationImage: async () => {
+      imageCounter += 1;
+      return `https://cdn.example.com/auto-dedupe-${imageCounter}.png`;
+    },
+  });
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  submitSetup(manager, "player-1", "Nyra Flint", "Whispering harbor pursuit.");
+  await startPlayPhaseForSinglePlayer(manager, "player-1");
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I call out to Captain Hush and demand terms.",
+  });
+  await flushMicrotasks();
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I keep Captain Hush talking while I read the room.",
+  });
+  await flushMicrotasks();
+
+  assert.equal(storyteller.calls.transcriptIllustrations.length, 1);
+
+  await manager.endSession({
+    adventureId,
+    playerId: "player-1",
+  });
+  await manager.continueAdventure({
+    adventureId,
+    playerId: "player-1",
+  });
+  await flushMicrotasks();
+
+  await manager.submitAction({
+    adventureId,
+    playerId: "player-1",
+    text: "I find Captain Hush again and force a direct answer.",
+  });
+  await flushMicrotasks();
+
+  assert.equal(storyteller.calls.transcriptIllustrations.length, 2);
+});
+
 test("emits thinking state while generating adventure pitches", async () => {
   let resolvePitches: ((value: PitchOption[]) => void) | null = null;
   const storyteller = createStorytellerMock({
@@ -1601,6 +1888,23 @@ test("softens hard denial when no Outcome card is required", async () => {
       line.includes("Intent classified by AI as"),
     ),
     false,
+  );
+  const latestDecisionTranscript = [...(state?.transcript ?? [])]
+    .reverse()
+    .find(
+      (entry) =>
+        entry.kind === "system" &&
+        entry.author === "AI Debug" &&
+        entry.text.includes("[Decision] Turn"),
+    );
+  assert.ok(latestDecisionTranscript);
+  assert.equal(
+    latestDecisionTranscript?.text.includes("Goal: advanced"),
+    true,
+  );
+  assert.equal(
+    latestDecisionTranscript?.text.includes("Reasoning:"),
+    true,
   );
 });
 

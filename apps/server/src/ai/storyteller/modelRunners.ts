@@ -11,6 +11,11 @@ interface ModelRunnerDependencies {
   onAiRequest?: (entry: AiRequestDebugEvent) => void;
 }
 
+export interface ImageModelRequestResult {
+  imageUrl: string | null;
+  error?: string;
+}
+
 export const createAiRequestId = (): string =>
   `ai-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -248,6 +253,14 @@ export const runImageModelRequest = async (
   dependencies: ModelRunnerDependencies,
   request: ImageModelRequest,
 ): Promise<string | null> => {
+  const result = await runImageModelRequestWithDetails(dependencies, request);
+  return result.imageUrl;
+};
+
+export const runImageModelRequestWithDetails = async (
+  dependencies: ModelRunnerDependencies,
+  request: ImageModelRequest,
+): Promise<ImageModelRequestResult> => {
   if (!dependencies.openRouterClient.hasApiKey()) {
     if (request.context) {
       emitAiRequest(dependencies, {
@@ -264,11 +277,15 @@ export const runImageModelRequest = async (
         error: "OpenRouter API key missing.",
       });
     }
-    return null;
+    return {
+      imageUrl: null,
+      error: "OpenRouter API key missing.",
+    };
   }
 
   const attempts = Math.max(1, request.runtimeConfig.aiRetryCount + 1);
   const models = uniqueModels([request.primaryModel, request.fallbackModel]);
+  let lastError: string | undefined;
 
   for (const model of models) {
     const useFallbackModel = model !== request.primaryModel;
@@ -319,9 +336,12 @@ export const runImageModelRequest = async (
               usage,
             });
           }
-          return imageUrl;
+          return {
+            imageUrl,
+          };
         }
 
+        lastError = "No image returned by provider.";
         if (request.context) {
           emitAiRequest(dependencies, {
             adventureId: request.context.adventureId,
@@ -339,6 +359,11 @@ export const runImageModelRequest = async (
           });
         }
       } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Unknown image request error.";
+        lastError = errorMessage;
         if (request.context) {
           const isTimeout = error instanceof Error && error.name === "AbortError";
           emitAiRequest(dependencies, {
@@ -352,10 +377,7 @@ export const runImageModelRequest = async (
             attempt: attempt + 1,
             fallback: useFallbackModel,
             status: isTimeout ? "timeout" : "failed",
-            error:
-              error instanceof Error
-                ? error.message
-                : "Unknown image request error.",
+            error: errorMessage,
           });
         }
 
@@ -365,11 +387,17 @@ export const runImageModelRequest = async (
         }
 
         if (isPermanentImageFailure(error)) {
-          return null;
+          return {
+            imageUrl: null,
+            error: lastError ?? "Image generation failed.",
+          };
         }
       }
     }
   }
 
-  return null;
+  return {
+    imageUrl: null,
+    error: lastError ?? "Image generation failed.",
+  };
 };

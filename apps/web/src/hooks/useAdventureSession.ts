@@ -52,6 +52,7 @@ export interface UseAdventureSessionResult {
   castVote: (optionId: string) => void;
   submitAction: (text: string) => void;
   submitMetagameQuestion: (text: string) => void;
+  requestTranscriptIllustration: (entryId: string) => void;
   playOutcomeCard: (checkId: string, card: OutcomeCardType) => void;
   endSession: () => void;
   continueAdventure: () => void;
@@ -88,6 +89,14 @@ const appendTranscriptEntry = (
 
 const STREAMING_STORYTELLER_ENTRY_ID = "streaming-storyteller";
 
+// Match server-side final transcript normalization to avoid layout jumps mid-stream.
+const normalizeStorytellerStreamText = (value: string): string =>
+  value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .join("\n");
+
 const updateStreamingStorytellerEntry = (
   currentState: AdventureState | null,
   text: string,
@@ -96,11 +105,12 @@ const updateStreamingStorytellerEntry = (
     return currentState;
   }
 
+  const normalizedText = normalizeStorytellerStreamText(text);
   const existingIndex = currentState.transcript.findIndex(
     (entry) => entry.entryId === STREAMING_STORYTELLER_ENTRY_ID,
   );
 
-  if (text.length === 0) {
+  if (normalizedText.length === 0) {
     if (existingIndex < 0) {
       return currentState;
     }
@@ -116,14 +126,14 @@ const updateStreamingStorytellerEntry = (
 
   if (existingIndex >= 0) {
     const existingEntry = currentState.transcript[existingIndex];
-    if (existingEntry?.text === text) {
+    if (existingEntry?.text === normalizedText) {
       return currentState;
     }
 
     const nextTranscript = [...currentState.transcript];
     nextTranscript[existingIndex] = {
       ...nextTranscript[existingIndex],
-      text,
+      text: normalizedText,
       createdAtIso: new Date().toISOString(),
     };
     return {
@@ -140,7 +150,7 @@ const updateStreamingStorytellerEntry = (
         entryId: STREAMING_STORYTELLER_ENTRY_ID,
         kind: "storyteller",
         author: "Storyteller",
-        text,
+        text: normalizedText,
         createdAtIso: new Date().toISOString(),
       },
     ],
@@ -790,6 +800,13 @@ export const useAdventureSession = ({
         adventureId,
         playerId: identity.playerId,
         text,
+      });
+    },
+    requestTranscriptIllustration: (entryId: string) => {
+      socket.emit("request_transcript_illustration", {
+        adventureId,
+        playerId: identity.playerId,
+        entryId,
       });
     },
     playOutcomeCard: (checkId: string, card: OutcomeCardType) => {

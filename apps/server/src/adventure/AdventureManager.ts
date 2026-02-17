@@ -11,7 +11,11 @@ import {
   rosterEntrySchema,
   RuntimeConfig,
   runtimeConfigSchema,
+  ScenePublic,
   scenePublicSchema,
+  transcriptIllustrationImageSchema,
+  transcriptIllustrationStateSchema,
+  TranscriptIllustrationSubjectType,
   transcriptEntrySchema,
   voteOptionSchema,
   VoteKind,
@@ -25,6 +29,7 @@ import {
   joinAdventurePayloadSchema,
   JoinAdventurePayload,
   playOutcomeCardPayloadSchema,
+  requestTranscriptIllustrationPayloadSchema,
   submitActionPayloadSchema,
   submitMetagameQuestionPayloadSchema,
   submitSetupPayloadSchema,
@@ -64,6 +69,16 @@ interface ActionQueueItem {
   sceneClosureAction?: boolean;
 }
 
+interface TranscriptIllustrationQueueItem {
+  entryId: string;
+  narrativeText: string;
+  source: "auto" | "manual";
+  subjectType?: TranscriptIllustrationSubjectType;
+  subjectLabel?: string;
+  scene: NonNullable<AdventureState["currentScene"]>;
+  transcriptTail: TranscriptEntry[];
+}
+
 interface PendingSceneClosure {
   summary: string;
   requestedAtIso: string;
@@ -85,20 +100,28 @@ interface AdventureRuntimeState {
   voteTimer: NodeJS.Timeout | null;
   votesByPlayerId: Map<string, string>;
   actionQueue: ActionQueueItem[];
+  illustrationQueue: TranscriptIllustrationQueueItem[];
   pendingOutcomeAction: ActionQueueItem | null;
   pendingSceneClosure: PendingSceneClosure | null;
   processingAction: boolean;
   processingOutcomeDecision: boolean;
+  processingIllustration: boolean;
   pitchVoteInProgress: boolean;
   sceneCounter: number;
   sceneTurnCounter: number;
   sceneDirectActionCounter: number;
+  autoIllustrationsUsedInScene: number;
+  autoIllustrationSubjectsInScene: Set<string>;
   selectedPitch: { title: string; description: string } | null;
   rollingSummary: string;
   metagameDirectives: MetagameDirective[];
   latencySamplesMs: number[];
   finalizedAiRequestIds: Set<string>;
 }
+
+type RecentDecisionLogEntry = NonNullable<
+  AdventureState["debugScene"]
+>["recentDecisions"][number];
 
 export interface AdventureManagerHooks {
   onAdventureUpdated?: (adventureId: string) => void;
@@ -230,6 +253,21 @@ const normalizeCharacterNameKey = (value: string): string =>
     .trim()
     .replace(/\s+/g, " ")
     .toLowerCase();
+
+const normalizeIllustrationSubjectKey = (
+  subjectType: TranscriptIllustrationSubjectType | undefined,
+  subjectLabel: string | undefined,
+): string | null => {
+  const normalizedLabel = subjectLabel
+    ?.trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+  if (!subjectType || !normalizedLabel) {
+    return null;
+  }
+
+  return `${subjectType}:${normalizedLabel}`;
+};
 
 const SCENE_TRANSITION_SUMMARY_FALLBACK =
   "The group resolves the immediate pressure and must choose whether to continue or end.";
@@ -871,6 +909,57 @@ export class AdventureManager {
     }
   }
 
+  public requestTranscriptIllustration(payload: unknown): AdventureState {
+    const parsed = requestTranscriptIllustrationPayloadSchema.parse(payload);
+    const adventure = this.requireAdventure(parsed.adventureId);
+    this.assertAdventureOpen(adventure);
+    this.assertPhase(
+      adventure,
+      ["play"],
+      "transcript illustrations can only be requested during play phase",
+    );
+
+    const requester = this.getRosterEntry(adventure, parsed.playerId);
+    if (!requester.connected) {
+      throw new Error("only connected participants can request illustrations");
+    }
+    if (requester.role !== "player" && requester.role !== "screen") {
+      throw new Error("unsupported role for transcript illustration request");
+    }
+    if (!adventure.currentScene) {
+      throw new Error("no active scene");
+    }
+
+    const entry = adventure.transcript.find(
+      (candidate) => candidate.entryId === parsed.entryId,
+    );
+    if (!entry) {
+      throw new Error("transcript entry not found");
+    }
+    if (!this.isEligibleTranscriptIllustrationEntry(entry)) {
+      throw new Error(
+        "illustrations can only be generated for storyteller narrative entries",
+      );
+    }
+
+    const enqueued = this.enqueueTranscriptIllustrationRequest(adventure, {
+      entryId: entry.entryId,
+      narrativeText: entry.text,
+      source: "manual",
+    });
+    if (!enqueued) {
+      return adventure;
+    }
+
+    this.notifyAdventureUpdated(adventure.adventureId);
+    const runtime = this.ensureRuntime(adventure.adventureId);
+    if (!runtime.processingIllustration) {
+      void this.processTranscriptIllustrationQueue(adventure.adventureId);
+    }
+
+    return adventure;
+  }
+
   public playOutcomeCard(payload: unknown): AdventureState {
     const parsed = playOutcomeCardPayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
@@ -1103,14 +1192,18 @@ export class AdventureManager {
       voteTimer: null,
       votesByPlayerId: new Map<string, string>(),
       actionQueue: [],
+      illustrationQueue: [],
       pendingOutcomeAction: null,
       pendingSceneClosure: null,
       processingAction: false,
       processingOutcomeDecision: false,
+      processingIllustration: false,
       pitchVoteInProgress: false,
       sceneCounter: 0,
       sceneTurnCounter: 0,
       sceneDirectActionCounter: 0,
+      autoIllustrationsUsedInScene: 0,
+      autoIllustrationSubjectsInScene: new Set<string>(),
       selectedPitch: null,
       rollingSummary: "",
       metagameDirectives: [],
@@ -1194,6 +1287,340 @@ export class AdventureManager {
     );
 
     return sections.join("\n\n");
+  }
+
+  private toPublicImageWarning(rawError: string | undefined): string | undefined {
+    const normalized = rawError?.trim();
+    if (!normalized) {
+      return undefined;
+    }
+
+    const lower = normalized.toLowerCase();
+    if (lower.includes("moderat")) {
+      return "Image blocked by content moderation. Try a safer or less explicit description.";
+    }
+    if (lower.includes("timed out")) {
+      return "Image generation timed out. Continue without an image for now.";
+    }
+    if (
+      lower.includes("api key missing") ||
+      lower.includes("disabled by configuration")
+    ) {
+      return "Image generation is unavailable on this server.";
+    }
+
+    return `Image generation warning: ${normalized.slice(0, 220)}`;
+  }
+
+  private isEligibleTranscriptIllustrationEntry(
+    entry: TranscriptEntry,
+  ): boolean {
+    return (
+      entry.kind === "storyteller" &&
+      entry.author === "Storyteller" &&
+      entry.text.trim().length > 0
+    );
+  }
+
+  private enqueueTranscriptIllustrationRequest(
+    adventure: AdventureState,
+    input: {
+      entryId: string;
+      narrativeText: string;
+      source: "auto" | "manual";
+      subjectType?: TranscriptIllustrationSubjectType;
+      subjectLabel?: string;
+    },
+  ): boolean {
+    if (!adventure.currentScene) {
+      return false;
+    }
+
+    const existing =
+      adventure.transcriptIllustrationsByEntryId[input.entryId];
+    if (existing?.pending) {
+      return false;
+    }
+
+    const runtime = this.ensureRuntime(adventure.adventureId);
+    runtime.illustrationQueue.push({
+      entryId: input.entryId,
+      narrativeText: input.narrativeText,
+      source: input.source,
+      subjectType: input.subjectType,
+      subjectLabel: input.subjectLabel,
+      scene: {
+        ...adventure.currentScene,
+        orientationBullets: [...adventure.currentScene.orientationBullets],
+      },
+      transcriptTail: this.getNarrativeTranscript(adventure.transcript).slice(
+        -14,
+      ),
+    });
+    this.setTranscriptIllustrationPending(adventure, input.entryId, true);
+    return true;
+  }
+
+  private setTranscriptIllustrationPending(
+    adventure: AdventureState,
+    entryId: string,
+    pending: boolean,
+    error?: string,
+  ): void {
+    const nowIso = new Date().toISOString();
+    const existing =
+      adventure.transcriptIllustrationsByEntryId[entryId];
+    adventure.transcriptIllustrationsByEntryId = {
+      ...adventure.transcriptIllustrationsByEntryId,
+      [entryId]: transcriptIllustrationStateSchema.parse({
+        pending,
+        error: pending ? undefined : error,
+        images: existing?.images ?? [],
+        lastUpdatedAtIso: nowIso,
+      }),
+    };
+  }
+
+  private appendTranscriptIllustrationImage(
+    adventure: AdventureState,
+    input: {
+      entryId: string;
+      imageUrl: string;
+      source: "auto" | "manual";
+      subjectType?: TranscriptIllustrationSubjectType;
+      subjectLabel?: string;
+    },
+  ): void {
+    const nowIso = new Date().toISOString();
+    const existing =
+      adventure.transcriptIllustrationsByEntryId[input.entryId];
+    const subjectLabel = input.subjectLabel?.trim();
+    const nextImage = transcriptIllustrationImageSchema.parse({
+      imageId: createId("ti"),
+      imageUrl: input.imageUrl,
+      alt:
+        subjectLabel && subjectLabel.length > 0
+          ? `Illustration: ${subjectLabel}`
+          : "Transcript illustration",
+      source: input.source,
+      subjectType: input.subjectType,
+      subjectLabel:
+        subjectLabel && subjectLabel.length > 0 ? subjectLabel : undefined,
+      createdAtIso: nowIso,
+    });
+
+    adventure.transcriptIllustrationsByEntryId = {
+      ...adventure.transcriptIllustrationsByEntryId,
+      [input.entryId]: transcriptIllustrationStateSchema.parse({
+        pending: false,
+        error: undefined,
+        images: [...(existing?.images ?? []), nextImage],
+        lastUpdatedAtIso: nowIso,
+      }),
+    };
+  }
+
+  private maybeQueueAutoTranscriptIllustration(
+    adventure: AdventureState,
+    storytellerEntry: TranscriptEntry,
+    sceneReaction: Awaited<
+      ReturnType<StorytellerService["resolveSceneReaction"]>
+    > | null,
+  ): void {
+    if (!sceneReaction?.shouldIllustrate) {
+      return;
+    }
+    if (!sceneReaction.subjectType) {
+      return;
+    }
+    const subjectLabel = sceneReaction.subjectLabel?.trim();
+    if (!subjectLabel) {
+      return;
+    }
+
+    const runtime = this.ensureRuntime(adventure.adventureId);
+    if (runtime.autoIllustrationsUsedInScene >= 3) {
+      return;
+    }
+
+    const subjectKey = normalizeIllustrationSubjectKey(
+      sceneReaction.subjectType,
+      subjectLabel,
+    );
+    if (
+      subjectKey &&
+      runtime.autoIllustrationSubjectsInScene.has(subjectKey)
+    ) {
+      return;
+    }
+
+    const enqueued = this.enqueueTranscriptIllustrationRequest(adventure, {
+      entryId: storytellerEntry.entryId,
+      narrativeText: storytellerEntry.text,
+      source: "auto",
+      subjectType: sceneReaction.subjectType,
+      subjectLabel,
+    });
+    if (!enqueued) {
+      return;
+    }
+
+    runtime.autoIllustrationsUsedInScene += 1;
+    if (subjectKey) {
+      runtime.autoIllustrationSubjectsInScene.add(subjectKey);
+    }
+    this.notifyAdventureUpdated(adventure.adventureId);
+    if (!runtime.processingIllustration) {
+      void this.processTranscriptIllustrationQueue(adventure.adventureId);
+    }
+  }
+
+  private async processTranscriptIllustrationQueue(
+    adventureId: string,
+  ): Promise<void> {
+    const runtime = this.ensureRuntime(adventureId);
+    if (runtime.processingIllustration) {
+      return;
+    }
+
+    runtime.processingIllustration = true;
+    try {
+      while (runtime.illustrationQueue.length > 0) {
+        const queueItem = runtime.illustrationQueue.shift();
+        if (!queueItem) {
+          continue;
+        }
+
+        const adventure = this.adventures.get(adventureId);
+        if (!adventure || adventure.closed || adventure.phase !== "play") {
+          if (adventure) {
+            this.setTranscriptIllustrationPending(
+              adventure,
+              queueItem.entryId,
+              false,
+            );
+            for (const pendingItem of runtime.illustrationQueue) {
+              this.setTranscriptIllustrationPending(
+                adventure,
+                pendingItem.entryId,
+                false,
+              );
+            }
+            this.notifyAdventureUpdated(adventureId);
+          }
+          runtime.illustrationQueue = [];
+          break;
+        }
+
+        const entry = adventure.transcript.find(
+          (candidate) => candidate.entryId === queueItem.entryId,
+        );
+        if (!entry || !this.isEligibleTranscriptIllustrationEntry(entry)) {
+          this.setTranscriptIllustrationPending(
+            adventure,
+            queueItem.entryId,
+            false,
+          );
+          this.notifyAdventureUpdated(adventureId);
+          continue;
+        }
+
+        let imageUrl: string | null = null;
+        let warning: string | undefined;
+        try {
+          const storyteller =
+            this.options.storyteller as StorytellerService & {
+              generateTranscriptIllustrationImageResult?: (
+                input: {
+                  narrativeText: string;
+                  scene: NonNullable<AdventureState["currentScene"]>;
+                  transcriptTail: TranscriptEntry[];
+                  subjectType?: TranscriptIllustrationSubjectType;
+                  subjectLabel?: string;
+                },
+                runtimeConfig: RuntimeConfig,
+                context?: { adventureId: string },
+              ) => Promise<{ imageUrl: string | null; error?: string }>;
+            };
+          if (
+            typeof storyteller.generateTranscriptIllustrationImageResult ===
+            "function"
+          ) {
+            const result =
+              await storyteller.generateTranscriptIllustrationImageResult(
+                {
+                  narrativeText: queueItem.narrativeText,
+                  scene: queueItem.scene,
+                  transcriptTail: queueItem.transcriptTail,
+                  subjectType: queueItem.subjectType,
+                  subjectLabel: queueItem.subjectLabel,
+                },
+                adventure.runtimeConfig,
+                { adventureId },
+              );
+            imageUrl = result.imageUrl;
+            warning = this.toPublicImageWarning(result.error);
+          } else {
+            imageUrl =
+              await this.options.storyteller.generateTranscriptIllustrationImage(
+                {
+                  narrativeText: queueItem.narrativeText,
+                  scene: queueItem.scene,
+                  transcriptTail: queueItem.transcriptTail,
+                  subjectType: queueItem.subjectType,
+                  subjectLabel: queueItem.subjectLabel,
+                },
+                adventure.runtimeConfig,
+                { adventureId },
+              );
+          }
+        } catch {
+          imageUrl = null;
+          warning = "Image generation failed.";
+        }
+
+        const refreshedAdventure = this.adventures.get(adventureId);
+        if (!refreshedAdventure) {
+          continue;
+        }
+        if (refreshedAdventure.closed || refreshedAdventure.phase !== "play") {
+          this.setTranscriptIllustrationPending(
+            refreshedAdventure,
+            queueItem.entryId,
+            false,
+          );
+          this.notifyAdventureUpdated(adventureId);
+          continue;
+        }
+        const currentIllustrationState =
+          refreshedAdventure.transcriptIllustrationsByEntryId[
+            queueItem.entryId
+          ];
+        if (!currentIllustrationState?.pending) {
+          continue;
+        }
+
+        if (imageUrl) {
+          this.appendTranscriptIllustrationImage(refreshedAdventure, {
+            entryId: queueItem.entryId,
+            imageUrl,
+            source: queueItem.source,
+            subjectType: queueItem.subjectType,
+            subjectLabel: queueItem.subjectLabel,
+          });
+        } else {
+          this.setTranscriptIllustrationPending(
+            refreshedAdventure,
+            queueItem.entryId,
+            false,
+            warning ?? "Image generation failed.",
+          );
+        }
+        this.notifyAdventureUpdated(adventureId);
+      }
+    } finally {
+      runtime.processingIllustration = false;
+    }
   }
 
   private resolveNextSceneMode(
@@ -1308,6 +1735,38 @@ export class AdventureManager {
         -40,
       ),
     };
+
+    this.appendTranscriptEntry(adventure, {
+      kind: "system",
+      author: AI_DEBUG_AUTHOR,
+      text: this.formatDecisionLogTranscript(decisionEntry),
+    });
+  }
+
+  private formatDecisionLogTranscript(decision: RecentDecisionLogEntry): string {
+    const header = [
+      `[Decision] Turn ${decision.turnNumber} | ${decision.actorName}`,
+      `Mode ${decision.modeBefore} -> ${decision.modeAfter}`,
+      `Tension ${Math.round(decision.tensionBefore)} -> ${Math.round(
+        decision.tensionAfter,
+      )}`,
+      `Outcome check: ${decision.outcomeCheckTriggered ? "yes" : "no"}`,
+      `Goal: ${decision.goalStatus}`,
+      `Fail-forward: ${decision.failForwardApplied ? "yes" : "no"}`,
+      `Reward: ${decision.rewardGranted ? "yes" : "no"}`,
+    ].join(" | ");
+    const reasoningLines = decision.reasoning
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .slice(0, 8);
+
+    if (reasoningLines.length === 0) {
+      return `${header}\nReasoning:\n- none`;
+    }
+
+    return `${header}\nReasoning:\n${reasoningLines
+      .map((line) => `- ${line}`)
+      .join("\n")}`;
   }
 
   private assertAdventureOpen(adventure: AdventureState): void {
@@ -1844,6 +2303,8 @@ export class AdventureManager {
     runtime.pendingOutcomeAction = null;
     runtime.pendingSceneClosure = null;
     runtime.processingOutcomeDecision = false;
+    runtime.autoIllustrationsUsedInScene = 0;
+    runtime.autoIllustrationSubjectsInScene.clear();
     adventure.activeOutcomeCheck = undefined;
 
     const pitchTitle = runtime.selectedPitch?.title ?? "Uncharted Trouble";
@@ -1964,11 +2425,30 @@ export class AdventureManager {
       return;
     }
 
-    const imageUrl = await this.options.storyteller.generateSceneImage(
-      adventure.currentScene,
-      adventure.runtimeConfig,
-      { adventureId },
-    );
+    const storyteller =
+      this.options.storyteller as StorytellerService & {
+        generateSceneImageResult?: (
+          scene: ScenePublic,
+          runtimeConfig: RuntimeConfig,
+          context?: { adventureId: string },
+        ) => Promise<{ imageUrl: string | null; error?: string }>;
+      };
+    const sceneImageResult =
+      typeof storyteller.generateSceneImageResult === "function"
+        ? await storyteller.generateSceneImageResult(
+            adventure.currentScene,
+            adventure.runtimeConfig,
+            { adventureId },
+          )
+        : {
+            imageUrl: await this.options.storyteller.generateSceneImage(
+              adventure.currentScene,
+              adventure.runtimeConfig,
+              { adventureId },
+            ),
+          };
+    const imageUrl = sceneImageResult.imageUrl;
+    const warning = this.toPublicImageWarning(sceneImageResult.error);
 
     const refreshedAdventure = this.adventures.get(adventureId);
     if (
@@ -1981,6 +2461,10 @@ export class AdventureManager {
     refreshedAdventure.currentScene.imagePending = false;
     if (imageUrl) {
       refreshedAdventure.currentScene.imageUrl = imageUrl;
+      delete refreshedAdventure.currentScene.imageError;
+    } else {
+      refreshedAdventure.currentScene.imageError =
+        warning ?? "Image generation failed.";
     }
     this.notifyAdventureUpdated(adventureId);
   }
@@ -2007,11 +2491,30 @@ export class AdventureManager {
       closingImageUrl: undefined,
     });
 
-    const imageUrl = await this.options.storyteller.generateSceneImage(
-      promptScene,
-      adventure.runtimeConfig,
-      { adventureId },
-    );
+    const storyteller =
+      this.options.storyteller as StorytellerService & {
+        generateSceneImageResult?: (
+          scene: ScenePublic,
+          runtimeConfig: RuntimeConfig,
+          context?: { adventureId: string },
+        ) => Promise<{ imageUrl: string | null; error?: string }>;
+      };
+    const sceneImageResult =
+      typeof storyteller.generateSceneImageResult === "function"
+        ? await storyteller.generateSceneImageResult(
+            promptScene,
+            adventure.runtimeConfig,
+            { adventureId },
+          )
+        : {
+            imageUrl: await this.options.storyteller.generateSceneImage(
+              promptScene,
+              adventure.runtimeConfig,
+              { adventureId },
+            ),
+          };
+    const imageUrl = sceneImageResult.imageUrl;
+    const warning = this.toPublicImageWarning(sceneImageResult.error);
 
     const refreshedAdventure = this.adventures.get(adventureId);
     if (
@@ -2024,6 +2527,10 @@ export class AdventureManager {
     refreshedAdventure.currentScene.closingImagePending = false;
     if (imageUrl) {
       refreshedAdventure.currentScene.closingImageUrl = imageUrl;
+      delete refreshedAdventure.currentScene.closingImageError;
+    } else {
+      refreshedAdventure.currentScene.closingImageError =
+        warning ?? "Image generation failed.";
     }
     this.notifyAdventureUpdated(adventureId);
   }
@@ -2258,7 +2765,7 @@ export class AdventureManager {
           const shouldCloseScene =
             actionResponse.closeScene || sceneReaction?.closeScene === true;
 
-          this.appendTranscriptEntry(adventure, {
+          const storytellerEntry = this.appendTranscriptEntry(adventure, {
             kind: "storyteller",
             author: "Storyteller",
             text: storytellerText,
@@ -2266,6 +2773,11 @@ export class AdventureManager {
           this.hooks.onStorytellerResponse?.(adventureId, {
             text: storytellerText,
           });
+          this.maybeQueueAutoTranscriptIllustration(
+            adventure,
+            storytellerEntry,
+            sceneReaction,
+          );
 
           if (!shouldCloseScene && nextMode !== previousMode) {
             this.appendTranscriptEntry(adventure, {
@@ -2486,10 +2998,12 @@ export class AdventureManager {
           : normalizedSummary;
       adventure.currentScene.closingImagePending = true;
       delete adventure.currentScene.closingImageUrl;
+      delete adventure.currentScene.closingImageError;
     } else {
       delete adventure.currentScene.closingProse;
       adventure.currentScene.closingImagePending = false;
       delete adventure.currentScene.closingImageUrl;
+      delete adventure.currentScene.closingImageError;
     }
     this.appendTranscriptEntry(adventure, {
       kind: "system",
@@ -2537,6 +3051,14 @@ export class AdventureManager {
     this.clearVoteTimer(adventureId);
     const runtime = this.ensureRuntime(adventureId);
     runtime.actionQueue = [];
+    for (const queuedItem of runtime.illustrationQueue) {
+      this.setTranscriptIllustrationPending(
+        adventure,
+        queuedItem.entryId,
+        false,
+      );
+    }
+    runtime.illustrationQueue = [];
     runtime.pendingOutcomeAction = null;
     runtime.pendingSceneClosure = null;
     runtime.processingOutcomeDecision = false;

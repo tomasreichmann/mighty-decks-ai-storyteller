@@ -3,7 +3,7 @@ import { Section } from "./common/Section";
 import { Text } from "./common/Text";
 import { Panel } from "./common/Panel";
 import { Message } from "./common/Message";
-import { GeneratedImage } from "./GeneratedImage";
+import { FramedGeneratedImage } from "./FramedGeneratedImage";
 
 interface NarratedSceneCardProps {
   scene: ScenePublic;
@@ -38,6 +38,7 @@ export const NarratedSceneCard = ({
   const isClosing = variant === "closing";
   const imageUrl = isClosing ? scene.closingImageUrl : scene.imageUrl;
   const imagePending = isClosing ? scene.closingImagePending : scene.imagePending;
+  const imageError = isClosing ? scene.closingImageError : scene.imageError;
   const image = imageUrl
     ? {
         imageId: `${scene.sceneId}-${variant}-image`,
@@ -52,38 +53,24 @@ export const NarratedSceneCard = ({
 
   return (
     <Section className="stack gap-2">
-      <div className="relative aspect-video ">
-        <div className="absolute inset-0 overflow-hidden -m-1 bg-kac-iron-dark skew-clip-mask">
-          <div
-            className="absolute inset-0 -m-3 bg-ink skew-clip-mask skew-clip-border"
-            style={{ "--skew-offset": "4%" } as React.CSSProperties}
-          ></div>
-          <div
-            className="absolute inset-0 m-3 bg-kac-bone skew-clip-mask"
-            style={{ "--skew-offset": "4%" } as React.CSSProperties}
-          ></div>
-          <div
-            className="absolute inset-[2px] overflow-hidden m-3 bg-kac-iron-dark skew-clip-mask"
-            style={{ "--skew-offset": "4%" } as React.CSSProperties}
-          >
-            <GeneratedImage
-              embedded
-              image={image}
-              pending={imagePending}
-              pendingLabel={
-                isClosing
-                  ? "Generating closing scene image..."
-                  : "Generating scene image..."
-              }
-              emptyLabel={isClosing ? "No closing image yet." : "No image yet."}
-              className="absolute inset-0"
-            />
-            <div className="halftone-vignette-wrapper !z-50 !mix-blend-multiply">
-              <div className="halftone-vignette"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FramedGeneratedImage
+        image={image}
+        pending={imagePending}
+        failed={Boolean(imageError && imageError.trim().length > 0)}
+        pendingLabel={
+          isClosing
+            ? "Generating closing scene image..."
+            : "Generating scene image..."
+        }
+        failedLabel={
+          imageError && imageError.trim().length > 0
+            ? imageError
+            : isClosing
+              ? "Closing scene image failed to generate."
+              : "Scene image failed to generate."
+        }
+        emptyLabel={isClosing ? "No closing image yet." : "No image yet."}
+      />
       <Panel className="-mt-4">
         <Text variant="quote" color="iron" className="text-base">
           {prose}

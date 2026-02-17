@@ -15,7 +15,9 @@ const createAdventure = (adventureId: string): AdventureState => ({
   adventureId,
   phase: "lobby",
   roster: [],
+  characterPortraitsByName: {},
   transcript: [],
+  transcriptIllustrationsByEntryId: {},
   runtimeConfig: defaultRuntimeConfig,
   latencyMetrics: {
     ...defaultLatencyMetrics,

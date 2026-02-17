@@ -86,8 +86,10 @@ export const scenePublicSchema = z.object({
   sceneId: z.string().min(1),
   imageUrl: z.string().url().optional(),
   imagePending: z.boolean().default(false),
+  imageError: z.string().min(1).optional(),
   closingImageUrl: z.string().url().optional(),
   closingImagePending: z.boolean().default(false),
+  closingImageError: z.string().min(1).optional(),
   mode: z.enum(["low_tension", "high_tension"]).default("low_tension"),
   tension: z.number().min(0).max(100).default(35),
   activeActorPlayerId: z.string().min(1).optional(),
@@ -208,6 +210,44 @@ export const transcriptEntrySchema = z.object({
 });
 export type TranscriptEntry = z.infer<typeof transcriptEntrySchema>;
 
+export const transcriptIllustrationSourceSchema = z.enum(["auto", "manual"]);
+export type TranscriptIllustrationSource = z.infer<
+  typeof transcriptIllustrationSourceSchema
+>;
+
+export const transcriptIllustrationSubjectTypeSchema = z.enum([
+  "location",
+  "npc",
+  "enemy",
+  "item",
+]);
+export type TranscriptIllustrationSubjectType = z.infer<
+  typeof transcriptIllustrationSubjectTypeSchema
+>;
+
+export const transcriptIllustrationImageSchema = z.object({
+  imageId: z.string().min(1),
+  imageUrl: z.string().min(1),
+  alt: z.string().min(1).optional(),
+  source: transcriptIllustrationSourceSchema,
+  subjectType: transcriptIllustrationSubjectTypeSchema.optional(),
+  subjectLabel: z.string().min(1).max(120).optional(),
+  createdAtIso: z.string().datetime(),
+});
+export type TranscriptIllustrationImage = z.infer<
+  typeof transcriptIllustrationImageSchema
+>;
+
+export const transcriptIllustrationStateSchema = z.object({
+  pending: z.boolean().default(false),
+  error: z.string().min(1).optional(),
+  images: z.array(transcriptIllustrationImageSchema).default([]),
+  lastUpdatedAtIso: z.string().datetime(),
+});
+export type TranscriptIllustrationState = z.infer<
+  typeof transcriptIllustrationStateSchema
+>;
+
 export const runtimeConfigSchema = z.object({
   textCallTimeoutMs: z.number().int().min(1000).max(60000),
   turnDeadlineMs: z.number().int().min(2000).max(120000),
@@ -247,6 +287,9 @@ export const adventureStateSchema = z.object({
   activeOutcomeCheck: activeOutcomeCheckSchema.optional(),
   currentScene: scenePublicSchema.optional(),
   transcript: z.array(transcriptEntrySchema),
+  transcriptIllustrationsByEntryId: z
+    .record(transcriptIllustrationStateSchema)
+    .default({}),
   sessionSummary: z.string().optional(),
   sessionForwardHook: z.string().optional(),
   debugScene: sceneDebugSchema.optional(),

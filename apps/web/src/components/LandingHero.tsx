@@ -87,6 +87,7 @@ export const LandingHero = (): JSX.Element => {
         className="mt-4 mb-8 mx-auto max-w-2xl font-md-title !leading-[0.8] rotate-[-2deg] skew-x-[-10deg]"
         highlightProps={{
           lineCount: 3,
+          lineOffsets: [24, 32, 128, 32, 16],
           canvasWidth: 500,
           className: "w-full h-[1.7em]",
           color: "monster-light",

@@ -55,6 +55,7 @@ export const PlayerPage = (): JSX.Element => {
     castVote,
     submitAction,
     submitMetagameQuestion,
+    requestTranscriptIllustration,
     playOutcomeCard,
     endSession,
     continueAdventure,
@@ -311,6 +312,10 @@ export const PlayerPage = (): JSX.Element => {
               entries={adventure?.transcript ?? []}
               scene={adventure?.currentScene}
               characterPortraitsByName={adventure?.characterPortraitsByName}
+              transcriptIllustrationsByEntryId={
+                adventure?.transcriptIllustrationsByEntryId
+              }
+              onRequestIllustration={requestTranscriptIllustration}
               scrollable={true}
               autoScrollToBottom={true}
               pendingLabel={
@@ -368,6 +373,9 @@ export const PlayerPage = (): JSX.Element => {
             entries={adventure?.transcript ?? []}
             scene={adventure?.currentScene}
             characterPortraitsByName={adventure?.characterPortraitsByName}
+            transcriptIllustrationsByEntryId={
+              adventure?.transcriptIllustrationsByEntryId
+            }
           />
           <SessionSummaryCard
             summary={adventure?.sessionSummary ?? "Session ended."}

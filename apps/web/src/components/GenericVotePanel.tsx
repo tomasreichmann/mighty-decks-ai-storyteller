@@ -67,7 +67,7 @@ export const GenericVotePanel = ({
             />
           </span>
         </Text>
-        <Text variant="emphasised" color="iron-light">
+        <Text variant="emphasised" color="iron-light" className="mt-2">
           {vote.prompt}
         </Text>
       </div>

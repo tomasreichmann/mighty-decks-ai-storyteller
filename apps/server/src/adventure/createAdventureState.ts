@@ -16,6 +16,7 @@ export const createInitialAdventureState = (
     roster: [],
     characterPortraitsByName: {},
     transcript: [],
+    transcriptIllustrationsByEntryId: {},
     runtimeConfig,
     latencyMetrics: {
       ...defaultLatencyMetrics,

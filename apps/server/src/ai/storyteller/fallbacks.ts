@@ -1,5 +1,9 @@
 import type { SceneDebug, ScenePublic } from "@mighty-decks/spec/adventureState";
-import type { PitchInput, PitchOption } from "./types";
+import type {
+  PitchInput,
+  PitchOption,
+  TranscriptIllustrationImageInput,
+} from "./types";
 import { trimLines } from "./text";
 
 export const DEFAULT_ORIENTATION_BULLETS = [
@@ -35,6 +39,28 @@ export const buildFallbackImagePrompt = (scene: ScenePublic): string => {
       "painterly digital painting, cinematic fantasy illustration, no text overlay, no logo, no watermark.",
       `Primary moment: ${scene.introProse}`,
       summaryHint,
+      `Scene cues: ${bulletHints}`,
+      "Moody volumetric lighting, rich environmental detail, dynamic composition, painterly realism.",
+    ].join(" "),
+  ).slice(0, 900);
+};
+
+export const buildFallbackTranscriptIllustrationPrompt = (
+  input: TranscriptIllustrationImageInput,
+): string => {
+  const bulletHints = input.scene.orientationBullets.slice(0, 3).join(" ");
+  const subjectHints = [
+    input.subjectType ? `Subject type: ${input.subjectType}` : "",
+    input.subjectLabel ? `Subject label: ${input.subjectLabel}` : "",
+  ]
+    .filter((value) => value.length > 0)
+    .join(". ");
+  return trimLines(
+    [
+      "painterly digital painting, cinematic fantasy illustration, no text overlay, no logo, no watermark.",
+      subjectHints,
+      `Narrative beat: ${input.narrativeText}`,
+      `Scene intro: ${input.scene.introProse}`,
       `Scene cues: ${bulletHints}`,
       "Moody volumetric lighting, rich environmental detail, dynamic composition, painterly realism.",
     ].join(" "),

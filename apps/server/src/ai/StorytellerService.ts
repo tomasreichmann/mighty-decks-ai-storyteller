@@ -7,6 +7,7 @@ import type {
 } from "@mighty-decks/spec/adventureState";
 import {
   buildFallbackImagePrompt,
+  buildFallbackTranscriptIllustrationPrompt,
   buildFallbackPitches,
   buildFallbackScenePlayerPrompt,
   DEFAULT_ORIENTATION_BULLETS,
@@ -15,7 +16,7 @@ import {
 } from "./storyteller/fallbacks";
 import {
   createAiRequestId,
-  runImageModelRequest,
+  runImageModelRequestWithDetails,
   runTextModelRequest,
 } from "./storyteller/modelRunners";
 import {
@@ -37,6 +38,7 @@ import {
   buildOutcomeCheckPrompt,
   buildSceneReactionPrompt,
   buildSceneImagePromptRequest,
+  buildTranscriptIllustrationPromptRequest,
   buildSessionForwardHookPrompt,
   buildSceneStartPrompt,
   buildSessionSummaryPrompt,
@@ -74,6 +76,7 @@ import type {
   StorytellerCostControls,
   StorytellerRequestContext,
   StorytellerServiceOptions,
+  TranscriptIllustrationImageInput,
   TextModelRequest,
 } from "./storyteller/types";
 
@@ -96,6 +99,7 @@ export type {
   StorytellerModelConfig,
   StorytellerRequestContext,
   StorytellerServiceOptions,
+  TranscriptIllustrationImageInput,
 } from "./storyteller/types";
 
 const clampTension = (value: number): number => Math.max(0, Math.min(100, value));
@@ -135,6 +139,10 @@ const SCENE_REACTION_SCHEMA_GUIDE = [
   "turnOrderRequired?: boolean",
   "closeScene: boolean",
   "sceneSummary?: string",
+  "shouldIllustrate?: boolean",
+  "subjectType?: 'location' | 'npc' | 'enemy' | 'item'",
+  "subjectLabel?: string",
+  "reason?: string",
   "tension?: number 0-100",
   "tensionReason?: string",
   "reasoning?: string[]",
@@ -238,6 +246,29 @@ const normalizeNarrativeText = (value: string): string =>
       .replace(/```$/i, "")
       .trim(),
   );
+
+const OUTCOME_REASON_MAX_LENGTH = 500;
+
+const trimAndTruncate = (value: string, maxLength: number): string => {
+  const normalized = trimLines(value);
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  if (maxLength <= 3) {
+    return normalized.slice(0, maxLength);
+  }
+
+  const bodyLimit = maxLength - 3;
+  const truncated = normalized.slice(0, bodyLimit);
+  const lastWhitespace = truncated.lastIndexOf(" ");
+  const cutoffIndex =
+    lastWhitespace >= Math.floor(bodyLimit * 0.6)
+      ? lastWhitespace
+      : bodyLimit;
+
+  return `${truncated.slice(0, cutoffIndex).trimEnd()}...`;
+};
 
 const looksJsonLike = (value: string): boolean => {
   const trimmed = value.trim();
@@ -635,6 +666,14 @@ export class StorytellerService {
           sceneSummary: parsed.sceneSummary
             ? trimLines(parsed.sceneSummary)
             : undefined,
+          shouldIllustrate: parsed.shouldIllustrate,
+          subjectType: parsed.subjectType,
+          subjectLabel: parsed.subjectLabel
+            ? trimLines(parsed.subjectLabel).slice(0, 120)
+            : undefined,
+          reason: parsed.reason
+            ? trimAndTruncate(parsed.reason, 180)
+            : undefined,
           tension: targetTension,
           tensionReason: parsed.tensionReason
             ? trimLines(parsed.tensionReason)
@@ -688,6 +727,14 @@ export class StorytellerService {
           closeScene: looseParsed.closeScene ?? false,
           sceneSummary: looseParsed.sceneSummary
             ? trimLines(looseParsed.sceneSummary)
+            : undefined,
+          shouldIllustrate: looseParsed.shouldIllustrate,
+          subjectType: looseParsed.subjectType,
+          subjectLabel: looseParsed.subjectLabel
+            ? trimLines(looseParsed.subjectLabel).slice(0, 120)
+            : undefined,
+          reason: looseParsed.reason
+            ? trimAndTruncate(looseParsed.reason, 180)
             : undefined,
           tension: targetTension,
           tensionReason: looseParsed.tensionReason
@@ -776,7 +823,10 @@ export class StorytellerService {
         );
         return {
           ...normalized,
-          reason: trimLines(normalized.reason).slice(0, 180),
+          reason: trimAndTruncate(
+            normalized.reason,
+            OUTCOME_REASON_MAX_LENGTH,
+          ),
         };
       }
 
@@ -804,7 +854,10 @@ export class StorytellerService {
         );
         return {
           ...normalized,
-          reason: trimLines(normalized.reason).slice(0, 180),
+          reason: trimAndTruncate(
+            normalized.reason,
+            OUTCOME_REASON_MAX_LENGTH,
+          ),
         };
       }
 
@@ -974,6 +1027,19 @@ export class StorytellerService {
     runtimeConfig: RuntimeConfig,
     context?: StorytellerRequestContext,
   ): Promise<string | null> {
+    const result = await this.generateSceneImageResult(
+      scene,
+      runtimeConfig,
+      context,
+    );
+    return result.imageUrl;
+  }
+
+  public async generateSceneImageResult(
+    scene: ScenePublic,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<{ imageUrl: string | null; error?: string }> {
     const imageCacheKey = hashCacheKey(
       JSON.stringify({
         model: this.options.models.imageGenerator,
@@ -987,7 +1053,9 @@ export class StorytellerService {
     );
     const cachedImageUrl = this.readFromCache(this.imageCache, imageCacheKey);
     if (cachedImageUrl !== undefined) {
-      return cachedImageUrl;
+      return {
+        imageUrl: cachedImageUrl,
+      };
     }
 
     if (this.costControls.disableImageGeneration) {
@@ -1012,7 +1080,10 @@ export class StorytellerService {
           error: "Image generation disabled by configuration.",
         });
       }
-      return null;
+      return {
+        imageUrl: null,
+        error: "Image generation disabled by configuration.",
+      };
     }
 
     const prompt = await this.buildSceneImagePrompt(
@@ -1076,7 +1147,10 @@ export class StorytellerService {
         imageUrl,
         this.costControls.imageCacheTtlMs,
       );
-      return imageUrl;
+      return {
+        imageUrl,
+        error: imageUrl ? undefined : generated.error,
+      };
     }
 
     if (!this.options.openRouterClient.hasApiKey()) {
@@ -1101,10 +1175,13 @@ export class StorytellerService {
           error: "OpenRouter API key missing.",
         });
       }
-      return null;
+      return {
+        imageUrl: null,
+        error: "OpenRouter API key missing.",
+      };
     }
 
-    const imageUrl = await runImageModelRequest(
+    const generated = await runImageModelRequestWithDetails(
       {
         openRouterClient: this.options.openRouterClient,
         onAiRequest: this.options.onAiRequest,
@@ -1121,10 +1198,72 @@ export class StorytellerService {
     this.writeToCache(
       this.imageCache,
       imageCacheKey,
-      imageUrl,
+      generated.imageUrl,
       this.costControls.imageCacheTtlMs,
     );
-    return imageUrl;
+    return generated;
+  }
+
+  public async generateTranscriptIllustrationImage(
+    input: TranscriptIllustrationImageInput,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<string | null> {
+    const result = await this.generateTranscriptIllustrationImageResult(
+      input,
+      runtimeConfig,
+      context,
+    );
+    return result.imageUrl;
+  }
+
+  public async generateTranscriptIllustrationImageResult(
+    input: TranscriptIllustrationImageInput,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<{ imageUrl: string | null; error?: string }> {
+    if (this.costControls.disableImageGeneration) {
+      if (context) {
+        this.options.onAiRequest?.({
+          adventureId: context.adventureId,
+          requestId: createAiRequestId(),
+          createdAtIso: new Date().toISOString(),
+          agent: "image_generator",
+          kind: "image",
+          model: this.options.models.imageGenerator,
+          timeoutMs: runtimeConfig.imageTimeoutMs,
+          attempt: 1,
+          fallback: false,
+          status: "failed",
+          error: "Image generation disabled by configuration.",
+        });
+      }
+      return {
+        imageUrl: null,
+        error: "Image generation disabled by configuration.",
+      };
+    }
+
+    const prompt = await this.buildTranscriptIllustrationPrompt(
+      input,
+      runtimeConfig,
+      context,
+    );
+
+    return runImageModelRequestWithDetails(
+      {
+        openRouterClient: this.options.openRouterClient,
+        onAiRequest: this.options.onAiRequest,
+      },
+      {
+        agent: "image_generator",
+        primaryModel: this.options.models.imageGenerator,
+        fallbackModel: this.options.models.imageGeneratorFallback,
+        prompt,
+        runtimeConfig,
+        context,
+      },
+    );
   }
 
   private async callTextModel(
@@ -1203,6 +1342,39 @@ export class StorytellerService {
     const normalized = normalizeImagePrompt(modelText);
     if (normalized.length < 24) {
       return buildFallbackImagePrompt(scene);
+    }
+
+    return normalized;
+  }
+
+  private async buildTranscriptIllustrationPrompt(
+    input: TranscriptIllustrationImageInput,
+    runtimeConfig: RuntimeConfig,
+    context?: StorytellerRequestContext,
+  ): Promise<string> {
+    const prompt = buildTranscriptIllustrationPromptRequest(
+      this.promptTemplates,
+      input,
+    );
+
+    const modelText = await this.callTextModel({
+      agent: "scene_controller",
+      primaryModel: this.options.models.sceneController,
+      fallbackModel: this.options.models.sceneControllerFallback,
+      prompt,
+      runtimeConfig,
+      maxTokens: 260,
+      temperature: 0.4,
+      context,
+    });
+
+    if (!modelText) {
+      return buildFallbackTranscriptIllustrationPrompt(input);
+    }
+
+    const normalized = normalizeImagePrompt(modelText);
+    if (normalized.length < 24) {
+      return buildFallbackTranscriptIllustrationPrompt(input);
     }
 
     return normalized;

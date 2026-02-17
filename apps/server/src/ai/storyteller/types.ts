@@ -5,6 +5,7 @@ import type {
   RuntimeConfig,
   SceneDebug,
   ScenePublic,
+  TranscriptIllustrationSubjectType,
   TranscriptEntry,
 } from "@mighty-decks/spec/adventureState";
 import type { OpenRouterClient } from "../OpenRouterClient";
@@ -154,10 +155,22 @@ export interface SceneReactionResult {
   tensionBand?: "low" | "medium" | "high";
   closeScene: boolean;
   sceneSummary?: string;
+  shouldIllustrate?: boolean;
+  subjectType?: TranscriptIllustrationSubjectType;
+  subjectLabel?: string;
+  reason?: string;
   tension?: number;
   tensionReason?: string;
   reasoning?: string[];
   debug: SceneDebug;
+}
+
+export interface TranscriptIllustrationImageInput {
+  narrativeText: string;
+  scene: ScenePublic;
+  transcriptTail: TranscriptEntry[];
+  subjectType?: TranscriptIllustrationSubjectType;
+  subjectLabel?: string;
 }
 
 export interface OutcomeCheckDecisionInput {

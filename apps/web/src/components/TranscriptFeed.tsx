@@ -17,6 +17,8 @@ interface TranscriptFeedProps {
   condensed?: boolean;
   scene?: ScenePublic;
   characterPortraitsByName?: AdventureState["characterPortraitsByName"];
+  transcriptIllustrationsByEntryId?: AdventureState["transcriptIllustrationsByEntryId"];
+  onRequestIllustration?: (entryId: string) => void;
   scrollable?: boolean;
   autoScrollToBottom?: boolean;
   pendingLabel?: string;
@@ -85,6 +87,8 @@ export const TranscriptFeed = ({
   condensed = false,
   scene,
   characterPortraitsByName,
+  transcriptIllustrationsByEntryId,
+  onRequestIllustration,
   scrollable = false,
   autoScrollToBottom = false,
   pendingLabel,
@@ -209,6 +213,10 @@ export const TranscriptFeed = ({
                       ]?.imageUrl
                     : undefined
                 }
+                illustrationState={
+                  transcriptIllustrationsByEntryId?.[entry.entryId]
+                }
+                onRequestIllustration={onRequestIllustration}
               />
               {scene && index === sceneAnchorIndex ? (
                 <NarratedSceneCard

@@ -7,6 +7,7 @@ import {
   joinAdventurePayloadSchema,
   leaveAdventurePayloadSchema,
   playOutcomeCardPayloadSchema,
+  requestTranscriptIllustrationPayloadSchema,
   submitActionPayloadSchema,
   submitMetagameQuestionPayloadSchema,
   submitSetupPayloadSchema,
@@ -344,6 +345,28 @@ export const registerSocketHandlers = (
             error instanceof Error
               ? error.message
               : "Could not submit metagame question.",
+        });
+      }
+    });
+
+    socket.on("request_transcript_illustration", (rawPayload) => {
+      const payload = withValidation(
+        socket,
+        requestTranscriptIllustrationPayloadSchema,
+        rawPayload,
+      );
+      if (!payload) {
+        return;
+      }
+
+      try {
+        manager.requestTranscriptIllustration(payload);
+      } catch (error) {
+        socket.emit("storyteller_response", {
+          text:
+            error instanceof Error
+              ? error.message
+              : "Could not request transcript illustration.",
         });
       }
     });

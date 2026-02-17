@@ -286,6 +286,10 @@ export interface LooseSceneReaction {
   tensionBand?: "low" | "medium" | "high";
   closeScene?: boolean;
   sceneSummary?: string;
+  shouldIllustrate?: boolean;
+  subjectType?: "location" | "npc" | "enemy" | "item";
+  subjectLabel?: string;
+  reason?: string;
   tension?: number;
   legacyTensionShift?: "rise" | "fall" | "stable";
   legacyTensionDelta?: number;
@@ -519,6 +523,15 @@ export const parseLooseSceneReaction = (
   )
     ? tensionBandRaw
     : undefined;
+  const subjectTypeRaw = records.scalars.get("subjecttype");
+  const subjectType = subjectTypeRaw && (
+    subjectTypeRaw === "location" ||
+    subjectTypeRaw === "npc" ||
+    subjectTypeRaw === "enemy" ||
+    subjectTypeRaw === "item"
+  )
+    ? subjectTypeRaw
+    : undefined;
 
   const reaction: LooseSceneReaction = {
     npcBeat: records.scalars.get("npcbeat"),
@@ -533,6 +546,14 @@ export const parseLooseSceneReaction = (
     tensionBand,
     closeScene: parseLooseBoolean(records.scalars.get("closescene")),
     sceneSummary: records.scalars.get("scenesummary"),
+    shouldIllustrate: parseLooseBoolean(
+      records.scalars.get("shouldillustrate"),
+    ),
+    subjectType,
+    subjectLabel: records.scalars.get("subjectlabel"),
+    reason:
+      records.scalars.get("reason") ??
+      records.scalars.get("illustratereason"),
     tension: parseLooseNumber(records.scalars.get("tension")),
     tensionReason: records.scalars.get("tensionreason"),
     reasoning: readList(records, "reasoning"),
@@ -551,6 +572,10 @@ export const parseLooseSceneReaction = (
       reaction.tensionBand ||
       reaction.tension !== undefined ||
       reaction.legacyTensionDelta !== undefined ||
+      reaction.shouldIllustrate !== undefined ||
+      reaction.subjectType ||
+      reaction.subjectLabel ||
+      reaction.reason ||
       reaction.tensionReason ||
       reaction.reasoning?.length ||
       reaction.pacingNotes?.length ||

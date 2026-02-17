@@ -116,6 +116,7 @@ export const mockState: AdventureState = {
   activeVote: mockVote,
   currentScene: mockScene,
   transcript: mockTranscript,
+  transcriptIllustrationsByEntryId: {},
   sessionSummary:
     "You stabilized the tide clock, exposed the archive saboteur, and left the tower before the last floodwall failed.",
   debugScene: {

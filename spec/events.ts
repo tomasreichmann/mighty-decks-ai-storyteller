@@ -62,6 +62,15 @@ export type SubmitMetagameQuestionPayload = z.infer<
   typeof submitMetagameQuestionPayloadSchema
 >;
 
+export const requestTranscriptIllustrationPayloadSchema = z.object({
+  adventureId: z.string().min(1),
+  playerId: z.string().min(1),
+  entryId: z.string().min(1),
+});
+export type RequestTranscriptIllustrationPayload = z.infer<
+  typeof requestTranscriptIllustrationPayloadSchema
+>;
+
 export const playOutcomeCardPayloadSchema = z.object({
   adventureId: z.string().min(1),
   playerId: z.string().min(1),
@@ -138,6 +147,7 @@ export type ClientToServerEventName =
   | "cast_vote"
   | "submit_action"
   | "submit_metagame_question"
+  | "request_transcript_illustration"
   | "play_outcome_card"
   | "end_session"
   | "continue_adventure"
@@ -165,6 +175,9 @@ export interface ClientToServerEvents {
   cast_vote: (payload: CastVotePayload) => void;
   submit_action: (payload: SubmitActionPayload) => void;
   submit_metagame_question: (payload: SubmitMetagameQuestionPayload) => void;
+  request_transcript_illustration: (
+    payload: RequestTranscriptIllustrationPayload,
+  ) => void;
   play_outcome_card: (payload: PlayOutcomeCardPayload) => void;
   end_session: (payload: EndSessionPayload) => void;
   continue_adventure: (payload: ContinueAdventurePayload) => void;

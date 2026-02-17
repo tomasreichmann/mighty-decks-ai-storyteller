@@ -1,14 +1,24 @@
-import type { TranscriptEntry } from "@mighty-decks/spec/adventureState";
+import { useEffect, useMemo, useState } from "react";
+import type {
+  TranscriptEntry,
+  TranscriptIllustrationState,
+} from "@mighty-decks/spec/adventureState";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { resolveServerUrl } from "../lib/socket";
 import { cn } from "../utils/cn";
+import { Button } from "./common/Button";
 import { Message, type MessageColor } from "./common/Message";
 import { type LabelVariant } from "./common/Label";
+import { PendingIndicator } from "./PendingIndicator";
+import { FramedGeneratedImage } from "./FramedGeneratedImage";
+import type { ImageGeneration } from "./GeneratedImage";
 
 interface TranscriptItemProps {
   entry: TranscriptEntry;
   playerImageUrl?: string;
+  illustrationState?: TranscriptIllustrationState;
+  onRequestIllustration?: (entryId: string) => void;
 }
 
 const AI_DEBUG_AUTHOR = "AI Debug";
@@ -220,6 +230,14 @@ const formatAiRequestSummary = (entry: TranscriptEntry): string | null => {
   return `${label} | ${metricParts.join(" | ")}`;
 };
 
+const toIllustrationDisplayImage = (
+  image: TranscriptIllustrationState["images"][number],
+): ImageGeneration => ({
+  imageId: image.imageId,
+  imageUrl: image.imageUrl,
+  alt: image.alt,
+});
+
 const markdownComponents = {
   p: ({ children }: { children?: React.ReactNode }) => (
     <p className="min-w-0 whitespace-pre-wrap leading-relaxed">{children}</p>
@@ -261,6 +279,8 @@ const markdownComponents = {
 export const TranscriptItem = ({
   entry,
   playerImageUrl,
+  illustrationState,
+  onRequestIllustration,
 }: TranscriptItemProps): JSX.Element => {
   const isAiDebug = entry.kind === "system" && entry.author === AI_DEBUG_AUTHOR;
   const isMetagameQuestion =
@@ -299,6 +319,51 @@ export const TranscriptItem = ({
   const playerPortraitSrc = resolvePlayerPortraitSrc(
     playerImageUrl ?? PLAYER_PORTRAIT_PLACEHOLDER_URL,
   );
+  const canRequestIllustration = Boolean(
+    onRequestIllustration &&
+    entry.kind === "storyteller" &&
+    entry.author === "Storyteller",
+  );
+  const illustrationPending = Boolean(illustrationState?.pending);
+  const illustrationError = illustrationState?.error?.trim() ?? "";
+  const illustrationFailed = illustrationError.length > 0;
+  const illustrationBatch = useMemo(
+    () => (illustrationState?.images ?? []).map(toIllustrationDisplayImage),
+    [illustrationState?.images],
+  );
+  const [selectedIllustrationId, setSelectedIllustrationId] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    if (illustrationBatch.length === 0) {
+      setSelectedIllustrationId(null);
+      return;
+    }
+
+    const hasCurrentSelection = illustrationBatch.some(
+      (image) => image.imageId === selectedIllustrationId,
+    );
+    if (!hasCurrentSelection) {
+      const latestImage = illustrationBatch[illustrationBatch.length - 1];
+      setSelectedIllustrationId(latestImage?.imageId ?? null);
+    }
+  }, [illustrationBatch, selectedIllustrationId]);
+
+  const selectedIllustration = useMemo(() => {
+    if (illustrationBatch.length === 0) {
+      return null;
+    }
+
+    const byId = selectedIllustrationId
+      ? illustrationBatch.find(
+          (image) => image.imageId === selectedIllustrationId,
+        )
+      : undefined;
+    return byId ?? illustrationBatch[illustrationBatch.length - 1] ?? null;
+  }, [illustrationBatch, selectedIllustrationId]);
+  const showIllustrationPanel =
+    illustrationPending || illustrationBatch.length > 0 || illustrationFailed;
 
   const messageContent = (
     <>
@@ -338,6 +403,42 @@ export const TranscriptItem = ({
               {aiRequestSummary}
             </p>
           ) : null}
+          {canRequestIllustration ? (
+            <div className="absolute -top-4 -right-4 flex items-center gap-2">
+              <Button
+                size="sm"
+                color="gold"
+                onClick={() => onRequestIllustration?.(entry.entryId)}
+                disabled={illustrationPending}
+              >
+                {illustrationPending ? (
+                  <PendingIndicator
+                    label={<>🖼️✨</>}
+                    color="gold-dark"
+                    className="gap-1.5"
+                    indicatorClassName="scale-[0.65]"
+                  />
+                ) : (
+                  <>🖼️✨</>
+                )}
+              </Button>
+            </div>
+          ) : null}
+          {showIllustrationPanel ? (
+            <FramedGeneratedImage
+              className="mt-3"
+              image={selectedIllustration}
+              batch={illustrationBatch}
+              onChange={(nextImage) => {
+                setSelectedIllustrationId(nextImage.imageId);
+              }}
+              pending={illustrationPending}
+              pendingLabel="Generating illustration..."
+              failed={illustrationFailed}
+              failedLabel={illustrationError}
+              emptyLabel="No illustration yet."
+            />
+          ) : null}
         </>
       )}
     </>
@@ -348,6 +449,7 @@ export const TranscriptItem = ({
       label={entry.kind === "player" && authorLabel ? authorLabel : style.label}
       color={style.messageColor}
       labelVariant={style.labelVariant}
+      labelClassName="mr-8" /* reserve space for image generation button */
       className={cn("min-w-0 max-w-full", messageClassName)}
       contentClassName="min-w-0"
     >

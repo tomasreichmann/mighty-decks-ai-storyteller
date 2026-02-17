@@ -4,15 +4,13 @@ import { cn } from "../utils/cn";
 import type { MessageColor } from "./common/Message";
 
 interface PendingIndicatorProps {
-  label?: string;
+  label?: React.ReactNode;
   color?: MessageColor;
   className?: string;
   indicatorClassName?: string;
 }
 
 const DOT_DELAYS_MS = [0, 140, 280] as const;
-const stripTrailingDots = (value: string): string =>
-  value.replace(/[.\s]+$/g, "").trim();
 
 const resolvePendingIndicatorTone = (
   color: MessageColor,
@@ -113,12 +111,11 @@ const resolvePendingIndicatorTone = (
 };
 
 export const PendingIndicator = ({
-  label = "Processing...",
+  label = "Processing",
   color = "gold",
   className = "",
   indicatorClassName = "",
 }: PendingIndicatorProps): JSX.Element => {
-  const baseLabel = stripTrailingDots(label) || "Processing";
   const tone = resolvePendingIndicatorTone(color);
 
   return (
@@ -129,7 +126,7 @@ export const PendingIndicator = ({
         color="inherit"
         className={cn("text-sm italic", tone.labelClassName)}
       >
-        {baseLabel}
+        {label}
       </Text>
       <span
         aria-hidden="true"

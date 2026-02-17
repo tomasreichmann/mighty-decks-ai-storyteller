@@ -12,9 +12,9 @@ import { SessionSummaryCard } from "../components/SessionSummaryCard";
 import { TranscriptFeed } from "../components/TranscriptFeed";
 import { useAdventureSession } from "../hooks/useAdventureSession";
 import { Message } from "../components/common/Message";
-import { Text } from "../components/common/Text";
 import { Button } from "../components/common/Button";
 import { createAdventureId } from "../lib/ids";
+import { PendingIndicator } from "../components/PendingIndicator";
 
 type TranscriptVerbosity = "full" | "table" | "story";
 
@@ -41,6 +41,7 @@ export const ScreenPage = (): JSX.Element => {
     serverUrlWarning,
     thinking,
     updateRuntimeConfig,
+    requestTranscriptIllustration,
     continueAdventure,
     closeAdventure,
     reconnect,
@@ -116,11 +117,9 @@ export const ScreenPage = (): JSX.Element => {
         </>
       ) : null}
       {phase === "lobby" && !adventure ? (
-        <section className="rounded-md border border-kac-steel/70 bg-kac-steel-light/70 p-4">
-          <Text variant="body" color="iron-light" className="text-sm">
-            Joining adventure session...
-          </Text>
-        </section>
+        <Message label="Joining Adventure" color="cloth">
+          <PendingIndicator color="cloth" />
+        </Message>
       ) : null}
 
       {phase === "vote" && adventure?.activeVote ? (
@@ -187,6 +186,10 @@ export const ScreenPage = (): JSX.Element => {
             entries={filteredTranscriptEntries}
             scene={adventure?.currentScene}
             characterPortraitsByName={adventure?.characterPortraitsByName}
+            transcriptIllustrationsByEntryId={
+              adventure?.transcriptIllustrationsByEntryId
+            }
+            onRequestIllustration={requestTranscriptIllustration}
             pendingLabel={
               thinking.active && thinking.showInTranscript
                 ? thinking.label
@@ -218,6 +221,9 @@ export const ScreenPage = (): JSX.Element => {
             entries={filteredTranscriptEntries}
             scene={adventure?.currentScene}
             characterPortraitsByName={adventure?.characterPortraitsByName}
+            transcriptIllustrationsByEntryId={
+              adventure?.transcriptIllustrationsByEntryId
+            }
           />
           <SessionSummaryCard
             summary={adventure?.sessionSummary ?? "Session ended."}

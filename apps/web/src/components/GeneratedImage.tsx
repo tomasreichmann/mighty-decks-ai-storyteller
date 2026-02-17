@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { resolveServerUrl } from "../lib/socket";
 import { cn } from "../utils/cn";
 import { Button } from "./common/Button";
@@ -18,6 +19,8 @@ interface GeneratedImageProps {
   pending?: boolean;
   pendingLabel?: string;
   pendingColor?: MessageColor;
+  failed?: boolean;
+  failedLabel?: string;
   emptyLabel?: string;
   embedded?: boolean;
   className?: string;
@@ -60,6 +63,8 @@ export const GeneratedImage = ({
   pending = false,
   pendingLabel = "Generating image...",
   pendingColor,
+  failed = false,
+  failedLabel = "Image generation failed. Continue without an image for this beat.",
   emptyLabel = "No image selected.",
   embedded = false,
   className = "",
@@ -69,6 +74,21 @@ export const GeneratedImage = ({
   const hasBatchNavigation = normalizedBatch.length > 1 && currentBatchIndex >= 0;
   const canNavigate = hasBatchNavigation && typeof onChange === "function";
   const resolvedPendingColor = pendingColor ?? (embedded ? "cloth-dark" : "gold");
+  const [generationWasPending, setGenerationWasPending] = useState(false);
+
+  useEffect(() => {
+    if (pending) {
+      setGenerationWasPending(true);
+    }
+  }, [pending]);
+
+  useEffect(() => {
+    if (image) {
+      setGenerationWasPending(false);
+    }
+  }, [image]);
+
+  const showFailureState = !image && !pending && (failed || generationWasPending);
 
   const selectBatchIndex = (targetIndex: number): void => {
     if (!canNavigate || !onChange) {
@@ -104,6 +124,12 @@ export const GeneratedImage = ({
         ) : pending ? (
           <div className="flex h-full w-full items-center justify-center px-4">
             <PendingIndicator label={pendingLabel} color={resolvedPendingColor} />
+          </div>
+        ) : showFailureState ? (
+          <div className="flex h-full w-full items-center justify-center px-4">
+            <Text variant="body" color="blood" className="text-sm text-center">
+              {failedLabel}
+            </Text>
           </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center px-4">

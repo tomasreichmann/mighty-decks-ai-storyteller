@@ -221,6 +221,72 @@ test("builds an intermediate visual prompt before calling image generation", asy
   assert.equal(openRouter.calls.generateImage[0]?.prompt.includes("Goal:"), false);
 });
 
+test("builds a transcript illustration prompt before generating image and does not cache repeated manual calls", async () => {
+  let imageCallCount = 0;
+  const generatedVisualPrompt =
+    "painterly digital painting of a tense harbor parley beneath hanging lanterns, Captain Hush framed in rain haze, reflective cobblestones, dramatic side light, deep atmospheric perspective, cinematic medium shot, richly textured brushwork.";
+  const openRouter = createOpenRouterStub({
+    completeText: async () => generatedVisualPrompt,
+    generateImage: async () => {
+      imageCallCount += 1;
+      return `https://cdn.example.com/transcript-illustration-${imageCallCount}.png`;
+    },
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const input = {
+    narrativeText:
+      "Captain Hush steps from the rain with a silver ledger and a blade hidden in his sleeve.",
+    scene: baseScene,
+    transcriptTail: [
+      {
+        entryId: "t-1",
+        kind: "storyteller",
+        author: "Storyteller",
+        text: "The harbor lamps sway as a new figure enters the alley mouth.",
+        createdAtIso: new Date().toISOString(),
+      },
+    ],
+    subjectType: "npc" as const,
+    subjectLabel: "Captain Hush",
+  };
+
+  const firstUrl = await service.generateTranscriptIllustrationImage(
+    input,
+    defaultRuntimeConfig,
+  );
+  const secondUrl = await service.generateTranscriptIllustrationImage(
+    input,
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(
+    firstUrl,
+    "https://cdn.example.com/transcript-illustration-1.png",
+  );
+  assert.equal(
+    secondUrl,
+    "https://cdn.example.com/transcript-illustration-2.png",
+  );
+  assert.equal(openRouter.calls.completeText.length, 2);
+  assert.equal(openRouter.calls.generateImage.length, 2);
+  assert.equal(openRouter.calls.generateImage[0]?.prompt, generatedVisualPrompt);
+  assert.equal(
+    openRouter.calls.completeText[0]?.prompt.includes("Narrative beat:"),
+    true,
+  );
+  assert.equal(
+    openRouter.calls.completeText[0]?.prompt.includes(
+      "Primary subject label: Captain Hush",
+    ),
+    true,
+  );
+});
+
 test("falls back to secondary image model when primary image request is moderated", async () => {
   const fallbackImageModel = "stability-ai/sd3.5-large";
   const openRouter = createOpenRouterStub({
@@ -670,6 +736,54 @@ test("parses loose outcome decision output when JSON formatting is broken", asyn
   assert.equal(decision.shouldCheck, false);
 });
 
+test("keeps long loose outcome reasons intact when within player-display safety limit", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      [
+        "intent: direct_action",
+        "detailLevel: standard",
+        "responseMode: concise",
+        "shouldCheck: true",
+        "reason: Vela is in darkness, separated from the group, and an unknown entity is present while she advances deeper behind the veil in a fraught ritual chamber where even small mistakes can shift the scene into immediate danger and uncertainty for everyone involved right now.",
+        "allowHardDenyWithoutOutcomeCheck: false",
+        "hardDenyReason: ",
+        "threat: true",
+        "uncertainty: true",
+        "highReward: false",
+      ].join("\n"),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Veleslava \"Vela\" Morozovna",
+      actionText: "I move behind the veil to inspect the heir.",
+      turnNumber: 9,
+      scene: {
+        ...highTensionScene,
+        tension: 95,
+      },
+      transcriptTail: [],
+      rollingSummary:
+        "The ritual is active and Vela is already isolated near an unknown presence.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.reason.length <= 500, true);
+  assert.equal(decision.reason.endsWith("..."), false);
+  assert.equal(
+    decision.reason.includes(
+      "immediate danger and uncertainty for everyone involved right now.",
+    ),
+    true,
+  );
+});
+
 test("retries once with parse error context when outcome decision JSON is invalid", async () => {
   let callCount = 0;
   const openRouter = createOpenRouterStub({
@@ -807,6 +921,158 @@ test("does not force outcome checks for low-scrutiny direct actions in high tens
   assert.equal(decision.intent, "direct_action");
   assert.equal(decision.detailLevel, "standard");
   assert.equal(decision.shouldCheck, false);
+});
+
+test("suppresses uncertainty-only outcome checks in low-tension beats", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        intent: "direct_action",
+        responseMode: "concise",
+        detailLevel: "standard",
+        shouldCheck: true,
+        reason: "There is some uncertainty in timing.",
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
+        triggers: {
+          threat: false,
+          uncertainty: true,
+          highReward: false,
+        },
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I wedge the door and signal the crew to move.",
+      turnNumber: 5,
+      scene: {
+        ...baseScene,
+        mode: "low_tension",
+        tension: 44,
+      },
+      transcriptTail: [],
+      rollingSummary: "Pressure is present but no one is actively contesting this move.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.shouldCheck, false);
+  assert.equal(decision.triggers.uncertainty, true);
+});
+
+test("suppresses low-tension threat checks when no immediate threat signal exists", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        intent: "direct_action",
+        responseMode: "concise",
+        detailLevel: "standard",
+        shouldCheck: true,
+        reason: "Potential opposition could emerge.",
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
+        triggers: {
+          threat: true,
+          uncertainty: false,
+          highReward: false,
+        },
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I inspect the lock seams and mark weak spots.",
+      turnNumber: 6,
+      scene: {
+        ...baseScene,
+        mode: "low_tension",
+        tension: 42,
+      },
+      transcriptTail: [],
+      rollingSummary:
+        "No one has noticed Nyra and there is no active confrontation this beat.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.shouldCheck, false);
+  assert.equal(decision.triggers.threat, true);
+});
+
+test("suppresses repeated non-threat outcome checks right after outcome-card activity", async () => {
+  const openRouter = createOpenRouterStub({
+    completeText: async () =>
+      JSON.stringify({
+        intent: "direct_action",
+        responseMode: "concise",
+        detailLevel: "standard",
+        shouldCheck: true,
+        reason: "The move is uncertain and could go either way.",
+        allowHardDenyWithoutOutcomeCheck: false,
+        hardDenyReason: "",
+        triggers: {
+          threat: false,
+          uncertainty: true,
+          highReward: false,
+        },
+      }),
+  });
+
+  const service = new StorytellerService({
+    openRouterClient: openRouter.client,
+    models,
+  });
+
+  const nowIso = new Date().toISOString();
+  const decision = await service.decideOutcomeCheckForPlayerAction(
+    {
+      actorCharacterName: "Nyra Flint",
+      actionText: "I shift crates to seal the side corridor.",
+      turnNumber: 7,
+      scene: {
+        ...highTensionScene,
+        tension: 71,
+      },
+      transcriptTail: [
+        {
+          entryId: "t-1",
+          kind: "storyteller",
+          author: "Storyteller",
+          text: "Nyra Flint, play an Outcome card. Immediate stakes spike here.",
+          createdAtIso: nowIso,
+        },
+        {
+          entryId: "t-2",
+          kind: "player",
+          author: "Nyra Flint",
+          text: "played Outcome card: Partial Success (+1 Effect).",
+          createdAtIso: nowIso,
+        },
+      ],
+      rollingSummary: "The prior beat already consumed an Outcome card and this move is a quick follow-up.",
+    },
+    defaultRuntimeConfig,
+  );
+
+  assert.equal(decision.intent, "direct_action");
+  assert.equal(decision.shouldCheck, false);
+  assert.equal(decision.triggers.threat, false);
+  assert.equal(decision.triggers.highReward, false);
 });
 
 test("uses conservative fallback outcome behavior when outcome classifier is unavailable", async () => {
