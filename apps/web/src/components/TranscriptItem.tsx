@@ -70,6 +70,10 @@ const normalizeImageCandidate = (value: string): string | null => {
     return null;
   }
 
+  if (trimmed.startsWith("/")) {
+    return new URL(trimmed, resolveServerUrl()).toString();
+  }
+
   if (trimmed.startsWith("data:image/")) {
     return trimmed;
   }

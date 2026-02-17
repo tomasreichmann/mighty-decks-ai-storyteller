@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import {
   defaultRuntimeConfig,
@@ -6,6 +9,7 @@ import {
   type RuntimeConfig,
 } from "@mighty-decks/spec/adventureState";
 import { AdventureManager, type AdventureManagerOptions } from "../src/adventure/AdventureManager";
+import { AdventureSnapshotStore } from "../src/persistence/AdventureSnapshotStore";
 import type {
   ActionResponseInput,
   ActionResponseResult,
@@ -289,6 +293,10 @@ const createManager = (
   storyteller: StorytellerService,
   runtimeConfigOverrides: Partial<RuntimeConfig> = {},
   diagnosticsLogger?: AdventureManagerOptions["diagnosticsLogger"],
+  options: {
+    snapshotStore?: AdventureManagerOptions["snapshotStore"];
+    snapshotWriteDebounceMs?: number;
+  } = {},
 ): AdventureManager =>
   new AdventureManager({
     debugMode: true,
@@ -299,6 +307,8 @@ const createManager = (
     },
     storyteller,
     diagnosticsLogger,
+    snapshotStore: options.snapshotStore,
+    snapshotWriteDebounceMs: options.snapshotWriteDebounceMs,
   });
 
 const joinScreen = (manager: AdventureManager): void => {
@@ -1494,7 +1504,7 @@ test("ended adventures do not count toward active cap and can be closed/removed"
   );
   assert.ok(manager.getAdventure("adv-new-session"));
 
-  manager.closeAdventureRecord({
+  await manager.closeAdventureRecord({
     adventureId,
     playerId: "player-1",
   });
@@ -2162,6 +2172,84 @@ test("requires a final finishing move before scene transition vote opens", async
     state.transcript.some((entry) =>
       entry.text.startsWith("Scene ended. Choose whether to continue"),
     ),
+    true,
+  );
+});
+
+test("redacts inline data image payloads from AI debug logs and transcript entries", () => {
+  const storyteller = createStorytellerMock();
+  const manager = createManager(storyteller.storyteller);
+
+  joinPlayer(manager, "player-1", "Alex");
+  manager.appendAiRequestLog({
+    requestId: "req-inline-image",
+    createdAtIso: new Date().toISOString(),
+    adventureId,
+    agent: "image_generator",
+    kind: "image",
+    model: "test-image-model",
+    timeoutMs: 1000,
+    attempt: 1,
+    fallback: false,
+    status: "succeeded",
+    prompt: "Generate something dramatic.",
+    response:
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=",
+  });
+
+  const state = manager.getAdventure(adventureId);
+  assert.ok(state);
+  const latestDebugRequest = state?.debugScene?.aiRequests.at(-1);
+  assert.ok(latestDebugRequest);
+  assert.equal(
+    latestDebugRequest?.response?.includes("data:image"),
+    false,
+  );
+
+  const latestDebugTranscript = [...(state?.transcript ?? [])]
+    .reverse()
+    .find((entry) => entry.author === "AI Debug");
+  assert.ok(latestDebugTranscript);
+  assert.equal(latestDebugTranscript?.text.includes("data:image"), false);
+});
+
+test("evicts inactive adventures and restores from latest snapshot on reconnect", async () => {
+  const storyteller = createStorytellerMock();
+  const snapshotStore = new AdventureSnapshotStore({
+    rootDir: mkdtempSync(join(tmpdir(), "mighty-decks-adv-snapshots-")),
+    historyLimit: 20,
+  });
+  await snapshotStore.initialize();
+
+  const manager = createManager(storyteller.storyteller, {}, undefined, {
+    snapshotStore,
+    snapshotWriteDebounceMs: 0,
+  });
+
+  joinPlayer(manager, "player-1", "Alex");
+  await flushMicrotasks();
+
+  manager.leaveBySocket("socket-player-1");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(manager.getAdventure(adventureId), null);
+  const persisted = snapshotStore.loadLatestSnapshotSync(adventureId);
+  assert.ok(persisted);
+
+  manager.joinAdventure(
+    {
+      adventureId,
+      playerId: "player-1",
+      displayName: "Alex",
+      role: "player",
+    },
+    "socket-player-1-rejoin",
+  );
+
+  const restored = manager.getAdventure(adventureId);
+  assert.ok(restored);
+  assert.equal(
+    restored?.roster.find((entry) => entry.playerId === "player-1")?.connected,
     true,
   );
 });

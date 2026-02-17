@@ -5,10 +5,17 @@ import type {
   ImageModelRequest,
   TextModelRequest,
 } from "./types";
+import { hasInlineDataImage } from "../../persistence/dataImageRewrite";
 
 interface ModelRunnerDependencies {
   openRouterClient: OpenRouterClient;
   onAiRequest?: (entry: AiRequestDebugEvent) => void;
+  inlineImageResolver?: {
+    persistDataImageUri: (
+      dataImageUri: string,
+      options?: { hint?: string },
+    ) => Promise<{ fileName: string; fileUrl: string }>;
+  };
 }
 
 export interface ImageModelRequestResult {
@@ -18,6 +25,25 @@ export interface ImageModelRequestResult {
 
 export const createAiRequestId = (): string =>
   `ai-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const resolveInlineImageUrl = async (
+  dependencies: ModelRunnerDependencies,
+  imageUrl: string | null,
+): Promise<string | null> => {
+  if (!imageUrl || !hasInlineDataImage(imageUrl)) {
+    return imageUrl;
+  }
+
+  if (!dependencies.inlineImageResolver) {
+    return null;
+  }
+
+  const persisted = await dependencies.inlineImageResolver.persistDataImageUri(
+    imageUrl,
+    { hint: "ai-inline" },
+  );
+  return persisted.fileUrl;
+};
 
 const uniqueModels = (models: Array<string | undefined>): string[] =>
   models.filter(
@@ -317,7 +343,10 @@ export const runImageModelRequestWithDetails = async (
             timeoutMs: request.runtimeConfig.imageTimeoutMs,
           },
         );
-        const imageUrl = generated?.imageUrl;
+        const imageUrl = await resolveInlineImageUrl(
+          dependencies,
+          generated?.imageUrl ?? null,
+        );
         const usage = generated?.usage;
         if (imageUrl) {
           if (request.context) {
@@ -332,7 +361,7 @@ export const runImageModelRequestWithDetails = async (
               attempt: attempt + 1,
               fallback: useFallbackModel,
               status: "succeeded",
-              response: imageUrl,
+              response: shorten(imageUrl, 1800),
               usage,
             });
           }

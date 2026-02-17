@@ -34,6 +34,13 @@ export interface SceneImageGenerator {
   }): Promise<SceneImageGenerationResult>;
 }
 
+export interface InlineImageResolver {
+  persistDataImageUri(
+    dataImageUri: string,
+    options?: { hint?: string },
+  ): Promise<{ fileName: string; fileUrl: string }>;
+}
+
 export type NarrativeDetailLevel = "concise" | "standard" | "expanded";
 
 export interface StorytellerServiceOptions {
@@ -43,6 +50,7 @@ export interface StorytellerServiceOptions {
   onAiRequest?: (entry: AiRequestDebugEvent) => void;
   costControls?: StorytellerCostControls;
   sceneImageGenerator?: SceneImageGenerator;
+  inlineImageResolver?: InlineImageResolver;
 }
 
 export interface StorytellerRequestContext {

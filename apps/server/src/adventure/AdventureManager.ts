@@ -50,6 +50,9 @@ import type {
 } from "../diagnostics/AdventureDiagnosticsLogger";
 import type { CharacterPortraitService } from "../image/CharacterPortraitService";
 import { CHARACTER_PORTRAIT_PLACEHOLDER_URL } from "../image/characterPortraitConfig";
+import { AdventureSnapshotStore } from "../persistence/AdventureSnapshotStore";
+import { redactInlineDataImages } from "../persistence/dataImageRewrite";
+import type { PersistedAdventureRuntimeV1 } from "../persistence/snapshotSchemas";
 import { createInitialAdventureState } from "./createAdventureState";
 
 interface SocketParticipantLink {
@@ -148,6 +151,8 @@ export interface AdventureManagerOptions {
   storyteller: StorytellerService;
   diagnosticsLogger?: AdventureDiagnosticsLogger;
   characterPortraitService?: CharacterPortraitService;
+  snapshotStore?: AdventureSnapshotStore;
+  snapshotWriteDebounceMs?: number;
 }
 
 interface CastVoteResult {
@@ -300,12 +305,19 @@ export class AdventureManager {
     string,
     AdventureRuntimeState
   >();
+  private readonly snapshotTimersByAdventure = new Map<string, NodeJS.Timeout>();
+  private readonly pendingSnapshotWrites = new Map<string, Promise<void>>();
+  private readonly snapshotWriteDebounceMs: number;
   private runtimeConfig: RuntimeConfig;
   private hooks: AdventureManagerHooks = {};
 
   public constructor(private readonly options: AdventureManagerOptions) {
     this.runtimeConfig = runtimeConfigSchema.parse(
       options.runtimeConfigDefaults,
+    );
+    this.snapshotWriteDebounceMs = Math.max(
+      0,
+      options.snapshotWriteDebounceMs ?? 400,
     );
   }
 
@@ -329,8 +341,8 @@ export class AdventureManager {
       attempt: event.attempt,
       fallback: event.fallback,
       status: event.status,
-      prompt: event.prompt,
-      response: event.response,
+      prompt: event.prompt ? redactInlineDataImages(event.prompt) : undefined,
+      response: event.response ? redactInlineDataImages(event.response) : undefined,
       error: event.error,
       usage: event.usage,
     };
@@ -400,7 +412,12 @@ export class AdventureManager {
     const parsed = joinAdventurePayloadSchema.parse(payload);
     const adventureId = ensureAdventureId(parsed.adventureId);
 
+    let loadedFromSnapshot = false;
     let adventure = this.adventures.get(adventureId);
+    if (!adventure) {
+      adventure = this.loadAdventureFromSnapshot(adventureId);
+      loadedFromSnapshot = Boolean(adventure);
+    }
     if (!adventure) {
       const activeAdventures = this.listActiveAdventures();
       if (activeAdventures.length >= this.options.maxActiveAdventures) {
@@ -421,6 +438,22 @@ export class AdventureManager {
         type: "session_started",
         runtimeConfig: adventure.runtimeConfig,
       });
+    } else if (loadedFromSnapshot) {
+      for (const entry of adventure.roster) {
+        entry.connected = false;
+      }
+    }
+
+    if (!this.isAdventureActiveForCap(adventure)) {
+      const otherActiveAdventures = this.listActiveAdventures().filter(
+        (candidate) => candidate.adventureId !== adventureId,
+      );
+      if (otherActiveAdventures.length >= this.options.maxActiveAdventures) {
+        const activeIds = otherActiveAdventures
+          .map((candidate) => candidate.adventureId)
+          .join(", ");
+        throw new Error(`active adventure cap reached (active: ${activeIds})`);
+      }
     }
 
     const existingIndex = adventure.roster.findIndex(
@@ -514,6 +547,7 @@ export class AdventureManager {
 
     void this.maybeResolveActiveVoteEarly(link.adventureId);
     void this.maybeStartAdventurePitchVote(link.adventureId);
+    this.evictAdventureIfInactive(link.adventureId);
     return adventure;
   }
 
@@ -1099,7 +1133,7 @@ export class AdventureManager {
     return adventure;
   }
 
-  public closeAdventureRecord(payload: unknown): void {
+  public async closeAdventureRecord(payload: unknown): Promise<void> {
     const parsed = closeAdventurePayloadSchema.parse(payload);
     const adventure = this.requireAdventure(parsed.adventureId);
     const requester = this.getRosterEntry(adventure, parsed.playerId);
@@ -1111,9 +1145,12 @@ export class AdventureManager {
     }
 
     this.clearVoteTimer(adventure.adventureId);
+    await this.flushSnapshotWrite(adventure.adventureId);
     this.options.diagnosticsLogger?.closeSession(adventure.adventureId);
     this.adventures.delete(adventure.adventureId);
     this.runtimeByAdventure.delete(adventure.adventureId);
+    this.snapshotTimersByAdventure.delete(adventure.adventureId);
+    this.pendingSnapshotWrites.delete(adventure.adventureId);
 
     for (const [socketId, link] of this.socketLinks.entries()) {
       if (link.adventureId === adventure.adventureId) {
@@ -1814,6 +1851,7 @@ export class AdventureManager {
 
   private notifyAdventureUpdated(adventureId: string): void {
     this.hooks.onAdventureUpdated?.(adventureId);
+    this.scheduleSnapshotWrite(adventureId);
   }
 
   private logDiagnostic(
@@ -1821,6 +1859,220 @@ export class AdventureManager {
     event: AdventureDiagnosticEvent,
   ): void {
     this.options.diagnosticsLogger?.logEvent(adventure, event);
+  }
+
+  private loadAdventureFromSnapshot(
+    adventureId: string,
+  ): AdventureState | undefined {
+    if (!this.options.snapshotStore) {
+      return undefined;
+    }
+
+    const snapshot = this.options.snapshotStore.loadLatestSnapshotSync(adventureId);
+    if (!snapshot) {
+      return undefined;
+    }
+
+    const adventure = snapshot.adventure;
+    for (const entry of adventure.roster) {
+      entry.connected = false;
+    }
+    if (adventure.currentScene?.imagePending) {
+      adventure.currentScene.imagePending = false;
+      adventure.currentScene.imageError =
+        adventure.currentScene.imageError ??
+        "Image generation was interrupted and will not resume after restore.";
+    }
+    if (adventure.currentScene?.closingImagePending) {
+      adventure.currentScene.closingImagePending = false;
+      adventure.currentScene.closingImageError =
+        adventure.currentScene.closingImageError ??
+        "Closing image generation was interrupted and will not resume after restore.";
+    }
+
+    this.adventures.set(adventureId, adventure);
+    this.runtimeByAdventure.set(
+      adventureId,
+      this.hydrateRuntimeFromSnapshot(adventure, snapshot.runtime),
+    );
+    this.rearmVoteTimerAfterRestore(adventureId);
+
+    return adventure;
+  }
+
+  private hydrateRuntimeFromSnapshot(
+    adventure: AdventureState,
+    runtime: PersistedAdventureRuntimeV1,
+  ): AdventureRuntimeState {
+    const restoredVotes = new Map<string, string>(
+      Object.entries(runtime.votesByPlayerId),
+    );
+    for (const rosterEntry of adventure.roster) {
+      if (rosterEntry.role !== "player") {
+        continue;
+      }
+      rosterEntry.hasVoted = restoredVotes.has(rosterEntry.playerId);
+    }
+
+    return {
+      voteTimer: null,
+      votesByPlayerId: restoredVotes,
+      actionQueue: [],
+      illustrationQueue: [],
+      pendingOutcomeAction: null,
+      pendingSceneClosure: null,
+      processingAction: false,
+      processingOutcomeDecision: false,
+      processingIllustration: false,
+      pitchVoteInProgress: false,
+      sceneCounter: runtime.sceneCounter,
+      sceneTurnCounter: runtime.sceneTurnCounter,
+      sceneDirectActionCounter: runtime.sceneDirectActionCounter,
+      autoIllustrationsUsedInScene: runtime.autoIllustrationsUsedInScene,
+      autoIllustrationSubjectsInScene: new Set(runtime.autoIllustrationSubjectsInScene),
+      selectedPitch: runtime.selectedPitch,
+      rollingSummary: runtime.rollingSummary,
+      metagameDirectives: runtime.metagameDirectives.map((entry) => ({ ...entry })),
+      latencySamplesMs: [],
+      finalizedAiRequestIds: new Set<string>(),
+    };
+  }
+
+  private rearmVoteTimerAfterRestore(adventureId: string): void {
+    const adventure = this.adventures.get(adventureId);
+    const runtime = this.runtimeByAdventure.get(adventureId);
+    if (!adventure?.activeVote || !runtime) {
+      return;
+    }
+
+    this.clearVoteTimer(adventureId);
+    const closesAtMs = Date.parse(adventure.activeVote.closesAtIso);
+    const remainingMs = closesAtMs - Date.now();
+    if (!Number.isFinite(remainingMs) || remainingMs <= 0) {
+      void this.resolveVote(adventureId, true);
+      return;
+    }
+
+    runtime.voteTimer = setTimeout(() => {
+      void this.resolveVote(adventureId, true);
+    }, remainingMs);
+  }
+
+  private buildRuntimeSnapshot(
+    runtime: AdventureRuntimeState,
+    adventure: AdventureState,
+  ): PersistedAdventureRuntimeV1 {
+    return {
+      sceneCounter: runtime.sceneCounter,
+      sceneTurnCounter: runtime.sceneTurnCounter,
+      sceneDirectActionCounter: runtime.sceneDirectActionCounter,
+      autoIllustrationsUsedInScene: runtime.autoIllustrationsUsedInScene,
+      autoIllustrationSubjectsInScene: [...runtime.autoIllustrationSubjectsInScene],
+      selectedPitch: runtime.selectedPitch ? { ...runtime.selectedPitch } : null,
+      rollingSummary: runtime.rollingSummary,
+      metagameDirectives: runtime.metagameDirectives.map((entry) => ({ ...entry })),
+      votesByPlayerId: Object.fromEntries(runtime.votesByPlayerId.entries()),
+      runtimeConfig: adventure.runtimeConfig,
+    };
+  }
+
+  private scheduleSnapshotWrite(adventureId: string): void {
+    if (!this.options.snapshotStore) {
+      return;
+    }
+
+    const existingTimer = this.snapshotTimersByAdventure.get(adventureId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      this.snapshotTimersByAdventure.delete(adventureId);
+      void this.writeSnapshotNow(adventureId);
+    }, this.snapshotWriteDebounceMs);
+    this.snapshotTimersByAdventure.set(adventureId, timer);
+  }
+
+  private async flushSnapshotWrite(adventureId: string): Promise<void> {
+    const existingTimer = this.snapshotTimersByAdventure.get(adventureId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      this.snapshotTimersByAdventure.delete(adventureId);
+    }
+
+    await this.writeSnapshotNow(adventureId);
+  }
+
+  private async writeSnapshotNow(adventureId: string): Promise<void> {
+    if (!this.options.snapshotStore) {
+      return;
+    }
+
+    const existingWrite = this.pendingSnapshotWrites.get(adventureId);
+    if (existingWrite) {
+      await existingWrite;
+      return;
+    }
+
+    const writePromise = (async () => {
+      const adventure = this.adventures.get(adventureId);
+      const runtime = this.runtimeByAdventure.get(adventureId);
+      if (!adventure || !runtime) {
+        return;
+      }
+
+      const sceneLabel = AdventureSnapshotStore.buildSceneLabel({
+        selectedPitchTitle: runtime.selectedPitch?.title,
+        sceneCounter: runtime.sceneCounter,
+      });
+
+      await this.options.snapshotStore?.saveSnapshot({
+        adventure,
+        runtime: this.buildRuntimeSnapshot(runtime, adventure),
+        sceneLabel,
+      });
+    })()
+      .catch(() => {
+        // Snapshot persistence is best-effort and must never block gameplay.
+      })
+      .finally(() => {
+        this.pendingSnapshotWrites.delete(adventureId);
+      });
+
+    this.pendingSnapshotWrites.set(adventureId, writePromise);
+    await writePromise;
+  }
+
+  private evictAdventureIfInactive(adventureId: string): void {
+    const adventure = this.adventures.get(adventureId);
+    if (!adventure) {
+      return;
+    }
+    if (adventure.roster.some((entry) => entry.connected)) {
+      return;
+    }
+
+    void (async () => {
+      await this.flushSnapshotWrite(adventureId);
+      const latestAdventure = this.adventures.get(adventureId);
+      if (!latestAdventure) {
+        return;
+      }
+      if (latestAdventure.roster.some((entry) => entry.connected)) {
+        return;
+      }
+
+      this.clearVoteTimer(adventureId);
+      this.adventures.delete(adventureId);
+      this.runtimeByAdventure.delete(adventureId);
+      this.snapshotTimersByAdventure.delete(adventureId);
+      this.pendingSnapshotWrites.delete(adventureId);
+      for (const [socketId, link] of this.socketLinks.entries()) {
+        if (link.adventureId === adventureId) {
+          this.socketLinks.delete(socketId);
+        }
+      }
+    })();
   }
 
   private getNarrativeTranscript(
@@ -1942,11 +2194,12 @@ export class AdventureManager {
       aiRequest?: AiRequestLogEntry;
     } = {},
   ): TranscriptEntry {
+    const sanitizedText = redactInlineDataImages(entry.text);
     const transcriptEntry = transcriptEntrySchema.parse({
       entryId: createId("t"),
       kind: entry.kind,
       author: entry.author,
-      text: entry.text,
+      text: sanitizedText,
       createdAtIso: new Date().toISOString(),
       aiRequest: options.aiRequest,
     });
@@ -3096,6 +3349,7 @@ export class AdventureManager {
     });
     this.options.diagnosticsLogger?.closeSession(adventureId);
     this.notifyAdventureUpdated(adventureId);
+    await this.flushSnapshotWrite(adventureId);
   }
 
   private requireAdventure(adventureId: string): AdventureState {

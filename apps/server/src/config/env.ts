@@ -65,6 +65,16 @@ const envSchema = z.object({
   AI_RETRY_COUNT: z.coerce.number().int().min(0).max(3).default(1),
   VOTE_TIMEOUT_MS: z.coerce.number().int().min(5000).default(60000),
   DEBUG_LOG_DIR: z.string().min(1).default("logs/adventures"),
+  ADVENTURE_SNAPSHOT_DIR: z
+    .string()
+    .min(1)
+    .default("output/adventure-snapshots"),
+  ADVENTURE_SNAPSHOT_HISTORY_LIMIT: z.coerce.number().int().min(1).default(20),
+  ADVENTURE_SNAPSHOT_WRITE_DEBOUNCE_MS: z.coerce.number().int().min(0).default(400),
+  ADVENTURE_ARTIFACT_DIR: z
+    .string()
+    .min(1)
+    .default("output/adventure-artifacts"),
   IMAGE_OUTPUT_DIR: z.string().min(1).default("output/generated-images"),
   IMAGE_MAX_ACTIVE_JOBS: z.coerce.number().int().min(1).default(4),
   IMAGE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(10),
@@ -153,6 +163,14 @@ export const env = {
   maxActiveAdventures: parsed.MAX_ACTIVE_ADVENTURES,
   clientIdleTimeoutMs: parsed.CLIENT_IDLE_TIMEOUT_MS,
   debugLogDir: parsed.DEBUG_LOG_DIR,
+  adventureSnapshots: {
+    outputDir: parsed.ADVENTURE_SNAPSHOT_DIR,
+    historyLimit: parsed.ADVENTURE_SNAPSHOT_HISTORY_LIMIT,
+    writeDebounceMs: parsed.ADVENTURE_SNAPSHOT_WRITE_DEBOUNCE_MS,
+  },
+  adventureArtifacts: {
+    outputDir: parsed.ADVENTURE_ARTIFACT_DIR,
+  },
   costControls: {
     disableImageGeneration: parsed.DISABLE_IMAGE_GENERATION ?? false,
     pitchCacheTtlMs: parsed.PITCH_CACHE_TTL_MS,

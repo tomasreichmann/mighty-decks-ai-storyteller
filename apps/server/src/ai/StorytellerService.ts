@@ -57,6 +57,7 @@ import {
 } from "./storyteller/schemas";
 import {
   getNarrativeTailForOutcomeDecision,
+  shorten,
   trimLines,
 } from "./storyteller/text";
 import type {
@@ -79,6 +80,7 @@ import type {
   TranscriptIllustrationImageInput,
   TextModelRequest,
 } from "./storyteller/types";
+import { hasInlineDataImage } from "../persistence/dataImageRewrite";
 
 export type {
   ActionResponseInput,
@@ -1115,7 +1117,7 @@ export class StorytellerService {
         prompt,
         timeoutMs: runtimeConfig.imageTimeoutMs,
       });
-      const imageUrl = generated.imageUrl;
+      const imageUrl = await this.resolveInlineImageUrl(generated.imageUrl);
 
       if (context) {
         const isTimeout = Boolean(
@@ -1133,7 +1135,7 @@ export class StorytellerService {
           attempt: 1,
           fallback: false,
           status: imageUrl ? "succeeded" : isTimeout ? "timeout" : "failed",
-          response: imageUrl ?? undefined,
+          response: imageUrl ? shorten(imageUrl, 1800) : undefined,
           error:
             imageUrl || !generated.error
               ? undefined
@@ -1185,6 +1187,7 @@ export class StorytellerService {
       {
         openRouterClient: this.options.openRouterClient,
         onAiRequest: this.options.onAiRequest,
+        inlineImageResolver: this.options.inlineImageResolver,
       },
       {
         agent: "image_generator",
@@ -1254,6 +1257,7 @@ export class StorytellerService {
       {
         openRouterClient: this.options.openRouterClient,
         onAiRequest: this.options.onAiRequest,
+        inlineImageResolver: this.options.inlineImageResolver,
       },
       {
         agent: "image_generator",
@@ -1345,6 +1349,24 @@ export class StorytellerService {
     }
 
     return normalized;
+  }
+
+  private async resolveInlineImageUrl(
+    imageUrl: string | null,
+  ): Promise<string | null> {
+    if (!imageUrl || !hasInlineDataImage(imageUrl)) {
+      return imageUrl;
+    }
+
+    if (!this.options.inlineImageResolver) {
+      return null;
+    }
+
+    const persisted = await this.options.inlineImageResolver.persistDataImageUri(
+      imageUrl,
+      { hint: "scene-inline" },
+    );
+    return persisted.fileUrl;
   }
 
   private async buildTranscriptIllustrationPrompt(

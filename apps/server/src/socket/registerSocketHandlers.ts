@@ -423,14 +423,14 @@ export const registerSocketHandlers = (
       }
     });
 
-    socket.on("close_adventure", (rawPayload) => {
+    socket.on("close_adventure", async (rawPayload) => {
       const payload = withValidation(socket, closeAdventurePayloadSchema, rawPayload);
       if (!payload) {
         return;
       }
 
       try {
-        manager.closeAdventureRecord(payload);
+        await manager.closeAdventureRecord(payload);
         io.in(payload.adventureId).socketsLeave(payload.adventureId);
       } catch (error) {
         socket.emit("storyteller_response", {

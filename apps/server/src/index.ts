@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { Server as SocketServer } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
+import { isSafeFileName } from "./image/ImageNaming";
 import { OpenRouterClient } from "./ai/OpenRouterClient";
 import { StorytellerService } from "./ai/StorytellerService";
 import { AdventureManager } from "./adventure/AdventureManager";
@@ -18,6 +19,8 @@ import { ImageGenerationService } from "./image/ImageGenerationService";
 import { ImageStore } from "./image/ImageStore";
 import { LeonardoClient } from "./image/LeonardoClient";
 import { registerImageRoutes } from "./image/registerImageRoutes";
+import { AdventureArtifactStore } from "./persistence/AdventureArtifactStore";
+import { AdventureSnapshotStore } from "./persistence/AdventureSnapshotStore";
 import { registerSocketHandlers } from "./socket/registerSocketHandlers";
 
 const app = Fastify({ logger: true });
@@ -53,6 +56,16 @@ const characterPortraitCache = new CharacterPortraitCache({
   imageStore,
 });
 await characterPortraitCache.initialize();
+const adventureArtifactStore = new AdventureArtifactStore({
+  rootDir: env.adventureArtifacts.outputDir,
+  fileRouteBasePath: "/api/adventure-artifacts",
+});
+await adventureArtifactStore.initialize();
+const adventureSnapshotStore = new AdventureSnapshotStore({
+  rootDir: env.adventureSnapshots.outputDir,
+  historyLimit: env.adventureSnapshots.historyLimit,
+});
+await adventureSnapshotStore.initialize();
 const imageGenerationService = new ImageGenerationService({
   falClient,
   leonardoClient,
@@ -97,6 +110,7 @@ const storyteller = new StorytellerService({
   },
   costControls: env.costControls,
   sceneImageGenerator: cachedSceneImageService,
+  inlineImageResolver: adventureArtifactStore,
   onAiRequest: (entry) => {
     manager?.appendAiRequestLog(entry);
   },
@@ -109,6 +123,8 @@ manager = new AdventureManager({
   storyteller,
   diagnosticsLogger,
   characterPortraitService,
+  snapshotStore: adventureSnapshotStore,
+  snapshotWriteDebounceMs: env.adventureSnapshots.writeDebounceMs,
 });
 
 const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(app.server, {
@@ -122,6 +138,27 @@ registerSocketHandlers(io, manager, {
   clientIdleTimeoutMs: env.clientIdleTimeoutMs,
 });
 registerImageRoutes(app, imageGenerationService);
+
+app.get("/api/adventure-artifacts/:fileName", async (request, reply) => {
+  const params = request.params as { fileName?: string };
+  const fileName = params.fileName ?? "";
+  if (!isSafeFileName(fileName)) {
+    return reply.code(400).send({
+      message: "Invalid file name.",
+    });
+  }
+
+  const record = await adventureArtifactStore.getFileRecord(fileName);
+  if (!record) {
+    return reply.code(404).send({
+      message: "Adventure artifact not found.",
+    });
+  }
+
+  const body = await readFile(adventureArtifactStore.resolveAbsolutePath(fileName));
+  reply.type(record.contentType);
+  return reply.send(body);
+});
 
 app.get("/health", async () => {
   return {
