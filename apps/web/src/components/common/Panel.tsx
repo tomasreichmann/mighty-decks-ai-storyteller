@@ -1,5 +1,6 @@
 import { ElementType, PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
+import styles from "./Panel.module.css";
 
 type PanelTone = "bone" | "gold" | "cloth" | "fire";
 
@@ -33,7 +34,7 @@ export const Panel = ({
 
   return (
     <Component
-      className={cn("comic-panel relative p-1.5", className)}
+      className={cn(styles.panelFrame, "relative p-1.5", className)}
       {...restProps}
     >
       <div

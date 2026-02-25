@@ -1,0 +1,87 @@
+.halftoneVignetteWrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.halftoneVignette {
+  --bg: #e4ceb3;
+  --dot-rgb: 18 27 35;
+  --grid: 10px;
+  --stop1: 3.5px;
+  --stop2: 7px;
+  --dot-a: 1;
+  --mask-radius-inner: 45%;
+  --mask-radius-outer: 120%;
+  --mask-center: 0;
+  --mask-edge: 0.7;
+  --blur: 1px;
+  --contrast: 1000%;
+  --brightness: 100%;
+  --saturate: 50%;
+  --tint: 0deg;
+  --grain: 0;
+  --invert: 0;
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  pointer-events: none;
+  background: transparent;
+  background-attachment: fixed;
+  filter: blur(var(--blur)) contrast(var(--contrast))
+    brightness(var(--brightness)) saturate(var(--saturate))
+    hue-rotate(var(--tint)) invert(var(--invert));
+  mix-blend-mode: multiply;
+  transform: translateZ(0);
+  opacity: 0.22;
+}
+
+.halftoneVignette::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background-image: radial-gradient(
+    circle at center,
+    rgb(var(--dot-rgb) / var(--dot-a)) var(--stop1),
+    rgb(var(--dot-rgb) / 0) var(--stop2)
+  );
+  background-size: var(--grid) var(--grid);
+  background-repeat: round;
+  background-position: 0 0;
+  mask-image: radial-gradient(
+    circle at center,
+    rgb(0 0 0 / var(--mask-center)) 0,
+    rgb(0 0 0 / var(--mask-center)) var(--mask-radius-inner),
+    rgb(0 0 0 / var(--mask-edge)) var(--mask-radius-outer)
+  );
+  mix-blend-mode: multiply;
+}
+
+.skewClipMask {
+  --skew-offset: 3%;
+  --shape:
+    var(--skew-offset) 0, 100% 0, calc(100% - var(--skew-offset)) 100%, 0 100%,
+    var(--skew-offset) 0;
+  clip-path: polygon(var(--shape));
+}
+
+.skewClipBorder {
+  --skew-offset: 3%;
+  --shape:
+    var(--skew-offset) 0, 100% 0, calc(100% - var(--skew-offset)) 100%, 0 100%,
+    var(--skew-offset) 0;
+  --s: -20px;
+  padding: calc(-1 * var(--s));
+  clip-path: polygon(
+      evenodd,
+      var(--s) var(--s),
+      calc(100% - var(--s)) var(--s),
+      calc(100% - var(--s)) calc(100% - var(--s)),
+      var(--s) calc(100% - var(--s)),
+      var(--s) var(--s),
+      var(--shape)
+    )
+    content-box;
+}

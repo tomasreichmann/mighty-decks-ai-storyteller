@@ -6,6 +6,7 @@ import type {
 import { cn } from "../../utils/cn";
 import { Label, type LabelVariant } from "./Label";
 import type { ButtonColors } from "./Button";
+import styles from "./Message.module.css";
 
 export type MessageColor = ButtonColors;
 
@@ -241,14 +242,14 @@ export const Message = ({
   return (
     <Component
       style={highlightStyle}
-      className={cn(
-        "min-w-0 max-w-full px-2 py-2 pr-4",
-        highlighted ? "message-highlight" : "shadow-[4px_4px_0_0_#121b23]",
-        "rounded-sm",
-        tone.container,
-        className,
-      )}
-    >
+        className={cn(
+          "min-w-0 max-w-full px-2 py-2 pr-4",
+          highlighted ? styles.messageHighlight : "shadow-[4px_4px_0_0_#121b23]",
+          "rounded-sm",
+          tone.container,
+          className,
+        )}
+      >
       <div className="stack min-w-0 items-baseline gap-2 relative pt-4">
         {label ? (
           onLabelClick ? (

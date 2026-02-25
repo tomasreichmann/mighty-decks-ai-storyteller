@@ -1,0 +1,21 @@
+.messageHighlight {
+  --message-highlight-rgb: 255 210 59;
+  box-shadow:
+    0 0 0 0 rgb(var(--message-highlight-rgb) / 0.18),
+    4px 4px 0 0 #121b23;
+  animation: messageHighlightPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes messageHighlightPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgb(var(--message-highlight-rgb) / 0.16),
+      4px 4px 0 0 #121b23;
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px rgb(var(--message-highlight-rgb) / 0.32),
+      4px 4px 0 0 #121b23;
+  }
+}

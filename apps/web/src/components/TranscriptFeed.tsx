@@ -11,6 +11,7 @@ import { cn } from "../utils/cn";
 import { Message } from "./common/Message";
 import { Text } from "./common/Text";
 import { PendingIndicator } from "./PendingIndicator";
+import styles from "./TranscriptFeed.module.css";
 
 interface TranscriptFeedProps {
   entries: TranscriptEntry[];
@@ -193,7 +194,7 @@ export const TranscriptFeed = ({
         ref={scrollContainerRef}
         className={cn(
           scrollable &&
-            "transcript-scroll-mask flex-1 overflow-y-auto p-2 -m-2",
+            `${styles.scrollMask} flex-1 overflow-y-auto p-2 -m-2`,
         )}
       >
         <div className="flex flex-col min-w-0 gap-4">

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { cn } from "../utils/cn";
 import { GeneratedImage, type ImageGeneration } from "./GeneratedImage";
+import styles from "./FramedGeneratedImage.module.css";
 
 interface FramedGeneratedImageProps {
   image: ImageGeneration | null;
@@ -31,17 +32,32 @@ export const FramedGeneratedImage = ({
 
   return (
     <div className={cn("relative", aspectClassName, className)}>
-      <div className="absolute inset-0 overflow-hidden -m-1 bg-kac-iron-dark skew-clip-mask">
+      <div
+        className={cn(
+          styles.skewClipMask,
+          "absolute inset-0 overflow-hidden -m-1 bg-kac-iron-dark",
+        )}
+      >
         <div
-          className="absolute inset-0 -m-3 bg-ink skew-clip-mask skew-clip-border"
+          className={cn(
+            styles.skewClipMask,
+            styles.skewClipBorder,
+            "absolute inset-0 -m-3 bg-ink",
+          )}
           style={skewStyle}
         ></div>
         <div
-          className="absolute inset-0 m-3 bg-kac-bone skew-clip-mask"
+          className={cn(
+            styles.skewClipMask,
+            "absolute inset-0 m-3 bg-kac-bone",
+          )}
           style={skewStyle}
         ></div>
         <div
-          className="absolute inset-[2px] overflow-hidden m-3 bg-kac-iron-dark skew-clip-mask"
+          className={cn(
+            styles.skewClipMask,
+            "absolute inset-[2px] overflow-hidden m-3 bg-kac-iron-dark",
+          )}
           style={skewStyle}
         >
           <GeneratedImage
@@ -56,8 +72,8 @@ export const FramedGeneratedImage = ({
             emptyLabel={emptyLabel}
             className="absolute inset-0"
           />
-          <div className="halftone-vignette-wrapper !z-50 !mix-blend-multiply">
-            <div className="halftone-vignette"></div>
+          <div className={styles.halftoneVignetteWrapper}>
+            <div className={styles.halftoneVignette}></div>
           </div>
         </div>
       </div>

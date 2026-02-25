@@ -1,0 +1,22 @@
+.dot {
+  transform-origin: center bottom;
+  animation: pendingDotBounce 0.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes pendingDotBounce {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0) scaleX(1) scaleY(1);
+  }
+  20% {
+    transform: translateY(-3px) scaleX(0.96) scaleY(1.04);
+  }
+  34% {
+    transform: translateY(0) scaleX(1.14) scaleY(0.86);
+  }
+  44% {
+    transform: translateY(-1px) scaleX(0.99) scaleY(1.01);
+  }
+}

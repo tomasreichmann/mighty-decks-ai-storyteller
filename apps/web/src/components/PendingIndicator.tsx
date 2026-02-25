@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { Text } from "./common/Text";
 import { cn } from "../utils/cn";
 import type { MessageColor } from "./common/Message";
+import styles from "./PendingIndicator.module.css";
 
 interface PendingIndicatorProps {
   label?: React.ReactNode;
@@ -138,7 +139,8 @@ export const PendingIndicator = ({
             <span
               key={`pending-dot-${index}`}
               className={cn(
-                "pending-indicator-dot h-3 w-3 rounded-full border shadow-[2px_2px_0_0_#121b23]",
+                "h-3 w-3 rounded-full border shadow-[2px_2px_0_0_#121b23]",
+                styles.dot,
                 tone.dotClassName,
               )}
               style={style}

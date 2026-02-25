@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { cn } from "../../utils/cn";
 import type { ButtonColors } from "./Button";
+import styles from "./Highlight.module.css";
 
 export type HighlightColor = ButtonColors;
 
@@ -91,8 +92,8 @@ const offsetCalligraphyPoint = (
 
 const animateClassNameMap = {
   ["none"]: "",
-  ["once"]: "highlight-stroke-animate",
-  ["infinite"]: "highlight-stroke-animate-infinite",
+  ["once"]: styles.strokeAnimate,
+  ["infinite"]: styles.strokeAnimateInfinite,
 };
 
 export const Highlight = ({

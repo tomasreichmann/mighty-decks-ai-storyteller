@@ -1,6 +1,7 @@
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "../../utils/cn";
 import { Label, LabelVariant } from "./Label";
+import styles from "./DepressedInput.module.css";
 
 interface BaseDepressedInputProps {
   label: string;
@@ -139,13 +140,13 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
     return (
       <label htmlFor={inputId} className={labelClassName}>
         {labelElement}
-        <div className="focusHighlightWrapper">
+        <div className={styles.focusHighlightWrapper}>
           <textarea
             id={inputId}
             className={cn(controlClasses, "resize-y")}
             {...textAreaProps}
           />
-          <div className="focusHighlight"></div>
+          <div className={styles.focusHighlight}></div>
         </div>
         {showCharCount ? (
           <p
@@ -184,9 +185,9 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
   return (
     <label htmlFor={inputId} className={labelClassName}>
       {labelElement}
-      <div className="focusHighlightWrapper">
+      <div className={styles.focusHighlightWrapper}>
         <input id={inputId} className={controlClasses} {...inputProps} />
-        <div className="focusHighlight"></div>
+        <div className={styles.focusHighlight}></div>
       </div>
       {showCharCount ? (
         <p

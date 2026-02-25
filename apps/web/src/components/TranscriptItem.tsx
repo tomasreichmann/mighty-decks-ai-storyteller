@@ -13,6 +13,7 @@ import { type LabelVariant } from "./common/Label";
 import { PendingIndicator } from "./PendingIndicator";
 import { FramedGeneratedImage } from "./FramedGeneratedImage";
 import type { ImageGeneration } from "./GeneratedImage";
+import styles from "./TranscriptItem.module.css";
 
 interface TranscriptItemProps {
   entry: TranscriptEntry;
@@ -468,7 +469,12 @@ export const TranscriptItem = ({
   return (
     <div className="flex w-full justify-end">
       <div className="flex max-w-full items-stretch gap-0">
-        <div className="transcript-avatar-seam shrink-0 overflow-hidden border-2 border-r-0 border-kac-iron-dark bg-kac-bone-light bg-black shadow-[4px_4px_0_0_#121b23] -z-10 rotate-[-2deg]">
+        <div
+          className={cn(
+            styles.avatarSeam,
+            "shrink-0 overflow-hidden border-2 border-r-0 border-kac-iron-dark bg-kac-bone-light bg-black shadow-[4px_4px_0_0_#121b23] -z-10 rotate-[-2deg]",
+          )}
+        >
           <img
             src={playerPortraitSrc}
             alt={entry.author}

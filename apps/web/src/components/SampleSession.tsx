@@ -6,9 +6,10 @@ import { TranscriptFeed } from "./TranscriptFeed";
 
 export const SAMPLE_SCENE: ScenePublic = {
   sceneId: "scene-sample-echoes",
-  imageUrl: "/scenes/defending-an-underground-village.jpg",
+  imageUrl: "/scenes/a-lone-adventurer-among-treasure.png",
   imagePending: false,
   closingImagePending: false,
+  closingImageUrl: "/scenes/defeating-a-dragon.png",
   mode: "high_tension",
   tension: 78,
   activeActorPlayerId: "player-ralph",

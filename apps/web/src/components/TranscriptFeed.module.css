@@ -1,0 +1,17 @@
+.scrollMask {
+  --fade-size: 14px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade-size),
+    #000 calc(100% - var(--fade-size)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade-size),
+    #000 calc(100% - var(--fade-size)),
+    transparent 100%
+  );
+}

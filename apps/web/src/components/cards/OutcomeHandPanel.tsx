@@ -8,6 +8,7 @@ import { Card } from "./Card";
 import { ourcomeCardPropsMap } from "../../data/outcomeDeck";
 import { cn } from "../../utils/cn";
 import { Button } from "../common/Button";
+import styles from "./OutcomeHandPanel.module.css";
 
 interface OutcomeHandPanelProps {
   check?: ActiveOutcomeCheck;
@@ -142,7 +143,7 @@ export const OutcomeHandPanel = ({
                     className={cn(
                       "shadow-xl mx-10 border-x-[3px] border-y-[2px] border-kac-iron shadow-[2px_4px_0_0_#121b23]",
                       selectionRequired &&
-                        "hover-gloss transition:duration-300 hover:brightness-110",
+                        `${styles.hoverGloss} transition:duration-300 hover:brightness-110`,
                       cardDisabled && "brightness-90",
                     )}
                   />

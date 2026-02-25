@@ -1,0 +1,21 @@
+.panelFrame {
+  position: relative;
+}
+
+.panelFrame::before {
+  content: "";
+  --size: 15px;
+  --skew-shift-x: 5px;
+  --skew-shift-y: 5px;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border: var(--size) solid #090f15;
+  clip-path: polygon(
+    var(--skew-shift-x) var(--skew-shift-y),
+    100% 0%,
+    calc(100% - var(--skew-shift-x)) calc(100% - var(--skew-shift-y)),
+    0 100%
+  );
+}

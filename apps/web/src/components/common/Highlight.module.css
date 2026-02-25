@@ -1,0 +1,35 @@
+.strokeAnimateInfinite {
+  stroke-dashoffset: 0;
+  animation: highlightStrokeOffsetInfinite 3s ease-in-out infinite;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes highlightStrokeOffsetInfinite {
+  from {
+    stroke-dashoffset: 5000;
+  }
+  40% {
+    stroke-dashoffset: 0;
+  }
+  60% {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -5000;
+  }
+}
+
+.strokeAnimate {
+  stroke-dashoffset: 0;
+  animation: highlightStrokeOffset 1s ease-in-out;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes highlightStrokeOffset {
+  from {
+    stroke-dashoffset: 5000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
