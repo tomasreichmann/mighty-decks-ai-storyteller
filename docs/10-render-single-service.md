@@ -2,6 +2,18 @@
 
 This deploys web + API + Socket.IO on one Render Web Service.
 
+## Build profile and cache behavior
+
+- Render uses a **production build context**:
+  - `NODE_ENV=production` is applied for runtime start.
+  - Web build is explicitly production mode via `pnpm -C apps/web build --mode production`.
+- Build reliability is prioritized over speed:
+  - The PNPM store is set to `/tmp/pnpm-store` during build so each deploy uses an ephemeral store.
+  - This avoids stale dependency-store reuse when Render cache is not manually cleared.
+  - Tradeoff: installs may take longer than fully cached builds.
+- Node runtime is pinned for deterministic deploys:
+  - `NODE_VERSION=22.22.0`
+
 ## 1) Push this repo
 
 Push your latest branch (includes `render.yaml` and committed `pnpm-lock.yaml`).
@@ -23,6 +35,7 @@ In the Render service settings, set:
 
 Optional:
 
+- `NODE_VERSION=22.22.0` (already set in `render.yaml`)
 - `DEBUG_MODE=false`
 - `MAX_ACTIVE_ADVENTURES=1`
 - model overrides (`OR_TEXT_*`, `OR_IMAGE_MODEL`, etc.)
