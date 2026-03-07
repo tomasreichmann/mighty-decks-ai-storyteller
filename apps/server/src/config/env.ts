@@ -47,6 +47,21 @@ const envSchema = z.object({
     .min(1)
     .default("black-forest-labs/flux.2-klein-4b"),
   OR_IMAGE_MODEL_FALLBACK: z.string().min(1).optional(),
+  WF_OR_FAST_TEXT_MODEL: z.string().min(1).default("google/gemini-2.5-flash-lite"),
+  WF_OR_HQ_TEXT_MODEL: z.string().min(1).default("anthropic/claude-sonnet-4.6"),
+  WF_OR_FAST_TOOL_MODEL: z.string().min(1).default("google/gemini-2.5-flash"),
+  WF_OR_HQ_TOOL_MODEL: z.string().min(1).default("anthropic/claude-sonnet-4.6"),
+  WF_OR_FAST_VISION_MODEL: z.string().min(1).default("google/gemini-2.5-flash"),
+  WF_OR_HQ_VISION_MODEL: z.string().min(1).default("google/gemini-2.5-pro"),
+  WF_FAL_FAST_IMAGE_MODEL: z.string().min(1).default("fal-ai/flux/schnell"),
+  WF_FAL_HQ_IMAGE_MODEL: z
+    .string()
+    .min(1)
+    .default("fal-ai/flux-pro/kontext/text-to-image"),
+  WF_FAL_FAST_TTS_MODEL: z.string().min(1).default("fal-ai/minimax/speech-02-turbo"),
+  WF_FAL_HQ_TTS_MODEL: z.string().min(1).default("fal-ai/minimax/speech-02-hd"),
+  WF_FAL_FAST_STT_MODEL: z.string().min(1).default("fal-ai/wizper"),
+  WF_FAL_HQ_STT_MODEL: z.string().min(1).default("fal-ai/speech-to-text"),
   DISABLE_IMAGE_GENERATION: z
     .string()
     .optional()
@@ -64,6 +79,15 @@ const envSchema = z.object({
   IMAGE_TIMEOUT_MS: z.coerce.number().int().min(1000).default(180000),
   AI_RETRY_COUNT: z.coerce.number().int().min(0).max(3).default(1),
   VOTE_TIMEOUT_MS: z.coerce.number().int().min(5000).default(60000),
+  WORKFLOW_RUN_TIMEOUT_MS: z.coerce.number().int().min(1000).default(180000),
+  WORKFLOW_DEFAULT_RETRY_COUNT: z.coerce.number().int().min(0).max(5).default(1),
+  WORKFLOW_TEXT_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000),
+  WORKFLOW_TOOL_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(45000),
+  WORKFLOW_VISION_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(45000),
+  WORKFLOW_IMAGE_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(120000),
+  WORKFLOW_TTS_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60000),
+  WORKFLOW_STT_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60000),
+  WORKFLOW_LAB_LOG_DIR: z.string().min(1).default("output/workflow-lab-runs"),
   DEBUG_LOG_DIR: z.string().min(1).default("logs/adventures"),
   ADVENTURE_SNAPSHOT_DIR: z
     .string()
@@ -75,6 +99,10 @@ const envSchema = z.object({
     .string()
     .min(1)
     .default("output/adventure-artifacts"),
+  ADVENTURE_MODULE_DIR: z
+    .string()
+    .min(1)
+    .default("output/adventure-modules"),
   IMAGE_OUTPUT_DIR: z.string().min(1).default("output/generated-images"),
   IMAGE_MAX_ACTIVE_JOBS: z.coerce.number().int().min(1).default(4),
   IMAGE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(10),
@@ -171,6 +199,9 @@ export const env = {
   adventureArtifacts: {
     outputDir: parsed.ADVENTURE_ARTIFACT_DIR,
   },
+  adventureModules: {
+    outputDir: parsed.ADVENTURE_MODULE_DIR,
+  },
   costControls: {
     disableImageGeneration: parsed.DISABLE_IMAGE_GENERATION ?? false,
     pitchCacheTtlMs: parsed.PITCH_CACHE_TTL_MS,
@@ -194,5 +225,38 @@ export const env = {
     leonardoBaseUrl: parsed.LEONARDO_BASE_URL,
     pollIntervalMs: parsed.LEONARDO_POLL_INTERVAL_MS,
     pollTimeoutMs: parsed.LEONARDO_POLL_TIMEOUT_MS ?? parsed.IMAGE_TIMEOUT_MS,
+  },
+  workflow: {
+    labLogDir: parsed.WORKFLOW_LAB_LOG_DIR,
+    modelRegistry: {
+      fast_text_model: parsed.WF_OR_FAST_TEXT_MODEL,
+      hq_text_model: parsed.WF_OR_HQ_TEXT_MODEL,
+      fast_tool_model: parsed.WF_OR_FAST_TOOL_MODEL,
+      hq_tool_model: parsed.WF_OR_HQ_TOOL_MODEL,
+      fast_image_model: parsed.WF_FAL_FAST_IMAGE_MODEL,
+      hq_image_model: parsed.WF_FAL_HQ_IMAGE_MODEL,
+      fast_vision_model: parsed.WF_OR_FAST_VISION_MODEL,
+      hq_vision_model: parsed.WF_OR_HQ_VISION_MODEL,
+      fast_tts_model: parsed.WF_FAL_FAST_TTS_MODEL,
+      hq_tts_model: parsed.WF_FAL_HQ_TTS_MODEL,
+      fast_stt_model: parsed.WF_FAL_FAST_STT_MODEL,
+      hq_stt_model: parsed.WF_FAL_HQ_STT_MODEL,
+    },
+    executionDefaults: {
+      runTimeoutMs: parsed.WORKFLOW_RUN_TIMEOUT_MS,
+      defaultRetryCount: parsed.WORKFLOW_DEFAULT_RETRY_COUNT,
+      stepTimeoutMs: {
+        llm_text: {
+          text: parsed.WORKFLOW_TEXT_STEP_TIMEOUT_MS,
+          tool: parsed.WORKFLOW_TOOL_STEP_TIMEOUT_MS,
+          vision: parsed.WORKFLOW_VISION_STEP_TIMEOUT_MS,
+        },
+        llm_image: parsed.WORKFLOW_IMAGE_STEP_TIMEOUT_MS,
+        tts: parsed.WORKFLOW_TTS_STEP_TIMEOUT_MS,
+        stt: parsed.WORKFLOW_STT_STEP_TIMEOUT_MS,
+        code: 10_000,
+        map: parsed.WORKFLOW_RUN_TIMEOUT_MS,
+      },
+    },
   },
 } as const;

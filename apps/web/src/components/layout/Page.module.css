@@ -1,0 +1,175 @@
+.headerShell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem 1.15rem;
+}
+
+.brandLink {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.brandImage {
+  width: 128px;
+  height: 82px;
+  image-rendering: auto;
+  filter: drop-shadow(0 4px 0 rgb(9 15 21 / 38%))
+    drop-shadow(0 8px 12px rgb(9 15 21 / 25%));
+}
+
+.comicNav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.comicNavLink {
+  --button-hue: 0deg;
+  --button-skew: -12deg;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.35rem;
+  min-width: 9.2rem;
+  z-index: 0;
+  margin-left: -1px;
+  padding: 0.72rem 1.42rem 0.64rem;
+  border: 2px solid #05090f;
+  color: #fff9e3;
+  cursor: pointer;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 #05090f;
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 7%),
+    rgb(255 255 255 / 0%)
+  );
+  transform: skewX(var(--button-skew));
+  transform-origin: center top;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    filter 150ms ease;
+}
+
+.comicNavLink::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: url("/button-background.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: hue-rotate(var(--button-hue)) saturate(0.84) brightness(0.95)
+    contrast(0.94);
+  pointer-events: none;
+}
+
+.comicNavLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(165deg, rgb(255 255 255 / 26%), rgb(255 255 255 / 0%) 42%),
+    linear-gradient(345deg, rgb(0 0 0 / 22%), rgb(0 0 0 / 0%) 52%);
+  pointer-events: none;
+}
+
+.comicNavLabel {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  transform: skewX(-2deg);
+  font-family: "Passion One", sans-serif;
+  font-size: clamp(1.4rem, 1.55vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  -webkit-text-stroke: 1.35px #05090f;
+  paint-order: stroke fill;
+  text-shadow:
+    0 2px 0px rgb(0 0 0 / 100%),
+    0 3px 0px rgb(0 0 0 / 100%);
+}
+
+.comicNavLink:not(.comicNavLinkActive):hover {
+  z-index: 2;
+  transform: translateY(2px) skewX(var(--button-skew));
+  box-shadow:
+    0 0 0 #05090f,
+    0 0 0 rgb(9 15 21 / 28%);
+  filter: brightness(1.03);
+}
+
+.comicNavLink:active {
+  transform: translateY(1px) skewX(var(--button-skew));
+  box-shadow: 0 0px 0 #05090f;
+}
+
+.comicNavLink:focus-visible {
+  outline: none;
+  box-shadow:
+    0 3px 0 #05090f,
+    0 7px 12px rgb(9 15 21 / 22%),
+    0 0 0 4px rgb(128 160 188 / 65%);
+}
+
+.comicNavLinkActive {
+  z-index: 1;
+  transform: translateY(2px) skewX(var(--button-skew));
+  box-shadow:
+    0 0px 0 #05090f,
+    inset 0 0 0 2px rgb(255 255 255 / 24%),
+    0 5px 10px rgb(9 15 21 / 24%);
+  filter: brightness(0.92) saturate(0.9);
+}
+
+.comicNavLinkActive::after {
+  background:
+    linear-gradient(165deg, rgb(255 255 255 / 21%), rgb(255 255 255 / 0%) 42%),
+    linear-gradient(345deg, rgb(0 0 0 / 33%), rgb(0 0 0 / 0%) 52%);
+}
+
+@media (max-width: 900px) {
+  .headerShell {
+    justify-content: center;
+  }
+
+  .brandLink {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .comicNav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .comicNavLink {
+    min-height: 3.05rem;
+    min-width: 8.5rem;
+    padding: 0.62rem 1.15rem 0.56rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .comicNavLink {
+    min-height: 2.8rem;
+    min-width: 7.45rem;
+    padding: 0.56rem 0.95rem 0.52rem;
+  }
+
+  .comicNavLabel {
+    font-size: clamp(1.15rem, 5vw, 1.5rem);
+  }
+}

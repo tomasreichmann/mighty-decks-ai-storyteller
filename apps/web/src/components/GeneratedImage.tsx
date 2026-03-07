@@ -22,6 +22,7 @@ interface GeneratedImageProps {
   failed?: boolean;
   failedLabel?: string;
   emptyLabel?: string;
+  implicitFailure?: boolean;
   embedded?: boolean;
   className?: string;
 }
@@ -66,6 +67,7 @@ export const GeneratedImage = ({
   failed = false,
   failedLabel = "Image generation failed. Continue without an image for this beat.",
   emptyLabel = "No image selected.",
+  implicitFailure = true,
   embedded = false,
   className = "",
 }: GeneratedImageProps): JSX.Element => {
@@ -88,7 +90,8 @@ export const GeneratedImage = ({
     }
   }, [image]);
 
-  const showFailureState = !image && !pending && (failed || generationWasPending);
+  const showFailureState =
+    !image && !pending && (failed || (implicitFailure && generationWasPending));
 
   const selectBatchIndex = (targetIndex: number): void => {
     if (!canNavigate || !onChange) {

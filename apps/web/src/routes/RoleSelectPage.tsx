@@ -9,11 +9,11 @@ export const RoleSelectPage = (): JSX.Element => {
 
   if (!adventureId) {
     return (
-      <main className="app-shell py-10 gap-4">
+      <div className="app-shell py-10 gap-4">
         <Message label="Error" color="curse">
           Missing adventureId.
         </Message>
-      </main>
+      </div>
     );
   }
 
@@ -22,9 +22,9 @@ export const RoleSelectPage = (): JSX.Element => {
   };
 
   return (
-    <main className="app-shell stack py-10 gap-4">
+    <div className="flex-1 app-shell stack py-10 gap-4">
       <AdventureHeader adventureId={adventureId} />
       <RoleSelectCard onSelectRole={handleSelectRole} />
-    </main>
+    </div>
   );
 };

@@ -77,19 +77,19 @@ const ProcessArrow = (): JSX.Element => {
 export const LandingHero = (): JSX.Element => {
   return (
     <Section className="stack items-center text-center gap-5">
-      <Label className="self-start" size="lg">
-        Mighty Decks AI Storyteller
-      </Label>
       <Heading
         variant="h1"
         color="iron"
         as="h1"
         className="mt-4 mb-8 mx-auto max-w-2xl font-md-title !leading-[0.8] rotate-[-2deg] skew-x-[-10deg]"
         highlightProps={{
+          animate: "once",
           lineCount: 3,
+          brushTiltOffset: 3,
+          brushHeight: 10,
+          lineHeight: 20,
           lineOffsets: [24, 32, 128, 32, 16],
           canvasWidth: 500,
-          className: "w-full h-[1.7em]",
           color: "monster-light",
         }}
       >

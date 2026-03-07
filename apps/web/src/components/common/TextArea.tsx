@@ -1,25 +1,36 @@
 import { TextareaHTMLAttributes } from "react";
 import { cn } from "../../utils/cn";
+import { InputDescriptionHint } from "./InputDescriptionHint";
 import { Text } from "./Text";
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string;
+  description?: string;
 }
 
-export const TextArea = ({ label, id, className = "", ...props }: TextAreaProps): JSX.Element => {
+export const TextArea = ({
+  label,
+  description,
+  id,
+  className = "",
+  ...props
+}: TextAreaProps): JSX.Element => {
   const fallbackId = label.toLowerCase().replace(/\s+/g, "-");
   const inputId = id ?? fallbackId;
 
   return (
     <label htmlFor={inputId} className="grid gap-1">
-      <Text
-        as="span"
-        variant="note"
-        color="iron"
-        className="text-base tracking-[0.04em]"
-      >
-        {label}
-      </Text>
+      <span className="inline-flex items-start gap-1 self-start">
+        <Text
+          as="span"
+          variant="note"
+          color="iron"
+          className="text-base tracking-[0.04em]"
+        >
+          {label}
+        </Text>
+        {description ? <InputDescriptionHint description={description} /> : null}
+      </span>
       <textarea
         id={inputId}
         className={cn(

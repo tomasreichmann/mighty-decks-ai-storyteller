@@ -4,9 +4,7 @@ import {
   access,
   mkdir,
   readFile,
-  rename,
   unlink,
-  writeFile,
 } from "node:fs/promises";
 import type {
   GeneratedImageAsset,
@@ -25,6 +23,10 @@ import {
   toModelHash,
   toPromptHash,
 } from "./ImageNaming";
+import {
+  atomicWriteBufferFile,
+  atomicWriteTextFile,
+} from "../utils/atomicFileWrite";
 
 interface ImageStoreOptions {
   rootDir: string;
@@ -584,15 +586,11 @@ export class ImageStore {
   }
 
   private async writeTextAtomic(path: string, content: string): Promise<void> {
-    const tempPath = `${path}.${Date.now().toString(36)}.tmp`;
-    await writeFile(tempPath, content, "utf8");
-    await rename(tempPath, path);
+    await atomicWriteTextFile(path, content);
   }
 
   private async writeBufferAtomic(path: string, content: Buffer): Promise<void> {
-    const tempPath = `${path}.${Date.now().toString(36)}.tmp`;
-    await writeFile(tempPath, content);
-    await rename(tempPath, path);
+    await atomicWriteBufferFile(path, content);
   }
 
   private async deleteFileIfPresent(path: string): Promise<void> {

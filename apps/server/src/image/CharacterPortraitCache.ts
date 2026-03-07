@@ -1,8 +1,9 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { ImageProvider } from "@mighty-decks/spec/imageGeneration";
 import { z } from "zod";
 import type { ImageStore } from "./ImageStore";
+import { atomicWriteTextFile } from "../utils/atomicFileWrite";
 
 const portraitAliasEntrySchema = z.object({
   characterNameKey: z.string().min(1),
@@ -163,9 +164,7 @@ export class CharacterPortraitCache {
   }
 
   private async writeTextAtomic(path: string, content: string): Promise<void> {
-    const tempPath = `${path}.${Date.now().toString(36)}.tmp`;
-    await writeFile(tempPath, content, "utf8");
-    await rename(tempPath, path);
+    await atomicWriteTextFile(path, content);
   }
 
   private async withWriteLock<T>(operation: () => Promise<T>): Promise<T> {
@@ -183,4 +182,3 @@ export class CharacterPortraitCache {
     }
   }
 }
-

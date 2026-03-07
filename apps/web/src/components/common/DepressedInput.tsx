@@ -1,6 +1,7 @@
-import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import { cn } from "../../utils/cn";
 import { Label, LabelVariant } from "./Label";
+import { InputDescriptionHint } from "./InputDescriptionHint";
 import styles from "./DepressedInput.module.css";
 
 interface BaseDepressedInputProps {
@@ -10,6 +11,9 @@ interface BaseDepressedInputProps {
   className?: string;
   controlClassName?: string;
   showCharCount?: boolean;
+  showLabel?: boolean;
+  description?: string;
+  topRightControl?: ReactNode;
 }
 
 type DepressedSingleLineInputProps = BaseDepressedInputProps &
@@ -90,6 +94,9 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
     className = "",
     controlClassName = "",
     showCharCount = false,
+    showLabel = true,
+    description,
+    topRightControl,
   } = props;
 
   const fallbackId = label.toLowerCase().replace(/\s+/g, "-");
@@ -107,12 +114,15 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
   );
 
   const labelElement = (
-    <Label
-      variant={labelColor}
-      className="-mb-2 -ml-1 relative self-start z-20"
-    >
-      {label}
-    </Label>
+    <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">
+      <Label variant={labelColor}>{label}</Label>
+      {description ? (
+        <InputDescriptionHint
+          description={description}
+          className="-translate-y-1"
+        />
+      ) : null}
+    </div>
   );
 
   if (props.multiline) {
@@ -123,6 +133,9 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
       className: _ignoredClassName,
       controlClassName: _ignoredControlClassName,
       showCharCount: _ignoredShowCharCount,
+      showLabel: _ignoredShowLabel,
+      description: _ignoredDescription,
+      topRightControl: _ignoredTopRightControl,
       ...textAreaProps
     } = props;
     const characterCount = toCharacterString(
@@ -139,7 +152,7 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
 
     return (
       <label htmlFor={inputId} className={labelClassName}>
-        {labelElement}
+        {showLabel ? labelElement : null}
         <div className={styles.focusHighlightWrapper}>
           <textarea
             id={inputId}
@@ -147,6 +160,9 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
             {...textAreaProps}
           />
           <div className={styles.focusHighlight}></div>
+          {topRightControl ? (
+            <div className="absolute right-2 top-2 z-30">{topRightControl}</div>
+          ) : null}
         </div>
         {showCharCount ? (
           <p
@@ -168,6 +184,9 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
     className: _ignoredClassName,
     controlClassName: _ignoredControlClassName,
     showCharCount: _ignoredShowCharCount,
+    showLabel: _ignoredShowLabel,
+    description: _ignoredDescription,
+    topRightControl: _ignoredTopRightControl,
     ...inputProps
   } = props;
   const characterCount = toCharacterString(
@@ -184,10 +203,13 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
 
   return (
     <label htmlFor={inputId} className={labelClassName}>
-      {labelElement}
+      {showLabel ? labelElement : null}
       <div className={styles.focusHighlightWrapper}>
         <input id={inputId} className={controlClasses} {...inputProps} />
         <div className={styles.focusHighlight}></div>
+        {topRightControl ? (
+          <div className="absolute right-2 top-2 z-30">{topRightControl}</div>
+        ) : null}
       </div>
       {showCharCount ? (
         <p

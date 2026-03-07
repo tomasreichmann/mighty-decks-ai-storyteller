@@ -419,7 +419,7 @@ export const SampleSession = (): JSX.Element => {
             entryId: "t-mlodthwl-o7qz9m",
             kind: "storyteller",
             author: "Storyteller",
-            text: "You pivot, aiming for the exposed flesh, but your momentum carries you slightly off-balance. The dragon, though stunned, instinctively twitches. Your maul glances off a thick, unexpectedly resilient fold of skin on its flank, rather than the soft underbelly. The blow sends a jarring vibration up your arms, and the beast lets out a pained snarl, its head beginning to rise. The brief opening is lost, and the dragonâ€™s eye swivels to fix on you with renewed malice.\nThe dragon begins to gather itself, its massive form tensing. What is your next move as it recovers?",
+            text: "You pivot, aiming for the exposed flesh, but your momentum carries you slightly off-balance. The dragon, though stunned, instinctively twitches. Your maul glances off a thick, unexpectedly resilient fold of skin on its flank, rather than the soft underbelly. The blow sends a jarring vibration up your arms, and the beast lets out a pained snarl, its head beginning to rise. The brief opening is lost, and the dragon's eye swivels to fix on you with renewed malice.\nThe dragon begins to gather itself, its massive form tensing. What is your next move as it recovers?",
             createdAtIso: "2026-02-15T23:33:58.629Z",
           },
           {
@@ -580,7 +580,7 @@ export const SampleSession = (): JSX.Element => {
             entryId: "t-mloe55qq-czl3pk",
             kind: "storyteller",
             author: "Storyteller",
-            text: "You swiftly abandon the embedded maul, drawing your repeating crossbow with practiced ease. The mechanism whirs as armour-piercing bolts load. With a series of sharp thwacks, the bolts find their mark, embedding themselves in the dragon's scales. The creature recoils, a hiss of pain escaping its fanged maw as smoke begins to curl from the impacted areas, a testament to the bolts' potency. The dragonâ€™s attention is now fully diverted to the new, stinging assault.\nWhat is your next action?",
+            text: "You swiftly abandon the embedded maul, drawing your repeating crossbow with practiced ease. The mechanism whirs as armour-piercing bolts load. With a series of sharp thwacks, the bolts find their mark, embedding themselves in the dragon's scales. The creature recoils, a hiss of pain escaping its fanged maw as smoke begins to curl from the impacted areas, a testament to the bolts' potency. The dragon's attention is now fully diverted to the new, stinging assault.\nWhat is your next action?",
             createdAtIso: "2026-02-15T23:43:02.738Z",
           },
           {
@@ -615,7 +615,7 @@ export const SampleSession = (): JSX.Element => {
             entryId: "t-mloe76pr-wyoosn",
             kind: "storyteller",
             author: "Storyteller",
-            text: "The dragonâ€™s head dips, its eyes fixing on you with predatory intent, and a low growl begins to rumble in its chest. You aim for the colossal stalactite, a dark spear hanging precariously above the beast. Your bolts splinter the ancient rock, sending a shower of smaller debris down. The stalactite cracks further, but does not immediately fall. The dragon, momentarily distracted by the new rain of stone, hesitates, its attack delayed but not averted. The instability of the ceiling has now been compromised, adding a new layer of danger to the cavern.\nWhat do you do next?",
+            text: "The dragon's head dips, its eyes fixing on you with predatory intent, and a low growl begins to rumble in its chest. You aim for the colossal stalactite, a dark spear hanging precariously above the beast. Your bolts splinter the ancient rock, sending a shower of smaller debris down. The stalactite cracks further, but does not immediately fall. The dragon, momentarily distracted by the new rain of stone, hesitates, its attack delayed but not averted. The instability of the ceiling has now been compromised, adding a new layer of danger to the cavern.\nWhat do you do next?",
             createdAtIso: "2026-02-15T23:44:37.311Z",
           },
           {
@@ -766,7 +766,7 @@ export const SampleSession = (): JSX.Element => {
           mode: "high_tension",
           tension: 98,
           introProse:
-            "The rumble has ceased, replaced by a suffocating silence. Dust motes dance in the faint light filtering through newly formed cracks above.  The air grows thick with the scent of brimstone and something ancient and reptilian.  You are Ralph Stoneshard, and the mountain has just become your tombâ€¦ or your forge.",
+            "The rumble has ceased, replaced by a suffocating silence. Dust motes dance in the faint light filtering through newly formed cracks above.  The air grows thick with the scent of brimstone and something ancient and reptilian.  You are Ralph Stoneshard, and the mountain has just become your tomb or your forge.",
           orientationBullets: [
             "Cave-in sealing your exit.",
             "Dragon's lair ahead.",

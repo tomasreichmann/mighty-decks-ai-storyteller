@@ -1,13 +1,16 @@
 import { InputHTMLAttributes } from "react";
 import { cn } from "../../utils/cn";
 import { Label } from "./Label";
+import { InputDescriptionHint } from "./InputDescriptionHint";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
+  description?: string;
 }
 
 export const TextField = ({
   label,
+  description,
   id,
   className = "",
   ...props
@@ -17,7 +20,10 @@ export const TextField = ({
 
   return (
     <label htmlFor={inputId} className="stack gap-1">
-      <Label className="self-start">{label}</Label>
+      <div className="inline-flex items-start gap-1 self-start">
+        <Label>{label}</Label>
+        {description ? <InputDescriptionHint description={description} /> : null}
+      </div>
       <input
         id={inputId}
         className={cn(

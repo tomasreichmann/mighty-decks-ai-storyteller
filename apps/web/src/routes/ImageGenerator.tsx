@@ -6,6 +6,10 @@ import {
   type ImageGeneration,
 } from "../components/GeneratedImage";
 import { Button } from "../components/common/Button";
+import {
+  ContextMenu,
+  type ContextMenuRow,
+} from "../components/common/ContextMenu";
 import { Heading } from "../components/common/Heading";
 import { DepressedInput } from "../components/common/DepressedInput";
 import { Message } from "../components/common/Message";
@@ -102,7 +106,7 @@ export const ImageGenerator = (): JSX.Element => {
   }, [activeImage, sortedImages]);
 
   return (
-    <main className="app-shell stack py-6 gap-4">
+    <div className="app-shell stack py-6 gap-4">
       <Section className="stack gap-2 paper-shadow">
         <div className="flex items-center justify-between gap-2">
           <Heading as="h1" variant="h2" color="iron" className="z-10">
@@ -322,7 +326,36 @@ export const ImageGenerator = (): JSX.Element => {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {sortedImages.map((image) => {
               const isActive = group?.activeImageId === image.imageId;
-              const showMenu = menuImageId === image.imageId;
+              const menuRows: ContextMenuRow[] = [
+                {
+                  kind: "action",
+                  id: "delete-image",
+                  label: "Delete Image",
+                  className:
+                    "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
+                  onSelect: () => {
+                    if (window.confirm("Delete this image?")) {
+                      void deleteImage(image.imageId);
+                    }
+                  },
+                },
+                {
+                  kind: "action",
+                  id: "delete-batch",
+                  label: "Delete Batch",
+                  className:
+                    "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
+                  onSelect: () => {
+                    if (
+                      window.confirm(
+                        `Delete batch ${image.batchIndex} and all of its images?`,
+                      )
+                    ) {
+                      void deleteBatch(image.batchIndex);
+                    }
+                  },
+                },
+              ];
 
               return (
                 <div
@@ -330,54 +363,15 @@ export const ImageGenerator = (): JSX.Element => {
                   className="relative border-2 border-kac-iron bg-kac-bone-light p-2"
                 >
                   <div className="absolute left-2 top-2 z-10">
-                    <Button
-                      size="sm"
-                      variant="circle"
-                      color="cloth"
-                      onClick={() =>
-                        setMenuImageId((current) =>
-                          current === image.imageId ? null : image.imageId,
-                        )
-                      }
-                    >
-                      ...
-                    </Button>
-                    {showMenu ? (
-                      <div className="mt-1 min-w-[150px] border-2 border-kac-iron bg-kac-bone-light p-2 shadow-[2px_2px_0_0_#121b23]">
-                        <Button
-                          variant="ghost"
-                          color="blood"
-                          size="sm"
-                          className="w-full justify-start"
-                          onClick={() => {
-                            setMenuImageId(null);
-                            if (window.confirm("Delete this image?")) {
-                              void deleteImage(image.imageId);
-                            }
-                          }}
-                        >
-                          Delete Image
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          color="blood"
-                          size="sm"
-                          className="w-full justify-start mt-1"
-                          onClick={() => {
-                            setMenuImageId(null);
-                            if (
-                              window.confirm(
-                                `Delete batch ${image.batchIndex} and all of its images?`,
-                              )
-                            ) {
-                              void deleteBatch(image.batchIndex);
-                            }
-                          }}
-                        >
-                          Delete Batch
-                        </Button>
-                      </div>
-                    ) : null}
+                    <ContextMenu
+                      rows={menuRows}
+                      direction="bottom"
+                      align="start"
+                      open={menuImageId === image.imageId}
+                      onOpenChange={(nextOpen) => {
+                        setMenuImageId(nextOpen ? image.imageId : null);
+                      }}
+                    />
                   </div>
 
                   <button
@@ -413,6 +407,6 @@ export const ImageGenerator = (): JSX.Element => {
           </div>
         )}
       </Panel>
-    </main>
+    </div>
   );
 };

@@ -8,6 +8,10 @@ import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/s
 import { isSafeFileName } from "./image/ImageNaming";
 import { OpenRouterClient } from "./ai/OpenRouterClient";
 import { StorytellerService } from "./ai/StorytellerService";
+import { createWorkflowAdapters } from "./ai/workflow/createWorkflowAdapters";
+import { FalQueueClient } from "./ai/workflow/FalQueueClient";
+import { createWorkflowDefinitionRegistrations } from "./ai/workflow/sampleWorkflows";
+import { registerAdventureModuleRoutes } from "./adventureModule/registerAdventureModuleRoutes";
 import { AdventureManager } from "./adventure/AdventureManager";
 import { env } from "./config/env";
 import { AdventureDiagnosticsLogger } from "./diagnostics/AdventureDiagnosticsLogger";
@@ -20,8 +24,13 @@ import { ImageStore } from "./image/ImageStore";
 import { LeonardoClient } from "./image/LeonardoClient";
 import { registerImageRoutes } from "./image/registerImageRoutes";
 import { AdventureArtifactStore } from "./persistence/AdventureArtifactStore";
+import { AdventureModuleStore } from "./persistence/AdventureModuleStore";
 import { AdventureSnapshotStore } from "./persistence/AdventureSnapshotStore";
 import { registerSocketHandlers } from "./socket/registerSocketHandlers";
+import { createWorkflowFactory } from "./workflow/executor";
+import { registerWorkflowLabRoutes } from "./workflow/registerWorkflowLabRoutes";
+import { WorkflowRunLogger } from "./workflow/WorkflowRunLogger";
+import { WorkflowRegistry } from "./workflow/workflowRegistry";
 
 const app = Fastify({ logger: true });
 
@@ -34,6 +43,13 @@ const openRouterClient = new OpenRouterClient({
   apiKey: env.openRouterApiKey,
 });
 const falClient = new FalClient({
+  apiKey: env.falApiKey,
+  apiBaseUrl: env.imageGeneration.falApiBaseUrl,
+  queueBaseUrl: env.imageGeneration.falQueueBaseUrl,
+  pollIntervalMs: env.imageGeneration.falPollIntervalMs,
+  pollTimeoutMs: env.imageGeneration.falPollTimeoutMs,
+});
+const falQueueClient = new FalQueueClient({
   apiKey: env.falApiKey,
   apiBaseUrl: env.imageGeneration.falApiBaseUrl,
   queueBaseUrl: env.imageGeneration.falQueueBaseUrl,
@@ -61,6 +77,10 @@ const adventureArtifactStore = new AdventureArtifactStore({
   fileRouteBasePath: "/api/adventure-artifacts",
 });
 await adventureArtifactStore.initialize();
+const adventureModuleStore = new AdventureModuleStore({
+  rootDir: env.adventureModules.outputDir,
+});
+await adventureModuleStore.initialize();
 const adventureSnapshotStore = new AdventureSnapshotStore({
   rootDir: env.adventureSnapshots.outputDir,
   historyLimit: env.adventureSnapshots.historyLimit,
@@ -138,6 +158,36 @@ registerSocketHandlers(io, manager, {
   clientIdleTimeoutMs: env.clientIdleTimeoutMs,
 });
 registerImageRoutes(app, imageGenerationService);
+const workflowFactory = createWorkflowFactory({
+  adapters: createWorkflowAdapters({
+    openRouterClient,
+    falQueueClient,
+  }),
+  modelRegistry: env.workflow.modelRegistry,
+  defaults: env.workflow.executionDefaults,
+});
+const workflowRegistry = new WorkflowRegistry();
+for (const registration of createWorkflowDefinitionRegistrations()) {
+  workflowRegistry.register(registration);
+}
+const workflowRunLogger = new WorkflowRunLogger({
+  rootDir: env.workflow.labLogDir,
+  onError: (error) => {
+    app.log.error(
+      { error: error instanceof Error ? error.message : String(error) },
+      "workflow run logger write failed",
+    );
+  },
+});
+await workflowRunLogger.initialize();
+registerWorkflowLabRoutes(app, {
+  workflowRegistry,
+  workflowFactory,
+  runLogger: workflowRunLogger,
+});
+registerAdventureModuleRoutes(app, {
+  store: adventureModuleStore,
+});
 
 app.get("/api/adventure-artifacts/:fileName", async (request, reply) => {
   const params = request.params as { fileName?: string };

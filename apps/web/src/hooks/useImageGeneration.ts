@@ -52,6 +52,23 @@ const parsePositiveInt = (raw: string, fallback: number): number => {
   return parsed;
 };
 
+const toSubmitErrorMessage = (error: unknown): string => {
+  const baseMessage =
+    error instanceof Error
+      ? error.message
+      : "Could not create image generation job.";
+  const normalized = baseMessage.toLocaleLowerCase();
+
+  if (normalized.includes("at capacity")) {
+    return `${baseMessage} Wait for active jobs to finish, then retry.`;
+  }
+  if (normalized.includes("rate limit")) {
+    return `${baseMessage} Wait a short moment before retrying.`;
+  }
+
+  return baseMessage;
+};
+
 const sortModelsWithFavorites = (
   models: ImageModelSummary[],
   favoriteModelIds: string[],
@@ -96,8 +113,8 @@ interface UseImageGenerationResult {
   setCustomWidth: (value: string) => void;
   setCustomHeight: (value: string) => void;
   toggleFavorite: (modelId: string) => void;
-  lookupCurrentGroup: () => Promise<void>;
-  submitJob: () => Promise<void>;
+  lookupCurrentGroup: (promptOverride?: string) => Promise<void>;
+  submitJob: (promptOverride?: string) => Promise<void>;
   selectActiveImage: (imageId: string) => Promise<void>;
   deleteImage: (imageId: string) => Promise<void>;
   deleteBatch: (batchIndex: number) => Promise<void>;
@@ -235,8 +252,9 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     setFavoriteModelIds(next);
   }, [provider]);
 
-  const lookupCurrentGroup = useCallback(async (): Promise<void> => {
-    if (prompt.trim().length === 0 || selectedModelId.trim().length === 0) {
+  const lookupCurrentGroup = useCallback(async (promptOverride?: string): Promise<void> => {
+    const targetPrompt = (promptOverride ?? prompt).trim();
+    if (targetPrompt.length === 0 || selectedModelId.trim().length === 0) {
       setGroup(null);
       return;
     }
@@ -246,7 +264,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     try {
       const matchedGroup = await lookupImageGroup({
         provider,
-        prompt,
+        prompt: targetPrompt,
         model: selectedModelId,
       });
       setGroup(matchedGroup);
@@ -261,8 +279,8 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     }
   }, [prompt, provider, selectedModelId]);
 
-  const submitJob = useCallback(async (): Promise<void> => {
-    const normalizedPrompt = prompt.trim();
+  const submitJob = useCallback(async (promptOverride?: string): Promise<void> => {
+    const normalizedPrompt = (promptOverride ?? prompt).trim();
     if (normalizedPrompt.length === 0) {
       setError("Prompt is required.");
       return;
@@ -274,6 +292,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
 
     setSubmittingJob(true);
     setError(null);
+    setJob(null);
     try {
       const createdJob = await createImageJob({
         provider,
@@ -291,11 +310,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
         setGroup(loadedGroup);
       }
     } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Could not create image generation job.",
-      );
+      setError(toSubmitErrorMessage(submitError));
     } finally {
       setSubmittingJob(false);
     }

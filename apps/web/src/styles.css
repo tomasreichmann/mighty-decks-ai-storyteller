@@ -22,6 +22,74 @@ body {
   flex-direction: column;
 }
 
+.halftone-vignette-wrapper {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.halftone-vignette {
+  --bg: #e4ceb3;
+  --dot-rgb: 18 27 35;
+  --grid: 10px;
+  --stop1: 3.5px;
+  --stop2: 7px;
+  --dot-a: 1;
+  --mask-radius-inner: 45%;
+  --mask-radius-outer: 120%;
+  --mask-center: 0;
+  --mask-edge: 0.7;
+  --blur: 1px;
+  --contrast: 1000%;
+  --brightness: 100%;
+  --saturate: 50%;
+  --tint: 0deg;
+  --grain: 0;
+  --invert: 0;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--bg);
+  background-attachment: fixed;
+  filter: blur(var(--blur)) contrast(var(--contrast))
+    brightness(var(--brightness)) saturate(var(--saturate))
+    hue-rotate(var(--tint)) invert(var(--invert));
+  mix-blend-mode: multiply;
+  transform: translateZ(0);
+}
+
+.halftone-vignette::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  left: 2px;
+  background-image: radial-gradient(
+    circle at center,
+    rgb(var(--dot-rgb) / var(--dot-a)) var(--stop1),
+    rgb(var(--dot-rgb) / 0) var(--stop2)
+  );
+  background-size: var(--grid) var(--grid);
+  background-repeat: round;
+  mask-image: radial-gradient(
+    circle at center,
+    rgb(0 0 0 / var(--mask-center)) 0,
+    rgb(0 0 0 / var(--mask-center)) var(--mask-radius-inner),
+    rgb(0 0 0 / var(--mask-edge)) var(--mask-radius-outer)
+  );
+  mix-blend-mode: multiply;
+  background-position: 0 0;
+}
+
 #root {
   position: relative;
   z-index: 1;
@@ -52,7 +120,7 @@ h6 {
   margin: 0 auto;
   width: 100%;
   max-width: 1120px;
-  padding: 1.25rem;
+  padding: 0 1.25rem;
 }
 
 .stack {

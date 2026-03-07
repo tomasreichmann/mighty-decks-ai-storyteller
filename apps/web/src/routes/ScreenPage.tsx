@@ -24,11 +24,11 @@ export const ScreenPage = (): JSX.Element => {
 
   if (!adventureId) {
     return (
-      <main className="app-shell py-10 gap-4">
+      <div className="app-shell py-10 gap-4">
         <Message label="Error" color="curse">
           Missing adventureId.
         </Message>
-      </main>
+      </div>
     );
   }
 
@@ -87,7 +87,7 @@ export const ScreenPage = (): JSX.Element => {
   }, [adventure?.debugMode, adventure?.transcript, transcriptVerbosity]);
 
   return (
-    <main className="app-shell stack py-6 gap-4">
+    <div className="app-shell stack py-6 gap-4">
       <AdventureHeader
         adventureId={adventureId}
         role="screen"
@@ -239,6 +239,6 @@ export const ScreenPage = (): JSX.Element => {
           />
         </>
       ) : null}
-    </main>
+    </div>
   );
 };

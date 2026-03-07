@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mighty-decks.local/schemas/penpot-mcp-tokens.schema.json",
+  "title": "Mighty Decks Penpot MCP UI Token Payload",
+  "type": "object",
+  "required": ["meta", "tokens", "semantic", "components", "patterns", "drift"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": { "$ref": "#/$defs/meta" },
+    "tokens": { "$ref": "#/$defs/tokens" },
+    "semantic": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/semanticAlias" }
+    },
+    "components": { "$ref": "#/$defs/components" },
+    "patterns": { "$ref": "#/$defs/patterns" },
+    "drift": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/driftItem" }
+    }
+  },
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "required": ["version", "generatedAt", "sourceOfTruth", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "generatedAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        },
+        "sourceOfTruth": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "tokenEntry": {
+      "type": "object",
+      "required": ["value", "status", "source", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {},
+        "status": {
+          "type": "string",
+          "enum": ["canonical", "current-only", "legacy-reference"]
+        },
+        "source": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "tokenGroup": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/tokenEntry" }
+    },
+    "tokens": {
+      "type": "object",
+      "required": [
+        "color",
+        "spacing",
+        "typography",
+        "radius",
+        "border",
+        "shadow",
+        "motion",
+        "zIndex"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "color": { "$ref": "#/$defs/tokenGroup" },
+        "spacing": { "$ref": "#/$defs/tokenGroup" },
+        "typography": { "$ref": "#/$defs/tokenGroup" },
+        "radius": { "$ref": "#/$defs/tokenGroup" },
+        "border": { "$ref": "#/$defs/tokenGroup" },
+        "shadow": { "$ref": "#/$defs/tokenGroup" },
+        "motion": { "$ref": "#/$defs/tokenGroup" },
+        "zIndex": { "$ref": "#/$defs/tokenGroup" }
+      }
+    },
+    "semanticAlias": {
+      "type": "object",
+      "required": ["alias", "ref", "status", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "alias": { "type": "string", "minLength": 1 },
+        "ref": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["canonical", "current-only", "legacy-reference"]
+        },
+        "notes": { "type": "string" },
+        "source": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "variantContract": {
+      "type": "object",
+      "required": ["description", "tokens"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "tokens": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "states": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "componentContract": {
+      "type": "object",
+      "required": ["description", "variants", "tokenRefs", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "variants": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/variantContract" }
+        },
+        "tokenRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "components": {
+      "type": "object",
+      "required": ["Button", "Panel", "Text", "Label", "Message", "Toggle", "DepressedInput"],
+      "additionalProperties": false,
+      "properties": {
+        "Button": { "$ref": "#/$defs/componentContract" },
+        "Panel": { "$ref": "#/$defs/componentContract" },
+        "Text": { "$ref": "#/$defs/componentContract" },
+        "Label": { "$ref": "#/$defs/componentContract" },
+        "Message": { "$ref": "#/$defs/componentContract" },
+        "Toggle": { "$ref": "#/$defs/componentContract" },
+        "DepressedInput": { "$ref": "#/$defs/componentContract" }
+      }
+    },
+    "patternContract": {
+      "type": "object",
+      "required": ["useWhen", "avoidWhen", "recipe", "tokenRefs", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "useWhen": { "type": "string", "minLength": 1 },
+        "avoidWhen": { "type": "string", "minLength": 1 },
+        "recipe": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "tokenRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "patterns": {
+      "type": "object",
+      "required": [
+        "framed-panel",
+        "sticker-label",
+        "highlight-heading",
+        "tactile-control",
+        "callout-card",
+        "narrative-stack",
+        "phase-shell"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "framed-panel": { "$ref": "#/$defs/patternContract" },
+        "sticker-label": { "$ref": "#/$defs/patternContract" },
+        "highlight-heading": { "$ref": "#/$defs/patternContract" },
+        "tactile-control": { "$ref": "#/$defs/patternContract" },
+        "callout-card": { "$ref": "#/$defs/patternContract" },
+        "narrative-stack": { "$ref": "#/$defs/patternContract" },
+        "phase-shell": { "$ref": "#/$defs/patternContract" }
+      }
+    },
+    "driftItem": {
+      "type": "object",
+      "required": ["id", "description", "status", "sourcePath", "impact", "canonicalDecision"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "sourcePath": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "impact": { "type": "string", "minLength": 1 },
+        "canonicalDecision": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

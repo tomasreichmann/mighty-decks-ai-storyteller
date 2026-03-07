@@ -18,15 +18,17 @@ export const Heading = ({
       className={cn("-mb-2 relative", className)}
       {...textProps}
     >
-      <span className="relative">
+      <span className="relative inline-block">
         <span className="inline-block relative rotate-[-2deg]">{children}</span>
         <Highlight
           lineCount={1}
           animate="once"
+          lineHeight={10}
           brushHeight={8}
+          lineOffsets={[0, 10, 30, 50]}
           {...highlightProps}
           className={cn(
-            "absolute left-1/2 bottom-[25%] -translate-x-1/2 w-[130%] h-[25%] -z-10",
+            "absolute w-[calc(100%+0.5em)] h-[calc(100%-0.4em)] left-1/2 bottom-0 -translate-x-1/2 -z-10",
             highlightProps.className,
           )}
         />

@@ -6,8 +6,11 @@
   "exports": {
     ".": "./index.ts",
     "./adventureState": "./adventureState.ts",
+    "./adventureModule": "./adventureModule.ts",
+    "./adventureModuleAuthoring": "./adventureModuleAuthoring.ts",
     "./events": "./events.ts",
-    "./imageGeneration": "./imageGeneration.ts"
+    "./imageGeneration": "./imageGeneration.ts",
+    "./workflowLab": "./workflowLab.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"

@@ -1,0 +1,249 @@
+{
+  "meta": {
+    "version": "0.1.0",
+    "generatedAt": "2026-02-28T00:00:00Z",
+    "sourceOfTruth": [
+      "apps/web/tailwind.config.ts",
+      "apps/web/src/styles.css",
+      "apps/web/src/components/common/*",
+      "docs/ux-design/tailwind.config.cjs"
+    ],
+    "notes": [
+      "Current implementation baseline.",
+      "Legacy references are marked.",
+      "Structured for Penpot MCP handoff."
+    ]
+  },
+  "tokens": {
+    "color": {
+      "palette.core": {
+        "value": {
+          "kac-steel-light": "#f3f3f4",
+          "kac-iron": "#121b23",
+          "kac-iron-dark": "#090f15",
+          "kac-blood-light": "#e3132c",
+          "kac-fire-light": "#f88b00",
+          "kac-bone-light": "#e4ceb3",
+          "kac-gold": "#ffd23b",
+          "kac-gold-dark": "#f59d20",
+          "kac-cloth-light": "#80a0bc",
+          "kac-curse": "#f20170",
+          "kac-monster-dark": "#1aa62b",
+          "special": "#d99600",
+          "success": "#1aa62b",
+          "partial": "#65738b",
+          "chaos": "#f20170",
+          "fumble": "#090f15",
+          "ink": "#111827",
+          "paper": "#f8fafc"
+        },
+        "status": "canonical",
+        "source": ["apps/web/tailwind.config.ts"],
+        "notes": "Core active palette for primitives and outcomes."
+      },
+      "literals.current": {
+        "value": {
+          "off-white": "#fffdf5",
+          "parchment": "#f8efd8",
+          "shadow-cream": "#fffaf0",
+          "shadow-tan": "#d6c1a1",
+          "shadow-umber": "#9f8a6d",
+          "message-highlight-rgb": "255 210 59"
+        },
+        "status": "current-only",
+        "source": ["apps/web/src/components/common/Message.tsx"],
+        "notes": "Hardcoded component literals."
+      }
+    },
+    "spacing": {
+      "scale.tailwind-used": {
+        "value": ["0", "0.5", "1", "1.5", "2", "2.5", "3", "4", "5", "6", "7", "8", "10", "12"],
+        "status": "canonical",
+        "source": ["apps/web/src/components/common/Button.tsx"],
+        "notes": "Observed spacing steps."
+      },
+      "layout.shell": {
+        "value": {
+          "maxWidth": "1120px",
+          "padding": "1.25rem"
+        },
+        "status": "canonical",
+        "source": ["apps/web/src/styles.css"],
+        "notes": "App shell constraints."
+      },
+      "exceptions": {
+        "value": {
+          "panelFrame": "15px",
+          "fadeMask": "14px",
+          "halftoneGrid": "10px",
+          "paperShadowInset": "-10px -20px"
+        },
+        "status": "current-only",
+        "source": ["apps/web/src/components/common/Panel.module.css"],
+        "notes": "Effect-specific spacing values."
+      }
+    },
+    "typography": {
+      "families": {
+        "value": {
+          "md-body": "Shantell Sans, cursive",
+          "md-heading": "Kalam, cursive",
+          "md-title": "Passion One, sans-serif",
+          "md-logo": "Kalam, cursive"
+        },
+        "status": "canonical",
+        "source": ["apps/web/tailwind.config.ts"],
+        "notes": "Configured font aliases."
+      },
+      "sizes": {
+        "value": {
+          "2xs": ["0.6rem", "0.75rem"],
+          "3xs": ["0.5rem", "0.6rem"]
+        },
+        "status": "canonical",
+        "source": ["apps/web/tailwind.config.ts"],
+        "notes": "Custom tiny sizes."
+      },
+      "textVariants": {
+        "value": {
+          "h1": "font-heading font-bold text-4xl/none sm:text-5xl/none",
+          "h2": "font-heading font-bold text-3xl/none sm:text-4xl/none",
+          "h3": "font-heading font-bold text-2xl/none sm:text-3xl/none",
+          "body": "font-ui text-base leading-relaxed",
+          "quote": "font-ui text-lg italic leading-relaxed",
+          "note": "font-ui text-xs leading-snug opacity-70"
+        },
+        "status": "canonical",
+        "source": ["apps/web/src/components/common/Text.tsx"],
+        "notes": "Shared text styles."
+      },
+      "legacy.title-effects": {
+        "value": ["drop.title", "drop.emboss"],
+        "status": "legacy-reference",
+        "source": ["docs/ux-design/tailwind.config.cjs"],
+        "notes": "Legacy style references kept for migration context."
+      }
+    },
+    "radius": {
+      "core": {
+        "value": {
+          "rounded-sm": "0.125rem",
+          "rounded-full": "9999px"
+        },
+        "status": "canonical",
+        "source": ["apps/web/src/components/common/Button.tsx"],
+        "notes": "Main shape radii."
+      }
+    },
+    "border": {
+      "widths": {
+        "value": {
+          "control": "2px",
+          "input": "3px",
+          "inputBottom": "6px",
+          "focusRing": "2px",
+          "focusHighlight": "10px",
+          "panelFrame": "15px"
+        },
+        "status": "current-only",
+        "source": ["apps/web/src/components/common/TextField.tsx"],
+        "notes": "Observed border widths."
+      }
+    },
+    "shadow": {
+      "tailwindDrop": {
+        "value": ["md-heavy", "lg-heavy", "xl-heavy", "title", "emboss"],
+        "status": "canonical",
+        "source": ["apps/web/tailwind.config.ts"],
+        "notes": "Configured drop shadow token names."
+      },
+      "component": {
+        "value": {
+          "button": "3px 3px 0 0 #121b23",
+          "panelInset": "inset 1px 1px 0 0 #fffaf0, inset -1px -1px 0 0 #d6c1a1",
+          "toggleInset": "inset 1px 1px 0 0 #fffaf0, inset -1px -1px 0 0 #9f8a6d"
+        },
+        "status": "current-only",
+        "source": ["apps/web/src/components/common/Panel.tsx"],
+        "notes": "Arbitrary class shadows."
+      }
+    },
+    "motion": {
+      "tailwind": {
+        "value": {
+          "fadeIn": "fadeIn 0.6s ease-in-out",
+          "fadeOut": "fadeOut 0.6s ease-in-out",
+          "wave": "wave 0.6s linear infinite",
+          "breathe": "breathe 1s ease-in-out infinite"
+        },
+        "status": "canonical",
+        "source": ["apps/web/tailwind.config.ts"],
+        "notes": "Configured animation aliases."
+      },
+      "cssModules": {
+        "value": {
+          "pendingDot": "0.5s",
+          "highlightOnce": "1s",
+          "highlightLoop": "3s",
+          "messagePulse": "1.8s"
+        },
+        "status": "current-only",
+        "source": ["apps/web/src/components/common/Message.module.css"],
+        "notes": "Component-local keyframes."
+      }
+    },
+    "zIndex": {
+      "layers": {
+        "value": {
+          "root": 1,
+          "panelContent": 10,
+          "overlay": 20,
+          "vignette": 50
+        },
+        "status": "current-only",
+        "source": ["apps/web/src/styles.css"],
+        "notes": "Observed stack layers."
+      }
+    }
+  },
+  "semantic": {
+    "surface.base": { "alias": "surface.base", "ref": "tokens.color.palette.core.value.kac-steel-light", "status": "canonical", "notes": "Page base", "source": ["apps/web/src/styles.css"] },
+    "surface.panel": { "alias": "surface.panel", "ref": "tokens.color.palette.core.value.kac-bone-light", "status": "canonical", "notes": "Default panel", "source": ["apps/web/src/components/common/Panel.tsx"] },
+    "surface.callout": { "alias": "surface.callout", "ref": "tokens.color.palette.core.value.kac-cloth-light", "status": "canonical", "notes": "Info callouts", "source": ["apps/web/src/components/common/Message.tsx"] },
+    "text.primary": { "alias": "text.primary", "ref": "tokens.color.palette.core.value.kac-iron", "status": "canonical", "notes": "Default text", "source": ["apps/web/src/components/common/Text.tsx"] },
+    "text.muted": { "alias": "text.muted", "ref": "tokens.color.palette.core.value.kac-steel-light", "status": "canonical", "notes": "Muted text", "source": ["apps/web/src/components/common/Text.tsx"] },
+    "action.primary": { "alias": "action.primary", "ref": "tokens.color.palette.core.value.kac-gold", "status": "canonical", "notes": "Primary button", "source": ["apps/web/src/components/common/Button.tsx"] },
+    "action.secondary": { "alias": "action.secondary", "ref": "tokens.color.palette.core.value.kac-cloth-light", "status": "canonical", "notes": "Secondary button", "source": ["apps/web/src/components/common/Button.tsx"] },
+    "status.success": { "alias": "status.success", "ref": "tokens.color.palette.core.value.success", "status": "canonical", "notes": "Success", "source": ["apps/web/tailwind.config.ts"] },
+    "status.partial": { "alias": "status.partial", "ref": "tokens.color.palette.core.value.partial", "status": "canonical", "notes": "Partial", "source": ["apps/web/tailwind.config.ts"] },
+    "status.chaos": { "alias": "status.chaos", "ref": "tokens.color.palette.core.value.chaos", "status": "canonical", "notes": "Chaos", "source": ["apps/web/tailwind.config.ts"] },
+    "status.fumble": { "alias": "status.fumble", "ref": "tokens.color.palette.core.value.fumble", "status": "canonical", "notes": "Fumble", "source": ["apps/web/tailwind.config.ts"] }
+  },
+  "components": {
+    "Button": { "description": "Tactile CTA", "variants": { "solid": { "description": "Raised gradient", "tokens": ["action.primary", "tokens.border.widths", "tokens.shadow.component"], "states": ["default", "hover", "active", "disabled", "focus-visible"] }, "ghost": { "description": "Transparent", "tokens": ["text.primary", "tokens.border.widths"], "states": ["default", "hover", "disabled"] }, "circle": { "description": "Round icon", "tokens": ["tokens.radius.core", "tokens.spacing.scale.tailwind-used"], "states": ["default", "active", "disabled"] } }, "tokenRefs": ["tokens.color", "tokens.spacing", "tokens.border", "tokens.shadow", "tokens.motion"], "source": ["apps/web/src/components/common/Button.tsx"] },
+    "Panel": { "description": "Framed surface", "variants": { "bone": { "description": "Default warm", "tokens": ["surface.panel", "tokens.border.widths", "tokens.shadow.component"], "states": ["default", "disabled"] }, "gold": { "description": "Emphasis", "tokens": ["action.primary", "tokens.border.widths"], "states": ["default"] }, "cloth": { "description": "Informational", "tokens": ["surface.callout"], "states": ["default"] }, "fire": { "description": "Urgency", "tokens": ["tokens.color.palette.core.value.kac-fire-light"], "states": ["default"] } }, "tokenRefs": ["tokens.color", "tokens.spacing", "tokens.border", "tokens.shadow"], "source": ["apps/web/src/components/common/Panel.tsx"] },
+    "Text": { "description": "Typography primitive", "variants": { "h1-h3": { "description": "Heading styles", "tokens": ["tokens.typography.textVariants"], "states": ["default"] }, "body-group": { "description": "Body, quote, note", "tokens": ["tokens.typography.textVariants", "text.primary", "text.muted"], "states": ["default"] } }, "tokenRefs": ["tokens.typography"], "source": ["apps/web/src/components/common/Text.tsx"] },
+    "Label": { "description": "Sticker badge", "variants": { "tone-set": { "description": "Color variants", "tokens": ["tokens.color.palette.core", "tokens.shadow.component"], "states": ["default"] } }, "tokenRefs": ["tokens.typography", "tokens.color", "tokens.border", "tokens.shadow"], "source": ["apps/web/src/components/common/Label.tsx"] },
+    "Message": { "description": "Callout card", "variants": { "tone-by-color": { "description": "Color-mapped gradient", "tokens": ["surface.callout", "tokens.motion.cssModules"], "states": ["default", "highlighted"] } }, "tokenRefs": ["tokens.color", "tokens.border", "tokens.shadow", "tokens.motion"], "source": ["apps/web/src/components/common/Message.tsx"] },
+    "Toggle": { "description": "Binary switch", "variants": { "checked": { "description": "On", "tokens": ["tokens.color.palette.core.value.kac-cloth-light", "tokens.motion.cssModules"], "states": ["default", "disabled"] }, "unchecked": { "description": "Off", "tokens": ["tokens.color.palette.core.value.kac-steel-light", "tokens.motion.cssModules"], "states": ["default", "disabled"] } }, "tokenRefs": ["tokens.color", "tokens.radius", "tokens.border", "tokens.motion"], "source": ["apps/web/src/components/common/Toggle.tsx"] },
+    "DepressedInput": { "description": "Depressed text input", "variants": { "single-line": { "description": "Input", "tokens": ["tokens.color.literals.current", "tokens.border.widths", "tokens.motion.cssModules"], "states": ["default", "focus-visible", "disabled"] }, "multiline": { "description": "Textarea", "tokens": ["tokens.color.literals.current", "tokens.border.widths", "tokens.motion.cssModules"], "states": ["default", "focus-visible", "disabled"] } }, "tokenRefs": ["tokens.color", "tokens.border", "tokens.shadow", "tokens.motion"], "source": ["apps/web/src/components/common/DepressedInput.tsx"] }
+  },
+  "patterns": {
+    "framed-panel": { "useWhen": "Major content surfaces", "avoidWhen": "Tiny inline metadata", "recipe": ["Use Panel", "Keep frame + inset", "Use 1.5-4 spacing rhythm"], "tokenRefs": ["components.Panel"], "source": ["apps/web/src/components/common/Panel.tsx"] },
+    "sticker-label": { "useWhen": "Short tags", "avoidWhen": "Long text", "recipe": ["Use Label", "Keep uppercase", "Use slight rotation"], "tokenRefs": ["components.Label"], "source": ["apps/web/src/components/common/Label.tsx"] },
+    "highlight-heading": { "useWhen": "Section title emphasis", "avoidWhen": "Dense body text", "recipe": ["Use Heading", "Use Highlight lineCount 1", "Animate once"], "tokenRefs": ["tokens.motion.cssModules"], "source": ["apps/web/src/components/common/Heading.tsx"] },
+    "tactile-control": { "useWhen": "Primary interaction", "avoidWhen": "Read-only text", "recipe": ["Use Button/Toggle/DepressedInput", "Retain raised/pressed transitions", "Retain disabled hatch"], "tokenRefs": ["components.Button", "components.Toggle", "components.DepressedInput"], "source": ["apps/web/src/components/common/Button.tsx"] },
+    "callout-card": { "useWhen": "Pace/warning/status messages", "avoidWhen": "Generic layout wrapper", "recipe": ["Use Message", "Choose tone by intent", "Pulse only for active emphasis"], "tokenRefs": ["components.Message"], "source": ["apps/web/src/components/common/Message.tsx"] },
+    "narrative-stack": { "useWhen": "Play phase scene presentation", "avoidWhen": "Utility screens", "recipe": ["Image first", "Prose panel second", "Pace callout third"], "tokenRefs": ["components.Panel", "components.Message"], "source": ["apps/web/src/components/NarratedSceneCard.tsx"] },
+    "phase-shell": { "useWhen": "Route-level phase screens", "avoidWhen": "Overlays", "recipe": ["Use app-shell", "Compose with primitives", "Use stack gaps"], "tokenRefs": ["tokens.spacing.layout.shell"], "source": ["apps/web/src/styles.css"] }
+  },
+  "drift": [
+    { "id": "drift-button-variant-taxonomy", "description": "Button uses solid|ghost|circle while docs mention primary|secondary|ghost|danger.", "status": "open", "sourcePath": ["apps/web/src/components/common/Button.tsx", "AGENTS.md"], "impact": "Naming mismatch in design handoff.", "canonicalDecision": "Use implemented names for now and track mismatch." },
+    { "id": "drift-header-undefined-colors", "description": "AdventureHeader references text-kac-monster-darker and text-kac-blood-darker not defined in Tailwind colors.", "status": "open", "sourcePath": ["apps/web/src/components/AdventureHeader.tsx", "apps/web/tailwind.config.ts"], "impact": "Potential missing status text styles.", "canonicalDecision": "Document only; no code fix in this task." },
+    { "id": "drift-heading-duplication", "description": "GenericVotePanel duplicates Heading + Highlight structure.", "status": "open", "sourcePath": ["apps/web/src/components/GenericVotePanel.tsx", "apps/web/src/components/common/Heading.tsx"], "impact": "Higher style drift risk.", "canonicalDecision": "Heading primitive is canonical for new work." },
+    { "id": "drift-input-style-fork", "description": "DepressedInput and TextField/TextArea represent different visual systems.", "status": "open", "sourcePath": ["apps/web/src/components/common/DepressedInput.tsx", "apps/web/src/components/common/TextField.tsx"], "impact": "Inconsistent form visuals.", "canonicalDecision": "Prefer DepressedInput for new narrative-first views." },
+    { "id": "drift-label-dynamic-class", "description": "Label builds text class names dynamically.", "status": "open", "sourcePath": ["apps/web/src/components/common/Label.tsx"], "impact": "Potential class extraction fragility.", "canonicalDecision": "Keep as-is and track." },
+    { "id": "drift-panel-disabled-pseudo", "description": "Panel uses disabled: utility on a div.", "status": "open", "sourcePath": ["apps/web/src/components/common/Panel.tsx"], "impact": "Disabled styling may be partial.", "canonicalDecision": "Document as current-only behavior." },
+    { "id": "drift-text-h1-transform", "description": "Text h1 transform syntax may not be standard Tailwind utility form.", "status": "open", "sourcePath": ["apps/web/src/components/common/Text.tsx"], "impact": "Possible inconsistent heading tilt rendering.", "canonicalDecision": "Document drift and defer fix." }
+  ]
+}

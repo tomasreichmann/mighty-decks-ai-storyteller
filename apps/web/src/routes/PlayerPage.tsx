@@ -31,11 +31,11 @@ export const PlayerPage = (): JSX.Element => {
 
   if (!adventureId) {
     return (
-      <main className="app-shell py-10">
+      <div className="app-shell py-10">
         <Text variant="body" className="text-red-700">
           Missing adventureId.
         </Text>
-      </main>
+      </div>
     );
   }
 
@@ -194,9 +194,9 @@ export const PlayerPage = (): JSX.Element => {
   ]);
 
   return (
-    <main
+    <div
       className={cn(
-        "app-shell py-6",
+        "flex-1 app-shell py-6",
         phase === "play"
           ? "flex max-h-[100dvh] min-h-0 flex-col gap-3"
           : "stack gap-4",
@@ -391,6 +391,6 @@ export const PlayerPage = (): JSX.Element => {
           />
         </>
       ) : null}
-    </main>
+    </div>
   );
 };

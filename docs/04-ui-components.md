@@ -10,6 +10,8 @@ The goal is to:
 
 This is **not** a visual design spec. It is a **structural contract** for implementation.
 
+For visual tokens, style patterns, and Penpot MCP handoff, see `docs/17-ui-style-system-penpot-mcp.md`.
+
 ---
 
 ## Design principles (MVP)
@@ -25,6 +27,47 @@ This is **not** a visual design spec. It is a **structural contract** for implem
 
 4. **Shared components first**  
    Player and Screen UIs share as much as possible.
+
+5. **Primitive-first view composition**  
+   New views should be composed from shared UI primitives (`Panel`, `Section`, `Text`, `Heading`, `Button`, `Label`, etc.) before introducing custom-styled `div` containers.
+
+---
+
+## View authoring rules (required)
+
+When creating a new route/view (or a major new panel in an existing view), prefer the existing shared components over ad-hoc styling.
+
+### Use shared primitives first
+
+- Use `Section` for semantic grouped content blocks.
+- Use `Panel` for framed/surface containers instead of custom bordered `div`s.
+- Use `Text` / `Heading` for typography instead of styling raw `h*` / `p` tags repeatedly.
+- Use `Button` for actions (including icon-only/circle variants) instead of styled `button`s.
+- Use `Label` for badge-like headings/tags.
+- Use `Message` for alert/status/informational callouts instead of custom callout wrappers.
+- Use `DepressedInput`, `TextField`, `TextArea`, and `Toggle` for form controls before creating one-off input styles.
+
+### `div` is still allowed, but only for these roles
+
+- Layout wrappers (`flex`, `grid`, spacing, responsive columns)
+- Structural wrappers required for positioning (`relative`, `absolute`, overlays)
+- Visual compositions that are truly unique (e.g. card fan layout, image framing effects)
+- Small internal wrappers inside a shared component when no reusable primitive exists yet
+
+### Escalation rule for new UI abstractions
+
+- If the same styled `div` pattern appears in 2+ views, promote it to a shared component.
+- If the style is specific to one component, keep it co-located in a CSS module for that component.
+- Keep `apps/web/src/styles.css` for global/base styles and cross-app utility classes only.
+
+### Practical checklist for new views
+
+- Start with page shell: `main.app-shell`
+- Compose main blocks with `Panel` and/or `Section`
+- Use `Heading`/`Text` for all user-facing copy
+- Use `Button` for every clickable action
+- Use shared form controls before raw inputs
+- Only add custom wrappers for layout or truly unique visuals
 
 ---
 
@@ -120,6 +163,110 @@ Phase → Components:
 
 - `AdventureHeader`
 - `SessionSummaryCard`
+
+---
+
+### `/adventure-module/list`
+
+Post-MVP authoring extension route for browsing and managing Adventure Modules.
+
+Components:
+
+- `AdventureModuleListHeader`
+- `AdventureModuleListPanel`
+- `AdventureModuleListItemCard`
+- `ModuleVisibilityBadge`
+- `ArchiveModuleDialog`
+- `CreateAdventureModuleButton`
+
+List rules:
+
+- Author-owned modules render first.
+- Non-author list view includes published modules only.
+- Row actions for author-owned modules: `Edit`, `Delete` (archive).
+- Module cards are clickable and open `/adventure-module/:slug/player-info`.
+
+---
+
+### `/adventure-module/new`
+
+Post-MVP authoring extension route for creating a draft module.
+
+Components:
+
+- `AdventureModuleCreateForm`
+- `SlugField` (auto-generate + manual override)
+- `SlugAvailabilityStatus`
+- `CreateModuleButton`
+
+Behavior:
+
+- Slug is generated from name and can be overridden.
+- Create is blocked until slug availability check returns available.
+- Create success redirects to `/adventure-module/:slug/base`.
+- Content authoring starts on `/adventure-module/:slug/base`.
+
+---
+
+### `/adventure-module/:slug/:tab`
+
+Post-MVP authoring shell route for tabbed editing.
+
+Shared shell components:
+
+- `AdventureModuleAuthoringHeader`
+- `AdventureModuleTabNav`
+- `AutosaveStatusBadge`
+- `PublishModuleButton`
+- `AuthoringTabContentHost`
+
+Tabs:
+
+- `base`: `ModuleBaseTabPanel` with `SmartInput` for premise transforms
+- `player-info`: `AdventureModulePlayerInfoTabPanel` with dual MDXEditor fields (`Player Summary`, `Player Info Text`) in rich + source modes with autosave
+- `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes with autosave
+- `actors`: placeholder
+- `locations`: placeholder
+- `encounters`: placeholder
+- `quests`: placeholder
+- `assets`: placeholder
+
+List-tab row actions:
+
+- `Edit`
+- `Clone`
+- `Delete`
+
+List-tab primary actions:
+
+- `Create an Actor`
+- `Create a Location`
+- `Create an Encounter`
+- `Create a Quest`
+- `Create an Asset`
+
+---
+
+### `/adventure-module/:slug/:tab/:entityId`
+
+Entity editor placeholder route (detailed editors land in a later step).
+
+Components:
+
+- `AdventureModuleTabPlaceholder`
+
+Actor editor baseline fields:
+
+- name
+- visual description
+- personality
+- profile image
+- mini (full-body image)
+- notes
+
+Behavior:
+
+- Route is active and intentionally displays a placeholder while entity editors are pending.
 
 ---
 
@@ -339,30 +486,31 @@ Phase → Components:
 
 ## Common UI primitives
 
-Located in `ui/common/`:
+Located in `apps/web/src/components/common/`:
 
-- `Button` (variants: primary, secondary, ghost, danger)
-- `Card`
+- `Button` (project variants/sizes; use for all actions)
 - `Section`
-- `Divider`
+- `Panel`
+- `Text`
+- `Heading`
+- `Label`
+- `Message`
 - `TextField`
 - `TextArea`
-- `Skeleton`
-- `InlineError`
-- `Toast` (optional)
+- `DepressedInput`
+- `Toggle`
+- `Highlight` (decorative text accent; use via `Heading` where possible)
+- `ImageBackground` (for image-backed UI blocks)
 
----
+### Current usage pattern observed in views
 
-## Explicit non-components
+Recent routes/components already follow this in many places:
 
-The following are intentionally **not** UI components in MVP:
+- `WorkflowLabPage` uses `Panel` + `Button` for nearly all surfaced UI blocks/actions
+- `ImageGenerator` uses `Section`/`Panel` + `Heading`/`Text` + `Button`
+- `AdventureHeader`, `NarratedSceneCard`, `GenericVotePanel`, `ReadyGatePanel`, `TranscriptFeed` rely on shared primitives instead of one-off shells
 
-- Dice rollers
-- Stat panels
-- Card hands
-- Inventories
-- Audio controls
-- Moderation tools
+New views should follow these patterns by default rather than introducing custom framed boxes or custom typography wrappers.
 
 ---
 
@@ -376,3 +524,4 @@ The MVP UI is intentionally small:
 - One voting pattern
 
 This keeps cognitive load low and makes it easier to judge whether the **storytelling itself is compelling**, which is the core risk this MVP is meant to test.
+

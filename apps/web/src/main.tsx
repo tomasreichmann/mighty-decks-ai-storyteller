@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import "@mdxeditor/editor/style.css";
 import { App } from "./App";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import "./styles.css";

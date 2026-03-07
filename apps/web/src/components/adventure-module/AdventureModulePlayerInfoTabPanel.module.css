@@ -1,0 +1,194 @@
+.fieldShell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fieldLabelRow {
+  position: relative;
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 1.5rem;
+}
+
+.fieldLabelMain {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.fieldContextTags {
+  margin-left: auto;
+}
+
+.editorShell {
+  position: relative;
+}
+
+.editorFrame {
+  position: relative;
+  border: 2px solid #121b23;
+  border-radius: 0.25rem;
+  background: linear-gradient(to bottom, #f8efd8, #e5d4b9);
+  box-shadow:
+    inset 2px 2px 0 0 #9f8a6d,
+    inset -2px -2px 0 0 #fff7e6;
+  overflow: hidden;
+}
+
+.editorRoot {
+  color: #121b23;
+}
+
+.editorRoot :global([role="toolbar"]) {
+  border-bottom: 2px solid #121b23;
+  background: #ead9bd;
+  padding-right: 2.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  overflow-x: auto;
+}
+
+.editorRoot :global([role="toolbar"] button) {
+  color: #121b23;
+}
+
+.contentEditable {
+  color: #121b23;
+  line-height: 1.5;
+  font-family: "Shantell Sans", cursive;
+  padding: 0.75rem;
+}
+
+.editorRoot .contentEditable :global(h1) {
+  font-family: "Kalam", cursive;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
+.editorRoot .contentEditable :global(h2) {
+  font-family: "Kalam", cursive;
+  font-size: 1.625rem;
+  line-height: 1.25;
+  font-weight: 700;
+  margin: 0.125rem 0 0.625rem;
+}
+
+.editorRoot .contentEditable :global(h3) {
+  font-family: "Kalam", cursive;
+  font-size: 1.375rem;
+  line-height: 1.3;
+  font-weight: 700;
+  margin: 0.125rem 0 0.5rem;
+}
+
+.editorRoot .contentEditable :global(h4) {
+  font-family: "Kalam", cursive;
+  font-size: 1.2rem;
+  line-height: 1.35;
+  font-weight: 700;
+  margin: 0.125rem 0 0.45rem;
+}
+
+.editorRoot .contentEditable :global(h5) {
+  font-family: "Kalam", cursive;
+  font-size: 1.075rem;
+  line-height: 1.4;
+  font-weight: 700;
+  margin: 0.125rem 0 0.4rem;
+}
+
+.editorRoot .contentEditable :global(h6) {
+  font-family: "Kalam", cursive;
+  font-size: 1rem;
+  line-height: 1.45;
+  font-weight: 700;
+  margin: 0.125rem 0 0.35rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.editorRoot .contentEditable :global(p) {
+  font-size: 1rem;
+  line-height: 1.65;
+  margin: 0 0 0.5rem;
+}
+
+.editorRoot .contentEditable :global(ul),
+.editorRoot .contentEditable :global(ol) {
+  margin: 0 0 0.625rem 1.25rem;
+  padding: 0;
+}
+
+.editorRoot .contentEditable :global(ul) {
+  list-style: disc;
+}
+
+.editorRoot .contentEditable :global(ol) {
+  list-style: decimal;
+}
+
+.editorRoot .contentEditable :global(li) {
+  margin: 0.2rem 0;
+}
+
+.editorRoot .contentEditable :global(blockquote) {
+  border-left: 3px solid rgb(199 144 59 / 70%);
+  margin: 0 0 0.75rem;
+  padding: 0.25rem 0 0.25rem 0.75rem;
+  font-style: italic;
+}
+
+.editorRoot .contentEditable :global(hr) {
+  border: 0;
+  border-top: 3px solid #121b23;
+  margin: 1rem 0;
+  opacity: 1;
+}
+
+.smartMenuAnchor {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.45rem;
+  z-index: 30;
+}
+
+.summaryEditable {
+  min-height: 15rem;
+}
+
+.infoEditable {
+  min-height: 22rem;
+}
+
+.editorRoot :global(.cm-editor) {
+  min-height: inherit;
+}
+
+@media (max-width: 768px) {
+  .fieldLabelRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .fieldContextTags {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .summaryEditable {
+    min-height: 12rem;
+  }
+
+  .infoEditable {
+    min-height: 18rem;
+  }
+}

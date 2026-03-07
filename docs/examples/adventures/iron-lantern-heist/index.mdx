@@ -1,0 +1,60 @@
+---
+moduleId: am-iron-lantern-heist
+slug: iron-lantern-heist
+fragmentId: frag-index-iron-lantern-heist
+kind: index
+title: Iron Lantern Heist
+status: draft
+version: 1
+sessionScope: one_session_arc
+launchProfile: dual
+authoringControlDefault: curate_select
+summary: A one-session heist through a flooded industrial district to recover a relic lantern.
+intent: Give players multiple infiltration hooks and escalating pressure with fail-forward options.
+paletteFragmentId: frag-palette-iron-lantern-heist
+settingFragmentId: frag-setting-iron-lantern-heist
+componentMapFragmentId: frag-component-map-iron-lantern-heist
+locationFragmentIds:
+  - frag-location-drowned-gate
+actorFragmentIds:
+  - frag-actor-warden-sable
+assetFragmentIds:
+  - frag-asset-lantern-shards
+itemFragmentIds: []
+encounterFragmentIds:
+  - frag-encounter-counterweight-collapse
+questFragmentIds:
+  - frag-quest-recover-lantern
+imagePromptFragmentIds: []
+tags:
+  - heist
+  - flooded-city
+  - pressure-clock
+storytellerSummaryFragmentId: frag-storyteller-summary-iron-lantern-heist
+playerSummaryFragmentId: frag-player-summary-iron-lantern-heist
+postMvpExtension: true
+updatedAtIso: 2026-02-27T00:00:00.000Z
+---
+
+# Iron Lantern Heist
+
+This is a minimal worked example of an Adventure Module index.
+
+## Module Fragments
+
+- `storyteller_summary`: [storyteller-summary.mdx](./storyteller-summary.mdx)
+- `player_summary`: [player-summary.mdx](./player-summary.mdx)
+- `palette`: [palette.mdx](./palette.mdx)
+- `setting`: [setting.mdx](./setting.mdx)
+- `location`: [drowned-gate.mdx](./locations/drowned-gate.mdx)
+- `actor`: [warden-sable.mdx](./actors/warden-sable.mdx)
+- `asset`: [lantern-shards.mdx](./assets/lantern-shards.mdx)
+- `encounter`: [counterweight-collapse.mdx](./encounters/counterweight-collapse.mdx)
+- `quest`: [recover-the-lantern.mdx](./quests/recover-the-lantern.mdx)
+- `component_map`: [map.mdx](./components/map.mdx)
+
+## Quest Graph Summary
+
+- Hooks: warehouse job lead, rival crew betrayal, emergency blackout
+- Entry nodes: sluice breach, rooftop cable run
+- Conclusion options: clean escape, costly recovery, faction fallout
