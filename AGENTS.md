@@ -179,6 +179,13 @@ Create `.env.local` (not committed):
    - what changed
    - how to run it
    - any new env vars
+6. When a change affects product behavior, public contracts, routes, env vars, deployment, or contributor workflow, update the relevant docs in the same change.
+7. Update `CHANGELOG.md` for notable repo changes in the same change:
+   - keep new entries under `## [Unreleased]`
+   - use concise bullets under `Added`, `Changed`, `Fixed`, or `Docs`
+   - include changes that matter to players, playtest operators, or future contributors
+   - skip pure internal refactors unless they change behavior, fix a bug, or clarify important docs
+8. If docs are missing or stale for the change you are making, fix them before considering the task complete.
 
 ---
 

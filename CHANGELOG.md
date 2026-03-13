@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to this repository are documented in this file.
+
+This changelog tracks the current repository baseline and ongoing unreleased work.
+
+## [Unreleased]
+
+### Docs
+
+- Add the root changelog to track notable product, workflow, deployment, and documentation updates.
+- Add AI contributor instructions in `AGENTS.md` requiring documentation and changelog updates when repo behavior, contracts, routes, env vars, or deployment guidance change.
+- Add a root `README.md` covering the current repo overview, implementation status, setup, AI configuration, contribution expectations, and deployment paths.
+
+## [0.1.0] - 2026-03-13
+
+### Added
+
+- A single React PWA in `apps/web` with routes for adventure runtime, adventure-module authoring, workflow lab, image tooling, and rules reference pages.
+- A Fastify and Socket.IO server in `apps/server` with authoritative adventure state, AI orchestration, realtime presence, image routes, workflow lab routes, and adventure-module routes.
+- Shared TypeScript contracts in `spec/` for events, adventure state, image generation, workflow lab, and adventure-module data.
+- An AI storyteller runtime with server-driven phases (`lobby`, `vote`, `play`, `ending`), pitch voting, transcripts, thinking indicators, async scene images, runtime config controls, and latency metrics.
+- Adventure Module authoring docs and UI covering module list, module creation, base/player/storyteller info authoring, and placeholder entity tabs.
+- Local-first project documentation for MVP scope, architecture, events/state, deployment, UX system guidance, and module-authoring flows.
+
+### Changed
+
+- Render deployment is configured as a single-service setup that builds the web client and serves it from the Node process.
+- AI model selection and timeout/retry settings are environment-driven so playtest tuning can happen without code changes.
+- Image generation support includes OpenRouter defaults plus optional FAL and Leonardo integrations for asset generation and workflow tooling.
+
+### Notes
+
+- Mighty Decks runtime rules and components are not fully implemented. The current runtime is centered on AI storyteller play loops and partial outcome-card related tooling.
+- Running an Adventure Module as a guided session with a human or AI storyteller is planned but not implemented end-to-end.
