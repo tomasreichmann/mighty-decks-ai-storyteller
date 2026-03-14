@@ -160,11 +160,22 @@ Create `.env.local` (not committed):
 - `MAX_ACTIVE_ADVENTURES=1` # local/dev default
 - `DEBUG_MODE=false`
 
+### Install PNPM
+
+https://pnpm.io/installation
+
 ### Commands (update if package manager differs)
 
 - `pnpm install`
+- `pnpm dev`
+
+or
+
 - `pnpm -C apps/server dev`
 - `pnpm -C apps/web dev --host` (LAN access for phones)
+
+`spec` now builds to `dist/` and is prepared automatically by the app scripts.
+If you are editing files under `spec/` directly while using split commands, rerun `pnpm -C spec build`.
 
 ---
 

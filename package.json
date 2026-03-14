@@ -4,11 +4,8 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "dev": "pnpm -r --parallel --if-present dev",
+    "dev": "pnpm -C spec build && pnpm --parallel --filter @mighty-decks/server --filter @mighty-decks/web --if-present dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck"
-  },
-  "devDependencies": {
-    "playwright": "^1.58.2"
   }
 }

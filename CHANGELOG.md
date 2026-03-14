@@ -6,6 +6,11 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ## [Unreleased]
 
+### Changed
+
+- Build the shared `spec/` workspace to JavaScript plus declaration files, update package exports to built output, and start the server from compiled JS instead of `tsx` in production.
+- Narrow Render installs to the deploy-relevant workspaces and remove the accidental root `playwright` dependency from the deploy path.
+
 ### Docs
 
 - Add the root changelog to track notable product, workflow, deployment, and documentation updates.

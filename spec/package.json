@@ -3,16 +3,43 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
-    ".": "./index.ts",
-    "./adventureState": "./adventureState.ts",
-    "./adventureModule": "./adventureModule.ts",
-    "./adventureModuleAuthoring": "./adventureModuleAuthoring.ts",
-    "./events": "./events.ts",
-    "./imageGeneration": "./imageGeneration.ts",
-    "./workflowLab": "./workflowLab.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./adventureState": {
+      "types": "./dist/adventureState.d.ts",
+      "import": "./dist/adventureState.js"
+    },
+    "./adventureModule": {
+      "types": "./dist/adventureModule.d.ts",
+      "import": "./dist/adventureModule.js"
+    },
+    "./adventureModuleAuthoring": {
+      "types": "./dist/adventureModuleAuthoring.d.ts",
+      "import": "./dist/adventureModuleAuthoring.js"
+    },
+    "./events": {
+      "types": "./dist/events.d.ts",
+      "import": "./dist/events.js"
+    },
+    "./imageGeneration": {
+      "types": "./dist/imageGeneration.d.ts",
+      "import": "./dist/imageGeneration.js"
+    },
+    "./workflowLab": {
+      "types": "./dist/workflowLab.d.ts",
+      "import": "./dist/workflowLab.js"
+    }
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json && node ../scripts/rewrite-relative-imports.mjs dist",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

@@ -6,11 +6,15 @@ This deploys web + API + Socket.IO on one Render Web Service.
 
 - Render uses a **production build context**:
   - `NODE_ENV=production` is applied for runtime start.
+  - Install is filtered to the deploy-relevant workspaces (`web`, `server`, plus workspace dependencies such as `spec`) so unrelated root packages are skipped.
+  - Start uses `node apps/server/dist/index.js` with no `pnpm` or TypeScript runtime in the boot path.
+  - The build emits `spec` JS + declaration output, then builds the server and web app.
   - Web build is explicitly production mode via `pnpm -C apps/web build --mode production`.
 - Build reliability is prioritized over speed:
   - The PNPM store is set to `/tmp/pnpm-store` during build so each deploy uses an ephemeral store.
   - This avoids stale dependency-store reuse when Render cache is not manually cleared.
   - Tradeoff: installs may take longer than fully cached builds.
+  - Runtime avoids Corepack/Pnpm downloads and no longer depends on `tsx` in production.
 - Node runtime is pinned for deterministic deploys:
   - `NODE_VERSION=22.22.0`
 

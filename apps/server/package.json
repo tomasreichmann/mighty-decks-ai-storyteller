@@ -4,11 +4,17 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "prepare:spec": "pnpm -C ../../spec build",
+    "predev": "pnpm run prepare:spec",
     "dev": "tsx watch src/index.ts",
-    "serve": "tsx src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "preserve": "pnpm run build",
+    "serve": "node dist/index.js",
+    "prebuild": "pnpm run prepare:spec",
+    "build": "tsc -p tsconfig.build.json && node ../../scripts/rewrite-relative-imports.mjs dist",
     "start": "node dist/index.js",
+    "pretypecheck": "pnpm run prepare:spec",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "pretest": "pnpm run prepare:spec",
     "test": "node scripts/run-tests.mjs"
   },
   "dependencies": {
