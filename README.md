@@ -148,7 +148,7 @@ See [docs/09-cloudflare-tunnel.md](docs/09-cloudflare-tunnel.md) for the full ru
 The repo includes `render.yaml` for a single Render web service that:
 
 - builds the web client in production mode
-- starts the Node server with `pnpm -C apps/server serve`
+- starts the Node server with `node apps/server/dist/index.js`
 - serves the built web client and API from the same origin
 - exposes `/health` for health checks
 

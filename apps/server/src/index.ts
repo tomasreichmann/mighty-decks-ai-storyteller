@@ -31,6 +31,7 @@ import { createWorkflowFactory } from "./workflow/executor";
 import { registerWorkflowLabRoutes } from "./workflow/registerWorkflowLabRoutes";
 import { WorkflowRunLogger } from "./workflow/WorkflowRunLogger";
 import { WorkflowRegistry } from "./workflow/workflowRegistry";
+import { resolveWebDistDir } from "./webDistDir";
 
 const app = Fastify({ logger: true });
 
@@ -235,7 +236,7 @@ app.get("/adventures", async () => {
   };
 });
 
-const WEB_DIST_DIR = resolve(process.cwd(), "../web/dist");
+const WEB_DIST_DIR = resolveWebDistDir(import.meta.dirname);
 const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
 const CONTENT_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",

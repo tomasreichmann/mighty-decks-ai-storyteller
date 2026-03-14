@@ -10,6 +10,7 @@ This deploys web + API + Socket.IO on one Render Web Service.
   - Start uses `node apps/server/dist/index.js` with no `pnpm` or TypeScript runtime in the boot path.
   - The build emits `spec` JS + declaration output, then builds the server and web app.
   - Web build is explicitly production mode via `pnpm -C apps/web build --mode production`.
+  - Static web asset lookup is resolved from the compiled server module location, not the process working directory, so the single-service frontend still serves correctly under plain Node startup.
 - Build reliability is prioritized over speed:
   - The PNPM store is set to `/tmp/pnpm-store` during build so each deploy uses an ephemeral store.
   - This avoids stale dependency-store reuse when Render cache is not manually cleared.
