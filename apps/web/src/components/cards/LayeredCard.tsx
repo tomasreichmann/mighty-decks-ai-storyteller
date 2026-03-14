@@ -32,6 +32,16 @@ interface SvgHtmlTextProps {
   children?: ReactNode;
 }
 
+interface SvgHeaderRowProps {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  deckLabel: string;
+  cornerIcon?: string;
+  className?: string;
+}
+
 const toInlineText = (value: ReactNode): string => {
   if (typeof value === "string" || typeof value === "number") {
     return String(value);
@@ -56,6 +66,37 @@ const SvgHtmlText = ({
         )}
       >
         {children}
+      </div>
+    </foreignObject>
+  );
+};
+
+const SvgHeaderRow = ({
+  x,
+  y,
+  width,
+  height,
+  deckLabel,
+  cornerIcon,
+  className,
+}: SvgHeaderRowProps): JSX.Element => {
+  return (
+    <foreignObject x={x} y={y} width={width} height={height}>
+      <div
+        className={cn(
+          "flex h-full w-full items-center gap-1 text-kac-bone-darker",
+          className,
+        )}
+      >
+        {cornerIcon ? (
+          <img
+            src={cornerIcon}
+            alt=""
+            aria-hidden="true"
+            className="h-[18px] w-[18px] object-contain"
+          />
+        ) : null}
+        <div className="text-[9px] font-bold leading-none">{deckLabel}</div>
       </div>
     </foreignObject>
   );
@@ -199,30 +240,16 @@ export const LayeredCard = ({
         ) : null}
 
         {adjectiveDeckLabel || adjectiveCornerIcon ? (
-          <g transform="translate(192 160) rotate(90)">
-            {adjectiveCornerIcon ? (
-              <image
-                href={adjectiveCornerIcon}
-                x="-55"
-                y="-7"
-                width="14"
-                height="14"
-                preserveAspectRatio="xMidYMid meet"
-              />
-            ) : null}
-            <text
-              x="50"
-              y="4"
-              textAnchor="end"
-              className="fill-kac-bone-darker"
-              style={{
-                fontFamily: "Shantell Sans, cursive",
-                fontSize: "8px",
-                fontWeight: 700,
-              }}
-            >
-              {adjectiveDeckLabel}
-            </text>
+          <g transform="translate(185 90) rotate(90)">
+            <SvgHeaderRow
+              x={-58}
+              y={-10}
+              width={118}
+              height={22}
+              deckLabel={adjectiveDeckLabel}
+              cornerIcon={adjectiveCornerIcon}
+              className="justify-start"
+            />
           </g>
         ) : null}
 

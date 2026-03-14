@@ -54,6 +54,7 @@ import {
 } from "../../lib/markdownGameComponents";
 import { GameCardCatalogContext } from "../../lib/gameCardCatalogContext";
 import { normalizeLegacyGameCardMarkdown } from "../../lib/gameCardMarkdown";
+import { gameCardInlineFlowPlugin } from "../../lib/gameCardInlineFlowPlugin";
 import { normalizeMarkdownEditorChange } from "../../lib/markdownEditorChange";
 import { GameCardJsxEditor } from "./GameCardJsxEditor";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
@@ -255,6 +256,7 @@ const createEditorPlugins = (toolbarArgs: CreateEditorPluginsArgs) => [
   thematicBreakPlugin(),
   linkPlugin(),
   linkDialogPlugin(),
+  gameCardInlineFlowPlugin(),
   jsxPlugin({
     jsxComponentDescriptors: [gameCardJsxDescriptor],
   }),
