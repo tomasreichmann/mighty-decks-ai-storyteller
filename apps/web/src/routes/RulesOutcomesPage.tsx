@@ -1,17 +1,8 @@
-import { LayeredCard } from "../components/cards/LayeredCard";
+import { GameCardView } from "../components/adventure-module/GameCardView";
 import { CodeCopyRow } from "../components/common/CodeCopyRow";
 import { Text } from "../components/common/Text";
 import { rulesOutcomeCards } from "../data/rulesComponents";
-import type { OutcomeSlug } from "../types/types";
-import { cn } from "../utils/cn";
-
-const titleClassByOutcomeSlug: Record<OutcomeSlug, string> = {
-  "special-action": "text-special",
-  success: "text-success",
-  "partial-success": "text-partial",
-  chaos: "text-chaos",
-  fumble: "text-fumble",
-};
+import { resolveGameCard } from "../lib/markdownGameComponents";
 
 export const RulesOutcomesPage = (): JSX.Element => {
   return (
@@ -21,31 +12,27 @@ export const RulesOutcomesPage = (): JSX.Element => {
           Outcome Cards
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Copy code snippets like <code>@outcome/success</code> directly into markdown editors.
+          Copy <code>{"<GameCard type=\"OutcomeCard\" slug=\"success\" />"}</code>{" "}
+          into Adventure Module markdown editors.
         </Text>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {rulesOutcomeCards.map((outcome) => (
-          <div
-            key={`${outcome.slug}-${outcome.sourceSlug}`}
-            className="stack h-full gap-2"
-          >
-            <LayeredCard
-              className="mx-auto w-full max-w-[13rem]"
-              imageUri={outcome.iconUri}
-              noun={outcome.title}
-              nounDeck={outcome.deck}
-              nounCornerIcon="/types/outcome.png"
-              nounEffect={outcome.description}
-              adjectiveEffect={outcome.instructions}
-              nounClassName={cn("text-[19px]", titleClassByOutcomeSlug[outcome.slug])}
-              nounEffectClassName="text-[11px] text-kac-iron-light"
-              adjectiveEffectClassName="text-[11px] font-semibold text-kac-iron"
-            />
-            <CodeCopyRow code={outcome.code} />
-          </div>
-        ))}
+        {rulesOutcomeCards.map((outcome) => {
+          const gameCard = resolveGameCard("OutcomeCard", outcome.slug);
+          if (!gameCard) {
+            return null;
+          }
+          return (
+            <div
+              key={`${outcome.slug}-${outcome.sourceSlug}`}
+              className="stack h-full gap-2"
+            >
+              <GameCardView gameCard={gameCard} className="mx-auto" />
+              <CodeCopyRow code={gameCard.jsx} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

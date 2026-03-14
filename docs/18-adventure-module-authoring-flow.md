@@ -161,6 +161,8 @@ Behavior:
 
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
+- Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
+- Legacy `@outcome/...`, `@effect/...`, and `@stunt/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - Player text must remain spoiler-safe at publish validation.
 
 ### 5.3 Storyteller Info Tab (`/storyteller-info`)
@@ -174,6 +176,8 @@ Behavior:
 
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
+- Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
+- Legacy `@outcome/...`, `@effect/...`, and `@stunt/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - Storyteller text can include spoilers.
 
 ### 5.4 Actors Tab (`/actors`)

@@ -1,7 +1,8 @@
-import { LayeredCard } from "../components/cards/LayeredCard";
+import { GameCardView } from "../components/adventure-module/GameCardView";
 import { CodeCopyRow } from "../components/common/CodeCopyRow";
 import { Text } from "../components/common/Text";
 import { rulesEffectCards } from "../data/rulesComponents";
+import { resolveGameCard } from "../lib/markdownGameComponents";
 
 export const RulesEffectsPage = (): JSX.Element => {
   return (
@@ -11,28 +12,24 @@ export const RulesEffectsPage = (): JSX.Element => {
           Effect Cards
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Showing {rulesEffectCards.length} effect components with deck count above zero.
+          Showing {rulesEffectCards.length} effect cards with canonical GameCard
+          JSX for Adventure Module editors.
         </Text>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {rulesEffectCards.map((effect) => (
-          <div key={effect.slug} className="stack h-full gap-2">
-            <LayeredCard
-              className="mx-auto w-full max-w-[13rem]"
-              imageUri={effect.iconUri}
-              noun={effect.title}
-              nounDeck={effect.deck}
-              nounCornerIcon="/types/effect.png"
-              nounEffect={effect.nounEffect}
-              adjectiveEffect={effect.adjectiveEffect}
-              nounClassName="text-[18px] text-kac-iron"
-              nounEffectClassName="text-[10px] text-kac-iron-light"
-              adjectiveEffectClassName="text-[10px] font-semibold text-kac-iron"
-            />
-            <CodeCopyRow code={`@effect/${effect.slug}`} />
-          </div>
-        ))}
+        {rulesEffectCards.map((effect) => {
+          const gameCard = resolveGameCard("EffectCard", effect.slug);
+          if (!gameCard) {
+            return null;
+          }
+          return (
+            <div key={effect.slug} className="stack h-full gap-2">
+              <GameCardView gameCard={gameCard} className="mx-auto" />
+              <CodeCopyRow code={gameCard.jsx} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

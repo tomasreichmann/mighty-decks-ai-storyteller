@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FocusEvent } from "react";
+import type { ClipboardEvent, FocusEvent } from "react";
 import {
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
@@ -20,6 +20,8 @@ import {
   quotePlugin,
   thematicBreakPlugin,
   toolbarPlugin,
+  jsxPlugin,
+  type JsxComponentDescriptor,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import {
@@ -43,12 +45,14 @@ import {
   type SmartInputDocumentContext,
 } from "../../lib/smartInputContext";
 import {
-  markdownGameComponentOptionsByType,
-  markdownGameComponentTypeLabel,
-  type MarkdownGameComponentOption,
-  type MarkdownGameComponentType,
+  defaultGameCardType,
+  gameCardOptionsByType,
+  gameCardTypeLabel,
+  type GameCardOption,
+  type GameCardType,
 } from "../../lib/markdownGameComponents";
-import { AdventureModuleMarkdownPreview } from "./AdventureModuleMarkdownPreview";
+import { normalizeLegacyGameCardMarkdown } from "../../lib/gameCardMarkdown";
+import { GameCardJsxEditor } from "./GameCardJsxEditor";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
 
 type SmartInputAction =
@@ -166,14 +170,25 @@ const renderSmartMenuTrigger = (
 );
 
 interface CreateEditorPluginsArgs {
-  insertType: MarkdownGameComponentType;
+  insertType: GameCardType;
   insertSlug: string;
-  insertOptions: MarkdownGameComponentOption[];
+  insertOptions: GameCardOption[];
   insertDisabled: boolean;
-  onInsertTypeChange: (nextType: MarkdownGameComponentType) => void;
+  onInsertTypeChange: (nextType: GameCardType) => void;
   onInsertSlugChange: (nextSlug: string) => void;
   onInsert: () => void;
 }
+
+const gameCardJsxDescriptor: JsxComponentDescriptor = {
+  name: "GameCard",
+  kind: "text",
+  props: [
+    { name: "type", type: "string", required: true },
+    { name: "slug", type: "string", required: true },
+  ],
+  hasChildren: false,
+  Editor: GameCardJsxEditor,
+};
 
 const renderToolbarInsertControls = ({
   insertType,
@@ -186,20 +201,20 @@ const renderToolbarInsertControls = ({
 }: CreateEditorPluginsArgs): JSX.Element => (
   <span className="ml-1 inline-flex items-center gap-1 border-l-2 border-kac-iron-dark/30 pl-2">
     <select
-      aria-label="Insert component type"
+      aria-label="Insert card type"
       value={insertType}
       onChange={(event) =>
-        onInsertTypeChange(event.target.value as MarkdownGameComponentType)
+        onInsertTypeChange(event.target.value as GameCardType)
       }
       disabled={insertDisabled}
       className="h-7 min-w-[6.6rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <option value="outcome">Outcome</option>
-      <option value="effect">Effect</option>
-      <option value="stunt">Stunt</option>
+      <option value="OutcomeCard">Outcome</option>
+      <option value="EffectCard">Effect</option>
+      <option value="StuntCard">Stunt</option>
     </select>
     <select
-      aria-label="Insert component"
+      aria-label="Insert card"
       value={insertSlug}
       onChange={(event) => onInsertSlugChange(event.target.value)}
       disabled={insertDisabled}
@@ -207,12 +222,12 @@ const renderToolbarInsertControls = ({
     >
       {insertOptions.length > 0 ? (
         insertOptions.map((option) => (
-          <option key={option.token} value={option.slug}>
+          <option key={option.legacyToken} value={option.slug}>
             {option.label}
           </option>
         ))
       ) : (
-        <option value="">No components</option>
+        <option value="">No cards</option>
       )}
     </select>
     <Button
@@ -235,6 +250,9 @@ const createEditorPlugins = (toolbarArgs: CreateEditorPluginsArgs) => [
   thematicBreakPlugin(),
   linkPlugin(),
   linkDialogPlugin(),
+  jsxPlugin({
+    jsxComponentDescriptors: [gameCardJsxDescriptor],
+  }),
   markdownShortcutPlugin(),
   diffSourcePlugin({
     viewMode: "rich-text",
@@ -729,6 +747,10 @@ export const AdventureModuleMarkdownField = ({
   contentEditableClassName,
 }: AdventureModuleMarkdownFieldProps): JSX.Element => {
   const editorRef = useRef<MDXEditorMethods>(null);
+  const editorMarkdown = useMemo(
+    () => normalizeLegacyGameCardMarkdown(value),
+    [value],
+  );
   const contextOptions = useMemo(
     () => getSmartContextTagOptions([selfContextTag]),
     [selfContextTag],
@@ -736,10 +758,9 @@ export const AdventureModuleMarkdownField = ({
   const [selectedContextTags, setSelectedContextTags] = useState<
     SmartInputContextTag[]
   >(() => getDefaultSmartContextTags([selfContextTag]));
-  const [insertType, setInsertType] =
-    useState<MarkdownGameComponentType>("outcome");
+  const [insertType, setInsertType] = useState<GameCardType>(defaultGameCardType);
   const [insertSlug, setInsertSlug] = useState<string>(
-    () => markdownGameComponentOptionsByType.outcome[0]?.slug ?? "",
+    () => gameCardOptionsByType[defaultGameCardType][0]?.slug ?? "",
   );
   const [insertStatusMessage, setInsertStatusMessage] = useState<string | null>(
     null,
@@ -754,12 +775,18 @@ export const AdventureModuleMarkdownField = ({
         inputDescription: description,
         selectedTags: selectedContextTags,
         context: smartContextDocument,
-        currentInputValue: value,
+        currentInputValue: editorMarkdown,
       }),
-    [description, label, selectedContextTags, smartContextDocument, value],
+    [
+      description,
+      editorMarkdown,
+      label,
+      selectedContextTags,
+      smartContextDocument,
+    ],
   );
   useEffect(() => {
-    const options = markdownGameComponentOptionsByType[insertType];
+    const options = gameCardOptionsByType[insertType];
     if (options.length === 0) {
       if (insertSlug !== "") {
         setInsertSlug("");
@@ -771,20 +798,20 @@ export const AdventureModuleMarkdownField = ({
     }
   }, [insertSlug, insertType]);
 
-  const handleInsertComponent = (token: string): boolean => {
+  const handleInsertComponent = (componentMarkdown: string): boolean => {
     if (!editable || !editorRef.current) {
       return false;
     }
 
-    const normalizedToken = token.trim();
-    if (normalizedToken.length === 0) {
+    const normalizedMarkdown = componentMarkdown.trim();
+    if (normalizedMarkdown.length === 0) {
       return false;
     }
 
-    const insertText = `\n${normalizedToken}\n`;
-    if (value.length + insertText.length > maxLength) {
+    const insertText = `\n${normalizedMarkdown}\n`;
+    if (editorMarkdown.length + insertText.length > maxLength) {
       setInsertErrorMessage(
-        `Inserting this snippet would exceed the ${maxLength.toLocaleString()} character limit.`,
+        `Inserting this card would exceed the ${maxLength.toLocaleString()} character limit.`,
       );
       return false;
     }
@@ -798,25 +825,25 @@ export const AdventureModuleMarkdownField = ({
 
   const smartActions = useMarkdownSmartActions({
     contextDescription,
-    value,
+    value: editorMarkdown,
     editable,
     maxLength,
     onChange,
   });
-  const insertOptions = markdownGameComponentOptionsByType[insertType];
+  const insertOptions = gameCardOptionsByType[insertType];
   const insertDisabled =
     !editable || smartActions.running || insertOptions.length === 0;
   const handleInsertFromToolbar = (): void => {
     const selected = insertOptions.find((option) => option.slug === insertSlug);
     if (!selected) {
-      setInsertErrorMessage("Select a component before inserting.");
+      setInsertErrorMessage("Select a card before inserting.");
       return;
     }
-    if (!handleInsertComponent(selected.token)) {
+    if (!handleInsertComponent(selected.jsx)) {
       return;
     }
     setInsertStatusMessage(
-      `Inserted ${markdownGameComponentTypeLabel[insertType]} snippet.`,
+      `Inserted ${gameCardTypeLabel[insertType]} card.`,
     );
   };
   const plugins = useMemo(
@@ -849,11 +876,11 @@ export const AdventureModuleMarkdownField = ({
     if (!editorRef.current) {
       return;
     }
-    if (editorRef.current.getMarkdown() === value) {
+    if (editorRef.current.getMarkdown() === editorMarkdown) {
       return;
     }
-    editorRef.current.setMarkdown(value);
-  }, [value]);
+    editorRef.current.setMarkdown(editorMarkdown);
+  }, [editorMarkdown]);
   useEffect(() => {
     if (insertStatusMessage) {
       setInsertStatusMessage(null);
@@ -861,7 +888,41 @@ export const AdventureModuleMarkdownField = ({
     if (insertErrorMessage) {
       setInsertErrorMessage(null);
     }
-  }, [value]);
+  }, [editorMarkdown]);
+
+  const handlePasteCapture = (event: ClipboardEvent<HTMLDivElement>): void => {
+    if (!editable || smartActions.running || !editorRef.current) {
+      return;
+    }
+
+    const plainText = event.clipboardData.getData("text/plain");
+    if (plainText.trim().length === 0) {
+      return;
+    }
+
+    const normalized = normalizeLegacyGameCardMarkdown(plainText);
+    if (normalized === plainText) {
+      return;
+    }
+
+    const insertText = normalized;
+    if (insertText.trim().length === 0) {
+      return;
+    }
+    if (editorMarkdown.length + insertText.length > maxLength) {
+      setInsertErrorMessage(
+        `Pasting this card content would exceed the ${maxLength.toLocaleString()} character limit.`,
+      );
+      return;
+    }
+
+    event.preventDefault();
+    editorRef.current.focus(() => {
+      editorRef.current?.insertMarkdown(insertText);
+    });
+    setInsertErrorMessage(null);
+    setInsertStatusMessage("Converted pasted legacy card tokens.");
+  };
 
   return (
     <div className={styles.fieldShell}>
@@ -899,6 +960,7 @@ export const AdventureModuleMarkdownField = ({
       <div
         className={styles.editorShell}
         onBlur={(event) => handleEditorBlur(event, onFieldBlur, editable)}
+        onPasteCapture={handlePasteCapture}
       >
         <div className={styles.smartMenuAnchor}>
           <ContextMenu
@@ -916,7 +978,7 @@ export const AdventureModuleMarkdownField = ({
         <div className={styles.editorFrame}>
           <MDXEditor
             ref={editorRef}
-            markdown={value}
+            markdown={editorMarkdown}
             readOnly={!editable || smartActions.running}
             suppressHtmlProcessing
             plugins={plugins}
@@ -935,10 +997,9 @@ export const AdventureModuleMarkdownField = ({
         </div>
       </div>
 
-      <AdventureModuleMarkdownPreview markdown={value} />
-
       <Text variant="note" color="iron-light" className="text-xs !opacity-100">
-        {value.length.toLocaleString()} / {maxLength.toLocaleString()} characters
+        {editorMarkdown.length.toLocaleString()} / {maxLength.toLocaleString()}{" "}
+        characters
       </Text>
       {smartActions.statusMessage ? (
         <Text variant="note" color="iron-light" className="text-sm !opacity-100">

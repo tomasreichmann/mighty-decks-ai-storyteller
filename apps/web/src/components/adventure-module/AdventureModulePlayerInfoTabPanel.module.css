@@ -153,6 +153,23 @@
   opacity: 1;
 }
 
+.gameCardShell {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0.25rem;
+  border-radius: 0.55rem;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    outline-color 120ms ease;
+}
+
+.gameCardShellSelected {
+  outline: 3px solid rgb(199 144 59 / 80%);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px #121b23;
+}
+
 .smartMenuAnchor {
   position: absolute;
   top: 0.3rem;

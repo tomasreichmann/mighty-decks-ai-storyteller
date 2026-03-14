@@ -11,6 +11,7 @@ apps/server/logs
 
 # Runtime/generated artifacts
 apps/server/output/
+output/
 output/playwright/
 scene-run-final.png
 scene-run-summary.json

@@ -28,6 +28,7 @@ import {
   updateAdventureModuleIndex,
 } from "../lib/adventureModuleApi";
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
+import { normalizeLegacyGameCardMarkdown } from "../lib/gameCardMarkdown";
 import { toMarkdownPlainTextSnippet } from "../lib/markdownSnippet";
 import type { SmartInputDocumentContext } from "../lib/smartInputContext";
 
@@ -419,8 +420,8 @@ const toPlayerInfoFormState = (
     };
   }
   return {
-    summary: summaryState.summaryMarkdown,
-    infoText: summaryState.infoText,
+    summary: normalizeLegacyGameCardMarkdown(summaryState.summaryMarkdown),
+    infoText: normalizeLegacyGameCardMarkdown(summaryState.infoText),
   };
 };
 
@@ -465,8 +466,8 @@ const toStorytellerInfoFormState = (
     };
   }
   return {
-    summary: summaryState.summaryMarkdown,
-    infoText: summaryState.infoText,
+    summary: normalizeLegacyGameCardMarkdown(summaryState.summaryMarkdown),
+    infoText: normalizeLegacyGameCardMarkdown(summaryState.infoText),
   };
 };
 
@@ -601,23 +602,25 @@ const validatePlayerInfoForm = (
   error?: string;
 } => {
   const summary = form.summary;
-  if (summary.length > 200000) {
+  const normalizedSummary = normalizeLegacyGameCardMarkdown(summary);
+  if (normalizedSummary.length > 200000) {
     return {
-      summary,
+      summary: normalizedSummary,
       infoText: form.infoText,
       error: "Player summary markdown must be at most 200000 characters.",
     };
   }
-  if (form.infoText.length > 200000) {
+  const normalizedInfoText = normalizeLegacyGameCardMarkdown(form.infoText);
+  if (normalizedInfoText.length > 200000) {
     return {
-      summary,
-      infoText: form.infoText,
+      summary: normalizedSummary,
+      infoText: normalizedInfoText,
       error: "Player info text must be at most 200000 characters.",
     };
   }
   return {
-    summary,
-    infoText: form.infoText,
+    summary: normalizedSummary,
+    infoText: normalizedInfoText,
   };
 };
 
@@ -629,23 +632,25 @@ const validateStorytellerInfoForm = (
   error?: string;
 } => {
   const summary = form.summary;
-  if (summary.length > 200000) {
+  const normalizedSummary = normalizeLegacyGameCardMarkdown(summary);
+  if (normalizedSummary.length > 200000) {
     return {
-      summary,
+      summary: normalizedSummary,
       infoText: form.infoText,
       error: "Storyteller summary markdown must be at most 200000 characters.",
     };
   }
-  if (form.infoText.length > 200000) {
+  const normalizedInfoText = normalizeLegacyGameCardMarkdown(form.infoText);
+  if (normalizedInfoText.length > 200000) {
     return {
-      summary,
-      infoText: form.infoText,
+      summary: normalizedSummary,
+      infoText: normalizedInfoText,
       error: "Storyteller info text must be at most 200000 characters.",
     };
   }
   return {
-    summary,
-    infoText: form.infoText,
+    summary: normalizedSummary,
+    infoText: normalizedInfoText,
   };
 };
 

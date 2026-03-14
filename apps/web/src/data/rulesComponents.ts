@@ -112,7 +112,9 @@ const parseStuntCsvRows = (): StuntCsvRow[] =>
     count: record.count ?? "0",
   }));
 
-const splitEffectSections = (value: string): { noun: string; adjective?: string } => {
+const splitEffectSections = (
+  value: string,
+): { noun: string; adjective?: string } => {
   const normalized = value
     .replace(/\u2014/g, "-")
     .replace(/\u2500/g, "-")
@@ -131,6 +133,11 @@ const splitEffectSections = (value: string): { noun: string; adjective?: string 
     adjective: adjective.length > 0 ? adjective : undefined,
   };
 };
+const NBSP = " ";
+const normalizeNoBreakSpaces = (value: string): string =>
+  value
+    .replace(/\+(\d+)\s+(?=[A-Za-z])/g, "+$1\u00a0")
+    .replaceAll(NBSP, "\u00a0");
 
 export const rulesOutcomeCards: RulesOutcomeCard[] = parseOutcomeCsvRows()
   .map((row) => {
@@ -156,45 +163,52 @@ export const rulesOutcomeCards: RulesOutcomeCard[] = parseOutcomeCsvRows()
   })
   .filter((value): value is RulesOutcomeCard => value !== null);
 
-export const rulesEffectCards: RulesEffectCard[] = parseEffectCsvRows().flatMap((row) => {
-  const count = parseCount(row.count, 0);
-  if (count <= 0) {
-    return [];
-  }
+export const rulesEffectCards: RulesEffectCard[] = parseEffectCsvRows().flatMap(
+  (row) => {
+    const count = parseCount(row.count, 0);
+    if (count <= 0) {
+      return [];
+    }
 
-  const sanitizedEffect = sanitizeRichText(row.effect);
-  const sections = splitEffectSections(sanitizedEffect);
+    const sanitizedEffect = sanitizeRichText(row.effect);
+    const sections = splitEffectSections(sanitizedEffect);
 
-  return [
-    {
-      slug: row.slug.trim(),
-      title: sanitizeRichText(row.title),
-      iconUri: normalizePublicUri(row.icon),
-      nounEffect: sections.noun,
-      adjectiveEffect: sections.adjective,
-      count,
-      deck: sanitizeRichText(row.deck) || "base",
-    } satisfies RulesEffectCard,
-  ];
-});
+    return [
+      {
+        slug: row.slug.trim(),
+        title: sanitizeRichText(row.title),
+        iconUri: normalizePublicUri(row.icon),
+        nounEffect: sections.noun,
+        adjectiveEffect: sections.adjective,
+        count,
+        deck: sanitizeRichText(row.deck) || "base",
+      } satisfies RulesEffectCard,
+    ];
+  },
+);
 
-export const rulesStuntCards: RulesStuntCard[] = parseStuntCsvRows().flatMap((row) => {
-  const count = parseCount(row.count, 0);
-  if (count <= 0) {
-    return [];
-  }
+export const rulesStuntCards: RulesStuntCard[] = parseStuntCsvRows().flatMap(
+  (row) => {
+    const count = parseCount(row.count, 0);
+    if (count <= 0) {
+      return [];
+    }
 
-  const requirements = sanitizeRichText(row.requirements);
+    const requirements = normalizeNoBreakSpaces(
+      sanitizeRichText(row.requirements),
+    );
+    const effect = normalizeNoBreakSpaces(sanitizeRichText(row.effect));
 
-  return [
-    {
-      slug: row.slug.trim(),
-      title: sanitizeRichText(row.title),
-      iconUri: normalizePublicUri(row.icon),
-      requirements: requirements.length > 0 ? requirements : undefined,
-      effect: sanitizeRichText(row.effect),
-      count,
-      deck: sanitizeRichText(row.deck) || "base",
-    } satisfies RulesStuntCard,
-  ];
-});
+    return [
+      {
+        slug: row.slug.trim(),
+        title: sanitizeRichText(row.title),
+        iconUri: normalizePublicUri(row.icon),
+        requirements: requirements.length > 0 ? requirements : undefined,
+        effect,
+        count,
+        deck: sanitizeRichText(row.deck) || "base",
+      } satisfies RulesStuntCard,
+    ];
+  },
+);

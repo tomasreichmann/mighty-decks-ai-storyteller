@@ -30,7 +30,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
     <div className="stack gap-4">
       <AdventureModuleMarkdownField
         label="Storyteller Summary"
-        description="Spoiler-ready overview of premise, hidden truths, and pressure arcs for a facilitator handoff."
+        description="Spoiler-ready facilitator markdown. Rich Text renders GameCards inline while source mode keeps canonical <GameCard /> syntax."
         selfContextTag="Storyteller Summary"
         smartContextDocument={smartContextDocument}
         value={summary}
@@ -43,7 +43,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
 
       <AdventureModuleMarkdownField
         label="Storyteller Info Text"
-        description="Detailed facilitator-facing guidance: agendas, scene pressure, secrets, and continuity anchors."
+        description="Detailed facilitator-facing guidance: agendas, scene pressure, secrets, continuity anchors, and inline GameCards when needed."
         selfContextTag="Storyteller Info"
         smartContextDocument={smartContextDocument}
         value={infoText}
@@ -55,8 +55,9 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
       />
 
       <Text variant="note" color="iron-light" className="text-sm !opacity-100">
-        Storyteller-facing copy may include spoilers. Markdown supports rich
-        formatting and source mode.
+        Storyteller-facing copy may include spoilers. Rich Text renders
+        GameCards inline, and source mode stores canonical{" "}
+        <code>{"<GameCard />"}</code> markup.
       </Text>
 
       <Text variant="note" color="iron-light" className="text-sm !opacity-100">

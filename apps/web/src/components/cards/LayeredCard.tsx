@@ -151,7 +151,7 @@ export const LayeredCard = ({
 
         <text
           x="168"
-          y="27"
+          y="25"
           textAnchor="end"
           className="fill-kac-bone-darker"
           style={{

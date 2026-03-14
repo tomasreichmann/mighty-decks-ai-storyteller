@@ -6,37 +6,44 @@ import {
   type RulesOutcomeCard,
   type RulesStuntCard,
 } from "../data/rulesComponents";
+import {
+  createGameCardJsx,
+  parseLegacyGameCardToken,
+  type GameCardType,
+} from "./gameCardMarkdown";
 
-export type MarkdownGameComponentType = "outcome" | "effect" | "stunt";
+export type { GameCardType } from "./gameCardMarkdown";
 
-export interface MarkdownGameComponentOption {
-  type: MarkdownGameComponentType;
+export interface GameCardOption {
+  type: GameCardType;
   slug: string;
-  token: string;
+  legacyToken: string;
+  jsx: string;
   label: string;
 }
 
-export type ResolvedMarkdownGameComponent =
+export type ResolvedGameCard =
   | {
-      type: "outcome";
+      type: "OutcomeCard";
       slug: string;
-      token: string;
+      legacyToken: string;
+      jsx: string;
       card: RulesOutcomeCard;
     }
   | {
-      type: "effect";
+      type: "EffectCard";
       slug: string;
-      token: string;
+      legacyToken: string;
+      jsx: string;
       card: RulesEffectCard;
     }
   | {
-      type: "stunt";
+      type: "StuntCard";
       slug: string;
-      token: string;
+      legacyToken: string;
+      jsx: string;
       card: RulesStuntCard;
     };
-
-const TOKEN_PATTERN = /^@(outcome|effect|stunt)\/([A-Za-z0-9-]+)$/;
 
 const dedupeBySlug = <T extends { slug: string }>(records: T[]): T[] => {
   const deduped: T[] = [];
@@ -68,95 +75,88 @@ const stuntBySlug = new Map(
   stuntCards.map((card) => [card.slug.toLocaleLowerCase(), card] as const),
 );
 
+export const gameCardTypes = [
+  "OutcomeCard",
+  "EffectCard",
+  "StuntCard",
+] as const satisfies readonly GameCardType[];
+
+const gameCardTypeToLegacyPrefix: Record<GameCardType, string> = {
+  OutcomeCard: "outcome",
+  EffectCard: "effect",
+  StuntCard: "stunt",
+};
+
 const toOption = (
-  type: MarkdownGameComponentType,
+  type: GameCardType,
   slug: string,
   title: string,
-): MarkdownGameComponentOption => ({
+): GameCardOption => ({
   type,
   slug,
-  token: `@${type}/${slug}`,
+  legacyToken: `@${gameCardTypeToLegacyPrefix[type]}/${slug}`,
+  jsx: createGameCardJsx(type, slug),
   label: `${title} (${slug})`,
 });
 
-export const markdownGameComponentOptionsByType: Record<
-  MarkdownGameComponentType,
-  MarkdownGameComponentOption[]
-> = {
-  outcome: outcomeCards.map((card) => toOption("outcome", card.slug, card.title)),
-  effect: effectCards.map((card) => toOption("effect", card.slug, card.title)),
-  stunt: stuntCards.map((card) => toOption("stunt", card.slug, card.title)),
+export const gameCardTypeLabel: Record<GameCardType, string> = {
+  OutcomeCard: "Outcome",
+  EffectCard: "Effect",
+  StuntCard: "Stunt",
 };
 
-export const markdownGameComponentTypeLabel: Record<
-  MarkdownGameComponentType,
-  string
-> = {
-  outcome: "Outcome",
-  effect: "Effect",
-  stunt: "Stunt",
+export const gameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
+  OutcomeCard: outcomeCards.map((card) =>
+    toOption("OutcomeCard", card.slug, card.title),
+  ),
+  EffectCard: effectCards.map((card) =>
+    toOption("EffectCard", card.slug, card.title),
+  ),
+  StuntCard: stuntCards.map((card) => toOption("StuntCard", card.slug, card.title)),
 };
 
-export const parseMarkdownGameComponentToken = (
-  value: string,
-): { type: MarkdownGameComponentType; slug: string; token: string } | null => {
-  const trimmed = value.trim();
-  const match = TOKEN_PATTERN.exec(trimmed);
-  if (!match) {
-    return null;
-  }
-  const type = match[1] as MarkdownGameComponentType;
-  const slug = match[2];
-  return {
-    type,
-    slug,
-    token: trimmed,
-  };
-};
-
-export const resolveMarkdownGameComponentToken = (
-  value: string,
-): ResolvedMarkdownGameComponent | null => {
-  const parsed = parseMarkdownGameComponentToken(value);
-  if (!parsed) {
-    return null;
-  }
-
-  const key = parsed.slug.toLocaleLowerCase();
-  switch (parsed.type) {
-    case "outcome": {
+export const resolveGameCard = (
+  type: GameCardType,
+  slug: string,
+): ResolvedGameCard | null => {
+  const key = slug.trim().toLocaleLowerCase();
+  switch (type) {
+    case "OutcomeCard": {
       const card = outcomeBySlug.get(key);
       if (!card) {
         return null;
       }
       return {
-        type: "outcome",
+        type,
         slug: card.slug,
-        token: parsed.token,
+        legacyToken: `@outcome/${card.slug}`,
+        jsx: createGameCardJsx(type, card.slug),
         card,
       };
     }
-    case "effect": {
+    case "EffectCard": {
       const card = effectBySlug.get(key);
       if (!card) {
         return null;
       }
       return {
-        type: "effect",
+        type,
         slug: card.slug,
-        token: parsed.token,
+        legacyToken: `@effect/${card.slug}`,
+        jsx: createGameCardJsx(type, card.slug),
         card,
       };
     }
-    case "stunt": {
+    case "StuntCard": {
       const card = stuntBySlug.get(key);
       if (!card) {
         return null;
       }
       return {
-        type: "stunt",
+        type,
         slug: card.slug,
-        token: parsed.token,
+        legacyToken: `@stunt/${card.slug}`,
+        jsx: createGameCardJsx(type, card.slug),
         card,
       };
     }
@@ -164,3 +164,15 @@ export const resolveMarkdownGameComponentToken = (
       return null;
   }
 };
+
+export const resolveLegacyGameCardToken = (
+  value: string,
+): ResolvedGameCard | null => {
+  const parsed = parseLegacyGameCardToken(value);
+  if (!parsed) {
+    return null;
+  }
+  return resolveGameCard(parsed.type, parsed.slug);
+};
+
+export const defaultGameCardType = gameCardTypes[0];

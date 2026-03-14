@@ -30,7 +30,7 @@ export const AdventureModulePlayerInfoTabPanel = ({
     <div className="stack gap-4">
       <AdventureModuleMarkdownField
         label="Player Summary"
-        description="Spoiler-safe preview for players. Use concise markdown that sells the adventure without revealing secrets."
+        description="Spoiler-safe player-facing markdown. Rich Text renders GameCards inline while source mode keeps canonical <GameCard /> syntax."
         selfContextTag="Player Summary"
         smartContextDocument={smartContextDocument}
         value={summary}
@@ -43,7 +43,7 @@ export const AdventureModulePlayerInfoTabPanel = ({
 
       <AdventureModuleMarkdownField
         label="Player Info Text"
-        description="Full player-facing brief in markdown. Keep it rich and atmospheric, but leave hidden truths for play."
+        description="Full player-facing brief in markdown. Keep it rich and atmospheric, and use inline GameCards only for information players should see."
         selfContextTag="Player Info"
         smartContextDocument={smartContextDocument}
         value={infoText}
@@ -55,8 +55,8 @@ export const AdventureModulePlayerInfoTabPanel = ({
       />
 
       <Text variant="note" color="iron-light" className="text-sm !opacity-100">
-        Keep player-facing copy spoiler-safe. Markdown supports rich formatting
-        and source mode.
+        Keep player-facing copy spoiler-safe. Rich Text renders GameCards inline,
+        and source mode stores canonical <code>{"<GameCard />"}</code> markup.
       </Text>
 
       <Text variant="note" color="iron-light" className="text-sm !opacity-100">

@@ -46,7 +46,7 @@
 "academic","Academic","/mighty-decks/stunts/base/academic.png","Teach an ally a new skill.","Play Partial Success to give an ally a Boost and discard a Complication.",Scholar,1
 "powerfulRhetoric","Powerful Rhetoric","/mighty-decks/stunts/base/powerful-rhetoric.png","Make a speech.","Playing a Partial Success when persuading or debating counts as a Success.",Scholar,1
 "medic","Medic","/mighty-decks/stunts/base/medic.png","Revive a fallen ally.","+1 Effect when treating Injuries in battle.","Scholar",1
-"foresight","Foresight","/mighty-decks/stunts/base/foresight.png","Fortell something.","Receive a clue from the Storyteller in exchange for 2x Distress.","Mystic",1
+"foresight","Foresight","/mighty-decks/stunts/base/foresight.png","Fortell something.","Receive a clue from the Storyteller in exchange for 2x Distress.","Mystic",1
 "senseDanger","Sense Danger","/mighty-decks/stunts/base/sense-danger.png","Detect an unseen threat before it strikes.","You receive +1 Effect when trying to notice ambushes, traps, or hidden dangers.","Mystic",1
 "readEmotions","Read Emotions","/mighty-decks/stunts/base/read-emotions.png","Call out a liar.","Play a Success to detect underlying emotions of a character.","Mystic",1
 "markAnOmen","Mark an Omen","/mighty-decks/stunts/base/mark-an-omen.png","Act on a superstition.","Play a Success to make all enemies in the same zone gain 1 Distress.","Mystic",1
