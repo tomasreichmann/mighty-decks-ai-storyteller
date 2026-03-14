@@ -21,6 +21,7 @@ import {
   thematicBreakPlugin,
   toolbarPlugin,
 } from "@mdxeditor/editor";
+import "@mdxeditor/editor/style.css";
 import {
   getWorkflowLabRun,
   startWorkflowLabRun,

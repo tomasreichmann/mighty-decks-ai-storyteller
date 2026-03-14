@@ -1,19 +1,51 @@
+import { Suspense, lazy } from "react";
 import { Navigate, Outlet, Route, Routes, useParams } from "react-router-dom";
 import { Page } from "./components/layout/Page";
-import { AdventureModuleAuthoringPage } from "./routes/AdventureModuleAuthoringPage";
-import { AdventureModuleListPage } from "./routes/AdventureModuleListPage";
-import { AdventureModuleNewPage } from "./routes/AdventureModuleNewPage";
-import { ImageGenerator } from "./routes/ImageGenerator";
-import { LandingPage } from "./routes/LandingPage";
-import { PlayerPage } from "./routes/PlayerPage";
-import { RoleSelectPage } from "./routes/RoleSelectPage";
-import { RulesEffectsPage } from "./routes/RulesEffectsPage";
-import { RulesIndexPage } from "./routes/RulesIndexPage";
-import { RulesLayoutPage } from "./routes/RulesLayoutPage";
-import { RulesOutcomesPage } from "./routes/RulesOutcomesPage";
-import { RulesStuntsPage } from "./routes/RulesStuntsPage";
-import { ScreenPage } from "./routes/ScreenPage";
-import { WorkflowLabPage } from "./routes/WorkflowLabPage";
+
+const AdventureModuleAuthoringPage = lazy(async () => ({
+  default: (await import("./routes/AdventureModuleAuthoringPage"))
+    .AdventureModuleAuthoringPage,
+}));
+const AdventureModuleListPage = lazy(async () => ({
+  default: (await import("./routes/AdventureModuleListPage"))
+    .AdventureModuleListPage,
+}));
+const AdventureModuleNewPage = lazy(async () => ({
+  default: (await import("./routes/AdventureModuleNewPage")).AdventureModuleNewPage,
+}));
+const ImageGenerator = lazy(async () => ({
+  default: (await import("./routes/ImageGenerator")).ImageGenerator,
+}));
+const LandingPage = lazy(async () => ({
+  default: (await import("./routes/LandingPage")).LandingPage,
+}));
+const PlayerPage = lazy(async () => ({
+  default: (await import("./routes/PlayerPage")).PlayerPage,
+}));
+const RoleSelectPage = lazy(async () => ({
+  default: (await import("./routes/RoleSelectPage")).RoleSelectPage,
+}));
+const RulesEffectsPage = lazy(async () => ({
+  default: (await import("./routes/RulesEffectsPage")).RulesEffectsPage,
+}));
+const RulesIndexPage = lazy(async () => ({
+  default: (await import("./routes/RulesIndexPage")).RulesIndexPage,
+}));
+const RulesLayoutPage = lazy(async () => ({
+  default: (await import("./routes/RulesLayoutPage")).RulesLayoutPage,
+}));
+const RulesOutcomesPage = lazy(async () => ({
+  default: (await import("./routes/RulesOutcomesPage")).RulesOutcomesPage,
+}));
+const RulesStuntsPage = lazy(async () => ({
+  default: (await import("./routes/RulesStuntsPage")).RulesStuntsPage,
+}));
+const ScreenPage = lazy(async () => ({
+  default: (await import("./routes/ScreenPage")).ScreenPage,
+}));
+const WorkflowLabPage = lazy(async () => ({
+  default: (await import("./routes/WorkflowLabPage")).WorkflowLabPage,
+}));
 
 const FitContentLayout = (): JSX.Element => {
   return (
@@ -41,48 +73,54 @@ const AdventureModuleRootRedirect = (): JSX.Element => {
   );
 };
 
+const RouteLoadingFallback = (): JSX.Element => (
+  <div className="p-4 text-sm text-slate-600">Loading...</div>
+);
+
 export const App = (): JSX.Element => {
   return (
-    <Routes>
-      <Route element={<FitContentLayout />}>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/image" element={<ImageGenerator />} />
-        <Route path="/adventure-module/list" element={<AdventureModuleListPage />} />
-        <Route path="/adventure-module/new" element={<AdventureModuleNewPage />} />
-        <Route path="/adventure-module/:slug/:tab" element={<AdventureModuleAuthoringPage />} />
-        <Route
-          path="/adventure-module/:slug/:tab/:entityId"
-          element={<AdventureModuleAuthoringPage />}
-        />
-        <Route path="/workflow-lab" element={<WorkflowLabPage />} />
-        <Route path="/workflow-lab/:workflowId" element={<WorkflowLabPage />} />
-        <Route path="/adventure/:adventureId" element={<RoleSelectPage />} />
-        <Route path="/rules" element={<RulesLayoutPage />}>
-          <Route index element={<RulesIndexPage />} />
-          <Route path="outcomes" element={<RulesOutcomesPage />} />
-          <Route path="effects" element={<RulesEffectsPage />} />
-          <Route path="stunts" element={<RulesStuntsPage />} />
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <Routes>
+        <Route element={<FitContentLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/image" element={<ImageGenerator />} />
+          <Route path="/adventure-module/list" element={<AdventureModuleListPage />} />
+          <Route path="/adventure-module/new" element={<AdventureModuleNewPage />} />
+          <Route path="/adventure-module/:slug/:tab" element={<AdventureModuleAuthoringPage />} />
+          <Route
+            path="/adventure-module/:slug/:tab/:entityId"
+            element={<AdventureModuleAuthoringPage />}
+          />
+          <Route path="/workflow-lab" element={<WorkflowLabPage />} />
+          <Route path="/workflow-lab/:workflowId" element={<WorkflowLabPage />} />
+          <Route path="/adventure/:adventureId" element={<RoleSelectPage />} />
+          <Route path="/rules" element={<RulesLayoutPage />}>
+            <Route index element={<RulesIndexPage />} />
+            <Route path="outcomes" element={<RulesOutcomesPage />} />
+            <Route path="effects" element={<RulesEffectsPage />} />
+            <Route path="stunts" element={<RulesStuntsPage />} />
+          </Route>
         </Route>
-      </Route>
 
-      <Route element={<FitScreenLayout />}>
-        <Route path="/adventure/:adventureId/player" element={<PlayerPage />} />
-        <Route path="/adventure/:adventureId/screen" element={<ScreenPage />} />
-      </Route>
+        <Route element={<FitScreenLayout />}>
+          <Route path="/adventure/:adventureId/player" element={<PlayerPage />} />
+          <Route path="/adventure/:adventureId/screen" element={<ScreenPage />} />
+        </Route>
 
-      <Route
-        path="/adventure-module"
-        element={<Navigate to="/adventure-module/list" replace />}
-      />
-      <Route
-        path="/adventure-modules/*"
-        element={<Navigate to="/adventure-module/list" replace />}
-      />
-      <Route
-        path="/adventure-module/:slug"
-        element={<AdventureModuleRootRedirect />}
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route
+          path="/adventure-module"
+          element={<Navigate to="/adventure-module/list" replace />}
+        />
+        <Route
+          path="/adventure-modules/*"
+          element={<Navigate to="/adventure-module/list" replace />}
+        />
+        <Route
+          path="/adventure-module/:slug"
+          element={<AdventureModuleRootRedirect />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 };

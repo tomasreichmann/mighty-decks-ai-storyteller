@@ -10,6 +10,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 - Build the shared `spec/` workspace to JavaScript plus declaration files, update package exports to built output, and start the server from compiled JS instead of `tsx` in production.
 - Narrow Render installs to the deploy-relevant workspaces and remove the accidental root `playwright` dependency from the deploy path.
+- Lazy-load top-level web routes and scope the MDX editor stylesheet to the authoring flow to reduce the initial client bundle.
 
 ### Fixed
 
