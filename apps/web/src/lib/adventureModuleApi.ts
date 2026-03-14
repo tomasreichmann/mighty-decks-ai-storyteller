@@ -1,4 +1,5 @@
 import {
+  adventureModuleCreateActorRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
@@ -6,10 +7,13 @@ import {
   adventureModuleListResponseSchema,
   adventureModulePreviewResponseSchema,
   adventureModuleSlugAvailabilityResponseSchema,
+  adventureModuleUpdateActorRequestSchema,
+  adventureModuleUpdateActorResponseSchema,
   adventureModuleUpdateFragmentRequestSchema,
   adventureModuleUpdateCoverImageRequestSchema,
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateResponseSchema,
+  type AdventureModuleCreateActorRequest,
   type AdventureModuleUpdateCoverImageRequest,
   type AdventureModuleCloneRequest,
   type AdventureModuleCreateRequest,
@@ -173,6 +177,48 @@ export const updateAdventureModuleFragment = async (
     },
   );
   return adventureModuleUpdateResponseSchema.parse(payload);
+};
+
+export const createAdventureModuleActor = async (
+  moduleId: string,
+  request: AdventureModuleCreateActorRequest,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/actors`),
+    {
+      method: "POST",
+      headers: buildHeaders(creatorToken),
+      body: JSON.stringify(adventureModuleCreateActorRequestSchema.parse(request)),
+    },
+  );
+  return adventureModuleCreateResponseSchema.parse(payload);
+};
+
+export const updateAdventureModuleActor = async (
+  moduleId: string,
+  actorSlug: string,
+  request: {
+    title: string;
+    summary: string;
+    baseLayerSlug: string;
+    tacticalRoleSlug: string;
+    tacticalSpecialSlug?: string | null;
+    content: string;
+  },
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/actors/${encodeURIComponent(actorSlug)}`,
+    ),
+    {
+      method: "PUT",
+      headers: buildHeaders(creatorToken),
+      body: JSON.stringify(adventureModuleUpdateActorRequestSchema.parse(request)),
+    },
+  );
+  return adventureModuleUpdateActorResponseSchema.parse(payload);
 };
 
 export const updateAdventureModuleCoverImage = async (

@@ -225,7 +225,7 @@ Tabs:
 - `base`: `ModuleBaseTabPanel` with `SmartInput` for premise transforms
 - `player-info`: `AdventureModulePlayerInfoTabPanel` with dual MDXEditor fields (`Player Summary`, `Player Info Text`) in rich + source modes, inline `GameCard` embeds, and autosave
 - `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, and autosave
-- `actors`: placeholder
+- `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, and shortcode copy actions
 - `locations`: placeholder
 - `encounters`: placeholder
 - `quests`: placeholder
@@ -249,24 +249,26 @@ List-tab primary actions:
 
 ### `/adventure-module/:slug/:tab/:entityId`
 
-Entity editor placeholder route (detailed editors land in a later step).
+Entity editor route. Actor editing is implemented in this step; other entity editors remain placeholders.
 
 Components:
 
-- `AdventureModuleTabPlaceholder`
+- `AdventureModuleActorEditor`
+- `AdventureModuleTabPlaceholder` for non-actor entities
 
 Actor editor baseline fields:
 
 - name
-- visual description
-- personality
-- profile image
-- mini (full-body image)
-- notes
+- short summary
+- layered actor base
+- tactical role
+- optional tactical special
+- markdown body with inline `GameCard` embeds and actor shortcode support
 
 Behavior:
 
-- Route is active and intentionally displays a placeholder while entity editors are pending.
+- `/adventure-module/:slug/actors/:entityId` renders a live actor editor with autosave, live layered preview, and stable actor slug display.
+- Other entity routes remain active placeholders while their typed editors are pending.
 
 ---
 

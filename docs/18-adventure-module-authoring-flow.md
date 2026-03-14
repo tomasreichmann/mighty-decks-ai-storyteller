@@ -118,7 +118,8 @@ Shell behavior:
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
 - `Player Info` is editable in this step (`player summary` + `player info text`).
 - `Storyteller Info` is editable in this step (`storyteller summary` + `storyteller info text`).
-- `Actors`, `Locations`, `Encounters`, `Quests`, and `Assets` are explicit placeholders in this step.
+- `Actors` is editable in this step.
+- `Locations`, `Encounters`, `Quests`, and `Assets` remain explicit placeholders in this step.
 
 Tab state behavior:
 
@@ -162,7 +163,7 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
-- Legacy `@outcome/...`, `@effect/...`, and `@stunt/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - Player text must remain spoiler-safe at publish validation.
 
 ### 5.3 Storyteller Info Tab (`/storyteller-info`)
@@ -177,28 +178,27 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
-- Legacy `@outcome/...`, `@effect/...`, and `@stunt/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - Storyteller text can include spoilers.
 
 ### 5.4 Actors Tab (`/actors`)
 
-Status in this step: placeholder only.
-
 List entries represent player/NPC character actors.
-
-Per-row actions:
-
-- `Edit`
-- `Clone`
-- `Delete` (archive/tombstone behavior based on entity policy)
 
 Primary action:
 
 - `Create an Actor`
 
+List behavior:
+
+- The tab renders a searchable grid of layered `ActorCard` entries resolved from module actor fragments.
+- Each actor card shows title, summary, and stable shortcode text.
+- `Copy Shortcode` copies `@actor/<actor-slug>` for manual insertion in markdown source mode.
+- Clicking a card navigates to `/adventure-module/:slug/actors/:entityId`.
+
 Create/edit navigation:
 
-- Create redirects to `/adventure-module/:slug/actors/:entityId`.
+- Create calls `POST /api/adventure-modules/:moduleId/actors`, then redirects to `/adventure-module/:slug/actors/:entityId` using the generated stable actor slug.
 - Edit redirects to `/adventure-module/:slug/actors/:entityId`.
 
 ### 5.5 Locations Tab (`/locations`)
@@ -263,7 +263,10 @@ Primary action:
 
 Route pattern: `/adventure-module/:slug/:tab/:entityId`
 
-Status in this step: placeholder route only.
+Status in this step:
+
+- `actors` entity routes are implemented
+- non-actor entity routes remain placeholders
 
 Future target semantics for entity editors:
 
@@ -274,11 +277,17 @@ Future target semantics for entity editors:
 Actor edit example fields:
 
 - Actor name.
-- Visual description.
-- Personality.
-- Profile image.
-- Mini (full-body image).
-- Notes.
+- Short summary.
+- Base layer.
+- Tactical role.
+- Optional tactical special.
+- Markdown body with inline actor `GameCard` rendering.
+
+Actor editor behavior:
+
+- Updates persist through `PUT /api/adventure-modules/:moduleId/actors/:actorSlug`.
+- Actor slug is generated on create and remains immutable in v1 so stored markdown embeds stay valid.
+- The editor shows a live layered preview assembled from base art, tactical role metadata, and optional tactical special overlay.
 
 Equivalent typed editors exist for location, encounter, quest, and asset with their own field sets.
 
@@ -305,14 +314,16 @@ Archive action:
 
 ## 8. Proposed API and Interface Additions (Docs-Level)
 
-These are proposed contracts for implementation planning only:
+These are the current contracts for actor authoring plus proposed contracts for the remaining entity types:
 
 - Slug availability: `GET /api/adventure-modules/slug-availability?slug=:slug`, response `{ slug: string; available: boolean; reason?: string }`.
 - Module read by slug: `GET /api/adventure-modules/by-slug/:slug`, response mirrors module detail read shape.
 - Publish module: `POST /api/adventure-modules/:moduleId/publish`.
 - Archive module: `POST /api/adventure-modules/:moduleId/archive`.
-- Entity create: `POST /api/adventure-modules/:moduleId/:entityType`.
-- Entity update: `PUT /api/adventure-modules/:moduleId/:entityType/:entityId`.
+- Actor create: `POST /api/adventure-modules/:moduleId/actors`.
+- Actor update: `PUT /api/adventure-modules/:moduleId/actors/:entityId`.
+- Remaining entity create: `POST /api/adventure-modules/:moduleId/:entityType`.
+- Remaining entity update: `PUT /api/adventure-modules/:moduleId/:entityType/:entityId`.
 - Entity clone: `POST /api/adventure-modules/:moduleId/:entityType/:entityId/clone`.
 - Entity delete: `DELETE /api/adventure-modules/:moduleId/:entityType/:entityId`.
 
@@ -342,6 +353,7 @@ UX behavior checks:
 - Tab navigation keeps module context.
 - Create entity redirects to entity edit route.
 - Debounced autosave saves field updates and reports status.
+- Actor cards open the actor editor and actor shortcodes normalize to canonical `<GameCard />` source without mutating inline or fenced code blocks.
 - Publish exposes module to non-author list views.
 - Archive hides module from non-author list while preserving author access.
 

@@ -1,5 +1,10 @@
 import { z } from "zod";
 import {
+  actorBaseLayerSlugSchema,
+  actorTacticalRoleSlugSchema,
+  actorTacticalSpecialSlugSchema,
+} from "./actorCards";
+import {
   adventureModuleFragmentAudienceSchema,
   adventureModuleFragmentKindSchema,
   adventureModuleFragmentRefSchema,
@@ -122,6 +127,20 @@ export type AdventureModuleBySlugParams = z.infer<
   typeof adventureModuleBySlugParamsSchema
 >;
 
+export const adventureModuleResolvedActorSchema = z.object({
+  fragmentId: identifierSchema,
+  actorSlug: slugSchema,
+  title: shortTextSchema,
+  summary: mediumTextSchema.optional(),
+  baseLayerSlug: actorBaseLayerSlugSchema,
+  tacticalRoleSlug: actorTacticalRoleSlugSchema,
+  tacticalSpecialSlug: actorTacticalSpecialSlugSchema.optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleResolvedActor = z.infer<
+  typeof adventureModuleResolvedActorSchema
+>;
+
 export const adventureModuleAuthoringFragmentSchema = z.object({
   fragment: adventureModuleFragmentRefSchema,
   content: z.string().max(200_000).default(""),
@@ -134,6 +153,7 @@ export const adventureModuleDetailSchema = z
   .object({
     index: adventureModuleIndexSchema,
     fragments: z.array(adventureModuleAuthoringFragmentSchema).max(400),
+    actors: z.array(adventureModuleResolvedActorSchema).max(80).default([]),
     ownedByRequester: z.boolean().default(false),
   })
   .superRefine((module, ctx) => {
@@ -144,6 +164,41 @@ export const adventureModuleDetailSchema = z
           code: z.ZodIssueCode.custom,
           message: `missing fragment content for ${fragmentRef.fragmentId}`,
           path: ["fragments"],
+        });
+      }
+    }
+
+    const actorIds = new Set(module.index.actorFragmentIds);
+    const actorCardByFragmentId = new Map(
+      module.index.actorCards.map((actorCard) => [actorCard.fragmentId, actorCard] as const),
+    );
+
+    for (const actor of module.actors) {
+      if (!actorIds.has(actor.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved actor references unknown fragment ${actor.fragmentId}`,
+          path: ["actors"],
+        });
+      }
+      const actorCard = actorCardByFragmentId.get(actor.fragmentId);
+      if (!actorCard) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved actor missing actor card metadata for ${actor.fragmentId}`,
+          path: ["actors"],
+        });
+        continue;
+      }
+      if (
+        actor.baseLayerSlug !== actorCard.baseLayerSlug ||
+        actor.tacticalRoleSlug !== actorCard.tacticalRoleSlug ||
+        actor.tacticalSpecialSlug !== actorCard.tacticalSpecialSlug
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved actor ${actor.fragmentId} does not match index actor card metadata`,
+          path: ["actors"],
         });
       }
     }
@@ -184,6 +239,32 @@ export type AdventureModuleUpdateCoverImageRequest = z.infer<
 export const adventureModuleUpdateResponseSchema = adventureModuleDetailSchema;
 export type AdventureModuleUpdateResponse = z.infer<
   typeof adventureModuleUpdateResponseSchema
+>;
+
+export const adventureModuleCreateActorRequestSchema = z.object({
+  title: shortTextSchema.default("New Actor"),
+});
+export type AdventureModuleCreateActorRequest = z.infer<
+  typeof adventureModuleCreateActorRequestSchema
+>;
+
+export const adventureModuleUpdateActorRequestSchema = z.object({
+  title: shortTextSchema,
+  summary: z.string().max(500).default(""),
+  baseLayerSlug: actorBaseLayerSlugSchema,
+  tacticalRoleSlug: actorTacticalRoleSlugSchema,
+  tacticalSpecialSlug: z
+    .union([actorTacticalSpecialSlugSchema, z.null()])
+    .optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleUpdateActorRequest = z.infer<
+  typeof adventureModuleUpdateActorRequestSchema
+>;
+
+export const adventureModuleUpdateActorResponseSchema = adventureModuleDetailSchema;
+export type AdventureModuleUpdateActorResponse = z.infer<
+  typeof adventureModuleUpdateActorResponseSchema
 >;
 
 export const adventureModulePreviewQuerySchema = z.object({

@@ -7,7 +7,7 @@ It defines structure, terminology, artifact outputs, and quality gates for autho
 
 ## 1. Purpose and Post-MVP Boundary
 
-This specification is a **post-MVP extension track**.
+This specification is a **post-MVP extension track** with partial authoring implementation already landed.
 
 It exists to define how prepared adventures are authored, stored, and launched later without changing the current MVP runtime contracts.
 
@@ -16,8 +16,8 @@ Boundary rules for this milestone:
 - No change to current live-session state machine (`lobby -> vote -> play -> ending`)
 - No change to current Socket.IO event contracts
 - No database implementation in this milestone
-- No UI route changes in this milestone
-- Deliverable is docs plus draft shared schema
+- Runtime authoring support is currently limited to Adventure Module create/edit flows and typed actor authoring
+- Deliverable includes shared schema, local file persistence, REST authoring endpoints, and matching web authoring UI
 
 ---
 
@@ -99,6 +99,14 @@ Summary-specific requirements:
 - Authoring metadata includes `storytellerSummaryMarkdown` on module index for extended storyteller-facing markdown body used by `/storyteller-info` editing.
 - Authoring metadata includes `playerSummaryMarkdown` on module index for extended player-facing markdown body used by `/player-info` editing.
 
+Actor-specific requirements:
+
+- Actor fragments remain normal markdown-backed `actor` fragments.
+- Module index authoring metadata includes an `actorCards` collection keyed by actor `fragmentId`.
+- Each actor-card metadata entry stores `baseLayerSlug`, `tacticalRoleSlug`, and optional `tacticalSpecialSlug`.
+- Every `actorFragmentId` must have exactly one matching actor-card metadata entry.
+- Resolved authoring reads join fragment metadata and actor-card metadata into an `actors` array for the web client.
+
 ---
 
 ## 5. Quest Graph Model (Node-Based)
@@ -164,6 +172,11 @@ Rules:
 - `mini` and `map` opportunities are metadata tags only in this milestone
 - component opportunities are declarative authoring metadata
 - runtime enforcement is out of scope for this milestone
+
+Authoring embed rules:
+
+- Canonical markdown embeds use `<GameCard type="ActorCard" slug="<actor-slug>" />`.
+- Legacy `@actor/<actor-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
 
 ---
 
@@ -268,13 +281,29 @@ if (!result.success) {
 
 ---
 
-## 11. Explicit Out-of-Scope for This Milestone
+## 11. Current Implemented Authoring Contracts
+
+The current implementation adds typed actor authoring APIs on top of the shared spec:
+
+- `POST /api/adventure-modules/:moduleId/actors`
+- `PUT /api/adventure-modules/:moduleId/actors/:actorSlug`
+
+These endpoints:
+
+- create actor fragments with stable actor slugs scoped to one module
+- persist typed layered-card metadata alongside fragment references
+- return resolved `AdventureModuleDetail` payloads including joined `actors`
+
+Legacy module compatibility:
+
+- Modules missing `actorCards` metadata are backfilled with safe defaults on read.
+- The normalized shape is persisted on the next successful write.
+
+## 12. Explicit Out-of-Scope for This Milestone
 
 - Runtime rules engine for component enforcement
 - Full module database implementation
 - Session orchestration changes
-- Route/UI implementation for authoring
 - Cloud publishing pipeline
 - Minis/map rendering features
-
-This milestone delivers decision-complete documentation and shared draft contracts only.
+- Non-actor typed entity editors (locations, encounters, quests, assets)

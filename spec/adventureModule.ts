@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  actorBaseLayerSlugSchema,
+  actorTacticalRoleSlugSchema,
+  actorTacticalSpecialSlugSchema,
+} from "./actorCards";
 
 const identifierSchema = z.string().min(1).max(120);
 const shortTextSchema = z.string().min(1).max(120);
@@ -184,6 +189,16 @@ export const adventureModuleFragmentRefSchema = z.preprocess((rawInput) => {
 }, adventureModuleFragmentRefBaseSchema);
 export type AdventureModuleFragmentRef = z.infer<
   typeof adventureModuleFragmentRefSchema
+>;
+
+export const adventureModuleActorCardSchema = z.object({
+  fragmentId: identifierSchema,
+  baseLayerSlug: actorBaseLayerSlugSchema,
+  tacticalRoleSlug: actorTacticalRoleSlugSchema,
+  tacticalSpecialSlug: actorTacticalSpecialSlugSchema.optional(),
+});
+export type AdventureModuleActorCard = z.infer<
+  typeof adventureModuleActorCardSchema
 >;
 
 export const adventureModuleHookSchema = z.object({
@@ -460,6 +475,7 @@ export const adventureModuleIndexSchema = z
     componentMapFragmentId: identifierSchema,
     locationFragmentIds: z.array(identifierSchema).min(1).max(40),
     actorFragmentIds: z.array(identifierSchema).min(1).max(40),
+    actorCards: z.array(adventureModuleActorCardSchema).max(40).default([]),
     assetFragmentIds: z.array(identifierSchema).min(1).max(40),
     itemFragmentIds: z.array(identifierSchema).max(40).default([]),
     encounterFragmentIds: z.array(identifierSchema).min(1).max(60),
@@ -536,6 +552,36 @@ export const adventureModuleIndexSchema = z
     }
     for (const actorId of index.actorFragmentIds) {
       ensureFragment(actorId, "actor", ["actorFragmentIds"]);
+    }
+
+    const actorCardFragmentIds = index.actorCards.map((actorCard) => actorCard.fragmentId);
+    for (const duplicate of duplicateValues(actorCardFragmentIds)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate actor card fragment id: ${duplicate}`,
+        path: ["actorCards"],
+      });
+    }
+
+    const actorIdSet = new Set(index.actorFragmentIds);
+    const actorCardIdSet = new Set(actorCardFragmentIds);
+    for (const actorId of index.actorFragmentIds) {
+      if (!actorCardIdSet.has(actorId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `missing actor card metadata for fragment id: ${actorId}`,
+          path: ["actorCards"],
+        });
+      }
+    }
+    for (const actorCard of index.actorCards) {
+      if (!actorIdSet.has(actorCard.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `actor card metadata references unknown actor fragment id: ${actorCard.fragmentId}`,
+          path: ["actorCards"],
+        });
+      }
     }
     for (const assetId of index.assetFragmentIds) {
       ensureFragment(assetId, "asset", ["assetFragmentIds"]);

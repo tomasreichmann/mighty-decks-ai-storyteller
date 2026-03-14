@@ -1,6 +1,7 @@
 import type { OutcomeSlug } from "../../types/types";
 import { cn } from "../../utils/cn";
 import { type ResolvedGameCard } from "../../lib/markdownGameComponents";
+import { ActorCard } from "../cards/ActorCard";
 import { LayeredCard } from "../cards/LayeredCard";
 
 const titleClassByOutcomeSlug: Record<OutcomeSlug, string> = {
@@ -73,6 +74,15 @@ export const GameCardView = ({
           nounClassName="text-[17px] text-kac-iron"
           nounEffectClassName="text-[10px] text-kac-iron-light"
           adjectiveEffectClassName="text-[10px] font-semibold text-kac-blood-dark"
+        />
+      );
+    case "ActorCard":
+      return (
+        <ActorCard
+          className={cn("w-full max-w-[13rem]", className)}
+          baseLayerSlug={gameCard.actor.baseLayerSlug}
+          tacticalRoleSlug={gameCard.actor.tacticalRoleSlug}
+          tacticalSpecialSlug={gameCard.actor.tacticalSpecialSlug}
         />
       );
     default:

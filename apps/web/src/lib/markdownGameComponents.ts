@@ -1,3 +1,4 @@
+import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
 import {
   rulesEffectCards,
   rulesOutcomeCards,
@@ -43,6 +44,13 @@ export type ResolvedGameCard =
       legacyToken: string;
       jsx: string;
       card: RulesStuntCard;
+    }
+  | {
+      type: "ActorCard";
+      slug: string;
+      legacyToken: string;
+      jsx: string;
+      actor: AdventureModuleResolvedActor;
     };
 
 const dedupeBySlug = <T extends { slug: string }>(records: T[]): T[] => {
@@ -79,12 +87,14 @@ export const gameCardTypes = [
   "OutcomeCard",
   "EffectCard",
   "StuntCard",
+  "ActorCard",
 ] as const satisfies readonly GameCardType[];
 
 const gameCardTypeToLegacyPrefix: Record<GameCardType, string> = {
   OutcomeCard: "outcome",
   EffectCard: "effect",
   StuntCard: "stunt",
+  ActorCard: "actor",
 };
 
 const toOption = (
@@ -103,9 +113,10 @@ export const gameCardTypeLabel: Record<GameCardType, string> = {
   OutcomeCard: "Outcome",
   EffectCard: "Effect",
   StuntCard: "Stunt",
+  ActorCard: "Actor",
 };
 
-export const gameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
+const baseGameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
   OutcomeCard: outcomeCards.map((card) =>
     toOption("OutcomeCard", card.slug, card.title),
   ),
@@ -113,11 +124,27 @@ export const gameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
     toOption("EffectCard", card.slug, card.title),
   ),
   StuntCard: stuntCards.map((card) => toOption("StuntCard", card.slug, card.title)),
+  ActorCard: [],
 };
+
+export const createActorGameCardOption = (
+  actor: AdventureModuleResolvedActor,
+): GameCardOption =>
+  toOption("ActorCard", actor.actorSlug, actor.title);
+
+export const buildGameCardOptionsByType = (
+  actors: readonly AdventureModuleResolvedActor[] = [],
+): Record<GameCardType, GameCardOption[]> => ({
+  ...baseGameCardOptionsByType,
+  ActorCard: actors.map(createActorGameCardOption),
+});
+
+export const gameCardOptionsByType = buildGameCardOptionsByType();
 
 export const resolveGameCard = (
   type: GameCardType,
   slug: string,
+  moduleActorsBySlug?: ReadonlyMap<string, AdventureModuleResolvedActor>,
 ): ResolvedGameCard | null => {
   const key = slug.trim().toLocaleLowerCase();
   switch (type) {
@@ -160,6 +187,19 @@ export const resolveGameCard = (
         card,
       };
     }
+    case "ActorCard": {
+      const actor = moduleActorsBySlug?.get(key);
+      if (!actor) {
+        return null;
+      }
+      return {
+        type,
+        slug: actor.actorSlug,
+        legacyToken: `@actor/${actor.actorSlug}`,
+        jsx: createGameCardJsx(type, actor.actorSlug),
+        actor,
+      };
+    }
     default:
       return null;
   }
@@ -167,12 +207,13 @@ export const resolveGameCard = (
 
 export const resolveLegacyGameCardToken = (
   value: string,
+  moduleActorsBySlug?: ReadonlyMap<string, AdventureModuleResolvedActor>,
 ): ResolvedGameCard | null => {
   const parsed = parseLegacyGameCardToken(value);
   if (!parsed) {
     return null;
   }
-  return resolveGameCard(parsed.type, parsed.slug);
+  return resolveGameCard(parsed.type, parsed.slug, moduleActorsBySlug);
 };
 
 export const defaultGameCardType = gameCardTypes[0];

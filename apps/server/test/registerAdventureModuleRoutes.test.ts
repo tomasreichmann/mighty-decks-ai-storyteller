@@ -61,6 +61,25 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
     true,
   );
   assert.equal(createdPayload.index.playerSummaryMarkdown.includes("Player Summary"), true);
+  const createdActorState = createdPayload as unknown as {
+    index: {
+      actorCards?: Array<{
+        fragmentId: string;
+        baseLayerSlug: string;
+        tacticalRoleSlug: string;
+      }>;
+    };
+    actors?: Array<{
+      actorSlug: string;
+      title: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+    }>;
+  };
+  assert.equal(Array.isArray(createdActorState.index.actorCards), true);
+  assert.equal(createdActorState.index.actorCards?.length, 1);
+  assert.equal(Array.isArray(createdActorState.actors), true);
+  assert.equal(createdActorState.actors?.[0]?.actorSlug, "primary-actor");
 
   const availableSlugResponse = await app.inject({
     method: "GET",
@@ -179,6 +198,78 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
     },
   });
   assert.equal(forbiddenUpdateResponse.statusCode, 403);
+
+  const createActorResponse = await app.inject({
+    method: "POST",
+    url: `/api/adventure-modules/${moduleId}/actors`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "River Smuggler Nyra",
+    },
+  });
+  assert.equal(createActorResponse.statusCode, 201);
+  const createActorPayload = createActorResponse.json() as {
+    actors?: Array<{
+      actorSlug: string;
+      title: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+    }>;
+  };
+  assert.equal(
+    createActorPayload.actors?.some(
+      (actor) => actor.actorSlug === "river-smuggler-nyra",
+    ),
+    true,
+  );
+
+  const updateActorResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/actors/river-smuggler-nyra`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "River Smuggler Nyra, River Queen",
+      summary: "Smuggler captain with flood-tunnel leverage.",
+      baseLayerSlug: "merchant",
+      tacticalRoleSlug: "ranger",
+      tacticalSpecialSlug: "fast",
+      content: "# River Smuggler Nyra\n\nControls the hidden canal routes.",
+    },
+  });
+  assert.equal(updateActorResponse.statusCode, 200);
+  const updatedActorPayload = updateActorResponse.json() as {
+    actors?: Array<{
+      actorSlug: string;
+      title: string;
+      tacticalSpecialSlug?: string;
+    }>;
+  };
+  const updatedActor = updatedActorPayload.actors?.find(
+    (actor) => actor.actorSlug === "river-smuggler-nyra",
+  );
+  assert.ok(updatedActor);
+  assert.equal(updatedActor.title, "River Smuggler Nyra, River Queen");
+  assert.equal(updatedActor.tacticalSpecialSlug, "fast");
+
+  const forbiddenActorUpdateResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/actors/river-smuggler-nyra`,
+    headers: {
+      [CREATOR_HEADER]: "creator-b",
+    },
+    payload: {
+      title: "Blocked Update",
+      summary: "forbidden",
+      baseLayerSlug: "merchant",
+      tacticalRoleSlug: "ranger",
+      content: "forbidden",
+    },
+  });
+  assert.equal(forbiddenActorUpdateResponse.statusCode, 403);
 
   const previewResponse = await app.inject({
     method: "GET",

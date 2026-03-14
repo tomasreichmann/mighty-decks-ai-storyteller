@@ -17,6 +17,10 @@
       "types": "./dist/adventureState.d.ts",
       "import": "./dist/adventureState.js"
     },
+    "./actorCards": {
+      "types": "./dist/actorCards.d.ts",
+      "import": "./dist/actorCards.js"
+    },
     "./adventureModule": {
       "types": "./dist/adventureModule.d.ts",
       "import": "./dist/adventureModule.js"

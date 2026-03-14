@@ -31,13 +31,6 @@
 
 .editorFrame {
   position: relative;
-  border: 2px solid #121b23;
-  border-radius: 0.25rem;
-  background: linear-gradient(to bottom, #f8efd8, #e5d4b9);
-  box-shadow:
-    inset 2px 2px 0 0 #9f8a6d,
-    inset -2px -2px 0 0 #fff7e6;
-  overflow: hidden;
 }
 
 .editorRoot {
@@ -62,7 +55,7 @@
   color: #121b23;
   line-height: 1.5;
   font-family: "Shantell Sans", cursive;
-  padding: 0.75rem;
+  padding: 0.75rem 0;
 }
 
 .editorRoot .contentEditable :global(h1) {
@@ -187,6 +180,22 @@
 
 .editorRoot :global(.cm-editor) {
   min-height: inherit;
+  background: transparent;
+}
+
+.editorRoot :global(.cm-content) {
+  padding: 0.75rem 0;
+}
+
+.editorRoot :global(.cm-line) {
+  padding: 0;
+}
+
+.editorRoot :global(.cm-scroller),
+.editorRoot :global(.cm-gutters),
+.editorRoot :global(.cm-activeLine),
+.editorRoot :global(.cm-activeLineGutter) {
+  background: transparent;
 }
 
 @media (max-width: 768px) {

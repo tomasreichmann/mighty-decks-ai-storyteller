@@ -1,4 +1,5 @@
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
+import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Text } from "../common/Text";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
@@ -7,6 +8,7 @@ interface AdventureModulePlayerInfoTabPanelProps {
   summary: string;
   infoText: string;
   smartContextDocument: SmartInputDocumentContext;
+  actors?: AdventureModuleResolvedActor[];
   editable: boolean;
   validationMessage?: string | null;
   onSummaryChange: (nextValue: string) => void;
@@ -20,6 +22,7 @@ export const AdventureModulePlayerInfoTabPanel = ({
   summary,
   infoText,
   smartContextDocument,
+  actors = [],
   editable,
   validationMessage,
   onSummaryChange,
@@ -33,6 +36,7 @@ export const AdventureModulePlayerInfoTabPanel = ({
         description="Spoiler-safe player-facing markdown. Rich Text renders GameCards inline while source mode keeps canonical <GameCard /> syntax."
         selfContextTag="Player Summary"
         smartContextDocument={smartContextDocument}
+        actors={actors}
         value={summary}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
@@ -46,6 +50,7 @@ export const AdventureModulePlayerInfoTabPanel = ({
         description="Full player-facing brief in markdown. Keep it rich and atmospheric, and use inline GameCards only for information players should see."
         selfContextTag="Player Info"
         smartContextDocument={smartContextDocument}
+        actors={actors}
         value={infoText}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}

@@ -46,6 +46,27 @@ test("normalizeLegacyGameCardMarkdown upgrades legacy tokens to canonical GameCa
   );
 });
 
+test("normalizeLegacyGameCardMarkdown upgrades actor shortcodes to canonical GameCard JSX", () => {
+  const markdown = [
+    "Bring in the local threat.",
+    "",
+    "@actor/warden-sable",
+    "",
+    "Then negotiate with @actor/river-smuggler-nyra before the alarm fully trips.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Bring in the local threat.",
+      "",
+      '<GameCard type="ActorCard" slug="warden-sable" />',
+      "",
+      'Then negotiate with <GameCard type="ActorCard" slug="river-smuggler-nyra" /> before the alarm fully trips.',
+    ].join("\n"),
+  );
+});
+
 test("normalizeLegacyGameCardMarkdown leaves inline code, fenced code, and unknown tokens untouched", () => {
   const markdown = [
     "`@outcome/success`",
@@ -60,6 +81,27 @@ test("normalizeLegacyGameCardMarkdown leaves inline code, fenced code, and unkno
   ].join("\n");
 
   assert.equal(normalizeLegacyGameCardMarkdown(markdown), markdown);
+});
+
+test("normalizeLegacyGameCardMarkdown resumes shortcode normalization after fenced code blocks close", () => {
+  const markdown = [
+    "```md",
+    "@actor/warden-sable",
+    "```",
+    "",
+    "@actor/river-smuggler-nyra",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "```md",
+      "@actor/warden-sable",
+      "```",
+      "",
+      '<GameCard type="ActorCard" slug="river-smuggler-nyra" />',
+    ].join("\n"),
+  );
 });
 
 test("normalizeLegacyGameCardMarkdown leaves indented code blocks untouched", () => {

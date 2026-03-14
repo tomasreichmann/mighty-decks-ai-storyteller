@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
-import { mkdir, readdir, readFile } from "node:fs/promises";
-import { dirname, resolve, sep } from "node:path";
+import { mkdir, readdir, readFile, rm } from "node:fs/promises";
+import { basename, dirname, extname, resolve, sep } from "node:path";
 import { z } from "zod";
+import {
+  defaultActorBaseLayerSlug,
+  defaultActorTacticalRoleSlug,
+} from "@mighty-decks/spec/actorCards";
 import {
   adventureModuleDetailSchema,
   adventureModuleListItemSchema,
@@ -74,17 +78,61 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
   const record = candidate as Record<string, unknown>;
   const intentValue = record.intent;
   const premiseValue = record.premise;
+  let normalized = record;
   if (
     typeof intentValue === "string" &&
     intentValue.trim().length > 0 &&
     (typeof premiseValue !== "string" || premiseValue.trim().length === 0)
   ) {
-    return {
-      ...record,
+    normalized = {
+      ...normalized,
       premise: intentValue,
     };
   }
-  return record;
+
+  const actorFragmentIds = Array.isArray(normalized.actorFragmentIds)
+    ? normalized.actorFragmentIds.filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
+  if (actorFragmentIds.length === 0) {
+    return normalized;
+  }
+
+  const rawActorCards = Array.isArray(normalized.actorCards) ? normalized.actorCards : [];
+  const actorCardsByFragmentId = new Map<string, Record<string, unknown>>();
+  for (const actorCard of rawActorCards) {
+    if (!actorCard || typeof actorCard !== "object" || Array.isArray(actorCard)) {
+      continue;
+    }
+    const actorCardRecord = actorCard as Record<string, unknown>;
+    const fragmentId = actorCardRecord.fragmentId;
+    if (typeof fragmentId !== "string" || fragmentId.trim().length === 0) {
+      continue;
+    }
+    actorCardsByFragmentId.set(fragmentId, actorCardRecord);
+  }
+
+  return {
+    ...normalized,
+    actorCards: actorFragmentIds.map((fragmentId) => {
+      const existing = actorCardsByFragmentId.get(fragmentId);
+      return {
+        fragmentId,
+        baseLayerSlug:
+          typeof existing?.baseLayerSlug === "string"
+            ? existing.baseLayerSlug
+            : defaultActorBaseLayerSlug,
+        tacticalRoleSlug:
+          typeof existing?.tacticalRoleSlug === "string"
+            ? existing.tacticalRoleSlug
+            : defaultActorTacticalRoleSlug,
+        ...(typeof existing?.tacticalSpecialSlug === "string"
+          ? { tacticalSpecialSlug: existing.tacticalSpecialSlug }
+          : {}),
+      };
+    }),
+  };
 };
 
 const KINDS_SORT_ORDER: AdventureModuleFragmentKind[] = [
@@ -107,6 +155,9 @@ const fragmentKindWeight = (kind: AdventureModuleFragmentKind): number => {
   const index = KINDS_SORT_ORDER.indexOf(kind);
   return index >= 0 ? index : KINDS_SORT_ORDER.length;
 };
+
+const deriveActorSlugFromPath = (fragmentPath: string): string =>
+  toSlug(basename(fragmentPath, extname(fragmentPath)));
 
 export class AdventureModuleNotFoundError extends Error {
   public constructor(message: string) {
@@ -288,9 +339,11 @@ export class AdventureModuleStore {
 
     const fragments = await this.loadFragmentContents(loaded.index, loaded.moduleDir);
     const ownedByRequester = loaded.system.creatorTokenHash === hashCreatorToken(creatorToken);
+    const actors = this.resolveActors(loaded.index, fragments);
     return adventureModuleDetailSchema.parse({
       index: loaded.index,
       fragments,
+      actors,
       ownedByRequester,
     });
   }
@@ -379,6 +432,187 @@ export class AdventureModuleStore {
       const next = await this.getModule(moduleId, options.creatorToken);
       if (!next) {
         throw new AdventureModuleValidationError("Updated module could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async createActor(options: {
+    moduleId: string;
+    creatorToken?: string;
+    title: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0 ? options.title.trim() : "New Actor";
+      const actorSlug = this.makeUniqueActorSlug(normalizedTitle, loaded.index);
+      const fragmentId = makeId("frag-actor");
+      const fragmentRef: AdventureModuleFragmentRef = {
+        fragmentId,
+        kind: "actor",
+        title: normalizedTitle,
+        path: `actors/${actorSlug}.mdx`,
+        summary: "Describe this actor's pressure, leverage, and public face.",
+        tags: ["actor", "layered_actor"],
+        containsSpoilers: false,
+        intendedAudience: "shared",
+      };
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        actorFragmentIds: [...loaded.index.actorFragmentIds, fragmentId],
+        actorCards: [
+          ...loaded.index.actorCards,
+          {
+            fragmentId,
+            baseLayerSlug: defaultActorBaseLayerSlug,
+            tacticalRoleSlug: defaultActorTacticalRoleSlug,
+          },
+        ],
+        fragments: [...loaded.index.fragments, fragmentRef],
+        artifacts: [
+          ...loaded.index.artifacts,
+          {
+            artifactId: `artifact-${fragmentId}`,
+            kind: "mdx",
+            path: fragmentRef.path,
+            title: fragmentRef.title,
+            sourceFragmentId: fragmentId,
+            contentType: "text/markdown",
+            generatedBy: "author",
+            createdAtIso: nowIso,
+          },
+        ],
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(loaded.moduleDir, fragmentRef.path);
+      await mkdir(dirname(absolutePath), { recursive: true });
+      await atomicWriteTextFile(absolutePath, this.createActorFragmentContent(normalizedTitle));
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+      } catch (error) {
+        await this.rollbackActorCreate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Created actor could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async updateActor(options: {
+    moduleId: string;
+    actorSlug: string;
+    creatorToken?: string;
+    title: string;
+    summary: string;
+    baseLayerSlug: AdventureModuleIndex["actorCards"][number]["baseLayerSlug"];
+    tacticalRoleSlug: AdventureModuleIndex["actorCards"][number]["tacticalRoleSlug"];
+    tacticalSpecialSlug?: AdventureModuleIndex["actorCards"][number]["tacticalSpecialSlug"];
+    content: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const actorRecord = this.findActorRecord(loaded.index, options.actorSlug);
+      if (!actorRecord) {
+        throw new AdventureModuleValidationError("Actor slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const nextFragments = loaded.index.fragments.map((fragment) => {
+        if (fragment.fragmentId !== actorRecord.fragment.fragmentId) {
+          return fragment;
+        }
+        return {
+          ...fragment,
+          title: options.title.trim(),
+          summary:
+            options.summary.trim().length > 0 ? options.summary.trim() : undefined,
+        };
+      });
+
+      const nextActorCards = loaded.index.actorCards.map((actorCard) => {
+        if (actorCard.fragmentId !== actorRecord.fragment.fragmentId) {
+          return actorCard;
+        }
+        return {
+          fragmentId: actorCard.fragmentId,
+          baseLayerSlug: options.baseLayerSlug,
+          tacticalRoleSlug: options.tacticalRoleSlug,
+          ...(options.tacticalSpecialSlug
+            ? { tacticalSpecialSlug: options.tacticalSpecialSlug }
+            : {}),
+        };
+      });
+
+      const nextArtifacts = loaded.index.artifacts.map((artifact) => {
+        if (artifact.sourceFragmentId !== actorRecord.fragment.fragmentId) {
+          return artifact;
+        }
+        return {
+          ...artifact,
+          title: options.title.trim(),
+        };
+      });
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        fragments: nextFragments,
+        actorCards: nextActorCards,
+        artifacts: nextArtifacts,
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        actorRecord.fragment.path,
+      );
+      const previousContent = await this.readExistingTextFile(absolutePath);
+      await mkdir(dirname(absolutePath), { recursive: true });
+      await atomicWriteTextFile(absolutePath, options.content);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+      } catch (error) {
+        await this.rollbackActorUpdate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Updated actor could not be loaded.");
       }
       return next;
     });
@@ -639,6 +873,125 @@ export class AdventureModuleStore {
     if (system.creatorTokenHash !== hashCreatorToken(creatorToken)) {
       throw new AdventureModuleForbiddenError("Only the module creator can edit this draft.");
     }
+  }
+
+  private createActorFragmentContent(title: string): string {
+    return `# ${title}\n\n## Public Face\n\nDescribe how this actor appears to players.\n\n## Agenda\n\n- Add the actor's main motivation.\n- Add what they want right now.\n\n## Pressure Moves\n\n- Add how they escalate the scene.\n`;
+  }
+
+  private async readExistingTextFile(path: string): Promise<string> {
+    try {
+      return await readFile(path, "utf8");
+    } catch (error) {
+      if (isMissingFileError(error)) {
+        return "";
+      }
+      throw error;
+    }
+  }
+
+  private async rollbackActorCreate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      rm(fragmentPath, { recursive: true, force: true }),
+    ]);
+  }
+
+  private async rollbackActorUpdate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      atomicWriteTextFile(fragmentPath, previousContent),
+    ]);
+  }
+
+  private makeUniqueActorSlug(title: string, index: AdventureModuleIndex): string {
+    const baseSlug = toSlug(title);
+    const existingActorSlugs = new Set(
+      index.actorFragmentIds
+        .map((fragmentId) => index.fragments.find((fragment) => fragment.fragmentId === fragmentId))
+        .filter(
+          (
+            fragment,
+          ): fragment is AdventureModuleFragmentRef => Boolean(fragment?.path),
+        )
+        .map((fragment) => deriveActorSlugFromPath(fragment.path)),
+    );
+
+    if (!existingActorSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    for (let suffix = 2; suffix < 10_000; suffix += 1) {
+      const candidate = toSlug(`${baseSlug}-${suffix}`);
+      if (!existingActorSlugs.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    throw new AdventureModuleValidationError("Could not allocate a unique actor slug.");
+  }
+
+  private findActorRecord(
+    index: AdventureModuleIndex,
+    actorSlug: string,
+  ): { fragment: AdventureModuleFragmentRef } | null {
+    for (const actorFragmentId of index.actorFragmentIds) {
+      const fragment = index.fragments.find(
+        (entry) => entry.fragmentId === actorFragmentId,
+      );
+      if (!fragment) {
+        continue;
+      }
+      if (deriveActorSlugFromPath(fragment.path) === actorSlug) {
+        return { fragment };
+      }
+    }
+    return null;
+  }
+
+  private resolveActors(
+    index: AdventureModuleIndex,
+    fragments: AdventureModuleDetail["fragments"],
+  ): AdventureModuleDetail["actors"] {
+    const fragmentContentById = new Map(
+      fragments.map((fragment) => [fragment.fragment.fragmentId, fragment.content] as const),
+    );
+    const actorCardByFragmentId = new Map(
+      index.actorCards.map((actorCard) => [actorCard.fragmentId, actorCard] as const),
+    );
+
+    return index.actorFragmentIds.flatMap((fragmentId) => {
+      const fragmentRef = index.fragments.find((fragment) => fragment.fragmentId === fragmentId);
+      const actorCard = actorCardByFragmentId.get(fragmentId);
+      if (!fragmentRef || !actorCard) {
+        return [];
+      }
+      return [
+        {
+          fragmentId,
+          actorSlug: deriveActorSlugFromPath(fragmentRef.path),
+          title: fragmentRef.title,
+          summary: fragmentRef.summary,
+          baseLayerSlug: actorCard.baseLayerSlug,
+          tacticalRoleSlug: actorCard.tacticalRoleSlug,
+          tacticalSpecialSlug: actorCard.tacticalSpecialSlug,
+          content: fragmentContentById.get(fragmentId) ?? "",
+        },
+      ];
+    });
   }
 
   private async loadFragmentContents(
@@ -911,6 +1264,13 @@ export class AdventureModuleStore {
       componentMapFragmentId: "frag-component-map",
       locationFragmentIds: ["frag-location-main"],
       actorFragmentIds: ["frag-actor-main"],
+      actorCards: [
+        {
+          fragmentId: "frag-actor-main",
+          baseLayerSlug: defaultActorBaseLayerSlug,
+          tacticalRoleSlug: defaultActorTacticalRoleSlug,
+        },
+      ],
       assetFragmentIds: ["frag-asset-main"],
       itemFragmentIds: [],
       encounterFragmentIds: ["frag-encounter-main"],

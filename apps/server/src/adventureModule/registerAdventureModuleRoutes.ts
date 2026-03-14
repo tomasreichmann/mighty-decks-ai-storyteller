@@ -1,6 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
 import {
   adventureModuleBySlugParamsSchema,
+  adventureModuleCreateActorRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
@@ -12,6 +14,8 @@ import {
   adventureModuleSlugAvailabilityQuerySchema,
   adventureModuleSlugAvailabilityResponseSchema,
   adventureModuleUpdateFragmentRequestSchema,
+  adventureModuleUpdateActorRequestSchema,
+  adventureModuleUpdateActorResponseSchema,
   adventureModuleUpdateCoverImageRequestSchema,
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateResponseSchema,
@@ -28,6 +32,13 @@ interface RegisterAdventureModuleRoutesOptions {
 }
 
 const CREATOR_TOKEN_HEADER = "x-md-module-creator-token";
+const actorSlugParamsSchema = z.object({
+  actorSlug: z
+    .string()
+    .min(1)
+    .max(120)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "actor slug must be lowercase kebab-case"),
+});
 
 const parseCreatorToken = (request: FastifyRequest): string | undefined => {
   const headerValue = request.headers[CREATOR_TOKEN_HEADER];
@@ -176,6 +187,54 @@ export const registerAdventureModuleRoutes = (
           creatorToken,
         });
         return reply.send(adventureModuleUpdateResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.post("/api/adventure-modules/:moduleId/actors", async (request, reply) => {
+    const creatorToken = parseCreatorToken(request);
+    const { moduleId = "" } = request.params as { moduleId?: string };
+    try {
+      const payload = adventureModuleCreateActorRequestSchema.parse(request.body);
+      const next = await options.store.createActor({
+        moduleId,
+        creatorToken,
+        title: payload.title,
+      });
+      return reply.code(201).send(adventureModuleCreateResponseSchema.parse(next));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.put(
+    "/api/adventure-modules/:moduleId/actors/:actorSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", actorSlug = "" } = request.params as {
+        moduleId?: string;
+        actorSlug?: string;
+      };
+      try {
+        const params = actorSlugParamsSchema.parse({ actorSlug });
+        const payload = adventureModuleUpdateActorRequestSchema.parse(request.body);
+        const next = await options.store.updateActor({
+          moduleId,
+          actorSlug: params.actorSlug,
+          creatorToken,
+          title: payload.title,
+          summary: payload.summary,
+          baseLayerSlug: payload.baseLayerSlug,
+          tacticalRoleSlug: payload.tacticalRoleSlug,
+          tacticalSpecialSlug:
+            payload.tacticalSpecialSlug === null
+              ? undefined
+              : payload.tacticalSpecialSlug,
+          content: payload.content,
+        });
+        return reply.send(adventureModuleUpdateActorResponseSchema.parse(next));
       } catch (error) {
         return sendKnownError(reply, error);
       }

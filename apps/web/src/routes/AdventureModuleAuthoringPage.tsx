@@ -5,6 +5,8 @@ import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
+import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
+import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
 import {
   AutosaveStatusBadge,
   type AutosaveStatus,
@@ -23,7 +25,9 @@ import {
   type EntityListTab,
 } from "../components/adventure-module/EntityList";
 import {
+  createAdventureModuleActor,
   getAdventureModuleBySlug,
+  updateAdventureModuleActor,
   updateAdventureModuleFragment,
   updateAdventureModuleIndex,
 } from "../lib/adventureModuleApi";
@@ -372,6 +376,16 @@ interface StorytellerInfoFormState {
   infoText: string;
 }
 
+interface ActorFormState {
+  actorSlug: string;
+  title: string;
+  summary: string;
+  baseLayerSlug: AdventureModuleDetail["actors"][number]["baseLayerSlug"];
+  tacticalRoleSlug: AdventureModuleDetail["actors"][number]["tacticalRoleSlug"];
+  tacticalSpecialSlug?: AdventureModuleDetail["actors"][number]["tacticalSpecialSlug"];
+  content: string;
+}
+
 const toBaseFormState = (index: AdventureModuleIndex): BaseFormState => ({
   title: index.title,
   premise: index.premise,
@@ -470,6 +484,18 @@ const toStorytellerInfoFormState = (
     infoText: normalizeLegacyGameCardMarkdown(summaryState.infoText),
   };
 };
+
+const toActorFormState = (
+  actor: AdventureModuleDetail["actors"][number],
+): ActorFormState => ({
+  actorSlug: actor.actorSlug,
+  title: actor.title,
+  summary: actor.summary ?? "",
+  baseLayerSlug: actor.baseLayerSlug,
+  tacticalRoleSlug: actor.tacticalRoleSlug,
+  tacticalSpecialSlug: actor.tacticalSpecialSlug,
+  content: normalizeLegacyGameCardMarkdown(actor.content),
+});
 
 const normalizeTagEntry = (value: string): string =>
   value.trim().replace(/\s+/g, " ");
@@ -654,6 +680,77 @@ const validateStorytellerInfoForm = (
   };
 };
 
+const validateActorForm = (
+  form: ActorFormState,
+): {
+  title: string;
+  summary: string;
+  baseLayerSlug: ActorFormState["baseLayerSlug"];
+  tacticalRoleSlug: ActorFormState["tacticalRoleSlug"];
+  tacticalSpecialSlug?: ActorFormState["tacticalSpecialSlug"];
+  content: string;
+  error?: string;
+} => {
+  const title = form.title.trim();
+  if (title.length === 0) {
+    return {
+      title,
+      summary: form.summary.trim(),
+      baseLayerSlug: form.baseLayerSlug,
+      tacticalRoleSlug: form.tacticalRoleSlug,
+      tacticalSpecialSlug: form.tacticalSpecialSlug,
+      content: normalizeLegacyGameCardMarkdown(form.content),
+      error: "Actor name is required.",
+    };
+  }
+  if (title.length > 120) {
+    return {
+      title,
+      summary: form.summary.trim(),
+      baseLayerSlug: form.baseLayerSlug,
+      tacticalRoleSlug: form.tacticalRoleSlug,
+      tacticalSpecialSlug: form.tacticalSpecialSlug,
+      content: normalizeLegacyGameCardMarkdown(form.content),
+      error: "Actor name must be at most 120 characters.",
+    };
+  }
+
+  const summary = form.summary.trim();
+  if (summary.length > 500) {
+    return {
+      title,
+      summary,
+      baseLayerSlug: form.baseLayerSlug,
+      tacticalRoleSlug: form.tacticalRoleSlug,
+      tacticalSpecialSlug: form.tacticalSpecialSlug,
+      content: normalizeLegacyGameCardMarkdown(form.content),
+      error: "Actor summary must be at most 500 characters.",
+    };
+  }
+
+  const content = normalizeLegacyGameCardMarkdown(form.content);
+  if (content.length > 200_000) {
+    return {
+      title,
+      summary,
+      baseLayerSlug: form.baseLayerSlug,
+      tacticalRoleSlug: form.tacticalRoleSlug,
+      tacticalSpecialSlug: form.tacticalSpecialSlug,
+      content,
+      error: "Actor markdown must be at most 200000 characters.",
+    };
+  }
+
+  return {
+    title,
+    summary,
+    baseLayerSlug: form.baseLayerSlug,
+    tacticalRoleSlug: form.tacticalRoleSlug,
+    tacticalSpecialSlug: form.tacticalSpecialSlug,
+    content,
+  };
+};
+
 export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const navigate = useNavigate();
   const { slug, tab, entityId } = useParams<{
@@ -679,11 +776,13 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       summary: "",
       infoText: "",
     });
+  const [actorForm, setActorForm] = useState<ActorFormState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [baseDirty, setBaseDirty] = useState(false);
   const [playerInfoDirty, setPlayerInfoDirty] = useState(false);
   const [storytellerInfoDirty, setStorytellerInfoDirty] = useState(false);
+  const [actorDirty, setActorDirty] = useState(false);
   const [baseValidationMessage, setBaseValidationMessage] = useState<
     string | null
   >(null);
@@ -693,6 +792,11 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     storytellerInfoValidationMessage,
     setStorytellerInfoValidationMessage,
   ] = useState<string | null>(null);
+  const [actorValidationMessage, setActorValidationMessage] = useState<
+    string | null
+  >(null);
+  const [actorCreateError, setActorCreateError] = useState<string | null>(null);
+  const [creatingActor, setCreatingActor] = useState(false);
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>("idle");
   const [autosaveMessage, setAutosaveMessage] = useState<string | undefined>(
     undefined,
@@ -746,9 +850,12 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         setBaseDirty(false);
         setPlayerInfoDirty(false);
         setStorytellerInfoDirty(false);
+        setActorDirty(false);
         setBaseValidationMessage(null);
         setPlayerInfoValidationMessage(null);
         setStorytellerInfoValidationMessage(null);
+        setActorValidationMessage(null);
+        setActorCreateError(null);
         setAutosaveStatus("idle");
         setAutosaveMessage(undefined);
       })
@@ -772,6 +879,33 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       cancelled = true;
     };
   }, [creatorToken, slug]);
+
+  const activeActor = useMemo(() => {
+    if (activeTab !== "actors" || !normalizedEntityId || !moduleDetail) {
+      return null;
+    }
+    return (
+      moduleDetail.actors.find((actor) => actor.actorSlug === normalizedEntityId) ??
+      null
+    );
+  }, [activeTab, moduleDetail, normalizedEntityId]);
+
+  useEffect(() => {
+    if (activeTab !== "actors" || !normalizedEntityId) {
+      setActorForm(null);
+      setActorDirty(false);
+      setActorValidationMessage(null);
+      return;
+    }
+    if (!activeActor) {
+      setActorForm(null);
+      setActorDirty(false);
+      return;
+    }
+    setActorForm(toActorFormState(activeActor));
+    setActorDirty(false);
+    setActorValidationMessage(null);
+  }, [activeActor, activeTab, normalizedEntityId]);
 
   const persistBase = useCallback(async (): Promise<void> => {
     if (!moduleDetail || !moduleDetail.ownedByRequester) {
@@ -1031,6 +1165,107 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     }
   }, [creatorToken, moduleDetail, storytellerInfoForm]);
 
+  const persistActor = useCallback(async (): Promise<void> => {
+    if (
+      !moduleDetail ||
+      !moduleDetail.ownedByRequester ||
+      activeTab !== "actors" ||
+      !actorForm
+    ) {
+      return;
+    }
+    if (savingRef.current) {
+      return;
+    }
+
+    const validated = validateActorForm(actorForm);
+    if (validated.error) {
+      setActorValidationMessage(validated.error);
+      setAutosaveStatus("error");
+      setAutosaveMessage(validated.error);
+      return;
+    }
+
+    savingRef.current = true;
+    setActorValidationMessage(null);
+    setAutosaveStatus("saving");
+    setAutosaveMessage(undefined);
+    setError(null);
+    setActorCreateError(null);
+
+    try {
+      const nextDetail = await updateAdventureModuleActor(
+        moduleDetail.index.moduleId,
+        actorForm.actorSlug,
+        {
+          title: validated.title,
+          summary: validated.summary,
+          baseLayerSlug: validated.baseLayerSlug,
+          tacticalRoleSlug: validated.tacticalRoleSlug,
+          tacticalSpecialSlug: validated.tacticalSpecialSlug ?? null,
+          content: validated.content,
+        },
+        creatorToken,
+      );
+
+      setModuleDetail(nextDetail);
+      const nextActor =
+        nextDetail.actors.find(
+          (resolvedActor) => resolvedActor.actorSlug === actorForm.actorSlug,
+        ) ?? null;
+      setActorForm(nextActor ? toActorFormState(nextActor) : null);
+      setActorDirty(false);
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (saveError) {
+      const message =
+        saveError instanceof Error ? saveError.message : "Autosave failed.";
+      setError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      savingRef.current = false;
+    }
+  }, [activeTab, actorForm, creatorToken, moduleDetail]);
+
+  const handleCreateActor = useCallback(async (): Promise<void> => {
+    if (!moduleDetail?.ownedByRequester || creatingActor) {
+      return;
+    }
+
+    setCreatingActor(true);
+    setActorCreateError(null);
+    setError(null);
+
+    try {
+      const nextDetail = await createAdventureModuleActor(
+        moduleDetail.index.moduleId,
+        { title: "New Actor" },
+        creatorToken,
+      );
+      setModuleDetail(nextDetail);
+      const createdActor = nextDetail.actors[nextDetail.actors.length - 1];
+      if (!createdActor) {
+        throw new Error("Created actor could not be resolved.");
+      }
+      setActorForm(toActorFormState(createdActor));
+      setActorDirty(false);
+      navigate(
+        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/actors/${encodeURIComponent(createdActor.actorSlug)}`,
+      );
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (createError) {
+      const message =
+        createError instanceof Error ? createError.message : "Could not create actor.";
+      setActorCreateError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      setCreatingActor(false);
+    }
+  }, [creatingActor, creatorToken, moduleDetail, navigate]);
+
   useEffect(() => {
     if (
       !baseDirty ||
@@ -1130,6 +1365,39 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     storytellerInfoDirty,
   ]);
 
+  useEffect(() => {
+    if (
+      !actorDirty ||
+      !moduleDetail?.ownedByRequester ||
+      activeTab !== "actors" ||
+      !entityId
+    ) {
+      return;
+    }
+
+    setAutosaveStatus("queued");
+    setAutosaveMessage("pending");
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = window.setTimeout(() => {
+      void persistActor();
+    }, 1000);
+
+    return () => {
+      if (saveTimerRef.current !== null) {
+        window.clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+    };
+  }, [
+    activeTab,
+    actorDirty,
+    entityId,
+    moduleDetail?.ownedByRequester,
+    persistActor,
+  ]);
+
   useEffect(
     () => () => {
       if (saveTimerRef.current !== null) {
@@ -1170,6 +1438,17 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       saveTimerRef.current = null;
     }
     void persistStorytellerInfo();
+  };
+
+  const handleActorFieldBlur = (): void => {
+    if (!actorDirty || !moduleDetail?.ownedByRequester) {
+      return;
+    }
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    void persistActor();
   };
 
   const editable = Boolean(moduleDetail?.ownedByRequester);
@@ -1274,7 +1553,87 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
           />
 
           {entityId ? (
-            activeEntityTabConfig ? (
+            activeTab === "actors" ? (
+              activeActor && actorForm ? (
+                <AdventureModuleActorEditor
+                  actor={{
+                    ...activeActor,
+                    title: actorForm.title,
+                    summary: actorForm.summary,
+                    baseLayerSlug: actorForm.baseLayerSlug,
+                    tacticalRoleSlug: actorForm.tacticalRoleSlug,
+                    tacticalSpecialSlug: actorForm.tacticalSpecialSlug,
+                    content: actorForm.content,
+                  }}
+                  actors={moduleDetail.actors}
+                  smartContextDocument={smartContextDocument}
+                  editable={editable}
+                  validationMessage={actorValidationMessage}
+                  onTitleChange={(nextValue) => {
+                    setActorValidationMessage(null);
+                    setActorForm((current) =>
+                      current ? { ...current, title: nextValue } : current,
+                    );
+                    setActorDirty(true);
+                  }}
+                  onSummaryChange={(nextValue) => {
+                    setActorValidationMessage(null);
+                    setActorForm((current) =>
+                      current ? { ...current, summary: nextValue } : current,
+                    );
+                    setActorDirty(true);
+                  }}
+                  onBaseLayerChange={(nextValue) => {
+                    setActorValidationMessage(null);
+                    setActorForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            baseLayerSlug: nextValue,
+                          }
+                        : current,
+                    );
+                    setActorDirty(true);
+                  }}
+                  onTacticalRoleChange={(nextValue) => {
+                    setActorValidationMessage(null);
+                    setActorForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            tacticalRoleSlug: nextValue,
+                          }
+                        : current,
+                    );
+                    setActorDirty(true);
+                  }}
+                  onTacticalSpecialChange={(nextValue) => {
+                    setActorValidationMessage(null);
+                    setActorForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            tacticalSpecialSlug: nextValue,
+                          }
+                        : current,
+                    );
+                    setActorDirty(true);
+                  }}
+                  onContentChange={(nextValue) => {
+                    setActorValidationMessage(null);
+                    setActorForm((current) =>
+                      current ? { ...current, content: nextValue } : current,
+                    );
+                    setActorDirty(true);
+                  }}
+                  onFieldBlur={handleActorFieldBlur}
+                />
+              ) : (
+                <AdventureModuleTabPlaceholder
+                  description={`Actor "${normalizedEntityId ?? entityId}" could not be found in this module.`}
+                />
+              )
+            ) : activeEntityTabConfig ? (
               <AdventureModuleTabPlaceholder
                 description={
                   normalizedEntityId === "new"
@@ -1323,6 +1682,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               summary={playerInfoForm.summary}
               infoText={playerInfoForm.infoText}
               smartContextDocument={smartContextDocument}
+              actors={moduleDetail.actors}
               editable={editable}
               validationMessage={playerInfoValidationMessage}
               onSummaryChange={(nextValue) => {
@@ -1348,6 +1708,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               summary={storytellerInfoForm.summary}
               infoText={storytellerInfoForm.infoText}
               smartContextDocument={smartContextDocument}
+              actors={moduleDetail.actors}
               editable={editable}
               validationMessage={storytellerInfoValidationMessage}
               onSummaryChange={(nextValue) => {
@@ -1367,6 +1728,21 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                 setStorytellerInfoDirty(true);
               }}
               onFieldBlur={handleStorytellerInfoFieldBlur}
+            />
+          ) : activeTab === "actors" ? (
+            <AdventureModuleActorsTabPanel
+              actors={moduleDetail.actors}
+              editable={editable}
+              creating={creatingActor}
+              createError={actorCreateError}
+              onCreate={() => {
+                void handleCreateActor();
+              }}
+              onOpenActor={(actorSlug) => {
+                navigate(
+                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/actors/${encodeURIComponent(actorSlug)}`,
+                );
+              }}
             />
           ) : activeEntityTab && activeEntityTabConfig ? (
             <EntityList

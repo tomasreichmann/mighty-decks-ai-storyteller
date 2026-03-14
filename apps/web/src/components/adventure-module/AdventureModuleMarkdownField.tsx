@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ClipboardEvent, FocusEvent } from "react";
+import type { FocusEvent } from "react";
+import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
 import {
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
@@ -45,13 +46,15 @@ import {
   type SmartInputDocumentContext,
 } from "../../lib/smartInputContext";
 import {
+  buildGameCardOptionsByType,
   defaultGameCardType,
-  gameCardOptionsByType,
   gameCardTypeLabel,
   type GameCardOption,
   type GameCardType,
 } from "../../lib/markdownGameComponents";
+import { GameCardCatalogContext } from "../../lib/gameCardCatalogContext";
 import { normalizeLegacyGameCardMarkdown } from "../../lib/gameCardMarkdown";
+import { normalizeMarkdownEditorChange } from "../../lib/markdownEditorChange";
 import { GameCardJsxEditor } from "./GameCardJsxEditor";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
 
@@ -84,6 +87,7 @@ export interface AdventureModuleMarkdownFieldProps {
   description: string;
   selfContextTag: SmartInputContextTag;
   smartContextDocument: SmartInputDocumentContext;
+  actors?: AdventureModuleResolvedActor[];
   value: string;
   editable: boolean;
   maxLength: number;
@@ -212,6 +216,7 @@ const renderToolbarInsertControls = ({
       <option value="OutcomeCard">Outcome</option>
       <option value="EffectCard">Effect</option>
       <option value="StuntCard">Stunt</option>
+      <option value="ActorCard">Actor</option>
     </select>
     <select
       aria-label="Insert card"
@@ -739,6 +744,7 @@ export const AdventureModuleMarkdownField = ({
   description,
   selfContextTag,
   smartContextDocument,
+  actors = [],
   value,
   editable,
   maxLength,
@@ -747,6 +753,7 @@ export const AdventureModuleMarkdownField = ({
   contentEditableClassName,
 }: AdventureModuleMarkdownFieldProps): JSX.Element => {
   const editorRef = useRef<MDXEditorMethods>(null);
+  const editorShellRef = useRef<HTMLDivElement | null>(null);
   const editorMarkdown = useMemo(
     () => normalizeLegacyGameCardMarkdown(value),
     [value],
@@ -758,6 +765,17 @@ export const AdventureModuleMarkdownField = ({
   const [selectedContextTags, setSelectedContextTags] = useState<
     SmartInputContextTag[]
   >(() => getDefaultSmartContextTags([selfContextTag]));
+  const actorsBySlug = useMemo(
+    () =>
+      new Map(
+        actors.map((actor) => [actor.actorSlug.toLocaleLowerCase(), actor] as const),
+      ),
+    [actors],
+  );
+  const gameCardOptionsByType = useMemo(
+    () => buildGameCardOptionsByType(actors),
+    [actors],
+  );
   const [insertType, setInsertType] = useState<GameCardType>(defaultGameCardType);
   const [insertSlug, setInsertSlug] = useState<string>(
     () => gameCardOptionsByType[defaultGameCardType][0]?.slug ?? "",
@@ -890,39 +908,54 @@ export const AdventureModuleMarkdownField = ({
     }
   }, [editorMarkdown]);
 
-  const handlePasteCapture = (event: ClipboardEvent<HTMLDivElement>): void => {
-    if (!editable || smartActions.running || !editorRef.current) {
+  useEffect(() => {
+    const editorShell = editorShellRef.current;
+    if (!editorShell) {
       return;
     }
 
-    const plainText = event.clipboardData.getData("text/plain");
-    if (plainText.trim().length === 0) {
-      return;
-    }
+    // Use a native capture listener so we can normalize legacy shortcode paste
+    // before Lexical handles the same clipboard event.
+    const handlePaste = (event: ClipboardEvent): void => {
+      if (!editable || smartActions.running || !editorRef.current) {
+        return;
+      }
 
-    const normalized = normalizeLegacyGameCardMarkdown(plainText);
-    if (normalized === plainText) {
-      return;
-    }
+      const plainText = event.clipboardData?.getData("text/plain") ?? "";
+      if (plainText.trim().length === 0) {
+        return;
+      }
 
-    const insertText = normalized;
-    if (insertText.trim().length === 0) {
-      return;
-    }
-    if (editorMarkdown.length + insertText.length > maxLength) {
-      setInsertErrorMessage(
-        `Pasting this card content would exceed the ${maxLength.toLocaleString()} character limit.`,
-      );
-      return;
-    }
+      const normalized = normalizeLegacyGameCardMarkdown(plainText);
+      if (normalized === plainText) {
+        return;
+      }
 
-    event.preventDefault();
-    editorRef.current.focus(() => {
-      editorRef.current?.insertMarkdown(insertText);
-    });
-    setInsertErrorMessage(null);
-    setInsertStatusMessage("Converted pasted legacy card tokens.");
-  };
+      if (editorMarkdown.length + normalized.length > maxLength) {
+        setInsertErrorMessage(
+          `Pasting this card content would exceed the ${maxLength.toLocaleString()} character limit.`,
+        );
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      editorRef.current.focus(() => {
+        editorRef.current?.insertMarkdown(normalized);
+      });
+      setInsertErrorMessage(null);
+      setInsertStatusMessage("Converted pasted legacy card tokens.");
+    };
+
+    editorShell.addEventListener("paste", handlePaste, { capture: true });
+    return () => {
+      editorShell.removeEventListener("paste", handlePaste, { capture: true });
+    };
+  }, [editable, editorMarkdown.length, maxLength, smartActions.running]);
 
   return (
     <div className={styles.fieldShell}>
@@ -958,9 +991,9 @@ export const AdventureModuleMarkdownField = ({
       </div>
 
       <div
+        ref={editorShellRef}
         className={styles.editorShell}
         onBlur={(event) => handleEditorBlur(event, onFieldBlur, editable)}
-        onPasteCapture={handlePasteCapture}
       >
         <div className={styles.smartMenuAnchor}>
           <ContextMenu
@@ -976,24 +1009,38 @@ export const AdventureModuleMarkdownField = ({
           />
         </div>
         <div className={styles.editorFrame}>
-          <MDXEditor
-            ref={editorRef}
-            markdown={editorMarkdown}
-            readOnly={!editable || smartActions.running}
-            suppressHtmlProcessing
-            plugins={plugins}
-            className={styles.editorRoot}
-            contentEditableClassName={`${styles.contentEditable} ${contentEditableClassName}`}
-            onChange={(nextMarkdown, initialMarkdownNormalize) => {
-              if (initialMarkdownNormalize || !editable || smartActions.running) {
-                return;
-              }
-              if (nextMarkdown.length > maxLength) {
-                return;
-              }
-              onChange(nextMarkdown);
+          <GameCardCatalogContext.Provider
+            value={{
+              actors,
+              actorsBySlug,
             }}
-          />
+          >
+            <MDXEditor
+              ref={editorRef}
+              markdown={editorMarkdown}
+              readOnly={!editable || smartActions.running}
+              suppressHtmlProcessing
+              plugins={plugins}
+              className={styles.editorRoot}
+              contentEditableClassName={`${styles.contentEditable} ${contentEditableClassName}`}
+              onChange={(nextMarkdown, initialMarkdownNormalize) => {
+                if (initialMarkdownNormalize || !editable || smartActions.running) {
+                  return;
+                }
+                const normalizedChange = normalizeMarkdownEditorChange(
+                  nextMarkdown,
+                  maxLength,
+                );
+                if (normalizedChange.exceedsMaxLength) {
+                  setInsertErrorMessage(
+                    `This content would exceed the ${maxLength.toLocaleString()} character limit.`,
+                  );
+                  return;
+                }
+                onChange(normalizedChange.value);
+              }}
+            />
+          </GameCardCatalogContext.Provider>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -43,6 +43,29 @@ test("creates, reads, updates, and previews adventure modules", async () => {
   );
   assert.equal(created.index.playerSummaryMarkdown.includes("Player Summary"), true);
   assert.equal(created.fragments.length > 0, true);
+  const createdActorState = created as unknown as {
+    actors?: Array<{
+      actorSlug: string;
+      fragmentId: string;
+      title: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+      content: string;
+    }>;
+    index: {
+      actorCards?: Array<{
+        fragmentId: string;
+        baseLayerSlug: string;
+        tacticalRoleSlug: string;
+      }>;
+    };
+  };
+  assert.equal(Array.isArray(createdActorState.index.actorCards), true);
+  assert.equal(createdActorState.index.actorCards?.length, 1);
+  assert.equal(Array.isArray(createdActorState.actors), true);
+  assert.equal(createdActorState.actors?.length, 1);
+  assert.equal(createdActorState.actors?.[0]?.actorSlug, "primary-actor");
+  assert.equal(typeof createdActorState.actors?.[0]?.content, "string");
 
   const fetchedByOwner = await store.getModule(created.index.moduleId, "token-a");
   const fetchedByOther = await store.getModule(created.index.moduleId, "token-b");
@@ -116,6 +139,192 @@ test("creates, reads, updates, and previews adventure modules", async () => {
   });
   assert.equal(ownerPreview.showSpoilers, true);
   assert.equal(ownerPreview.storytellerSummary?.hidden, false);
+});
+
+test("creates and updates actors with stable actor slugs", async () => {
+  const store = await createStore();
+  const module = await store.createModule({
+    creatorToken: "token-actor",
+    title: "Actor Module",
+  });
+
+  const actorStore = store as unknown as {
+    createActor: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<unknown>;
+    updateActor: (input: {
+      moduleId: string;
+      actorSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+      tacticalSpecialSlug?: string;
+      content: string;
+    }) => Promise<unknown>;
+  };
+
+  const created = (await actorStore.createActor({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-actor",
+    title: "River Smuggler Nyra",
+  })) as {
+    actors?: Array<{
+      actorSlug: string;
+      title: string;
+      summary?: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+      tacticalSpecialSlug?: string;
+      content: string;
+    }>;
+  };
+
+  const createdActor = created.actors?.find(
+    (actor) => actor.actorSlug === "river-smuggler-nyra",
+  );
+  assert.ok(createdActor);
+  assert.equal(createdActor.title, "River Smuggler Nyra");
+  assert.equal(typeof createdActor.content, "string");
+
+  const updated = (await actorStore.updateActor({
+    moduleId: module.index.moduleId,
+    actorSlug: "river-smuggler-nyra",
+    creatorToken: "token-actor",
+    title: "River Smuggler Nyra, River Queen",
+    summary: "Smuggler captain with flood-tunnel leverage.",
+    baseLayerSlug: "merchant",
+    tacticalRoleSlug: "ranger",
+    tacticalSpecialSlug: "fast",
+    content: "# River Smuggler Nyra\n\nControls the hidden canal routes.",
+  })) as {
+    actors?: Array<{
+      actorSlug: string;
+      title: string;
+      summary?: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+      tacticalSpecialSlug?: string;
+      content: string;
+    }>;
+  };
+
+  const updatedActor = updated.actors?.find(
+    (actor) => actor.actorSlug === "river-smuggler-nyra",
+  );
+  assert.ok(updatedActor);
+  assert.equal(updatedActor.title, "River Smuggler Nyra, River Queen");
+  assert.equal(
+    updatedActor.summary,
+    "Smuggler captain with flood-tunnel leverage.",
+  );
+  assert.equal(updatedActor.baseLayerSlug, "merchant");
+  assert.equal(updatedActor.tacticalRoleSlug, "ranger");
+  assert.equal(updatedActor.tacticalSpecialSlug, "fast");
+  assert.equal(
+    updatedActor.content,
+    "# River Smuggler Nyra\n\nControls the hidden canal routes.",
+  );
+});
+
+test("actor create and update leave module state unchanged when fragment writes fail", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const module = await store.createModule({
+    creatorToken: "token-actor-write-fail",
+    title: "Actor Failure Module",
+  });
+
+  const actorStore = store as unknown as {
+    createActor: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<unknown>;
+    updateActor: (input: {
+      moduleId: string;
+      actorSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+      tacticalSpecialSlug?: string;
+      content: string;
+    }) => Promise<unknown>;
+  };
+
+  const createCollisionPath = join(
+    rootDir,
+    module.index.moduleId,
+    "actors",
+    "blocked-actor.mdx",
+  );
+  await mkdir(createCollisionPath, { recursive: true });
+
+  await assert.rejects(
+    () =>
+      actorStore.createActor({
+        moduleId: module.index.moduleId,
+        creatorToken: "token-actor-write-fail",
+        title: "Blocked Actor",
+      }),
+  );
+
+  const afterFailedCreate = await store.getModule(
+    module.index.moduleId,
+    "token-actor-write-fail",
+  );
+  assert.equal(
+    afterFailedCreate?.actors.some((actor) => actor.actorSlug === "blocked-actor"),
+    false,
+  );
+
+  const primaryActorPath = join(
+    rootDir,
+    module.index.moduleId,
+    "actors",
+    "primary-actor.mdx",
+  );
+  const originalPrimaryActorContent = await readFile(primaryActorPath, "utf8");
+  await rm(primaryActorPath, { force: true });
+  await mkdir(primaryActorPath, { recursive: true });
+
+  await assert.rejects(
+    () =>
+      actorStore.updateActor({
+        moduleId: module.index.moduleId,
+        actorSlug: "primary-actor",
+        creatorToken: "token-actor-write-fail",
+        title: "Broken Update",
+        summary: "This write should fail before state changes persist.",
+        baseLayerSlug: "merchant",
+        tacticalRoleSlug: "ranger",
+        tacticalSpecialSlug: "fast",
+        content: "# Broken Update\n\nThis should not persist.",
+      }),
+  );
+
+  await rm(primaryActorPath, { recursive: true, force: true });
+  await writeFile(primaryActorPath, originalPrimaryActorContent, "utf8");
+
+  const afterFailedUpdate = await store.getModule(
+    module.index.moduleId,
+    "token-actor-write-fail",
+  );
+  const primaryActor = afterFailedUpdate?.actors.find(
+    (actor) => actor.actorSlug === "primary-actor",
+  );
+  assert.ok(primaryActor);
+  assert.equal(primaryActor.title, "Primary Actor");
+  assert.equal(primaryActor.baseLayerSlug, "civilian");
+  assert.equal(primaryActor.tacticalRoleSlug, "pawn");
+  assert.equal(primaryActor.tacticalSpecialSlug, undefined);
+  assert.equal(primaryActor.content, originalPrimaryActorContent);
+
+  await rm(createCollisionPath, { recursive: true, force: true });
 });
 
 test("clones module under new ownership", async () => {
@@ -240,4 +449,70 @@ test("loads legacy index without premise and backfills on write", async () => {
   >;
   assert.equal(typeof backfilledIndex.premise, "string");
   assert.equal(backfilledIndex.premise, backfilledIndex.intent);
+});
+
+test("backfills missing actor card metadata for legacy modules", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const created = await store.createModule({
+    creatorToken: "token-legacy-actors",
+    title: "Legacy Actor Module",
+  });
+
+  const indexPath = join(rootDir, created.index.moduleId, "index.json");
+  const legacyIndex = JSON.parse(await readFile(indexPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  delete legacyIndex.actorCards;
+  await writeFile(indexPath, JSON.stringify(legacyIndex, null, 2), "utf8");
+
+  const loaded = (await store.getModule(
+    created.index.moduleId,
+    "token-legacy-actors",
+  )) as unknown as {
+    actors?: Array<{
+      actorSlug: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+    }>;
+  } | null;
+  assert.ok(loaded);
+  assert.equal(loaded?.actors?.length, 1);
+  assert.equal(typeof loaded?.actors?.[0]?.baseLayerSlug, "string");
+  assert.equal(typeof loaded?.actors?.[0]?.tacticalRoleSlug, "string");
+
+  const actorStore = store as unknown as {
+    updateActor: (input: {
+      moduleId: string;
+      actorSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+      tacticalSpecialSlug?: string;
+      content: string;
+    }) => Promise<unknown>;
+  };
+
+  await actorStore.updateActor({
+    moduleId: created.index.moduleId,
+    actorSlug: "primary-actor",
+    creatorToken: "token-legacy-actors",
+    title: "Primary Actor",
+    summary: "Backfilled actor metadata should persist on write.",
+    baseLayerSlug: "civilian",
+    tacticalRoleSlug: "pawn",
+    content: "# Primary Actor\n\nLegacy actor updated.",
+  });
+
+  const persistedIndex = JSON.parse(await readFile(indexPath, "utf8")) as {
+    actorCards?: Array<{
+      fragmentId: string;
+      baseLayerSlug: string;
+      tacticalRoleSlug: string;
+    }>;
+  };
+  assert.equal(Array.isArray(persistedIndex.actorCards), true);
+  assert.equal(persistedIndex.actorCards?.length, 1);
 });

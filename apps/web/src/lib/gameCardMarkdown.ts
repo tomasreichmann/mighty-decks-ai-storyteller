@@ -1,9 +1,13 @@
-export type GameCardType = "OutcomeCard" | "EffectCard" | "StuntCard";
+export type GameCardType =
+  | "OutcomeCard"
+  | "EffectCard"
+  | "StuntCard"
+  | "ActorCard";
 
-export type LegacyGameCardTokenType = "outcome" | "effect" | "stunt";
+export type LegacyGameCardTokenType = "outcome" | "effect" | "stunt" | "actor";
 
 const INLINE_TOKEN_PATTERN =
-  /(^|\s)(@(outcome|effect|stunt)\/[A-Za-z0-9-]+)(?=\s|$)/g;
+  /(^|\s)(@(outcome|effect|stunt|actor)\/[A-Za-z0-9-]+)(?=\s|$)/g;
 const FENCE_PATTERN = /^([`~]{3,})(.*)$/;
 const INLINE_CODE_SPLIT_PATTERN = /(`+[^`]*`+)/g;
 const INDENTED_CODE_LINE_PATTERN = /^(?: {4}|\t)/;
@@ -12,6 +16,7 @@ const legacyTypeToGameCardType: Record<LegacyGameCardTokenType, GameCardType> = 
   outcome: "OutcomeCard",
   effect: "EffectCard",
   stunt: "StuntCard",
+  actor: "ActorCard",
 };
 
 export const createGameCardJsx = (
@@ -29,7 +34,9 @@ export const parseLegacyGameCardToken = (
       token: string;
     }
   | null => {
-  const match = /^@(outcome|effect|stunt)\/([A-Za-z0-9-]+)$/.exec(token.trim());
+  const match = /^@(outcome|effect|stunt|actor)\/([A-Za-z0-9-]+)$/.exec(
+    token.trim(),
+  );
   if (!match) {
     return null;
   }
@@ -78,9 +85,14 @@ export const normalizeLegacyGameCardMarkdown = (markdown: string): string => {
   for (const line of lines) {
     const isBlank = line.trim().length === 0;
     const isIndentedCodeLine = INDENTED_CODE_LINE_PATTERN.test(line);
+    const fenceMatch = FENCE_PATTERN.exec(line);
 
     if (activeFence !== null) {
       normalizedLines.push(line);
+      const closingFence = fenceMatch?.[1] ?? "";
+      if (closingFence.length > 0 && activeFence === (closingFence[0] ?? null)) {
+        activeFence = null;
+      }
       previousLineBlank = isBlank;
       continue;
     }
@@ -101,7 +113,6 @@ export const normalizeLegacyGameCardMarkdown = (markdown: string): string => {
       continue;
     }
 
-    const fenceMatch = FENCE_PATTERN.exec(line);
     if (fenceMatch) {
       const fence = fenceMatch[1] ?? "";
       if (activeFence === null) {
