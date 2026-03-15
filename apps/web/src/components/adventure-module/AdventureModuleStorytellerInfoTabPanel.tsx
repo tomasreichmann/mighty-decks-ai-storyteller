@@ -1,5 +1,9 @@
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
-import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type {
+  AdventureModuleResolvedActor,
+  AdventureModuleResolvedCounter,
+} from "@mighty-decks/spec/adventureModuleAuthoring";
+import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { Text } from "../common/Text";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
@@ -9,11 +13,17 @@ interface AdventureModuleStorytellerInfoTabPanelProps {
   infoText: string;
   smartContextDocument: SmartInputDocumentContext;
   actors?: AdventureModuleResolvedActor[];
+  counters?: AdventureModuleResolvedCounter[];
   editable: boolean;
   validationMessage?: string | null;
   onSummaryChange: (nextValue: string) => void;
   onInfoTextChange: (nextValue: string) => void;
   onFieldBlur: () => void;
+  onAdjustCounterValue?: (
+    counterSlug: string,
+    delta: number,
+    target?: CounterAdjustTarget,
+  ) => void;
 }
 
 const MAX_MARKDOWN_LENGTH = 200_000;
@@ -23,11 +33,13 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
   infoText,
   smartContextDocument,
   actors = [],
+  counters = [],
   editable,
   validationMessage,
   onSummaryChange,
   onInfoTextChange,
   onFieldBlur,
+  onAdjustCounterValue,
 }: AdventureModuleStorytellerInfoTabPanelProps): JSX.Element => {
   return (
     <div className="stack gap-4">
@@ -37,11 +49,13 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
         selfContextTag="Storyteller Summary"
         smartContextDocument={smartContextDocument}
         actors={actors}
+        counters={counters}
         value={summary}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
         onChange={onSummaryChange}
         onFieldBlur={onFieldBlur}
+        onAdjustCounterValue={onAdjustCounterValue}
         contentEditableClassName={styles.summaryEditable}
       />
 
@@ -51,11 +65,13 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
         selfContextTag="Storyteller Info"
         smartContextDocument={smartContextDocument}
         actors={actors}
+        counters={counters}
         value={infoText}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
         onChange={onInfoTextChange}
         onFieldBlur={onFieldBlur}
+        onAdjustCounterValue={onAdjustCounterValue}
         contentEditableClassName={styles.infoEditable}
       />
 

@@ -232,7 +232,7 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
       [CREATOR_HEADER]: "creator-a",
     },
     payload: {
-      title: "River Smuggler Nyra, River Queen",
+      title: "River Queen Nyra",
       summary: "Smuggler captain with flood-tunnel leverage.",
       baseLayerSlug: "merchant",
       tacticalRoleSlug: "ranger",
@@ -248,12 +248,73 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
       tacticalSpecialSlug?: string;
     }>;
   };
-  const updatedActor = updatedActorPayload.actors?.find(
-    (actor) => actor.actorSlug === "river-smuggler-nyra",
-  );
+  const updatedActor = updatedActorPayload.actors?.find((actor) => actor.actorSlug === "river-queen-nyra");
   assert.ok(updatedActor);
-  assert.equal(updatedActor.title, "River Smuggler Nyra, River Queen");
+  assert.equal(updatedActor.title, "River Queen Nyra");
   assert.equal(updatedActor.tacticalSpecialSlug, "fast");
+
+  const createCounterResponse = await app.inject({
+    method: "POST",
+    url: `/api/adventure-modules/${moduleId}/counters`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Threat Clock",
+    },
+  });
+  assert.equal(createCounterResponse.statusCode, 201);
+  const createCounterPayload = createCounterResponse.json() as {
+    counters?: Array<{
+      slug: string;
+      title: string;
+      currentValue: number;
+    }>;
+  };
+  assert.equal(
+    createCounterPayload.counters?.some(
+      (counter) => counter.slug === "threat-clock" && counter.currentValue === 0,
+    ),
+    true,
+  );
+
+  const updateCounterResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/counters/threat-clock`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Danger Clock",
+      iconSlug: "danger",
+      currentValue: 9,
+      maxValue: 5,
+      description: "Escalates the pressure across scenes.",
+    },
+  });
+  assert.equal(updateCounterResponse.statusCode, 200);
+  const updatedCounterPayload = updateCounterResponse.json() as {
+    counters?: Array<{
+      slug: string;
+      iconSlug: string;
+      currentValue: number;
+      maxValue?: number;
+    }>;
+  };
+  const updatedCounter = updatedCounterPayload.counters?.find((counter) => counter.slug === "danger-clock");
+  assert.ok(updatedCounter);
+  assert.equal(updatedCounter.iconSlug, "danger");
+  assert.equal(updatedCounter.currentValue, 5);
+  assert.equal(updatedCounter.maxValue, 5);
+
+  const deleteCounterResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}/counters/danger-clock`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(deleteCounterResponse.statusCode, 200);
 
   const forbiddenActorUpdateResponse = await app.inject({
     method: "PUT",
@@ -270,6 +331,15 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
     },
   });
   assert.equal(forbiddenActorUpdateResponse.statusCode, 403);
+
+  const deleteActorResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}/actors/river-queen-nyra`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(deleteActorResponse.statusCode, 200);
 
   const previewResponse = await app.inject({
     method: "GET",

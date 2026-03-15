@@ -10,6 +10,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 - Add typed Adventure Module actor authoring with create/edit APIs, resolved actor detail payloads, layered actor-card metadata, and legacy-module backfill for missing actor card records.
 - Add layered ActorCard rendering, actor list authoring UI, actor editor UI, and actor shortcode copy support in the Adventure Module authoring flow.
+- Add typed Adventure Module counter authoring with create/edit APIs, resolved counter detail payloads, vendored counter icon assets, and shared authoring-side counter values.
 
 ### Changed
 
@@ -19,10 +20,15 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Render Adventure Module authoring GameCards inline in MDX rich text, normalize legacy shortcode tokens to canonical `<GameCard />` source, and remove the separate markdown preview panel.
 - Remove the Adventure Module markdown editor content frame so rich text and source content blend into the page background while the toolbar keeps the only surface treatment.
 - Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local actors render as canonical `<GameCard type="ActorCard" />` embeds while `@actor/<slug>` remains supported.
+- Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local counters render as canonical `<GameCard type="CounterCard" />` embeds while `@counter/<slug>` remains supported.
+- Add typed actor and counter delete support in Adventure Module authoring, including list/editor delete actions and invalid-card fallback for stale embeds.
 
 ### Fixed
 
 - Resolve the built web client path relative to the server module location so Render's plain-Node startup still serves the frontend from the single service root.
+- Regenerate Adventure Module actor and counter slugs from saved titles, keep the authoring route in sync after renames, and allow actor/counter deletes to complete without sending an empty JSON body.
+- Tighten Counter editor numeric fields and move CounterCard +/- controls inline before the shared value so authoring cards keep the header on a single line.
+- Add a second inline `+` and `-` control pair after the max counter value so authoring cards can adjust both current and max values without leaving the card.
 
 ### Docs
 
@@ -30,6 +36,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add AI contributor instructions in `AGENTS.md` requiring documentation and changelog updates when repo behavior, contracts, routes, env vars, or deployment guidance change.
 - Add a root `README.md` covering the current repo overview, implementation status, setup, AI configuration, contribution expectations, and deployment paths.
 - Update Adventure Module authoring docs to reflect the implemented Actors tab, actor editor route, typed actor APIs, and actor embed behavior.
+- Update Adventure Module authoring docs to reflect the implemented Counters tab, typed counter APIs, and typed actor/counter delete routes.
 
 ## [0.1.0] - 2026-03-13
 

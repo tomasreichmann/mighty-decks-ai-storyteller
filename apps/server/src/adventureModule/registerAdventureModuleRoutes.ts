@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   adventureModuleBySlugParamsSchema,
   adventureModuleCreateActorRequestSchema,
+  adventureModuleCreateCounterRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
@@ -16,6 +17,8 @@ import {
   adventureModuleUpdateFragmentRequestSchema,
   adventureModuleUpdateActorRequestSchema,
   adventureModuleUpdateActorResponseSchema,
+  adventureModuleUpdateCounterRequestSchema,
+  adventureModuleUpdateCounterResponseSchema,
   adventureModuleUpdateCoverImageRequestSchema,
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateResponseSchema,
@@ -32,12 +35,16 @@ interface RegisterAdventureModuleRoutesOptions {
 }
 
 const CREATOR_TOKEN_HEADER = "x-md-module-creator-token";
-const actorSlugParamsSchema = z.object({
-  actorSlug: z
+const entitySlugSchema = z
     .string()
     .min(1)
     .max(120)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "actor slug must be lowercase kebab-case"),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be lowercase kebab-case");
+const actorSlugParamsSchema = z.object({
+  actorSlug: entitySlugSchema,
+});
+const counterSlugParamsSchema = z.object({
+  counterSlug: entitySlugSchema,
 });
 
 const parseCreatorToken = (request: FastifyRequest): string | undefined => {
@@ -235,6 +242,95 @@ export const registerAdventureModuleRoutes = (
           content: payload.content,
         });
         return reply.send(adventureModuleUpdateActorResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.delete(
+    "/api/adventure-modules/:moduleId/actors/:actorSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", actorSlug = "" } = request.params as {
+        moduleId?: string;
+        actorSlug?: string;
+      };
+      try {
+        const params = actorSlugParamsSchema.parse({ actorSlug });
+        const next = await options.store.deleteActor({
+          moduleId,
+          actorSlug: params.actorSlug,
+          creatorToken,
+        });
+        return reply.send(adventureModuleUpdateResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.post("/api/adventure-modules/:moduleId/counters", async (request, reply) => {
+    const creatorToken = parseCreatorToken(request);
+    const { moduleId = "" } = request.params as { moduleId?: string };
+    try {
+      const payload = adventureModuleCreateCounterRequestSchema.parse(request.body);
+      const next = await options.store.createCounter({
+        moduleId,
+        creatorToken,
+        title: payload.title,
+      });
+      return reply.code(201).send(adventureModuleCreateResponseSchema.parse(next));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.put(
+    "/api/adventure-modules/:moduleId/counters/:counterSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", counterSlug = "" } = request.params as {
+        moduleId?: string;
+        counterSlug?: string;
+      };
+      try {
+        const params = counterSlugParamsSchema.parse({ counterSlug });
+        const payload = adventureModuleUpdateCounterRequestSchema.parse(request.body);
+        const next = await options.store.updateCounter({
+          moduleId,
+          counterSlug: params.counterSlug,
+          creatorToken,
+          title: payload.title,
+          iconSlug: payload.iconSlug,
+          currentValue: payload.currentValue,
+          maxValue:
+            typeof payload.maxValue === "number" ? payload.maxValue : undefined,
+          description: payload.description,
+        });
+        return reply.send(adventureModuleUpdateCounterResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.delete(
+    "/api/adventure-modules/:moduleId/counters/:counterSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", counterSlug = "" } = request.params as {
+        moduleId?: string;
+        counterSlug?: string;
+      };
+      try {
+        const params = counterSlugParamsSchema.parse({ counterSlug });
+        const next = await options.store.deleteCounter({
+          moduleId,
+          counterSlug: params.counterSlug,
+          creatorToken,
+        });
+        return reply.send(adventureModuleUpdateResponseSchema.parse(next));
       } catch (error) {
         return sendKnownError(reply, error);
       }

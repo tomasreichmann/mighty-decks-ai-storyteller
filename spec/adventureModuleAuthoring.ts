@@ -4,7 +4,9 @@ import {
   actorTacticalRoleSlugSchema,
   actorTacticalSpecialSlugSchema,
 } from "./actorCards";
+import { counterIconSlugSchema } from "./counterCards";
 import {
+  adventureModuleCounterSchema,
   adventureModuleFragmentAudienceSchema,
   adventureModuleFragmentKindSchema,
   adventureModuleFragmentRefSchema,
@@ -141,6 +143,12 @@ export type AdventureModuleResolvedActor = z.infer<
   typeof adventureModuleResolvedActorSchema
 >;
 
+export const adventureModuleResolvedCounterSchema =
+  adventureModuleCounterSchema;
+export type AdventureModuleResolvedCounter = z.infer<
+  typeof adventureModuleResolvedCounterSchema
+>;
+
 export const adventureModuleAuthoringFragmentSchema = z.object({
   fragment: adventureModuleFragmentRefSchema,
   content: z.string().max(200_000).default(""),
@@ -154,6 +162,7 @@ export const adventureModuleDetailSchema = z
     index: adventureModuleIndexSchema,
     fragments: z.array(adventureModuleAuthoringFragmentSchema).max(400),
     actors: z.array(adventureModuleResolvedActorSchema).max(80).default([]),
+    counters: z.array(adventureModuleResolvedCounterSchema).max(80).default([]),
     ownedByRequester: z.boolean().default(false),
   })
   .superRefine((module, ctx) => {
@@ -199,6 +208,35 @@ export const adventureModuleDetailSchema = z
           code: z.ZodIssueCode.custom,
           message: `resolved actor ${actor.fragmentId} does not match index actor card metadata`,
           path: ["actors"],
+        });
+      }
+    }
+
+    const countersBySlug = new Map(
+      module.index.counters.map((counter) => [counter.slug, counter] as const),
+    );
+
+    for (const counter of module.counters) {
+      const indexCounter = countersBySlug.get(counter.slug);
+      if (!indexCounter) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved counter references unknown slug ${counter.slug}`,
+          path: ["counters"],
+        });
+        continue;
+      }
+      if (
+        counter.iconSlug !== indexCounter.iconSlug ||
+        counter.title !== indexCounter.title ||
+        counter.currentValue !== indexCounter.currentValue ||
+        counter.maxValue !== indexCounter.maxValue ||
+        counter.description !== indexCounter.description
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved counter ${counter.slug} does not match index metadata`,
+          path: ["counters"],
         });
       }
     }
@@ -265,6 +303,30 @@ export type AdventureModuleUpdateActorRequest = z.infer<
 export const adventureModuleUpdateActorResponseSchema = adventureModuleDetailSchema;
 export type AdventureModuleUpdateActorResponse = z.infer<
   typeof adventureModuleUpdateActorResponseSchema
+>;
+
+export const adventureModuleCreateCounterRequestSchema = z.object({
+  title: shortTextSchema.default("New Counter"),
+});
+export type AdventureModuleCreateCounterRequest = z.infer<
+  typeof adventureModuleCreateCounterRequestSchema
+>;
+
+export const adventureModuleUpdateCounterRequestSchema = z.object({
+  title: shortTextSchema,
+  iconSlug: counterIconSlugSchema,
+  currentValue: z.number().int().nonnegative(),
+  maxValue: z.union([z.number().int().nonnegative(), z.null()]).optional(),
+  description: z.string().max(500).default(""),
+});
+export type AdventureModuleUpdateCounterRequest = z.infer<
+  typeof adventureModuleUpdateCounterRequestSchema
+>;
+
+export const adventureModuleUpdateCounterResponseSchema =
+  adventureModuleDetailSchema;
+export type AdventureModuleUpdateCounterResponse = z.infer<
+  typeof adventureModuleUpdateCounterResponseSchema
 >;
 
 export const adventureModulePreviewQuerySchema = z.object({

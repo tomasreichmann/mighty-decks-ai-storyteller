@@ -1,5 +1,6 @@
 import {
   adventureModuleCreateActorRequestSchema,
+  adventureModuleCreateCounterRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
@@ -9,11 +10,14 @@ import {
   adventureModuleSlugAvailabilityResponseSchema,
   adventureModuleUpdateActorRequestSchema,
   adventureModuleUpdateActorResponseSchema,
+  adventureModuleUpdateCounterRequestSchema,
+  adventureModuleUpdateCounterResponseSchema,
   adventureModuleUpdateFragmentRequestSchema,
   adventureModuleUpdateCoverImageRequestSchema,
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateResponseSchema,
   type AdventureModuleCreateActorRequest,
+  type AdventureModuleCreateCounterRequest,
   type AdventureModuleUpdateCoverImageRequest,
   type AdventureModuleCloneRequest,
   type AdventureModuleCreateRequest,
@@ -51,10 +55,16 @@ const fetchJson = async (
   return payload;
 };
 
-const buildHeaders = (creatorToken?: string): HeadersInit => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+export const buildHeaders = (
+  creatorToken?: string,
+  options: {
+    jsonContentType?: boolean;
+  } = {},
+): HeadersInit => {
+  const headers: Record<string, string> = {};
+  if (options.jsonContentType) {
+    headers["Content-Type"] = "application/json";
+  }
   if (creatorToken && creatorToken.trim().length > 0) {
     headers[ADVENTURE_MODULE_CREATOR_TOKEN_HEADER] = creatorToken;
   }
@@ -88,7 +98,7 @@ export const createAdventureModule = async (
 ): Promise<AdventureModuleCreateResponse> => {
   const payload = await fetchJson(buildApiUrl("/api/adventure-modules"), {
     method: "POST",
-    headers: buildHeaders(creatorToken),
+    headers: buildHeaders(creatorToken, { jsonContentType: true }),
     body: JSON.stringify(adventureModuleCreateRequestSchema.parse(request)),
   });
   return adventureModuleCreateResponseSchema.parse(payload);
@@ -103,7 +113,7 @@ export const cloneAdventureModule = async (
     buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/clone`),
     {
       method: "POST",
-      headers: buildHeaders(creatorToken),
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
       body: JSON.stringify(adventureModuleCloneRequestSchema.parse(request)),
     },
   );
@@ -145,7 +155,7 @@ export const updateAdventureModuleIndex = async (
     buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/index`),
     {
       method: "PUT",
-      headers: buildHeaders(creatorToken),
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
       body: JSON.stringify(
         adventureModuleUpdateIndexRequestSchema.parse({
           index,
@@ -168,7 +178,7 @@ export const updateAdventureModuleFragment = async (
     ),
     {
       method: "PUT",
-      headers: buildHeaders(creatorToken),
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
       body: JSON.stringify(
         adventureModuleUpdateFragmentRequestSchema.parse({
           content,
@@ -188,7 +198,7 @@ export const createAdventureModuleActor = async (
     buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/actors`),
     {
       method: "POST",
-      headers: buildHeaders(creatorToken),
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
       body: JSON.stringify(adventureModuleCreateActorRequestSchema.parse(request)),
     },
   );
@@ -214,11 +224,90 @@ export const updateAdventureModuleActor = async (
     ),
     {
       method: "PUT",
-      headers: buildHeaders(creatorToken),
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
       body: JSON.stringify(adventureModuleUpdateActorRequestSchema.parse(request)),
     },
   );
   return adventureModuleUpdateActorResponseSchema.parse(payload);
+};
+
+export const deleteAdventureModuleActor = async (
+  moduleId: string,
+  actorSlug: string,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/actors/${encodeURIComponent(actorSlug)}`,
+    ),
+    {
+      method: "DELETE",
+      headers: buildHeaders(creatorToken),
+    },
+  );
+  return adventureModuleUpdateResponseSchema.parse(payload);
+};
+
+export const createAdventureModuleCounter = async (
+  moduleId: string,
+  request: AdventureModuleCreateCounterRequest,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/counters`),
+    {
+      method: "POST",
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
+      body: JSON.stringify(
+        adventureModuleCreateCounterRequestSchema.parse(request),
+      ),
+    },
+  );
+  return adventureModuleCreateResponseSchema.parse(payload);
+};
+
+export const updateAdventureModuleCounter = async (
+  moduleId: string,
+  counterSlug: string,
+  request: {
+    title: string;
+    iconSlug: string;
+    currentValue: number;
+    maxValue?: number | null;
+    description: string;
+  },
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/counters/${encodeURIComponent(counterSlug)}`,
+    ),
+    {
+      method: "PUT",
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
+      body: JSON.stringify(
+        adventureModuleUpdateCounterRequestSchema.parse(request),
+      ),
+    },
+  );
+  return adventureModuleUpdateCounterResponseSchema.parse(payload);
+};
+
+export const deleteAdventureModuleCounter = async (
+  moduleId: string,
+  counterSlug: string,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/counters/${encodeURIComponent(counterSlug)}`,
+    ),
+    {
+      method: "DELETE",
+      headers: buildHeaders(creatorToken),
+    },
+  );
+  return adventureModuleUpdateResponseSchema.parse(payload);
 };
 
 export const updateAdventureModuleCoverImage = async (
@@ -230,7 +319,7 @@ export const updateAdventureModuleCoverImage = async (
     buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/cover-image`),
     {
       method: "PUT",
-      headers: buildHeaders(creatorToken),
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
       body: JSON.stringify(
         adventureModuleUpdateCoverImageRequestSchema.parse(request),
       ),

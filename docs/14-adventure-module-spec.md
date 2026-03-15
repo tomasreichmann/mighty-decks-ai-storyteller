@@ -16,7 +16,7 @@ Boundary rules for this milestone:
 - No change to current live-session state machine (`lobby -> vote -> play -> ending`)
 - No change to current Socket.IO event contracts
 - No database implementation in this milestone
-- Runtime authoring support is currently limited to Adventure Module create/edit flows and typed actor authoring
+- Runtime authoring support is currently limited to Adventure Module create/edit flows plus typed actor and counter authoring
 - Deliverable includes shared schema, local file persistence, REST authoring endpoints, and matching web authoring UI
 
 ---
@@ -107,6 +107,13 @@ Actor-specific requirements:
 - Every `actorFragmentId` must have exactly one matching actor-card metadata entry.
 - Resolved authoring reads join fragment metadata and actor-card metadata into an `actors` array for the web client.
 
+Counter-specific requirements:
+
+- Counters are typed module records, not fragments.
+- Module index authoring metadata includes a `counters` collection keyed by module-scoped counter `slug`.
+- Each counter stores `iconSlug`, `title`, `currentValue`, optional `maxValue`, and `description`.
+- Resolved authoring reads surface these records directly in a `counters` array for the web client.
+
 ---
 
 ## 5. Quest Graph Model (Node-Based)
@@ -175,8 +182,9 @@ Rules:
 
 Authoring embed rules:
 
-- Canonical markdown embeds use `<GameCard type="ActorCard" slug="<actor-slug>" />`.
-- Legacy `@actor/<actor-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
+- Canonical actor embeds use `<GameCard type="ActorCard" slug="<actor-slug>" />`.
+- Canonical counter embeds use `<GameCard type="CounterCard" slug="<counter-slug>" />`.
+- Legacy `@actor/<actor-slug>` and `@counter/<counter-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
 
 ---
 
@@ -283,16 +291,21 @@ if (!result.success) {
 
 ## 11. Current Implemented Authoring Contracts
 
-The current implementation adds typed actor authoring APIs on top of the shared spec:
+The current implementation adds typed actor and counter authoring APIs on top of the shared spec:
 
 - `POST /api/adventure-modules/:moduleId/actors`
 - `PUT /api/adventure-modules/:moduleId/actors/:actorSlug`
+- `DELETE /api/adventure-modules/:moduleId/actors/:actorSlug`
+- `POST /api/adventure-modules/:moduleId/counters`
+- `PUT /api/adventure-modules/:moduleId/counters/:counterSlug`
+- `DELETE /api/adventure-modules/:moduleId/counters/:counterSlug`
 
 These endpoints:
 
-- create actor fragments with stable actor slugs scoped to one module
+- create actor fragments with module-scoped slugs derived from the saved actor title
 - persist typed layered-card metadata alongside fragment references
-- return resolved `AdventureModuleDetail` payloads including joined `actors`
+- persist typed counter records directly on the module index with slugs derived from the saved counter title
+- return resolved `AdventureModuleDetail` payloads including joined `actors` and `counters`
 
 Legacy module compatibility:
 
@@ -306,4 +319,4 @@ Legacy module compatibility:
 - Session orchestration changes
 - Cloud publishing pipeline
 - Minis/map rendering features
-- Non-actor typed entity editors (locations, encounters, quests, assets)
+- Non-actor, non-counter typed entity editors (locations, encounters, quests, assets)

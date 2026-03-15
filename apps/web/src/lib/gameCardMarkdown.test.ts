@@ -19,6 +19,10 @@ test("createGameCardJsx emits canonical GameCard source", () => {
     createGameCardJsx("StuntCard", "swing-from-the-chandelier"),
     '<GameCard type="StuntCard" slug="swing-from-the-chandelier" />',
   );
+  assert.equal(
+    createGameCardJsx("CounterCard", "threat-clock"),
+    '<GameCard type="CounterCard" slug="threat-clock" />',
+  );
 });
 
 test("normalizeLegacyGameCardMarkdown upgrades legacy tokens to canonical GameCard JSX", () => {
@@ -63,6 +67,27 @@ test("normalizeLegacyGameCardMarkdown upgrades actor shortcodes to canonical Gam
       '<GameCard type="ActorCard" slug="warden-sable" />',
       "",
       'Then negotiate with <GameCard type="ActorCard" slug="river-smuggler-nyra" /> before the alarm fully trips.',
+    ].join("\n"),
+  );
+});
+
+test("normalizeLegacyGameCardMarkdown upgrades counter shortcodes to canonical GameCard JSX", () => {
+  const markdown = [
+    "Track the scene pressure.",
+    "",
+    "@counter/threat-clock",
+    "",
+    "Keep @counter/escape-clock visible in the same paragraph.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Track the scene pressure.",
+      "",
+      '<GameCard type="CounterCard" slug="threat-clock" />',
+      "",
+      'Keep <GameCard type="CounterCard" slug="escape-clock" /> visible in the same paragraph.',
     ].join("\n"),
   );
 });

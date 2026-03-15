@@ -2,12 +2,18 @@ export type GameCardType =
   | "OutcomeCard"
   | "EffectCard"
   | "StuntCard"
-  | "ActorCard";
+  | "ActorCard"
+  | "CounterCard";
 
-export type LegacyGameCardTokenType = "outcome" | "effect" | "stunt" | "actor";
+export type LegacyGameCardTokenType =
+  | "outcome"
+  | "effect"
+  | "stunt"
+  | "actor"
+  | "counter";
 
 const INLINE_TOKEN_PATTERN =
-  /(^|\s)(@(outcome|effect|stunt|actor)\/[A-Za-z0-9-]+)(?=\s|$)/g;
+  /(^|\s)(@(outcome|effect|stunt|actor|counter)\/[A-Za-z0-9-]+)(?=\s|$)/g;
 const FENCE_PATTERN = /^([`~]{3,})(.*)$/;
 const INLINE_CODE_SPLIT_PATTERN = /(`+[^`]*`+)/g;
 const INDENTED_CODE_LINE_PATTERN = /^(?: {4}|\t)/;
@@ -17,6 +23,7 @@ const legacyTypeToGameCardType: Record<LegacyGameCardTokenType, GameCardType> = 
   effect: "EffectCard",
   stunt: "StuntCard",
   actor: "ActorCard",
+  counter: "CounterCard",
 };
 
 export const createGameCardJsx = (
@@ -34,7 +41,7 @@ export const parseLegacyGameCardToken = (
       token: string;
     }
   | null => {
-  const match = /^@(outcome|effect|stunt|actor)\/([A-Za-z0-9-]+)$/.exec(
+  const match = /^@(outcome|effect|stunt|actor|counter)\/([A-Za-z0-9-]+)$/.exec(
     token.trim(),
   );
   if (!match) {

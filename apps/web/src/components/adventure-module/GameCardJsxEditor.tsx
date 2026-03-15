@@ -16,7 +16,8 @@ const isGameCardType = (value: string): value is GameCardType =>
   value === "OutcomeCard" ||
   value === "EffectCard" ||
   value === "StuntCard" ||
-  value === "ActorCard";
+  value === "ActorCard" ||
+  value === "CounterCard";
 
 const getStringAttribute = (
   mdastNode: JsxEditorProps["mdastNode"],
@@ -40,7 +41,7 @@ export const GameCardJsxEditor = ({
   mdastNode,
 }: JsxEditorProps): JSX.Element => {
   const { lexicalNode, parentEditor } = useNestedEditorContext();
-  const { actorsBySlug } = useGameCardCatalogContext();
+  const { actorsBySlug, countersBySlug } = useGameCardCatalogContext();
   const nodeKey = lexicalNode.getKey();
   const nodeType = lexicalNode.getType();
   const [isSelected, setIsSelected] = useState(false);
@@ -52,8 +53,8 @@ export const GameCardJsxEditor = ({
     if (!type || !slug || !isGameCardType(type)) {
       return null;
     }
-    return resolveGameCard(type, slug, actorsBySlug);
-  }, [actorsBySlug, slug, type]);
+    return resolveGameCard(type, slug, actorsBySlug, countersBySlug);
+  }, [actorsBySlug, countersBySlug, slug, type]);
 
   useEffect(() => {
     const syncSelectedState = (): void => {

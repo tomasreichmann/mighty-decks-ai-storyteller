@@ -7,6 +7,8 @@ import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
 import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
+import { AdventureModuleCounterEditor } from "../components/adventure-module/AdventureModuleCounterEditor";
+import { AdventureModuleCountersTabPanel } from "../components/adventure-module/AdventureModuleCountersTabPanel";
 import {
   AutosaveStatusBadge,
   type AutosaveStatus,
@@ -26,7 +28,11 @@ import {
 } from "../components/adventure-module/EntityList";
 import {
   createAdventureModuleActor,
+  createAdventureModuleCounter,
+  deleteAdventureModuleActor,
+  deleteAdventureModuleCounter,
   getAdventureModuleBySlug,
+  updateAdventureModuleCounter,
   updateAdventureModuleActor,
   updateAdventureModuleFragment,
   updateAdventureModuleIndex,
@@ -41,6 +47,7 @@ const AUTHORING_TABS = [
   "player-info",
   "storyteller-info",
   "actors",
+  "counters",
   "locations",
   "encounters",
   "quests",
@@ -54,6 +61,7 @@ const TAB_LABELS: Record<AuthoringTab, string> = {
   "player-info": "Player Info",
   "storyteller-info": "Storyteller Info",
   actors: "Actors",
+  counters: "Counters",
   locations: "Locations",
   encounters: "Encounters",
   quests: "Quests",
@@ -377,6 +385,7 @@ interface StorytellerInfoFormState {
 }
 
 interface ActorFormState {
+  fragmentId: string;
   actorSlug: string;
   title: string;
   summary: string;
@@ -384,6 +393,15 @@ interface ActorFormState {
   tacticalRoleSlug: AdventureModuleDetail["actors"][number]["tacticalRoleSlug"];
   tacticalSpecialSlug?: AdventureModuleDetail["actors"][number]["tacticalSpecialSlug"];
   content: string;
+}
+
+interface CounterFormState {
+  slug: string;
+  title: string;
+  iconSlug: AdventureModuleDetail["counters"][number]["iconSlug"];
+  currentValue: number;
+  maxValue?: number;
+  description: string;
 }
 
 const toBaseFormState = (index: AdventureModuleIndex): BaseFormState => ({
@@ -488,6 +506,7 @@ const toStorytellerInfoFormState = (
 const toActorFormState = (
   actor: AdventureModuleDetail["actors"][number],
 ): ActorFormState => ({
+  fragmentId: actor.fragmentId,
   actorSlug: actor.actorSlug,
   title: actor.title,
   summary: actor.summary ?? "",
@@ -495,6 +514,78 @@ const toActorFormState = (
   tacticalRoleSlug: actor.tacticalRoleSlug,
   tacticalSpecialSlug: actor.tacticalSpecialSlug,
   content: normalizeLegacyGameCardMarkdown(actor.content),
+});
+
+const toCounterFormState = (
+  counter: AdventureModuleDetail["counters"][number],
+): CounterFormState => ({
+  slug: counter.slug,
+  title: counter.title,
+  iconSlug: counter.iconSlug,
+  currentValue: counter.currentValue,
+  maxValue: counter.maxValue,
+  description: counter.description ?? "",
+});
+
+const clampCounterValue = (currentValue: number, maxValue?: number): number => {
+  const normalizedCurrentValue = Math.max(0, Math.trunc(currentValue));
+  if (typeof maxValue !== "number") {
+    return normalizedCurrentValue;
+  }
+  return Math.min(normalizedCurrentValue, Math.max(0, Math.trunc(maxValue)));
+};
+
+const toEntitySlug = (value: string): string => {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\x00-\x7F]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized.length > 0 ? normalized.slice(0, 120) : "untitled";
+};
+
+const makeUniqueCounterSlug = (
+  title: string,
+  detail: AdventureModuleDetail,
+  excludeSlug: string,
+): string => {
+  const baseSlug = toEntitySlug(title);
+  const existingSlugs = new Set(
+    detail.counters
+      .filter((counter) => counter.slug !== excludeSlug)
+      .map((counter) => counter.slug),
+  );
+
+  if (!existingSlugs.has(baseSlug)) {
+    return baseSlug;
+  }
+
+  for (let suffix = 2; suffix < 10_000; suffix += 1) {
+    const candidate = toEntitySlug(`${baseSlug}-${suffix}`);
+    if (!existingSlugs.has(candidate)) {
+      return candidate;
+    }
+  }
+
+  return baseSlug;
+};
+
+const replaceCounterInDetail = (
+  detail: AdventureModuleDetail,
+  nextCounter: AdventureModuleDetail["counters"][number],
+): AdventureModuleDetail => ({
+  ...detail,
+  index: {
+    ...detail.index,
+    counters: detail.index.counters.map((counter) =>
+      counter.slug === nextCounter.slug ? nextCounter : counter,
+    ),
+  },
+  counters: detail.counters.map((counter) =>
+    counter.slug === nextCounter.slug ? nextCounter : counter,
+  ),
 });
 
 const normalizeTagEntry = (value: string): string =>
@@ -751,6 +842,63 @@ const validateActorForm = (
   };
 };
 
+const validateCounterForm = (
+  form: CounterFormState,
+): {
+  title: string;
+  iconSlug: CounterFormState["iconSlug"];
+  currentValue: number;
+  maxValue?: number;
+  description: string;
+  error?: string;
+} => {
+  const title = form.title.trim();
+  if (title.length === 0) {
+    return {
+      title,
+      iconSlug: form.iconSlug,
+      currentValue: clampCounterValue(form.currentValue, form.maxValue),
+      maxValue: form.maxValue,
+      description: form.description.trim(),
+      error: "Counter name is required.",
+    };
+  }
+  if (title.length > 120) {
+    return {
+      title,
+      iconSlug: form.iconSlug,
+      currentValue: clampCounterValue(form.currentValue, form.maxValue),
+      maxValue: form.maxValue,
+      description: form.description.trim(),
+      error: "Counter name must be at most 120 characters.",
+    };
+  }
+
+  const description = form.description.trim();
+  if (description.length > 500) {
+    return {
+      title,
+      iconSlug: form.iconSlug,
+      currentValue: clampCounterValue(form.currentValue, form.maxValue),
+      maxValue: form.maxValue,
+      description,
+      error: "Counter description must be at most 500 characters.",
+    };
+  }
+
+  const maxValue =
+    typeof form.maxValue === "number" ? Math.max(0, Math.trunc(form.maxValue)) : undefined;
+  const currentValue = clampCounterValue(form.currentValue, maxValue);
+
+  return {
+    title,
+    iconSlug: form.iconSlug,
+    currentValue,
+    maxValue,
+    description,
+  };
+};
+
 export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const navigate = useNavigate();
   const { slug, tab, entityId } = useParams<{
@@ -777,12 +925,14 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       infoText: "",
     });
   const [actorForm, setActorForm] = useState<ActorFormState | null>(null);
+  const [counterForm, setCounterForm] = useState<CounterFormState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [baseDirty, setBaseDirty] = useState(false);
   const [playerInfoDirty, setPlayerInfoDirty] = useState(false);
   const [storytellerInfoDirty, setStorytellerInfoDirty] = useState(false);
   const [actorDirty, setActorDirty] = useState(false);
+  const [counterDirty, setCounterDirty] = useState(false);
   const [baseValidationMessage, setBaseValidationMessage] = useState<
     string | null
   >(null);
@@ -795,8 +945,13 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const [actorValidationMessage, setActorValidationMessage] = useState<
     string | null
   >(null);
+  const [counterValidationMessage, setCounterValidationMessage] = useState<string | null>(
+    null,
+  );
   const [actorCreateError, setActorCreateError] = useState<string | null>(null);
+  const [counterCreateError, setCounterCreateError] = useState<string | null>(null);
   const [creatingActor, setCreatingActor] = useState(false);
+  const [creatingCounter, setCreatingCounter] = useState(false);
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>("idle");
   const [autosaveMessage, setAutosaveMessage] = useState<string | undefined>(
     undefined,
@@ -851,11 +1006,14 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         setPlayerInfoDirty(false);
         setStorytellerInfoDirty(false);
         setActorDirty(false);
+        setCounterDirty(false);
         setBaseValidationMessage(null);
         setPlayerInfoValidationMessage(null);
         setStorytellerInfoValidationMessage(null);
         setActorValidationMessage(null);
+        setCounterValidationMessage(null);
         setActorCreateError(null);
+        setCounterCreateError(null);
         setAutosaveStatus("idle");
         setAutosaveMessage(undefined);
       })
@@ -890,6 +1048,15 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     );
   }, [activeTab, moduleDetail, normalizedEntityId]);
 
+  const activeCounter = useMemo(() => {
+    if (activeTab !== "counters" || !normalizedEntityId || !moduleDetail) {
+      return null;
+    }
+    return (
+      moduleDetail.counters.find((counter) => counter.slug === normalizedEntityId) ?? null
+    );
+  }, [activeTab, moduleDetail, normalizedEntityId]);
+
   useEffect(() => {
     if (activeTab !== "actors" || !normalizedEntityId) {
       setActorForm(null);
@@ -906,6 +1073,23 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setActorDirty(false);
     setActorValidationMessage(null);
   }, [activeActor, activeTab, normalizedEntityId]);
+
+  useEffect(() => {
+    if (activeTab !== "counters" || !normalizedEntityId) {
+      setCounterForm(null);
+      setCounterDirty(false);
+      setCounterValidationMessage(null);
+      return;
+    }
+    if (!activeCounter) {
+      setCounterForm(null);
+      setCounterDirty(false);
+      return;
+    }
+    setCounterForm(toCounterFormState(activeCounter));
+    setCounterDirty(false);
+    setCounterValidationMessage(null);
+  }, [activeCounter, activeTab, normalizedEntityId]);
 
   const persistBase = useCallback(async (): Promise<void> => {
     if (!moduleDetail || !moduleDetail.ownedByRequester) {
@@ -1211,10 +1395,21 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setModuleDetail(nextDetail);
       const nextActor =
         nextDetail.actors.find(
-          (resolvedActor) => resolvedActor.actorSlug === actorForm.actorSlug,
+          (resolvedActor) => resolvedActor.fragmentId === actorForm.fragmentId,
         ) ?? null;
       setActorForm(nextActor ? toActorFormState(nextActor) : null);
       setActorDirty(false);
+      if (
+        nextActor &&
+        nextActor.actorSlug !== actorForm.actorSlug &&
+        activeTab === "actors" &&
+        normalizedEntityId === actorForm.actorSlug
+      ) {
+        navigate(
+          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/actors/${encodeURIComponent(nextActor.actorSlug)}`,
+          { replace: true },
+        );
+      }
       setAutosaveStatus("saved");
       setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
     } catch (saveError) {
@@ -1226,7 +1421,89 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     } finally {
       savingRef.current = false;
     }
-  }, [activeTab, actorForm, creatorToken, moduleDetail]);
+  }, [activeTab, actorForm, creatorToken, moduleDetail, navigate, normalizedEntityId]);
+
+  const persistCounter = useCallback(async (): Promise<void> => {
+    if (
+      !moduleDetail ||
+      !moduleDetail.ownedByRequester ||
+      activeTab !== "counters" ||
+      !counterForm
+    ) {
+      return;
+    }
+    if (savingRef.current) {
+      return;
+    }
+
+    const validated = validateCounterForm(counterForm);
+    if (validated.error) {
+      setCounterValidationMessage(validated.error);
+      setAutosaveStatus("error");
+      setAutosaveMessage(validated.error);
+      return;
+    }
+
+    savingRef.current = true;
+    setCounterValidationMessage(null);
+    setAutosaveStatus("saving");
+    setAutosaveMessage(undefined);
+    setError(null);
+    setCounterCreateError(null);
+
+    try {
+      const expectedCounterSlug = makeUniqueCounterSlug(
+        validated.title,
+        moduleDetail,
+        counterForm.slug,
+      );
+      const nextDetail = await updateAdventureModuleCounter(
+        moduleDetail.index.moduleId,
+        counterForm.slug,
+        {
+          title: validated.title,
+          iconSlug: validated.iconSlug,
+          currentValue: validated.currentValue,
+          maxValue: validated.maxValue ?? null,
+          description: validated.description,
+        },
+        creatorToken,
+      );
+
+      setModuleDetail(nextDetail);
+      const nextCounter =
+        nextDetail.counters.find(
+          (resolvedCounter) => resolvedCounter.slug === expectedCounterSlug,
+        ) ??
+        nextDetail.counters.find(
+          (resolvedCounter) => resolvedCounter.slug === counterForm.slug,
+        ) ??
+        null;
+      setCounterForm(nextCounter ? toCounterFormState(nextCounter) : null);
+      setCounterDirty(false);
+      if (
+        nextCounter &&
+        nextCounter.slug !== counterForm.slug &&
+        activeTab === "counters" &&
+        normalizedEntityId === counterForm.slug
+      ) {
+        navigate(
+          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/counters/${encodeURIComponent(nextCounter.slug)}`,
+          { replace: true },
+        );
+      }
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (saveError) {
+      const message =
+        saveError instanceof Error ? saveError.message : "Autosave failed.";
+      setError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      savingRef.current = false;
+    }
+  }, [activeTab, counterForm, creatorToken, moduleDetail, navigate, normalizedEntityId]);
 
   const handleCreateActor = useCallback(async (): Promise<void> => {
     if (!moduleDetail?.ownedByRequester || creatingActor) {
@@ -1265,6 +1542,266 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setCreatingActor(false);
     }
   }, [creatingActor, creatorToken, moduleDetail, navigate]);
+
+  const handleCreateCounter = useCallback(async (): Promise<void> => {
+    if (!moduleDetail?.ownedByRequester || creatingCounter) {
+      return;
+    }
+
+    setCreatingCounter(true);
+    setCounterCreateError(null);
+    setError(null);
+
+    try {
+      const nextDetail = await createAdventureModuleCounter(
+        moduleDetail.index.moduleId,
+        { title: "New Counter" },
+        creatorToken,
+      );
+      setModuleDetail(nextDetail);
+      const createdCounter = nextDetail.counters[nextDetail.counters.length - 1];
+      if (!createdCounter) {
+        throw new Error("Created counter could not be resolved.");
+      }
+      setCounterForm(toCounterFormState(createdCounter));
+      setCounterDirty(false);
+      navigate(
+        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/counters/${encodeURIComponent(createdCounter.slug)}`,
+      );
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (createError) {
+      const message =
+        createError instanceof Error ? createError.message : "Could not create counter.";
+      setCounterCreateError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      setCreatingCounter(false);
+    }
+  }, [creatingCounter, creatorToken, moduleDetail, navigate]);
+
+  const handleDeleteActor = useCallback(
+    async (actorSlug: string, title: string): Promise<void> => {
+      if (!moduleDetail?.ownedByRequester) {
+        return;
+      }
+      if (!window.confirm(`Delete "${title}"?`)) {
+        return;
+      }
+
+      setError(null);
+      setActorCreateError(null);
+      setAutosaveStatus("saving");
+      setAutosaveMessage(undefined);
+
+      try {
+        const nextDetail = await deleteAdventureModuleActor(
+          moduleDetail.index.moduleId,
+          actorSlug,
+          creatorToken,
+        );
+        setModuleDetail(nextDetail);
+        setActorDirty(false);
+        setActorValidationMessage(null);
+        if (activeTab === "actors" && normalizedEntityId === actorSlug) {
+          setActorForm(null);
+          navigate(
+            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/actors`,
+          );
+        }
+        setAutosaveStatus("saved");
+        setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+      } catch (deleteError) {
+        const message =
+          deleteError instanceof Error ? deleteError.message : "Could not delete actor.";
+        setError(message);
+        setAutosaveStatus("error");
+        setAutosaveMessage(message);
+      }
+    },
+    [activeTab, creatorToken, moduleDetail, navigate, normalizedEntityId],
+  );
+
+  const handleDeleteCounter = useCallback(
+    async (counterSlug: string, title: string): Promise<void> => {
+      if (!moduleDetail?.ownedByRequester) {
+        return;
+      }
+      if (!window.confirm(`Delete "${title}"?`)) {
+        return;
+      }
+
+      setError(null);
+      setCounterCreateError(null);
+      setAutosaveStatus("saving");
+      setAutosaveMessage(undefined);
+
+      try {
+        const nextDetail = await deleteAdventureModuleCounter(
+          moduleDetail.index.moduleId,
+          counterSlug,
+          creatorToken,
+        );
+        setModuleDetail(nextDetail);
+        setCounterDirty(false);
+        setCounterValidationMessage(null);
+        if (activeTab === "counters" && normalizedEntityId === counterSlug) {
+          setCounterForm(null);
+          navigate(
+            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/counters`,
+          );
+        }
+        setAutosaveStatus("saved");
+        setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+      } catch (deleteError) {
+        const message =
+          deleteError instanceof Error ? deleteError.message : "Could not delete counter.";
+        setError(message);
+        setAutosaveStatus("error");
+        setAutosaveMessage(message);
+      }
+    },
+    [activeTab, creatorToken, moduleDetail, navigate, normalizedEntityId],
+  );
+
+  const handleAdjustCounterValue = useCallback(
+    async (
+      counterSlug: string,
+      delta: number,
+      target: "current" | "max" = "current",
+    ): Promise<void> => {
+      if (!moduleDetail?.ownedByRequester || savingRef.current) {
+        return;
+      }
+
+      const persistedCounter =
+        moduleDetail.counters.find((counter) => counter.slug === counterSlug) ?? null;
+      if (!persistedCounter) {
+        return;
+      }
+
+      let nextPayload = {
+        title: persistedCounter.title,
+        iconSlug: persistedCounter.iconSlug,
+        currentValue: persistedCounter.currentValue,
+        maxValue: persistedCounter.maxValue,
+        description: persistedCounter.description ?? "",
+      };
+
+      if (activeTab === "counters" && counterForm?.slug === counterSlug) {
+        const validated = validateCounterForm(counterForm);
+        if (!validated.error) {
+          nextPayload = {
+            title: validated.title,
+            iconSlug: validated.iconSlug,
+            currentValue: validated.currentValue,
+            maxValue: validated.maxValue,
+            description: validated.description,
+          };
+        }
+      }
+
+      if (target === "max") {
+        const nextMaxValue = Math.max(
+          0,
+          Math.trunc(
+            (typeof nextPayload.maxValue === "number"
+              ? nextPayload.maxValue
+              : nextPayload.currentValue) + delta,
+          ),
+        );
+        nextPayload = {
+          ...nextPayload,
+          maxValue: nextMaxValue,
+          currentValue: clampCounterValue(nextPayload.currentValue, nextMaxValue),
+        };
+      } else {
+        nextPayload = {
+          ...nextPayload,
+          currentValue: clampCounterValue(
+            nextPayload.currentValue + delta,
+            nextPayload.maxValue,
+          ),
+        };
+      }
+
+      const previousDetail = moduleDetail;
+      const optimisticCounter = {
+        slug: counterSlug,
+        title: nextPayload.title,
+        iconSlug: nextPayload.iconSlug,
+        currentValue: nextPayload.currentValue,
+        ...(typeof nextPayload.maxValue === "number"
+          ? { maxValue: nextPayload.maxValue }
+          : {}),
+        description: nextPayload.description,
+      };
+
+      setModuleDetail(replaceCounterInDetail(previousDetail, optimisticCounter));
+      setCounterForm((current) =>
+        current && current.slug === counterSlug
+          ? {
+              ...current,
+              title: nextPayload.title,
+              iconSlug: nextPayload.iconSlug,
+              currentValue: nextPayload.currentValue,
+              maxValue: nextPayload.maxValue,
+              description: nextPayload.description,
+            }
+          : current,
+      );
+
+      savingRef.current = true;
+      setAutosaveStatus("saving");
+      setAutosaveMessage(undefined);
+      setError(null);
+
+      try {
+        const nextDetail = await updateAdventureModuleCounter(
+          previousDetail.index.moduleId,
+          counterSlug,
+          {
+            title: nextPayload.title,
+            iconSlug: nextPayload.iconSlug,
+            currentValue: nextPayload.currentValue,
+            maxValue: nextPayload.maxValue ?? null,
+            description: nextPayload.description,
+          },
+          creatorToken,
+        );
+        setModuleDetail(nextDetail);
+        setCounterForm((current) => {
+          if (!current || current.slug !== counterSlug) {
+            return current;
+          }
+          const savedCounter =
+            nextDetail.counters.find((counter) => counter.slug === counterSlug) ?? null;
+          return savedCounter ? toCounterFormState(savedCounter) : current;
+        });
+        setAutosaveStatus("saved");
+        setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+      } catch (saveError) {
+        const message =
+          saveError instanceof Error ? saveError.message : "Could not update counter.";
+        setModuleDetail(previousDetail);
+        setCounterForm((current) => {
+          if (!current || current.slug !== counterSlug) {
+            return current;
+          }
+          const previousCounter =
+            previousDetail.counters.find((counter) => counter.slug === counterSlug) ?? null;
+          return previousCounter ? toCounterFormState(previousCounter) : current;
+        });
+        setError(message);
+        setAutosaveStatus("error");
+        setAutosaveMessage(message);
+      } finally {
+        savingRef.current = false;
+      }
+    },
+    [activeTab, counterForm, creatorToken, moduleDetail],
+  );
 
   useEffect(() => {
     if (
@@ -1398,6 +1935,39 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     persistActor,
   ]);
 
+  useEffect(() => {
+    if (
+      !counterDirty ||
+      !moduleDetail?.ownedByRequester ||
+      activeTab !== "counters" ||
+      !entityId
+    ) {
+      return;
+    }
+
+    setAutosaveStatus("queued");
+    setAutosaveMessage("pending");
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = window.setTimeout(() => {
+      void persistCounter();
+    }, 1000);
+
+    return () => {
+      if (saveTimerRef.current !== null) {
+        window.clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+    };
+  }, [
+    activeTab,
+    counterDirty,
+    entityId,
+    moduleDetail?.ownedByRequester,
+    persistCounter,
+  ]);
+
   useEffect(
     () => () => {
       if (saveTimerRef.current !== null) {
@@ -1449,6 +2019,17 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       saveTimerRef.current = null;
     }
     void persistActor();
+  };
+
+  const handleCounterFieldBlur = (): void => {
+    if (!counterDirty || !moduleDetail?.ownedByRequester) {
+      return;
+    }
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    void persistCounter();
   };
 
   const editable = Boolean(moduleDetail?.ownedByRequester);
@@ -1566,6 +2147,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                     content: actorForm.content,
                   }}
                   actors={moduleDetail.actors}
+                  counters={moduleDetail.counters}
                   smartContextDocument={smartContextDocument}
                   editable={editable}
                   validationMessage={actorValidationMessage}
@@ -1627,10 +2209,96 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                     setActorDirty(true);
                   }}
                   onFieldBlur={handleActorFieldBlur}
+                  onAdjustCounterValue={(counterSlug, delta, target) => {
+                    void handleAdjustCounterValue(counterSlug, delta, target);
+                  }}
+                  onDelete={() => {
+                    void handleDeleteActor(activeActor.actorSlug, activeActor.title);
+                  }}
                 />
               ) : (
                 <AdventureModuleTabPlaceholder
                   description={`Actor "${normalizedEntityId ?? entityId}" could not be found in this module.`}
+                />
+              )
+            ) : activeTab === "counters" ? (
+              activeCounter && counterForm ? (
+                <AdventureModuleCounterEditor
+                  counter={{
+                    ...activeCounter,
+                    title: counterForm.title,
+                    iconSlug: counterForm.iconSlug,
+                    currentValue: counterForm.currentValue,
+                    maxValue: counterForm.maxValue,
+                    description: counterForm.description,
+                  }}
+                  editable={editable}
+                  validationMessage={counterValidationMessage}
+                  onTitleChange={(nextValue) => {
+                    setCounterValidationMessage(null);
+                    setCounterForm((current) =>
+                      current ? { ...current, title: nextValue } : current,
+                    );
+                    setCounterDirty(true);
+                  }}
+                  onIconSlugChange={(nextValue) => {
+                    setCounterValidationMessage(null);
+                    setCounterForm((current) =>
+                      current ? { ...current, iconSlug: nextValue } : current,
+                    );
+                    setCounterDirty(true);
+                  }}
+                  onCurrentValueChange={(nextValue) => {
+                    setCounterValidationMessage(null);
+                    const parsed = Number.parseInt(nextValue, 10);
+                    setCounterForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            currentValue:
+                              Number.isFinite(parsed) && parsed >= 0 ? parsed : 0,
+                          }
+                        : current,
+                    );
+                    setCounterDirty(true);
+                  }}
+                  onMaxValueChange={(nextValue) => {
+                    setCounterValidationMessage(null);
+                    const trimmed = nextValue.trim();
+                    const parsed = Number.parseInt(trimmed, 10);
+                    setCounterForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            maxValue:
+                              trimmed.length === 0
+                                ? undefined
+                                : Number.isFinite(parsed) && parsed >= 0
+                                  ? parsed
+                                  : current.maxValue,
+                          }
+                        : current,
+                    );
+                    setCounterDirty(true);
+                  }}
+                  onDescriptionChange={(nextValue) => {
+                    setCounterValidationMessage(null);
+                    setCounterForm((current) =>
+                      current ? { ...current, description: nextValue } : current,
+                    );
+                    setCounterDirty(true);
+                  }}
+                  onFieldBlur={handleCounterFieldBlur}
+                  onAdjustCounterValue={(counterSlug, delta, target) => {
+                    void handleAdjustCounterValue(counterSlug, delta, target);
+                  }}
+                  onDelete={() => {
+                    void handleDeleteCounter(activeCounter.slug, activeCounter.title);
+                  }}
+                />
+              ) : (
+                <AdventureModuleTabPlaceholder
+                  description={`Counter "${normalizedEntityId ?? entityId}" could not be found in this module.`}
                 />
               )
             ) : activeEntityTabConfig ? (
@@ -1683,6 +2351,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               infoText={playerInfoForm.infoText}
               smartContextDocument={smartContextDocument}
               actors={moduleDetail.actors}
+              counters={moduleDetail.counters}
               editable={editable}
               validationMessage={playerInfoValidationMessage}
               onSummaryChange={(nextValue) => {
@@ -1702,6 +2371,9 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                 setPlayerInfoDirty(true);
               }}
               onFieldBlur={handlePlayerInfoFieldBlur}
+              onAdjustCounterValue={(counterSlug, delta, target) => {
+                void handleAdjustCounterValue(counterSlug, delta, target);
+              }}
             />
           ) : activeTab === "storyteller-info" ? (
             <AdventureModuleStorytellerInfoTabPanel
@@ -1709,6 +2381,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               infoText={storytellerInfoForm.infoText}
               smartContextDocument={smartContextDocument}
               actors={moduleDetail.actors}
+              counters={moduleDetail.counters}
               editable={editable}
               validationMessage={storytellerInfoValidationMessage}
               onSummaryChange={(nextValue) => {
@@ -1728,6 +2401,9 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                 setStorytellerInfoDirty(true);
               }}
               onFieldBlur={handleStorytellerInfoFieldBlur}
+              onAdjustCounterValue={(counterSlug, delta, target) => {
+                void handleAdjustCounterValue(counterSlug, delta, target);
+              }}
             />
           ) : activeTab === "actors" ? (
             <AdventureModuleActorsTabPanel
@@ -1742,6 +2418,30 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                 navigate(
                   `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/actors/${encodeURIComponent(actorSlug)}`,
                 );
+              }}
+              onDeleteActor={(actorSlug, title) => {
+                void handleDeleteActor(actorSlug, title);
+              }}
+            />
+          ) : activeTab === "counters" ? (
+            <AdventureModuleCountersTabPanel
+              counters={moduleDetail.counters}
+              editable={editable}
+              creating={creatingCounter}
+              createError={counterCreateError}
+              onCreate={() => {
+                void handleCreateCounter();
+              }}
+              onOpenCounter={(counterSlug) => {
+                navigate(
+                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/counters/${encodeURIComponent(counterSlug)}`,
+                );
+              }}
+              onDeleteCounter={(counterSlug, title) => {
+                void handleDeleteCounter(counterSlug, title);
+              }}
+              onAdjustCounterValue={(counterSlug, delta, target) => {
+                void handleAdjustCounterValue(counterSlug, delta, target);
               }}
             />
           ) : activeEntityTab && activeEntityTabConfig ? (

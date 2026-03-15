@@ -141,8 +141,8 @@ test("creates, reads, updates, and previews adventure modules", async () => {
   assert.equal(ownerPreview.storytellerSummary?.hidden, false);
 });
 
-test("creates and updates actors with stable actor slugs", async () => {
-  const store = await createStore();
+test("updates actor and counter slugs when titles change", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
   const module = await store.createModule({
     creatorToken: "token-actor",
     title: "Actor Module",
@@ -194,7 +194,7 @@ test("creates and updates actors with stable actor slugs", async () => {
     moduleId: module.index.moduleId,
     actorSlug: "river-smuggler-nyra",
     creatorToken: "token-actor",
-    title: "River Smuggler Nyra, River Queen",
+    title: "River Queen Nyra",
     summary: "Smuggler captain with flood-tunnel leverage.",
     baseLayerSlug: "merchant",
     tacticalRoleSlug: "ranger",
@@ -212,11 +212,9 @@ test("creates and updates actors with stable actor slugs", async () => {
     }>;
   };
 
-  const updatedActor = updated.actors?.find(
-    (actor) => actor.actorSlug === "river-smuggler-nyra",
-  );
+  const updatedActor = updated.actors?.find((actor) => actor.actorSlug === "river-queen-nyra");
   assert.ok(updatedActor);
-  assert.equal(updatedActor.title, "River Smuggler Nyra, River Queen");
+  assert.equal(updatedActor.title, "River Queen Nyra");
   assert.equal(
     updatedActor.summary,
     "Smuggler captain with flood-tunnel leverage.",
@@ -227,6 +225,245 @@ test("creates and updates actors with stable actor slugs", async () => {
   assert.equal(
     updatedActor.content,
     "# River Smuggler Nyra\n\nControls the hidden canal routes.",
+  );
+
+  const moduleDirEntries = await readFile(
+    join(rootDir, module.index.moduleId, "index.json"),
+    "utf8",
+  );
+  assert.match(moduleDirEntries, /actors\/river-queen-nyra\.mdx/);
+  await assert.rejects(
+    () => readFile(join(rootDir, module.index.moduleId, "actors", "river-smuggler-nyra.mdx"), "utf8"),
+    { code: "ENOENT" },
+  );
+  const renamedActorFile = await readFile(
+    join(rootDir, module.index.moduleId, "actors", "river-queen-nyra.mdx"),
+    "utf8",
+  );
+  assert.match(renamedActorFile, /Controls the hidden canal routes/);
+
+  const entityStore = store as unknown as {
+    createCounter: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<{
+      counters: Array<{
+        slug: string;
+        title: string;
+        iconSlug: string;
+        currentValue: number;
+        maxValue?: number;
+        description?: string;
+      }>;
+    }>;
+    updateCounter: (input: {
+      moduleId: string;
+      counterSlug: string;
+      creatorToken?: string;
+      title: string;
+      iconSlug: string;
+      currentValue: number;
+      maxValue?: number;
+      description: string;
+    }) => Promise<{
+      counters: Array<{
+        slug: string;
+        title: string;
+        iconSlug: string;
+        currentValue: number;
+        maxValue?: number;
+        description?: string;
+      }>;
+    }>;
+  };
+
+  const createdCounter = await entityStore.createCounter({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-actor",
+    title: "Threat Clock",
+  });
+  assert.equal(
+    createdCounter.counters.some((counter) => counter.slug === "threat-clock"),
+    true,
+  );
+
+  const updatedCounterState = await entityStore.updateCounter({
+    moduleId: module.index.moduleId,
+    counterSlug: "threat-clock",
+    creatorToken: "token-actor",
+    title: "Danger Clock",
+    iconSlug: "danger",
+    currentValue: 2,
+    maxValue: 4,
+    description: "Escalates the scene threat.",
+  });
+  const updatedCounter = updatedCounterState.counters.find(
+    (counter) => counter.slug === "danger-clock",
+  );
+  assert.ok(updatedCounter);
+  assert.equal(updatedCounter.title, "Danger Clock");
+  assert.equal(updatedCounter.currentValue, 2);
+  assert.equal(updatedCounter.maxValue, 4);
+});
+
+test("creates, updates, clamps, and deletes counters while allowing actor deletion", async () => {
+  const store = await createStore();
+  const module = await store.createModule({
+    creatorToken: "token-counter",
+    title: "Counter Module",
+  });
+
+  const moduleState = module as unknown as {
+    index: {
+      counters?: Array<{
+        slug: string;
+      }>;
+    };
+    counters?: Array<{
+      slug: string;
+    }>;
+  };
+
+  assert.equal(Array.isArray(moduleState.index.counters), true);
+  assert.deepEqual(moduleState.index.counters, []);
+  assert.equal(Array.isArray(moduleState.counters), true);
+  assert.deepEqual(moduleState.counters, []);
+
+  const entityStore = store as unknown as {
+    createCounter?: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<{
+      counters: Array<{
+        slug: string;
+        title: string;
+        iconSlug: string;
+        currentValue: number;
+        maxValue?: number;
+        description?: string;
+      }>;
+    }>;
+    updateCounter?: (input: {
+      moduleId: string;
+      counterSlug: string;
+      creatorToken?: string;
+      title: string;
+      iconSlug: string;
+      currentValue: number;
+      maxValue?: number;
+      description: string;
+    }) => Promise<{
+      counters: Array<{
+        slug: string;
+        title: string;
+        iconSlug: string;
+        currentValue: number;
+        maxValue?: number;
+        description?: string;
+      }>;
+    }>;
+    deleteCounter?: (input: {
+      moduleId: string;
+      counterSlug: string;
+      creatorToken?: string;
+    }) => Promise<{
+      counters: Array<{
+        slug: string;
+      }>;
+    }>;
+    deleteActor?: (input: {
+      moduleId: string;
+      actorSlug: string;
+      creatorToken?: string;
+    }) => Promise<{
+      actors: Array<{
+        actorSlug: string;
+      }>;
+    }>;
+  };
+
+  assert.equal(typeof entityStore.createCounter, "function");
+  assert.equal(typeof entityStore.updateCounter, "function");
+  assert.equal(typeof entityStore.deleteCounter, "function");
+  assert.equal(typeof entityStore.deleteActor, "function");
+
+  if (
+    typeof entityStore.createCounter !== "function" ||
+    typeof entityStore.updateCounter !== "function" ||
+    typeof entityStore.deleteCounter !== "function" ||
+    typeof entityStore.deleteActor !== "function"
+  ) {
+    return;
+  }
+
+  const created = await entityStore.createCounter({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-counter",
+    title: "Threat Clock",
+  });
+  const createdCounter = created.counters.find(
+    (counter) => counter.slug === "threat-clock",
+  );
+  assert.ok(createdCounter);
+  assert.equal(createdCounter.title, "Threat Clock");
+  assert.equal(createdCounter.currentValue, 0);
+
+  const updated = await entityStore.updateCounter({
+    moduleId: module.index.moduleId,
+    counterSlug: "threat-clock",
+    creatorToken: "token-counter",
+    title: "Threat Clock",
+    iconSlug: "danger",
+    currentValue: 9,
+    maxValue: 5,
+    description: "Escalates the heat across every scene.",
+  });
+  const updatedCounter = updated.counters.find(
+    (counter) => counter.slug === "threat-clock",
+  );
+  assert.ok(updatedCounter);
+  assert.equal(updatedCounter.iconSlug, "danger");
+  assert.equal(updatedCounter.currentValue, 5);
+  assert.equal(updatedCounter.maxValue, 5);
+  assert.equal(
+    updatedCounter.description,
+    "Escalates the heat across every scene.",
+  );
+
+  const withReferencedMarkdown = await store.updateIndex({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-counter",
+    index: {
+      ...updated.index,
+      playerSummaryMarkdown:
+        '<GameCard type="ActorCard" slug="primary-actor" /> <GameCard type="CounterCard" slug="threat-clock" />',
+    },
+  });
+
+  const afterDeleteCounter = await entityStore.deleteCounter({
+    moduleId: module.index.moduleId,
+    counterSlug: "threat-clock",
+    creatorToken: "token-counter",
+  });
+  assert.equal(
+    afterDeleteCounter.counters.some((counter) => counter.slug === "threat-clock"),
+    false,
+  );
+
+  const afterDeleteActor = await entityStore.deleteActor({
+    moduleId: module.index.moduleId,
+    actorSlug: "primary-actor",
+    creatorToken: "token-counter",
+  });
+  assert.equal(
+    afterDeleteActor.actors.some((actor) => actor.actorSlug === "primary-actor"),
+    false,
+  );
+  assert.equal(
+    afterDeleteActor.index.playerSummaryMarkdown,
+    withReferencedMarkdown.index.playerSummaryMarkdown,
   );
 });
 

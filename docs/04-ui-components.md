@@ -225,7 +225,8 @@ Tabs:
 - `base`: `ModuleBaseTabPanel` with `SmartInput` for premise transforms
 - `player-info`: `AdventureModulePlayerInfoTabPanel` with dual MDXEditor fields (`Player Summary`, `Player Info Text`) in rich + source modes, inline `GameCard` embeds, and autosave
 - `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, and autosave
-- `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, and shortcode copy actions
+- `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, shortcode copy, and delete actions
+- `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, shortcode copy, and delete actions
 - `locations`: placeholder
 - `encounters`: placeholder
 - `quests`: placeholder
@@ -249,7 +250,7 @@ List-tab primary actions:
 
 ### `/adventure-module/:slug/:tab/:entityId`
 
-Entity editor route. Actor editing is implemented in this step; other entity editors remain placeholders.
+Entity editor route. Actor and counter editing are implemented in this step; other entity editors remain placeholders.
 
 Components:
 
@@ -265,9 +266,18 @@ Actor editor baseline fields:
 - optional tactical special
 - markdown body with inline `GameCard` embeds and actor shortcode support
 
+Counter editor baseline fields:
+
+- name
+- icon
+- current value
+- optional max value
+- description
+- live `CounterCard` preview with shared `+` and `-` controls for both current and max values when a max exists
+
 Behavior:
 
-- `/adventure-module/:slug/actors/:entityId` renders a live actor editor with autosave, live layered preview, and stable actor slug display.
+- `/adventure-module/:slug/actors/:entityId` renders a live actor editor with autosave, live layered preview, and actor slug display that regenerates from the saved title.
 - Other entity routes remain active placeholders while their typed editors are pending.
 
 ---

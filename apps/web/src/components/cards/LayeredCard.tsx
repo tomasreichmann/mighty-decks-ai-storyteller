@@ -1,6 +1,9 @@
+import React from "react";
 import type { ComponentProps, ReactNode } from "react";
 import { useId } from "react";
 import { cn } from "../../utils/cn";
+
+void React;
 
 export interface LayeredCardProps extends Omit<
   ComponentProps<"article">,

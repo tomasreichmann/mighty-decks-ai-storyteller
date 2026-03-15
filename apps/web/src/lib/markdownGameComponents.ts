@@ -1,4 +1,7 @@
-import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type {
+  AdventureModuleResolvedActor,
+  AdventureModuleResolvedCounter,
+} from "@mighty-decks/spec/adventureModuleAuthoring";
 import {
   rulesEffectCards,
   rulesOutcomeCards,
@@ -51,6 +54,13 @@ export type ResolvedGameCard =
       legacyToken: string;
       jsx: string;
       actor: AdventureModuleResolvedActor;
+    }
+  | {
+      type: "CounterCard";
+      slug: string;
+      legacyToken: string;
+      jsx: string;
+      counter: AdventureModuleResolvedCounter;
     };
 
 const dedupeBySlug = <T extends { slug: string }>(records: T[]): T[] => {
@@ -88,6 +98,7 @@ export const gameCardTypes = [
   "EffectCard",
   "StuntCard",
   "ActorCard",
+  "CounterCard",
 ] as const satisfies readonly GameCardType[];
 
 const gameCardTypeToLegacyPrefix: Record<GameCardType, string> = {
@@ -95,6 +106,7 @@ const gameCardTypeToLegacyPrefix: Record<GameCardType, string> = {
   EffectCard: "effect",
   StuntCard: "stunt",
   ActorCard: "actor",
+  CounterCard: "counter",
 };
 
 const toOption = (
@@ -114,6 +126,7 @@ export const gameCardTypeLabel: Record<GameCardType, string> = {
   EffectCard: "Effect",
   StuntCard: "Stunt",
   ActorCard: "Actor",
+  CounterCard: "Counter",
 };
 
 const baseGameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
@@ -125,6 +138,7 @@ const baseGameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
   ),
   StuntCard: stuntCards.map((card) => toOption("StuntCard", card.slug, card.title)),
   ActorCard: [],
+  CounterCard: [],
 };
 
 export const createActorGameCardOption = (
@@ -132,11 +146,18 @@ export const createActorGameCardOption = (
 ): GameCardOption =>
   toOption("ActorCard", actor.actorSlug, actor.title);
 
+export const createCounterGameCardOption = (
+  counter: AdventureModuleResolvedCounter,
+): GameCardOption =>
+  toOption("CounterCard", counter.slug, counter.title);
+
 export const buildGameCardOptionsByType = (
   actors: readonly AdventureModuleResolvedActor[] = [],
+  counters: readonly AdventureModuleResolvedCounter[] = [],
 ): Record<GameCardType, GameCardOption[]> => ({
   ...baseGameCardOptionsByType,
   ActorCard: actors.map(createActorGameCardOption),
+  CounterCard: counters.map(createCounterGameCardOption),
 });
 
 export const gameCardOptionsByType = buildGameCardOptionsByType();
@@ -145,6 +166,7 @@ export const resolveGameCard = (
   type: GameCardType,
   slug: string,
   moduleActorsBySlug?: ReadonlyMap<string, AdventureModuleResolvedActor>,
+  moduleCountersBySlug?: ReadonlyMap<string, AdventureModuleResolvedCounter>,
 ): ResolvedGameCard | null => {
   const key = slug.trim().toLocaleLowerCase();
   switch (type) {
@@ -200,6 +222,19 @@ export const resolveGameCard = (
         actor,
       };
     }
+    case "CounterCard": {
+      const counter = moduleCountersBySlug?.get(key);
+      if (!counter) {
+        return null;
+      }
+      return {
+        type,
+        slug: counter.slug,
+        legacyToken: `@counter/${counter.slug}`,
+        jsx: createGameCardJsx(type, counter.slug),
+        counter,
+      };
+    }
     default:
       return null;
   }
@@ -208,12 +243,18 @@ export const resolveGameCard = (
 export const resolveLegacyGameCardToken = (
   value: string,
   moduleActorsBySlug?: ReadonlyMap<string, AdventureModuleResolvedActor>,
+  moduleCountersBySlug?: ReadonlyMap<string, AdventureModuleResolvedCounter>,
 ): ResolvedGameCard | null => {
   const parsed = parseLegacyGameCardToken(value);
   if (!parsed) {
     return null;
   }
-  return resolveGameCard(parsed.type, parsed.slug, moduleActorsBySlug);
+  return resolveGameCard(
+    parsed.type,
+    parsed.slug,
+    moduleActorsBySlug,
+    moduleCountersBySlug,
+  );
 };
 
 export const defaultGameCardType = gameCardTypes[0];

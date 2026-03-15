@@ -6,6 +6,7 @@ import {
   defaultActorBaseLayerSlug,
   defaultActorTacticalRoleSlug,
 } from "@mighty-decks/spec/actorCards";
+import { defaultCounterIconSlug } from "@mighty-decks/spec/counterCards";
 import {
   adventureModuleDetailSchema,
   adventureModuleListItemSchema,
@@ -340,10 +341,12 @@ export class AdventureModuleStore {
     const fragments = await this.loadFragmentContents(loaded.index, loaded.moduleDir);
     const ownedByRequester = loaded.system.creatorTokenHash === hashCreatorToken(creatorToken);
     const actors = this.resolveActors(loaded.index, fragments);
+    const counters = this.resolveCounters(loaded.index);
     return adventureModuleDetailSchema.parse({
       index: loaded.index,
       fragments,
       actors,
+      counters,
       ownedByRequester,
     });
   }
@@ -541,13 +544,24 @@ export class AdventureModuleStore {
       }
 
       const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0
+          ? options.title.trim()
+          : actorRecord.fragment.title;
+      const nextActorSlug = this.makeUniqueActorSlug(
+        normalizedTitle,
+        loaded.index,
+        actorRecord.fragment.fragmentId,
+      );
+      const nextActorPath = `actors/${nextActorSlug}.mdx`;
       const nextFragments = loaded.index.fragments.map((fragment) => {
         if (fragment.fragmentId !== actorRecord.fragment.fragmentId) {
           return fragment;
         }
         return {
           ...fragment,
-          title: options.title.trim(),
+          title: normalizedTitle,
+          path: nextActorPath,
           summary:
             options.summary.trim().length > 0 ? options.summary.trim() : undefined,
         };
@@ -573,7 +587,8 @@ export class AdventureModuleStore {
         }
         return {
           ...artifact,
-          title: options.title.trim(),
+          path: nextActorPath,
+          title: normalizedTitle,
         };
       });
 
@@ -585,13 +600,14 @@ export class AdventureModuleStore {
         updatedAtIso: nowIso,
       });
 
-      const absolutePath = this.resolveSafePath(
+      const previousAbsolutePath = this.resolveSafePath(
         loaded.moduleDir,
         actorRecord.fragment.path,
       );
-      const previousContent = await this.readExistingTextFile(absolutePath);
-      await mkdir(dirname(absolutePath), { recursive: true });
-      await atomicWriteTextFile(absolutePath, options.content);
+      const nextAbsolutePath = this.resolveSafePath(loaded.moduleDir, nextActorPath);
+      const previousContent = await this.readExistingTextFile(previousAbsolutePath);
+      await mkdir(dirname(nextAbsolutePath), { recursive: true });
+      await atomicWriteTextFile(nextAbsolutePath, options.content);
 
       try {
         await this.writeModuleIndex(loaded.moduleDir, nextIndex);
@@ -599,8 +615,224 @@ export class AdventureModuleStore {
           ...loaded.system,
           updatedAtIso: nowIso,
         });
+        if (nextAbsolutePath !== previousAbsolutePath) {
+          await rm(previousAbsolutePath, { recursive: true, force: true });
+        }
       } catch (error) {
         await this.rollbackActorUpdate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          previousAbsolutePath,
+          nextAbsolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Updated actor could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async createCounter(options: {
+    moduleId: string;
+    creatorToken?: string;
+    title: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0 ? options.title.trim() : "New Counter";
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        counters: [
+          ...loaded.index.counters,
+          {
+            slug: this.makeUniqueCounterSlug(normalizedTitle, loaded.index),
+            iconSlug: defaultCounterIconSlug,
+            title: normalizedTitle,
+            currentValue: 0,
+            description: "",
+          },
+        ],
+        updatedAtIso: nowIso,
+      });
+
+      await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+      await this.writeModuleSystem(loaded.moduleDir, {
+        ...loaded.system,
+        updatedAtIso: nowIso,
+      });
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Created counter could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async updateCounter(options: {
+    moduleId: string;
+    counterSlug: string;
+    creatorToken?: string;
+    title: string;
+    iconSlug: AdventureModuleIndex["counters"][number]["iconSlug"];
+    currentValue: number;
+    maxValue?: number;
+    description: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const counterRecord = this.findCounterRecord(loaded.index, options.counterSlug);
+      if (!counterRecord) {
+        throw new AdventureModuleValidationError("Counter slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const title =
+        options.title.trim().length > 0 ? options.title.trim() : counterRecord.title;
+      const description = options.description.trim();
+      const maxValue =
+        typeof options.maxValue === "number" ? Math.max(0, options.maxValue) : undefined;
+      const currentValue = this.clampCounterValue(options.currentValue, maxValue);
+      const nextCounterSlug = this.makeUniqueCounterSlug(
+        title,
+        loaded.index,
+        counterRecord.slug,
+      );
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        counters: loaded.index.counters.map((counter) => {
+          if (counter.slug !== counterRecord.slug) {
+            return counter;
+          }
+          return {
+            slug: nextCounterSlug,
+            iconSlug: options.iconSlug,
+            title,
+            currentValue,
+            ...(typeof maxValue === "number" ? { maxValue } : {}),
+            description,
+          };
+        }),
+        updatedAtIso: nowIso,
+      });
+
+      await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+      await this.writeModuleSystem(loaded.moduleDir, {
+        ...loaded.system,
+        updatedAtIso: nowIso,
+      });
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Updated counter could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async deleteCounter(options: {
+    moduleId: string;
+    counterSlug: string;
+    creatorToken?: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const counterRecord = this.findCounterRecord(loaded.index, options.counterSlug);
+      if (!counterRecord) {
+        throw new AdventureModuleValidationError("Counter slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        counters: loaded.index.counters.filter(
+          (counter) => counter.slug !== counterRecord.slug,
+        ),
+        updatedAtIso: nowIso,
+      });
+
+      await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+      await this.writeModuleSystem(loaded.moduleDir, {
+        ...loaded.system,
+        updatedAtIso: nowIso,
+      });
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Deleted counter could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async deleteActor(options: {
+    moduleId: string;
+    actorSlug: string;
+    creatorToken?: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const actorRecord = this.findActorRecord(loaded.index, options.actorSlug);
+      if (!actorRecord) {
+        throw new AdventureModuleValidationError("Actor slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const fragmentId = actorRecord.fragment.fragmentId;
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        actorFragmentIds: loaded.index.actorFragmentIds.filter(
+          (entry) => entry !== fragmentId,
+        ),
+        actorCards: loaded.index.actorCards.filter(
+          (actorCard) => actorCard.fragmentId !== fragmentId,
+        ),
+        fragments: loaded.index.fragments.filter(
+          (fragment) => fragment.fragmentId !== fragmentId,
+        ),
+        artifacts: loaded.index.artifacts.filter(
+          (artifact) => artifact.sourceFragmentId !== fragmentId,
+        ),
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        actorRecord.fragment.path,
+      );
+      const previousContent = await this.readExistingTextFile(absolutePath);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        await rm(absolutePath, { recursive: true, force: true });
+      } catch (error) {
+        await this.rollbackActorDelete(
           loaded.moduleDir,
           loaded.index,
           loaded.system,
@@ -612,7 +844,7 @@ export class AdventureModuleStore {
 
       const next = await this.getModule(moduleId, options.creatorToken);
       if (!next) {
-        throw new AdventureModuleValidationError("Updated actor could not be loaded.");
+        throw new AdventureModuleValidationError("Deleted actor could not be loaded.");
       }
       return next;
     });
@@ -907,20 +1139,54 @@ export class AdventureModuleStore {
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
     previousSystem: ModuleSystemMetadata,
+    previousFragmentPath: string,
+    nextFragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    const rollbackTasks: Array<Promise<unknown>> = [
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+    ];
+
+    if (previousFragmentPath === nextFragmentPath) {
+      rollbackTasks.push(atomicWriteTextFile(previousFragmentPath, previousContent));
+    } else {
+      rollbackTasks.push(
+        mkdir(dirname(previousFragmentPath), { recursive: true }).then(() =>
+          atomicWriteTextFile(previousFragmentPath, previousContent),
+        ),
+      );
+      rollbackTasks.push(rm(nextFragmentPath, { recursive: true, force: true }));
+    }
+
+    await Promise.allSettled(rollbackTasks);
+  }
+
+  private async rollbackActorDelete(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
     fragmentPath: string,
     previousContent: string,
   ): Promise<void> {
     await Promise.allSettled([
       this.writeModuleIndex(moduleDir, previousIndex),
       this.writeModuleSystem(moduleDir, previousSystem),
-      atomicWriteTextFile(fragmentPath, previousContent),
+      mkdir(dirname(fragmentPath), { recursive: true }).then(() =>
+        atomicWriteTextFile(fragmentPath, previousContent),
+      ),
     ]);
   }
 
-  private makeUniqueActorSlug(title: string, index: AdventureModuleIndex): string {
+  private makeUniqueActorSlug(
+    title: string,
+    index: AdventureModuleIndex,
+    excludeFragmentId?: string,
+  ): string {
     const baseSlug = toSlug(title);
     const existingActorSlugs = new Set(
       index.actorFragmentIds
+        .filter((fragmentId) => fragmentId !== excludeFragmentId)
         .map((fragmentId) => index.fragments.find((fragment) => fragment.fragmentId === fragmentId))
         .filter(
           (
@@ -944,6 +1210,32 @@ export class AdventureModuleStore {
     throw new AdventureModuleValidationError("Could not allocate a unique actor slug.");
   }
 
+  private makeUniqueCounterSlug(
+    title: string,
+    index: AdventureModuleIndex,
+    excludeCounterSlug?: string,
+  ): string {
+    const baseSlug = toSlug(title);
+    const existingCounterSlugs = new Set(
+      index.counters
+        .filter((counter) => counter.slug !== excludeCounterSlug)
+        .map((counter) => counter.slug),
+    );
+
+    if (!existingCounterSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    for (let suffix = 2; suffix < 10_000; suffix += 1) {
+      const candidate = toSlug(`${baseSlug}-${suffix}`);
+      if (!existingCounterSlugs.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    throw new AdventureModuleValidationError("Could not allocate a unique counter slug.");
+  }
+
   private findActorRecord(
     index: AdventureModuleIndex,
     actorSlug: string,
@@ -960,6 +1252,23 @@ export class AdventureModuleStore {
       }
     }
     return null;
+  }
+
+  private findCounterRecord(
+    index: AdventureModuleIndex,
+    counterSlug: string,
+  ): AdventureModuleIndex["counters"][number] | null {
+    return (
+      index.counters.find((counter) => counter.slug === counterSlug) ?? null
+    );
+  }
+
+  private clampCounterValue(currentValue: number, maxValue?: number): number {
+    const floorValue = Math.max(0, Math.trunc(currentValue));
+    if (typeof maxValue !== "number") {
+      return floorValue;
+    }
+    return Math.min(floorValue, Math.max(0, Math.trunc(maxValue)));
   }
 
   private resolveActors(
@@ -992,6 +1301,12 @@ export class AdventureModuleStore {
         },
       ];
     });
+  }
+
+  private resolveCounters(
+    index: AdventureModuleIndex,
+  ): AdventureModuleDetail["counters"] {
+    return index.counters.map((counter) => ({ ...counter }));
   }
 
   private async loadFragmentContents(
@@ -1271,6 +1586,7 @@ export class AdventureModuleStore {
           tacticalRoleSlug: defaultActorTacticalRoleSlug,
         },
       ],
+      counters: [],
       assetFragmentIds: ["frag-asset-main"],
       itemFragmentIds: [],
       encounterFragmentIds: ["frag-encounter-main"],

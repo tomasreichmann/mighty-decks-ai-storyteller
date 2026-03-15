@@ -1,7 +1,9 @@
 import type { OutcomeSlug } from "../../types/types";
+import { useGameCardCatalogContext } from "../../lib/gameCardCatalogContext";
 import { cn } from "../../utils/cn";
 import { type ResolvedGameCard } from "../../lib/markdownGameComponents";
 import { ActorCard } from "../cards/ActorCard";
+import { CounterCard } from "../cards/CounterCard";
 import { LayeredCard } from "../cards/LayeredCard";
 
 const titleClassByOutcomeSlug: Record<OutcomeSlug, string> = {
@@ -27,6 +29,8 @@ export const GameCardView = ({
   gameCard,
   className,
 }: GameCardViewProps): JSX.Element => {
+  const { onAdjustCounterValue } = useGameCardCatalogContext();
+
   switch (gameCard.type) {
     case "OutcomeCard":
       return (
@@ -83,6 +87,37 @@ export const GameCardView = ({
           baseLayerSlug={gameCard.actor.baseLayerSlug}
           tacticalRoleSlug={gameCard.actor.tacticalRoleSlug}
           tacticalSpecialSlug={gameCard.actor.tacticalSpecialSlug}
+        />
+      );
+    case "CounterCard":
+      return (
+        <CounterCard
+          className={className}
+          iconSlug={gameCard.counter.iconSlug}
+          title={gameCard.counter.title}
+          currentValue={gameCard.counter.currentValue}
+          maxValue={gameCard.counter.maxValue}
+          description={gameCard.counter.description}
+          onDecrement={
+            onAdjustCounterValue
+              ? () => onAdjustCounterValue(gameCard.counter.slug, -1)
+              : undefined
+          }
+          onIncrement={
+            onAdjustCounterValue
+              ? () => onAdjustCounterValue(gameCard.counter.slug, 1)
+              : undefined
+          }
+          onDecrementMaxValue={
+            onAdjustCounterValue && typeof gameCard.counter.maxValue === "number"
+              ? () => onAdjustCounterValue(gameCard.counter.slug, -1, "max")
+              : undefined
+          }
+          onIncrementMaxValue={
+            onAdjustCounterValue && typeof gameCard.counter.maxValue === "number"
+              ? () => onAdjustCounterValue(gameCard.counter.slug, 1, "max")
+              : undefined
+          }
         />
       );
     default:

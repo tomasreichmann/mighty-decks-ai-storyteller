@@ -4,8 +4,17 @@ import {
   actorTacticalRoleSlugSchema,
   actorTacticalSpecialSlugSchema,
 } from "./actorCards";
+import { counterIconSlugSchema } from "./counterCards";
 
 const identifierSchema = z.string().min(1).max(120);
+const slugSchema = z
+  .string()
+  .min(1)
+  .max(120)
+  .regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    "slug must be lowercase kebab-case",
+  );
 const shortTextSchema = z.string().min(1).max(120);
 const mediumTextSchema = z.string().min(1).max(320);
 const longTextSchema = z.string().min(1).max(1200);
@@ -199,6 +208,31 @@ export const adventureModuleActorCardSchema = z.object({
 });
 export type AdventureModuleActorCard = z.infer<
   typeof adventureModuleActorCardSchema
+>;
+
+export const adventureModuleCounterSchema = z
+  .object({
+    slug: slugSchema,
+    iconSlug: counterIconSlugSchema,
+    title: shortTextSchema,
+    currentValue: z.number().int().nonnegative(),
+    maxValue: z.number().int().nonnegative().optional(),
+    description: z.string().max(500).default(""),
+  })
+  .superRefine((counter, ctx) => {
+    if (
+      typeof counter.maxValue === "number" &&
+      counter.currentValue > counter.maxValue
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `counter ${counter.slug} currentValue cannot exceed maxValue`,
+        path: ["currentValue"],
+      });
+    }
+  });
+export type AdventureModuleCounter = z.infer<
+  typeof adventureModuleCounterSchema
 >;
 
 export const adventureModuleHookSchema = z.object({
@@ -474,8 +508,9 @@ export const adventureModuleIndexSchema = z
     settingFragmentId: identifierSchema,
     componentMapFragmentId: identifierSchema,
     locationFragmentIds: z.array(identifierSchema).min(1).max(40),
-    actorFragmentIds: z.array(identifierSchema).min(1).max(40),
+    actorFragmentIds: z.array(identifierSchema).max(40),
     actorCards: z.array(adventureModuleActorCardSchema).max(40).default([]),
+    counters: z.array(adventureModuleCounterSchema).max(80).default([]),
     assetFragmentIds: z.array(identifierSchema).min(1).max(40),
     itemFragmentIds: z.array(identifierSchema).max(40).default([]),
     encounterFragmentIds: z.array(identifierSchema).min(1).max(60),
@@ -583,6 +618,16 @@ export const adventureModuleIndexSchema = z
         });
       }
     }
+
+    const counterSlugs = index.counters.map((counter) => counter.slug);
+    for (const duplicate of duplicateValues(counterSlugs)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate counter slug: ${duplicate}`,
+        path: ["counters"],
+      });
+    }
+
     for (const assetId of index.assetFragmentIds) {
       ensureFragment(assetId, "asset", ["assetFragmentIds"]);
     }

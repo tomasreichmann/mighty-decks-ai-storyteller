@@ -1,20 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type { AdventureModuleResolvedCounter } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
-import { ActorCard } from "../cards/ActorCard";
+import { CounterCard } from "../cards/CounterCard";
 
-interface AdventureModuleActorsTabPanelProps {
-  actors: AdventureModuleResolvedActor[];
+interface AdventureModuleCountersTabPanelProps {
+  counters: AdventureModuleResolvedCounter[];
   editable: boolean;
   creating?: boolean;
   createError?: string | null;
   onCreate: () => void;
-  onOpenActor: (actorSlug: string) => void;
-  onDeleteActor?: (actorSlug: string, title: string) => void;
+  onOpenCounter: (counterSlug: string) => void;
+  onDeleteCounter?: (counterSlug: string, title: string) => void;
+  onAdjustCounterValue?: (
+    counterSlug: string,
+    delta: number,
+    target?: CounterAdjustTarget,
+  ) => void;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -37,71 +43,63 @@ const copyToClipboard = async (value: string): Promise<void> => {
   }
 };
 
-export const AdventureModuleActorsTabPanel = ({
-  actors,
+export const AdventureModuleCountersTabPanel = ({
+  counters,
   editable,
   creating = false,
   createError,
   onCreate,
-  onOpenActor,
-  onDeleteActor,
-}: AdventureModuleActorsTabPanelProps): JSX.Element => {
+  onOpenCounter,
+  onDeleteCounter,
+  onAdjustCounterValue,
+}: AdventureModuleCountersTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedActorSlug, setCopiedActorSlug] = useState<string | null>(null);
+  const [copiedCounterSlug, setCopiedCounterSlug] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
 
-  const filteredActors = useMemo(() => {
+  const filteredCounters = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
     if (!normalizedSearch) {
-      return actors;
+      return counters;
     }
-    return actors.filter((actor) => {
-      const haystack = `${actor.title} ${actor.summary ?? ""} ${actor.actorSlug}`.toLocaleLowerCase();
+    return counters.filter((counter) => {
+      const haystack =
+        `${counter.title} ${counter.description} ${counter.slug}`.toLocaleLowerCase();
       return haystack.includes(normalizedSearch);
     });
-  }, [actors, searchTerm]);
+  }, [counters, searchTerm]);
 
   useEffect(() => {
-    if (!copiedActorSlug) {
+    if (!copiedCounterSlug) {
       return;
     }
     const timer = window.setTimeout(() => {
-      setCopiedActorSlug(null);
+      setCopiedCounterSlug(null);
     }, 1600);
     return () => {
       window.clearTimeout(timer);
     };
-  }, [copiedActorSlug]);
+  }, [copiedCounterSlug]);
 
-  const handleCopyShortcode = useCallback(async (actorSlug: string) => {
+  const handleCopyShortcode = useCallback(async (counterSlug: string) => {
     try {
-      await copyToClipboard(`@actor/${actorSlug}`);
-      setCopiedActorSlug(actorSlug);
+      await copyToClipboard(`@counter/${counterSlug}`);
+      setCopiedCounterSlug(counterSlug);
       setCopyError(null);
     } catch {
-      setCopyError(`Could not copy @actor/${actorSlug}.`);
+      setCopyError(`Could not copy @counter/${counterSlug}.`);
     }
   }, []);
-
-  const handleDelete = useCallback(
-    (actorSlug: string, title: string): void => {
-      if (!onDeleteActor || !editable) {
-        return;
-      }
-      onDeleteActor(actorSlug, title);
-    },
-    [editable, onDeleteActor],
-  );
 
   return (
     <div className="stack gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Text variant="h3" color="iron">
-            Actors
+            Counters
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Click an ActorCard to open its layered card setup and markdown body.
+            Click a CounterCard to edit it. Plus and minus update shared current and max values everywhere in authoring.
           </Text>
         </div>
         <Button
@@ -109,15 +107,15 @@ export const AdventureModuleActorsTabPanel = ({
           onClick={onCreate}
           disabled={!editable || creating}
         >
-          {creating ? "Creating..." : "Create Actor"}
+          {creating ? "Creating..." : "Create Counter"}
         </Button>
       </div>
 
       <TextField
-        label="Search Actors"
+        label="Search Counters"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
-        placeholder="Search actors by title, summary, or slug..."
+        placeholder="Search counters by title, description, or slug..."
       />
 
       {createError ? (
@@ -131,42 +129,66 @@ export const AdventureModuleActorsTabPanel = ({
         </Message>
       ) : null}
 
-      {filteredActors.length === 0 ? (
+      {filteredCounters.length === 0 ? (
         <Panel>
           <Text variant="body" color="iron-light">
-            {actors.length === 0
-              ? "No actors have been created yet."
-              : "No actors match your search."}
+            {counters.length === 0
+              ? "No counters have been created yet."
+              : "No counters match your search."}
           </Text>
         </Panel>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredActors.map((actor) => (
+          {filteredCounters.map((counter) => (
             <Panel
-              key={actor.fragmentId}
+              key={counter.slug}
               className="h-full"
               contentClassName="stack h-full gap-3"
             >
               <button
                 type="button"
                 className="stack h-full gap-3 text-left"
-                onClick={() => onOpenActor(actor.actorSlug)}
+                onClick={() => onOpenCounter(counter.slug)}
               >
-                <ActorCard
+                <CounterCard
                   className="mx-auto w-full max-w-[13rem] transition-transform duration-100 hover:-translate-y-0.5"
-                  baseLayerSlug={actor.baseLayerSlug}
-                  tacticalRoleSlug={actor.tacticalRoleSlug}
-                  tacticalSpecialSlug={actor.tacticalSpecialSlug}
+                  iconSlug={counter.iconSlug}
+                  title={counter.title}
+                  currentValue={counter.currentValue}
+                  maxValue={counter.maxValue}
+                  description={counter.description}
+                  onDecrement={
+                    onAdjustCounterValue
+                      ? () => onAdjustCounterValue(counter.slug, -1)
+                      : undefined
+                  }
+                  onIncrement={
+                    onAdjustCounterValue
+                      ? () => onAdjustCounterValue(counter.slug, 1)
+                      : undefined
+                  }
+                  onDecrementMaxValue={
+                    onAdjustCounterValue && typeof counter.maxValue === "number"
+                      ? () => onAdjustCounterValue(counter.slug, -1, "max")
+                      : undefined
+                  }
+                  onIncrementMaxValue={
+                    onAdjustCounterValue && typeof counter.maxValue === "number"
+                      ? () => onAdjustCounterValue(counter.slug, 1, "max")
+                      : undefined
+                  }
                 />
                 <div className="stack gap-1">
                   <Text variant="emphasised" color="iron">
-                    {actor.title}
+                    {counter.title}
                   </Text>
                   <Text variant="body" color="iron-light" className="text-sm">
-                    {actor.summary ?? "No summary yet."}
+                    {counter.description?.trim().length
+                      ? counter.description
+                      : "No description yet."}
                   </Text>
                   <Text variant="note" color="steel-dark">
-                    {`@actor/${actor.actorSlug}`}
+                    {`@counter/${counter.slug}`}
                   </Text>
                 </div>
               </button>
@@ -177,21 +199,21 @@ export const AdventureModuleActorsTabPanel = ({
                     color="cloth"
                     size="sm"
                     onClick={() => {
-                      void handleCopyShortcode(actor.actorSlug);
+                      void handleCopyShortcode(counter.slug);
                     }}
                   >
                     Copy Shortcode
                   </Button>
-                  {onDeleteActor ? (
+                  {onDeleteCounter ? (
                     <Button
                       variant="circle"
                       color="blood"
                       size="sm"
-                      aria-label={`Delete ${actor.title}`}
-                      title={`Delete ${actor.title}`}
+                      aria-label={`Delete ${counter.title}`}
+                      title={`Delete ${counter.title}`}
                       disabled={!editable}
                       onClick={() => {
-                        handleDelete(actor.actorSlug, actor.title);
+                        onDeleteCounter(counter.slug, counter.title);
                       }}
                     >
                       <svg
@@ -214,7 +236,7 @@ export const AdventureModuleActorsTabPanel = ({
                 <Text
                   variant="note"
                   color="monster"
-                  className={copiedActorSlug === actor.actorSlug ? "opacity-100" : "opacity-0"}
+                  className={copiedCounterSlug === counter.slug ? "opacity-100" : "opacity-0"}
                 >
                   Copied
                 </Text>

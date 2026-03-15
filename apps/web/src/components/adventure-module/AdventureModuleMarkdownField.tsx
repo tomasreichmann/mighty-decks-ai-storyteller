@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FocusEvent } from "react";
-import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type {
+  AdventureModuleResolvedActor,
+  AdventureModuleResolvedCounter,
+} from "@mighty-decks/spec/adventureModuleAuthoring";
 import {
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
@@ -52,7 +55,10 @@ import {
   type GameCardOption,
   type GameCardType,
 } from "../../lib/markdownGameComponents";
-import { GameCardCatalogContext } from "../../lib/gameCardCatalogContext";
+import {
+  GameCardCatalogContext,
+  type CounterAdjustTarget,
+} from "../../lib/gameCardCatalogContext";
 import { normalizeLegacyGameCardMarkdown } from "../../lib/gameCardMarkdown";
 import { gameCardInlineFlowPlugin } from "../../lib/gameCardInlineFlowPlugin";
 import { normalizeMarkdownEditorChange } from "../../lib/markdownEditorChange";
@@ -89,11 +95,17 @@ export interface AdventureModuleMarkdownFieldProps {
   selfContextTag: SmartInputContextTag;
   smartContextDocument: SmartInputDocumentContext;
   actors?: AdventureModuleResolvedActor[];
+  counters?: AdventureModuleResolvedCounter[];
   value: string;
   editable: boolean;
   maxLength: number;
   onChange: (nextValue: string) => void;
   onFieldBlur: () => void;
+  onAdjustCounterValue?: (
+    counterSlug: string,
+    delta: number,
+    target?: CounterAdjustTarget,
+  ) => void;
   contentEditableClassName: string;
 }
 
@@ -218,6 +230,7 @@ const renderToolbarInsertControls = ({
       <option value="EffectCard">Effect</option>
       <option value="StuntCard">Stunt</option>
       <option value="ActorCard">Actor</option>
+      <option value="CounterCard">Counter</option>
     </select>
     <select
       aria-label="Insert card"
@@ -747,11 +760,13 @@ export const AdventureModuleMarkdownField = ({
   selfContextTag,
   smartContextDocument,
   actors = [],
+  counters = [],
   value,
   editable,
   maxLength,
   onChange,
   onFieldBlur,
+  onAdjustCounterValue,
   contentEditableClassName,
 }: AdventureModuleMarkdownFieldProps): JSX.Element => {
   const editorRef = useRef<MDXEditorMethods>(null);
@@ -774,9 +789,16 @@ export const AdventureModuleMarkdownField = ({
       ),
     [actors],
   );
+  const countersBySlug = useMemo(
+    () =>
+      new Map(
+        counters.map((counter) => [counter.slug.toLocaleLowerCase(), counter] as const),
+      ),
+    [counters],
+  );
   const gameCardOptionsByType = useMemo(
-    () => buildGameCardOptionsByType(actors),
-    [actors],
+    () => buildGameCardOptionsByType(actors, counters),
+    [actors, counters],
   );
   const [insertType, setInsertType] = useState<GameCardType>(defaultGameCardType);
   const [insertSlug, setInsertSlug] = useState<string>(
@@ -1015,6 +1037,9 @@ export const AdventureModuleMarkdownField = ({
             value={{
               actors,
               actorsBySlug,
+              counters,
+              countersBySlug,
+              onAdjustCounterValue,
             }}
           >
             <MDXEditor
