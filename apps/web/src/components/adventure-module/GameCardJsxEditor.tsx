@@ -49,13 +49,21 @@ export const GameCardJsxEditor = ({
 
   const type = getStringAttribute(mdastNode, "type");
   const slug = getStringAttribute(mdastNode, "slug");
+  const modifierSlug = getStringAttribute(mdastNode, "modifierSlug");
 
   const resolvedGameCard = useMemo(() => {
     if (!type || !slug || !isGameCardType(type)) {
       return null;
     }
-    return resolveGameCard(type, slug, actorsBySlug, countersBySlug, assetsBySlug);
-  }, [actorsBySlug, assetsBySlug, countersBySlug, slug, type]);
+    return resolveGameCard(
+      type,
+      slug,
+      actorsBySlug,
+      countersBySlug,
+      assetsBySlug,
+      modifierSlug,
+    );
+  }, [actorsBySlug, assetsBySlug, countersBySlug, modifierSlug, slug, type]);
 
   useEffect(() => {
     const syncSelectedState = (): void => {

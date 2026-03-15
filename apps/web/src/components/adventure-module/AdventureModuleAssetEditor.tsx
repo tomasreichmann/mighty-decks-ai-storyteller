@@ -3,39 +3,51 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
-import type {
-  AssetBaseSlug,
-  AssetModifierSlug,
-} from "@mighty-decks/spec/assetCards";
-import { assetBaseCardsByGroup, assetModifierCards } from "../../data/assetCards";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 import { AssetCard } from "../cards/AssetCard";
+import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 
+export interface AdventureModuleAssetEditorAsset {
+  assetSlug: string;
+  title: string;
+  summary?: string;
+  content: string;
+  modifier: string;
+  noun: string;
+  nounDescription: string;
+  adjectiveDescription: string;
+  iconUrl: string;
+  overlayUrl?: string;
+}
+
 interface AdventureModuleAssetEditorProps {
-  asset: AdventureModuleResolvedAsset;
+  asset: AdventureModuleAssetEditorAsset;
   actors?: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
+  reauthorRequired?: boolean;
   validationMessage?: string | null;
   onTitleChange: (nextValue: string) => void;
   onSummaryChange: (nextValue: string) => void;
-  onBaseAssetChange: (nextValue: AssetBaseSlug) => void;
-  onModifierChange: (nextValue?: AssetModifierSlug) => void;
+  onModifierChange: (nextValue: string) => void;
+  onNounChange: (nextValue: string) => void;
+  onNounDescriptionChange: (nextValue: string) => void;
+  onAdjectiveDescriptionChange: (nextValue: string) => void;
+  onIconUrlChange: (nextValue: string) => void;
+  onOverlayUrlChange: (nextValue: string) => void;
   onContentChange: (nextValue: string) => void;
   onFieldBlur: () => void;
   onDelete?: () => void;
 }
 
 const MAX_MARKDOWN_LENGTH = 200_000;
-const controlClassName =
-  "border-[3px] border-b-[6px] border-kac-iron bg-gradient-to-b from-[#fffdf5] to-kac-bone-light px-3 py-2 text-kac-iron shadow-[2px_2px_0_0_#121b23] outline-none transition duration-100 focus-visible:border-kac-gold-darker focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-[1px_1px_0_0_#121b23] font-ui";
 
 export const AdventureModuleAssetEditor = ({
   asset,
@@ -44,11 +56,16 @@ export const AdventureModuleAssetEditor = ({
   assets = [],
   smartContextDocument,
   editable,
+  reauthorRequired = false,
   validationMessage,
   onTitleChange,
   onSummaryChange,
-  onBaseAssetChange,
   onModifierChange,
+  onNounChange,
+  onNounDescriptionChange,
+  onAdjectiveDescriptionChange,
+  onIconUrlChange,
+  onOverlayUrlChange,
   onContentChange,
   onFieldBlur,
   onDelete,
@@ -62,7 +79,8 @@ export const AdventureModuleAssetEditor = ({
               Asset Card
             </Text>
             <Text variant="body" color="iron-light" className="text-sm">
-              Choose a base asset, optionally layer a medieval-safe modifier, and describe how it changes play.
+              Author a fully custom asset card with its own noun, descriptions,
+              and image layers.
             </Text>
           </div>
           {onDelete ? (
@@ -79,9 +97,21 @@ export const AdventureModuleAssetEditor = ({
 
         <AssetCard
           className="mx-auto w-full max-w-[16rem]"
-          baseAssetSlug={asset.baseAssetSlug}
-          modifierSlug={asset.modifierSlug}
+          kind="custom"
+          modifier={asset.modifier}
+          noun={asset.noun}
+          nounDescription={asset.nounDescription}
+          adjectiveDescription={asset.adjectiveDescription}
+          iconUrl={asset.iconUrl}
+          overlayUrl={asset.overlayUrl}
         />
+
+        {reauthorRequired ? (
+          <Message label="Reauthor required" color="blood">
+            This asset still uses legacy layered metadata. Fill in the custom
+            fields below and save to convert it.
+          </Message>
+        ) : null}
 
         <TextField
           label="Asset Name"
@@ -103,56 +133,63 @@ export const AdventureModuleAssetEditor = ({
           description="Used in the Assets tab list and quick references."
         />
 
-        <label className="grid gap-1">
-          <Text as="span" variant="note" color="iron" className="text-base tracking-[0.04em]">
-            Asset Base
-          </Text>
-          <select
-            className={controlClassName}
-            value={asset.baseAssetSlug}
-            onChange={(event) =>
-              onBaseAssetChange(event.target.value as AssetBaseSlug)
-            }
-            onBlur={onFieldBlur}
-            disabled={!editable}
-          >
-            {(["Asset Base", "Asset Medieval"] as const).map((groupLabel) => (
-              <optgroup key={groupLabel} label={groupLabel}>
-                {assetBaseCardsByGroup[groupLabel].map((baseAsset) => (
-                  <option key={baseAsset.slug} value={baseAsset.slug}>
-                    {baseAsset.title}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </label>
+        <TextField
+          label="Modifier"
+          maxLength={120}
+          value={asset.modifier}
+          onChange={(event) => onModifierChange(event.target.value)}
+          onBlur={onFieldBlur}
+          disabled={!editable}
+          placeholder="Optional adjective, e.g. Smoldering"
+        />
 
-        <label className="grid gap-1">
-          <Text as="span" variant="note" color="iron" className="text-base tracking-[0.04em]">
-            Asset Modifier
-          </Text>
-          <select
-            className={controlClassName}
-            value={asset.modifierSlug ?? ""}
-            onChange={(event) =>
-              onModifierChange(
-                event.target.value.trim().length > 0
-                  ? (event.target.value as AssetModifierSlug)
-                  : undefined,
-              )
-            }
-            onBlur={onFieldBlur}
-            disabled={!editable}
-          >
-            <option value="">None</option>
-            {assetModifierCards.map((modifier) => (
-              <option key={modifier.slug} value={modifier.slug}>
-                {modifier.title}
-              </option>
-            ))}
-          </select>
-        </label>
+        <TextField
+          label="Noun"
+          maxLength={120}
+          value={asset.noun}
+          onChange={(event) => onNounChange(event.target.value)}
+          onBlur={onFieldBlur}
+          disabled={!editable}
+        />
+
+        <TextArea
+          label="Noun Description"
+          maxLength={500}
+          rows={4}
+          value={asset.nounDescription}
+          onChange={(event) => onNounDescriptionChange(event.target.value)}
+          onBlur={onFieldBlur}
+          disabled={!editable}
+        />
+
+        <TextArea
+          label="Adjective Description"
+          maxLength={500}
+          rows={4}
+          value={asset.adjectiveDescription}
+          onChange={(event) => onAdjectiveDescriptionChange(event.target.value)}
+          onBlur={onFieldBlur}
+          disabled={!editable}
+        />
+
+        <TextField
+          label="Icon URL"
+          maxLength={500}
+          value={asset.iconUrl}
+          onChange={(event) => onIconUrlChange(event.target.value)}
+          onBlur={onFieldBlur}
+          disabled={!editable}
+        />
+
+        <TextField
+          label="Overlay URL"
+          maxLength={500}
+          value={asset.overlayUrl ?? ""}
+          onChange={(event) => onOverlayUrlChange(event.target.value)}
+          onBlur={onFieldBlur}
+          disabled={!editable}
+          placeholder="Optional overlay art"
+        />
       </Panel>
 
       <div className="stack gap-4">

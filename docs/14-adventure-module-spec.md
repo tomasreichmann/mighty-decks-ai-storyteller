@@ -118,10 +118,13 @@ Asset-specific requirements:
 
 - Asset fragments remain normal markdown-backed `asset` fragments.
 - Module index authoring metadata includes an `assetCards` collection keyed by asset `fragmentId`.
-- Each asset-card metadata entry stores `baseAssetSlug` and optional `modifierSlug`.
-- Base asset selection is limited to the filtered `base` and `medieval` catalogs.
+- Asset-card metadata is tagged:
+  - `custom`: stores `modifier`, `noun`, `nounDescription`, `adjectiveDescription`, `iconUrl`, and optional `overlayUrl`.
+  - `legacy_layered`: read-only compatibility shape storing `baseAssetSlug` and optional `modifierSlug`.
+- New module-authored assets are always saved as `custom`.
+- Generic built-in asset composition remains available in markdown via the filtered `base` and `medieval` catalogs plus an optional built-in modifier.
 - Every `assetFragmentId` must have exactly one matching asset-card metadata entry.
-- Resolved authoring reads join fragment metadata and asset-card metadata into an `assets` array for the web client.
+- Resolved authoring reads join fragment metadata and asset-card metadata into a tagged `assets` array for the web client.
 
 Location-specific requirements:
 
@@ -204,8 +207,9 @@ Authoring embed rules:
 
 - Canonical actor embeds use `<GameCard type="ActorCard" slug="<actor-slug>" />`.
 - Canonical counter embeds use `<GameCard type="CounterCard" slug="<counter-slug>" />`.
-- Canonical asset embeds use `<GameCard type="AssetCard" slug="<asset-slug>" />`.
-- Legacy `@actor/<actor-slug>`, `@counter/<counter-slug>`, and `@asset/<asset-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
+- Canonical custom asset embeds use `<GameCard type="AssetCard" slug="<asset-slug>" />`.
+- Canonical generic built-in asset embeds use `<GameCard type="AssetCard" slug="<base-asset-slug>" modifierSlug="<modifier-slug>" />`, omitting `modifierSlug` when no modifier is selected.
+- Legacy `@actor/<actor-slug>`, `@counter/<counter-slug>`, `@asset/<asset-slug>`, and `@asset/<asset-slug>/<modifier-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
 
 ---
 
@@ -335,14 +339,15 @@ These endpoints:
 - persist typed layered-card metadata alongside fragment references
 - persist typed counter records directly on the module index with slugs derived from the saved counter title
 - create asset fragments with module-scoped slugs derived from the saved asset title
-- persist typed asset-card metadata alongside asset fragment references
+- persist typed custom asset-card metadata alongside asset fragment references
 - return resolved `AdventureModuleDetail` payloads including joined `locations`, `actors`, `counters`, and `assets`
 
 Legacy module compatibility:
 
 - Modules missing `locationDetails` metadata are backfilled with safe defaults on read, seeding `descriptionMarkdown` from the legacy raw fragment content.
 - Modules missing `actorCards` metadata are backfilled with safe defaults on read.
-- Modules missing `assetCards` metadata are backfilled with safe defaults on read.
+- Modules missing `assetCards` metadata are backfilled into `legacy_layered` asset records on read.
+- Legacy layered asset records remain unsupported in normal markdown rendering until the asset is manually reauthored and saved as `custom`.
 - The normalized shape is persisted on the next successful write.
 
 ## 12. Explicit Out-of-Scope for This Milestone

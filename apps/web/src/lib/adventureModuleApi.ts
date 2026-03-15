@@ -382,8 +382,12 @@ export const updateAdventureModuleAsset = async (
   request: {
     title: string;
     summary: string;
-    baseAssetSlug: string;
-    modifierSlug?: string | null;
+    modifier: string;
+    noun: string;
+    nounDescription: string;
+    adjectiveDescription: string;
+    iconUrl: string;
+    overlayUrl: string;
     content: string;
   },
   creatorToken?: string,

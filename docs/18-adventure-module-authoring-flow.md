@@ -167,7 +167,8 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
-- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, and `@asset/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
 - Player text must remain spoiler-safe at publish validation.
 
 ### 5.3 Storyteller Info Tab (`/storyteller-info`)
@@ -182,7 +183,8 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
-- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, and `@asset/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
 - Storyteller text can include spoilers.
 
 ### 5.4 Actors Tab (`/actors`)
@@ -280,8 +282,9 @@ Primary action:
 
 List behavior:
 
-- The tab renders a searchable grid of layered `AssetCard` entries resolved from module asset fragments.
+- The tab renders a searchable grid of module asset entries resolved from module asset fragments.
 - Each asset card shows title, summary, and stable shortcode text.
+- Legacy layered module assets are marked `Reauthor required` until they are rewritten as custom assets.
 - `Copy Shortcode` copies `@asset/<asset-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the asset immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-card rendering.
 - Clicking a card navigates to `/adventure-module/:slug/assets/:entityId`.
@@ -346,8 +349,12 @@ Asset edit example fields:
 
 - Asset name.
 - Short summary.
-- Base asset grouped under `Asset Base` and `Asset Medieval`.
-- Optional asset modifier.
+- Modifier.
+- Noun.
+- Noun description.
+- Adjective description.
+- Icon URL.
+- Optional overlay URL.
 - Markdown body with inline asset `GameCard` rendering.
 
 Asset editor behavior:
@@ -355,7 +362,9 @@ Asset editor behavior:
 - Updates persist through `PUT /api/adventure-modules/:moduleId/assets/:assetSlug`.
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/assets/:assetSlug`.
 - Asset slug is generated from the saved title and updates when the asset name changes.
-- The editor shows a live layered `AssetCard` preview assembled from the selected base asset and optional modifier overlay.
+- The editor shows a live custom `AssetCard` preview with `custom` in the top-right heading and no modifier-side heading.
+- Legacy layered module assets open with blank custom fields plus a migration notice.
+- Legacy layered module assets remain unsupported in normal markdown rendering until the custom fields are saved successfully.
 
 Location edit example fields:
 

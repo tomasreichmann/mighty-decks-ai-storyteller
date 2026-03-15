@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { adventureModuleDetailSchema } from "./adventureModuleAuthoring";
+import {
+  adventureModuleDetailSchema,
+  adventureModuleUpdateAssetRequestSchema,
+} from "./adventureModuleAuthoring";
 
 const createValidModuleDetailCandidate = () => ({
   index: {
@@ -63,7 +66,13 @@ const createValidModuleDetailCandidate = () => ({
     assetCards: [
       {
         fragmentId: "frag-asset-main",
-        baseAssetSlug: "base_package",
+        kind: "custom",
+        modifier: "Smoldering",
+        noun: "Lantern Shard",
+        nounDescription: "Glows brighter around hidden doors.",
+        adjectiveDescription: "Whispers when ward-lines start to fail.",
+        iconUrl: "https://example.com/assets/lantern-shard.png",
+        overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
       },
     ],
     itemFragmentIds: [],
@@ -374,7 +383,13 @@ const createValidModuleDetailCandidate = () => ({
       fragmentId: "frag-asset-main",
       assetSlug: "primary-asset",
       title: "Primary Asset",
-      baseAssetSlug: "base_package",
+      kind: "custom",
+      modifier: "Smoldering",
+      noun: "Lantern Shard",
+      nounDescription: "Glows brighter around hidden doors.",
+      adjectiveDescription: "Whispers when ward-lines start to fail.",
+      iconUrl: "https://example.com/assets/lantern-shard.png",
+      overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
       content: "# Primary Asset",
     },
   ],
@@ -425,5 +440,71 @@ test("adventureModuleDetailSchema rejects resolved locations that do not match l
   assert.throws(
     () => adventureModuleDetailSchema.parse(candidate),
     /resolved location .* does not match index location metadata/i,
+  );
+});
+
+test("adventureModuleDetailSchema accepts resolved custom assets joined from custom asset metadata", () => {
+  const candidate = createValidModuleDetailCandidate();
+  candidate.index.assetCards = [
+    {
+      fragmentId: "frag-asset-main",
+      kind: "custom",
+      modifier: "Smoldering",
+      noun: "Lantern Shard",
+      nounDescription: "Glows brighter around hidden doors.",
+      adjectiveDescription: "Whispers when ward-lines start to fail.",
+      iconUrl: "https://example.com/assets/lantern-shard.png",
+      overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
+    },
+  ];
+  candidate.assets = [
+    {
+      fragmentId: "frag-asset-main",
+      assetSlug: "primary-asset",
+      title: "Primary Asset",
+      kind: "custom",
+      modifier: "Smoldering",
+      noun: "Lantern Shard",
+      nounDescription: "Glows brighter around hidden doors.",
+      adjectiveDescription: "Whispers when ward-lines start to fail.",
+      iconUrl: "https://example.com/assets/lantern-shard.png",
+      overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
+      content: "# Primary Asset",
+    },
+  ];
+
+  const parsed = adventureModuleDetailSchema.parse(candidate);
+
+  assert.equal(parsed.assets[0]?.kind, "custom");
+  assert.equal(parsed.assets[0]?.noun, "Lantern Shard");
+});
+
+test("adventureModuleUpdateAssetRequestSchema accepts custom asset fields", () => {
+  const parsed = adventureModuleUpdateAssetRequestSchema.parse({
+    title: "Storm Lantern",
+    summary: "Portable ward light with a hidden shutter.",
+    modifier: "Smoldering",
+    noun: "Lantern Shard",
+    nounDescription: "Glows brighter around hidden doors.",
+    adjectiveDescription: "Whispers when ward-lines start to fail.",
+    iconUrl: "https://example.com/assets/lantern-shard.png",
+    overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
+    content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+  });
+
+  assert.equal(parsed.noun, "Lantern Shard");
+});
+
+test("adventureModuleUpdateAssetRequestSchema rejects legacy layered asset payload fields", () => {
+  assert.throws(
+    () =>
+      adventureModuleUpdateAssetRequestSchema.parse({
+        title: "Storm Lantern",
+        summary: "Portable ward light with a hidden shutter.",
+        baseAssetSlug: "medieval_lantern",
+        modifierSlug: "base_hidden",
+        content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+      }),
+    /baseAssetSlug|modifierSlug/i,
   );
 });

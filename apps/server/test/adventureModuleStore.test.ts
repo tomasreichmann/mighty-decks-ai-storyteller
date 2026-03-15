@@ -285,8 +285,13 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
         assetSlug: string;
         title: string;
         summary?: string;
-        baseAssetSlug: string;
-        modifierSlug?: string;
+        kind: "custom" | "legacy_layered";
+        modifier?: string;
+        noun?: string;
+        nounDescription?: string;
+        adjectiveDescription?: string;
+        iconUrl?: string;
+        overlayUrl?: string;
         content: string;
       }>;
     }>;
@@ -296,16 +301,25 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
       creatorToken?: string;
       title: string;
       summary: string;
-      baseAssetSlug: string;
-      modifierSlug?: string;
+      modifier: string;
+      noun: string;
+      nounDescription: string;
+      adjectiveDescription: string;
+      iconUrl: string;
+      overlayUrl: string;
       content: string;
     }) => Promise<{
       assets: Array<{
         assetSlug: string;
         title: string;
         summary?: string;
-        baseAssetSlug: string;
-        modifierSlug?: string;
+        kind: "custom" | "legacy_layered";
+        modifier?: string;
+        noun?: string;
+        nounDescription?: string;
+        adjectiveDescription?: string;
+        iconUrl?: string;
+        overlayUrl?: string;
         content: string;
       }>;
     }>;
@@ -348,6 +362,13 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
     createdAsset.assets.some((asset) => asset.assetSlug === "signal-lantern"),
     true,
   );
+  const createdAssetRecord = createdAsset.assets.find(
+    (asset) => asset.assetSlug === "signal-lantern",
+  );
+  assert.ok(createdAssetRecord);
+  assert.equal(createdAssetRecord.kind, "custom");
+  assert.equal(createdAssetRecord.noun, "");
+  assert.equal(createdAssetRecord.iconUrl, "");
 
   const updatedAssetState = await entityStore.updateAsset({
     moduleId: module.index.moduleId,
@@ -355,8 +376,12 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
     creatorToken: "token-actor",
     title: "Storm Lantern",
     summary: "Portable ward light with a hidden shutter.",
-    baseAssetSlug: "medieval_lantern",
-    modifierSlug: "base_hidden",
+    modifier: "Hidden",
+    noun: "Storm Lantern",
+    nounDescription: "Portable ward light that keeps corridors visible in rain and fog.",
+    adjectiveDescription: "Keeps its shuttered glow from drawing distant attention.",
+    iconUrl: "https://example.com/assets/storm-lantern.png",
+    overlayUrl: "https://example.com/assets/storm-lantern-overlay.png",
     content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
   });
   const updatedAsset = updatedAssetState.assets.find(
@@ -365,8 +390,22 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
   assert.ok(updatedAsset);
   assert.equal(updatedAsset.title, "Storm Lantern");
   assert.equal(updatedAsset.summary, "Portable ward light with a hidden shutter.");
-  assert.equal(updatedAsset.baseAssetSlug, "medieval_lantern");
-  assert.equal(updatedAsset.modifierSlug, "base_hidden");
+  assert.equal(updatedAsset.kind, "custom");
+  assert.equal(updatedAsset.modifier, "Hidden");
+  assert.equal(updatedAsset.noun, "Storm Lantern");
+  assert.equal(
+    updatedAsset.nounDescription,
+    "Portable ward light that keeps corridors visible in rain and fog.",
+  );
+  assert.equal(
+    updatedAsset.adjectiveDescription,
+    "Keeps its shuttered glow from drawing distant attention.",
+  );
+  assert.equal(updatedAsset.iconUrl, "https://example.com/assets/storm-lantern.png");
+  assert.equal(
+    updatedAsset.overlayUrl,
+    "https://example.com/assets/storm-lantern-overlay.png",
+  );
   assert.equal(
     updatedAsset.content,
     "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
@@ -475,8 +514,9 @@ test("creates, updates, clamps, and deletes counters and assets while allowing a
       assets: Array<{
         assetSlug: string;
         title: string;
-        baseAssetSlug: string;
-        modifierSlug?: string;
+        kind: "custom" | "legacy_layered";
+        noun?: string;
+        iconUrl?: string;
       }>;
     }>;
     updateAsset?: (input: {
@@ -485,16 +525,25 @@ test("creates, updates, clamps, and deletes counters and assets while allowing a
       creatorToken?: string;
       title: string;
       summary: string;
-      baseAssetSlug: string;
-      modifierSlug?: string;
+      modifier: string;
+      noun: string;
+      nounDescription: string;
+      adjectiveDescription: string;
+      iconUrl: string;
+      overlayUrl: string;
       content: string;
     }) => Promise<{
       assets: Array<{
         assetSlug: string;
         title: string;
         summary?: string;
-        baseAssetSlug: string;
-        modifierSlug?: string;
+        kind: "custom" | "legacy_layered";
+        modifier?: string;
+        noun?: string;
+        nounDescription?: string;
+        adjectiveDescription?: string;
+        iconUrl?: string;
+        overlayUrl?: string;
         content: string;
       }>;
     }>;
@@ -572,6 +621,14 @@ test("creates, updates, clamps, and deletes counters and assets while allowing a
     (asset) => asset.assetSlug === "signal-lantern",
   );
   assert.ok(createdAssetRecord);
+  assert.equal(createdAssetRecord.kind, "custom");
+  assert.equal(createdAssetRecord.noun, "");
+  assert.equal(createdAssetRecord.iconUrl, "");
+  const createdAssetFragment = createdAsset.index.fragments.find(
+    (fragment) => fragment.fragmentId === createdAssetRecord.fragmentId,
+  );
+  assert.ok(createdAssetFragment);
+  assert.deepEqual(createdAssetFragment.tags, ["asset"]);
 
   const updatedAsset = await entityStore.updateAsset({
     moduleId: module.index.moduleId,
@@ -579,16 +636,25 @@ test("creates, updates, clamps, and deletes counters and assets while allowing a
     creatorToken: "token-counter",
     title: "Storm Lantern",
     summary: "Portable ward light with a hidden shutter.",
-    baseAssetSlug: "medieval_lantern",
-    modifierSlug: "base_hidden",
+    modifier: "Hidden",
+    noun: "Storm Lantern",
+    nounDescription: "Portable ward light that keeps corridors visible in rain and fog.",
+    adjectiveDescription: "Keeps its shuttered glow from drawing distant attention.",
+    iconUrl: "https://example.com/assets/storm-lantern.png",
+    overlayUrl: "https://example.com/assets/storm-lantern-overlay.png",
     content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
   });
   const updatedAssetRecord = updatedAsset.assets.find(
     (asset) => asset.assetSlug === "storm-lantern",
   );
   assert.ok(updatedAssetRecord);
-  assert.equal(updatedAssetRecord.baseAssetSlug, "medieval_lantern");
-  assert.equal(updatedAssetRecord.modifierSlug, "base_hidden");
+  assert.equal(updatedAssetRecord.kind, "custom");
+  assert.equal(updatedAssetRecord.modifier, "Hidden");
+  assert.equal(updatedAssetRecord.noun, "Storm Lantern");
+  assert.equal(
+    updatedAssetRecord.iconUrl,
+    "https://example.com/assets/storm-lantern.png",
+  );
 
   const withReferencedMarkdown = await store.updateIndex({
     moduleId: module.index.moduleId,
@@ -920,6 +986,88 @@ test("backfills missing actor card metadata for legacy modules", async () => {
   };
   assert.equal(Array.isArray(persistedIndex.actorCards), true);
   assert.equal(persistedIndex.actorCards?.length, 1);
+});
+
+test("loads legacy layered assets and converts them to custom assets on save", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const created = await store.createModule({
+    creatorToken: "token-legacy-assets",
+    title: "Legacy Asset Module",
+  });
+
+  const indexPath = join(rootDir, created.index.moduleId, "index.json");
+  const legacyIndex = JSON.parse(await readFile(indexPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  legacyIndex.assetCards = [
+    {
+      fragmentId: "frag-asset-main",
+      kind: "legacy_layered",
+      baseAssetSlug: "medieval_lantern",
+      modifierSlug: "base_hidden",
+    },
+  ];
+  await writeFile(indexPath, JSON.stringify(legacyIndex, null, 2), "utf8");
+
+  const loaded = await store.getModule(created.index.moduleId, "token-legacy-assets");
+  const legacyAsset = loaded?.assets.find((asset) => asset.assetSlug === "primary-asset");
+  assert.ok(legacyAsset);
+  assert.equal(legacyAsset.kind, "legacy_layered");
+
+  const assetStore = store as unknown as {
+    updateAsset: (input: {
+      moduleId: string;
+      assetSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      modifier: string;
+      noun: string;
+      nounDescription: string;
+      adjectiveDescription: string;
+      iconUrl: string;
+      overlayUrl: string;
+      content: string;
+    }) => Promise<{
+      assets: Array<{
+        assetSlug: string;
+        kind: "custom" | "legacy_layered";
+        noun?: string;
+        iconUrl?: string;
+      }>;
+    }>;
+  };
+
+  const updated = await assetStore.updateAsset({
+    moduleId: created.index.moduleId,
+    assetSlug: "primary-asset",
+    creatorToken: "token-legacy-assets",
+    title: "Storm Lantern",
+    summary: "Portable ward light with a hidden shutter.",
+    modifier: "Hidden",
+    noun: "Storm Lantern",
+    nounDescription: "Portable ward light that keeps corridors visible in rain and fog.",
+    adjectiveDescription: "Keeps its shuttered glow from drawing distant attention.",
+    iconUrl: "https://example.com/assets/storm-lantern.png",
+    overlayUrl: "https://example.com/assets/storm-lantern-overlay.png",
+    content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+  });
+
+  const updatedAsset = updated.assets.find((asset) => asset.assetSlug === "storm-lantern");
+  assert.ok(updatedAsset);
+  assert.equal(updatedAsset.kind, "custom");
+  assert.equal(updatedAsset.noun, "Storm Lantern");
+  assert.equal(updatedAsset.iconUrl, "https://example.com/assets/storm-lantern.png");
+
+  const persistedIndex = JSON.parse(await readFile(indexPath, "utf8")) as {
+    assetCards?: Array<{
+      kind: "custom" | "legacy_layered";
+      noun?: string;
+    }>;
+  };
+  assert.equal(persistedIndex.assetCards?.[0]?.kind, "custom");
+  assert.equal(persistedIndex.assetCards?.[0]?.noun, "Storm Lantern");
 });
 
 test("creates, updates, renames, and deletes locations while preserving map pin fragment targets", async () => {

@@ -102,7 +102,7 @@ export const AdventureModuleAssetsTabPanel = ({
             Assets
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Click an AssetCard to edit its base layer, optional modifier, and markdown body.
+            Click an asset to edit its custom card fields and markdown body.
           </Text>
         </div>
         <Button
@@ -155,15 +155,29 @@ export const AdventureModuleAssetsTabPanel = ({
               >
                 <AssetCard
                   className="mx-auto w-full max-w-[13rem] transition-transform duration-100 hover:-translate-y-0.5"
-                  baseAssetSlug={asset.baseAssetSlug}
-                  modifierSlug={asset.modifierSlug}
+                  {...(asset.kind === "custom"
+                    ? {
+                        kind: "custom" as const,
+                        modifier: asset.modifier,
+                        noun: asset.noun,
+                        nounDescription: asset.nounDescription,
+                        adjectiveDescription: asset.adjectiveDescription,
+                        iconUrl: asset.iconUrl,
+                        overlayUrl: asset.overlayUrl,
+                      }
+                    : {
+                        kind: "legacy_layered" as const,
+                        title: asset.title,
+                      })}
                 />
                 <div className="stack gap-1">
                   <Text variant="emphasised" color="iron">
                     {asset.title}
                   </Text>
                   <Text variant="body" color="iron-light" className="text-sm">
-                    {asset.summary ?? "No summary yet."}
+                    {asset.kind === "legacy_layered"
+                      ? "Reauthor required before this asset can render in markdown."
+                      : (asset.summary ?? "No summary yet.")}
                   </Text>
                   <Text variant="note" color="steel-dark">
                     {`@asset/${asset.assetSlug}`}

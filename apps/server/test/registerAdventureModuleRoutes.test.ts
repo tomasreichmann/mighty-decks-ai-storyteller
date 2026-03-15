@@ -331,15 +331,18 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
     assets?: Array<{
       assetSlug: string;
       title: string;
-      baseAssetSlug: string;
+      kind: "custom" | "legacy_layered";
+      noun?: string;
+      iconUrl?: string;
     }>;
   };
-  assert.equal(
-    createAssetPayload.assets?.some(
-      (asset) => asset.assetSlug === "signal-lantern",
-    ),
-    true,
+  const createdAsset = createAssetPayload.assets?.find(
+    (asset) => asset.assetSlug === "signal-lantern",
   );
+  assert.ok(createdAsset);
+  assert.equal(createdAsset.kind, "custom");
+  assert.equal(createdAsset.noun, "");
+  assert.equal(createdAsset.iconUrl, "");
 
   const updateAssetResponse = await app.inject({
     method: "PUT",
@@ -350,8 +353,12 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
     payload: {
       title: "Storm Lantern",
       summary: "Portable ward light with a hidden shutter.",
-      baseAssetSlug: "medieval_lantern",
-      modifierSlug: "base_hidden",
+      modifier: "Hidden",
+      noun: "Storm Lantern",
+      nounDescription: "Portable ward light that keeps corridors visible in rain and fog.",
+      adjectiveDescription: "Keeps its shuttered glow from drawing distant attention.",
+      iconUrl: "https://example.com/assets/storm-lantern.png",
+      overlayUrl: "https://example.com/assets/storm-lantern-overlay.png",
       content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
     },
   });
@@ -360,8 +367,13 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
     assets?: Array<{
       assetSlug: string;
       title: string;
-      baseAssetSlug: string;
-      modifierSlug?: string;
+      kind: "custom" | "legacy_layered";
+      modifier?: string;
+      noun?: string;
+      nounDescription?: string;
+      adjectiveDescription?: string;
+      iconUrl?: string;
+      overlayUrl?: string;
     }>;
   };
   const updatedAsset = updatedAssetPayload.assets?.find(
@@ -369,8 +381,22 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
   );
   assert.ok(updatedAsset);
   assert.equal(updatedAsset.title, "Storm Lantern");
-  assert.equal(updatedAsset.baseAssetSlug, "medieval_lantern");
-  assert.equal(updatedAsset.modifierSlug, "base_hidden");
+  assert.equal(updatedAsset.kind, "custom");
+  assert.equal(updatedAsset.modifier, "Hidden");
+  assert.equal(updatedAsset.noun, "Storm Lantern");
+  assert.equal(
+    updatedAsset.nounDescription,
+    "Portable ward light that keeps corridors visible in rain and fog.",
+  );
+  assert.equal(
+    updatedAsset.adjectiveDescription,
+    "Keeps its shuttered glow from drawing distant attention.",
+  );
+  assert.equal(updatedAsset.iconUrl, "https://example.com/assets/storm-lantern.png");
+  assert.equal(
+    updatedAsset.overlayUrl,
+    "https://example.com/assets/storm-lantern-overlay.png",
+  );
 
   const deleteAssetResponse = await app.inject({
     method: "DELETE",

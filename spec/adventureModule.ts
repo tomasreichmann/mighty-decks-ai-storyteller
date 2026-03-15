@@ -214,11 +214,34 @@ export type AdventureModuleActorCard = z.infer<
   typeof adventureModuleActorCardSchema
 >;
 
-export const adventureModuleAssetCardSchema = z.object({
+export const adventureModuleCustomAssetCardSchema = z.object({
   fragmentId: identifierSchema,
+  kind: z.literal("custom"),
+  modifier: z.string().max(120).default(""),
+  noun: z.string().max(120).default(""),
+  nounDescription: z.string().max(500).default(""),
+  adjectiveDescription: z.string().max(500).default(""),
+  iconUrl: z.string().max(500).default(""),
+  overlayUrl: z.string().max(500).default(""),
+});
+export type AdventureModuleCustomAssetCard = z.infer<
+  typeof adventureModuleCustomAssetCardSchema
+>;
+
+export const adventureModuleLegacyLayeredAssetCardSchema = z.object({
+  fragmentId: identifierSchema,
+  kind: z.literal("legacy_layered"),
   baseAssetSlug: assetBaseSlugSchema,
   modifierSlug: assetModifierSlugSchema.optional(),
 });
+export type AdventureModuleLegacyLayeredAssetCard = z.infer<
+  typeof adventureModuleLegacyLayeredAssetCardSchema
+>;
+
+export const adventureModuleAssetCardSchema = z.discriminatedUnion("kind", [
+  adventureModuleCustomAssetCardSchema,
+  adventureModuleLegacyLayeredAssetCardSchema,
+]);
 export type AdventureModuleAssetCard = z.infer<
   typeof adventureModuleAssetCardSchema
 >;

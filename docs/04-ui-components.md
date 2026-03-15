@@ -227,7 +227,7 @@ Tabs:
 - `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, and autosave
 - `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, shortcode copy, and delete actions
 - `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, shortcode copy, and delete actions
-- `assets`: `AdventureModuleAssetsTabPanel` showing searchable layered `AssetCard` entries, `Create Asset`, shortcode copy, and delete actions
+- `assets`: `AdventureModuleAssetsTabPanel` showing searchable custom `AssetCard` entries, legacy `Reauthor required` states, `Create Asset`, shortcode copy, and delete actions
 - `locations`: `AdventureModuleLocationsTabPanel` showing searchable location cards, title-image previews, `Create Location`, shortcode copy, and delete actions
 - `encounters`: placeholder
 - `quests`: placeholder
@@ -283,10 +283,14 @@ Asset editor baseline fields:
 
 - name
 - short summary
-- grouped base asset picker (`Asset Base`, `Asset Medieval`)
-- optional asset modifier
+- modifier
+- noun
+- noun description
+- adjective description
+- icon URL
+- optional overlay URL
 - markdown body with inline `GameCard` embeds
-- live layered `AssetCard` preview
+- live custom `AssetCard` preview
 
 Location editor baseline fields:
 
@@ -302,7 +306,7 @@ Behavior:
 
 - `/adventure-module/:slug/actors/:entityId` renders a live actor editor with autosave, live layered preview, and actor slug display that regenerates from the saved title.
 - `/adventure-module/:slug/counters/:entityId` renders a live counter editor with autosave and shared current/max value controls.
-- `/adventure-module/:slug/assets/:entityId` renders a live asset editor with autosave, grouped base picker, layered preview, and asset slug display that regenerates from the saved title.
+- `/adventure-module/:slug/assets/:entityId` renders a live asset editor with autosave, custom asset fields, migration notice support for legacy layered assets, custom preview, and asset slug display that regenerates from the saved title.
 - `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image generation/paste controls, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
 - Encounter and quest entity routes remain active placeholders while their typed editors are pending.
 
@@ -330,6 +334,8 @@ Behavior:
 
 - copy rows use legacy `@type/<slug>` shortcodes because rich-text Adventure Module editors normalize pasted tokens into canonical stored `<GameCard />` embeds
 - the assets view is grouped into `Asset Base` and `Asset Medieval` sections
+- `/rules/assets` includes a `Modifier` checkbox that reveals modifier radio buttons and applies the selected modifier across every displayed asset preview
+- when a modifier is selected on `/rules/assets`, copy rows emit `@asset/<slug>/<modifier-slug>` so pasted shortcodes normalize into canonical asset embeds with `modifierSlug`
 
 ---
 

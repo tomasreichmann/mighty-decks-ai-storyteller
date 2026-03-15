@@ -5,21 +5,19 @@ import {
   actorTacticalSpecialSlugSchema,
 } from "./actorCards";
 import {
-  assetBaseSlugSchema,
-  assetModifierSlugSchema,
-} from "./assetCards";
-import { counterIconSlugSchema } from "./counterCards";
-import {
   adventureModuleCounterSchema,
+  adventureModuleCustomAssetCardSchema,
   adventureModuleFragmentAudienceSchema,
   adventureModuleFragmentKindSchema,
   adventureModuleFragmentRefSchema,
   adventureModuleIndexSchema,
+  adventureModuleLegacyLayeredAssetCardSchema,
   adventureModuleLocationMapPinSchema,
   adventureModuleLaunchProfileSchema,
   adventureModuleSessionScopeSchema,
   adventureModuleStatusSchema,
 } from "./adventureModule";
+import { counterIconSlugSchema } from "./counterCards";
 
 const identifierSchema = z.string().min(1).max(120);
 const shortTextSchema = z.string().min(1).max(120);
@@ -154,15 +152,33 @@ export type AdventureModuleResolvedCounter = z.infer<
   typeof adventureModuleResolvedCounterSchema
 >;
 
-export const adventureModuleResolvedAssetSchema = z.object({
+const adventureModuleResolvedAssetBaseSchema = z.object({
   fragmentId: identifierSchema,
   assetSlug: slugSchema,
   title: shortTextSchema,
   summary: mediumTextSchema.optional(),
-  baseAssetSlug: assetBaseSlugSchema,
-  modifierSlug: assetModifierSlugSchema.optional(),
   content: z.string().max(200_000).default(""),
 });
+export const adventureModuleResolvedCustomAssetSchema =
+  adventureModuleResolvedAssetBaseSchema.merge(
+    adventureModuleCustomAssetCardSchema.omit({ fragmentId: true }),
+  );
+export type AdventureModuleResolvedCustomAsset = z.infer<
+  typeof adventureModuleResolvedCustomAssetSchema
+>;
+
+export const adventureModuleResolvedLegacyLayeredAssetSchema =
+  adventureModuleResolvedAssetBaseSchema.merge(
+    adventureModuleLegacyLayeredAssetCardSchema.omit({ fragmentId: true }),
+  );
+export type AdventureModuleResolvedLegacyLayeredAsset = z.infer<
+  typeof adventureModuleResolvedLegacyLayeredAssetSchema
+>;
+
+export const adventureModuleResolvedAssetSchema = z.discriminatedUnion("kind", [
+  adventureModuleResolvedCustomAssetSchema,
+  adventureModuleResolvedLegacyLayeredAssetSchema,
+]);
 export type AdventureModuleResolvedAsset = z.infer<
   typeof adventureModuleResolvedAssetSchema
 >;
@@ -351,10 +367,24 @@ export const adventureModuleDetailSchema = z
         });
         continue;
       }
-      if (
-        asset.baseAssetSlug !== assetCard.baseAssetSlug ||
-        asset.modifierSlug !== assetCard.modifierSlug
+      let matchesAssetCard = false;
+      if (asset.kind === "custom" && assetCard.kind === "custom") {
+        matchesAssetCard =
+          asset.modifier === assetCard.modifier &&
+          asset.noun === assetCard.noun &&
+          asset.nounDescription === assetCard.nounDescription &&
+          asset.adjectiveDescription === assetCard.adjectiveDescription &&
+          asset.iconUrl === assetCard.iconUrl &&
+          asset.overlayUrl === assetCard.overlayUrl;
+      } else if (
+        asset.kind === "legacy_layered" &&
+        assetCard.kind === "legacy_layered"
       ) {
+        matchesAssetCard =
+          asset.baseAssetSlug === assetCard.baseAssetSlug &&
+          asset.modifierSlug === assetCard.modifierSlug;
+      }
+      if (!matchesAssetCard) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `resolved asset ${asset.fragmentId} does not match index asset card metadata`,
@@ -484,13 +514,19 @@ export type AdventureModuleCreateAssetRequest = z.infer<
   typeof adventureModuleCreateAssetRequestSchema
 >;
 
-export const adventureModuleUpdateAssetRequestSchema = z.object({
-  title: shortTextSchema,
-  summary: z.string().max(500).default(""),
-  baseAssetSlug: assetBaseSlugSchema,
-  modifierSlug: z.union([assetModifierSlugSchema, z.null()]).optional(),
-  content: z.string().max(200_000).default(""),
-});
+export const adventureModuleUpdateAssetRequestSchema = z
+  .object({
+    title: shortTextSchema,
+    summary: z.string().max(500).default(""),
+    modifier: z.string().max(120).default(""),
+    noun: shortTextSchema,
+    nounDescription: z.string().min(1).max(500),
+    adjectiveDescription: z.string().max(500).default(""),
+    iconUrl: z.string().min(1).max(500),
+    overlayUrl: z.string().max(500).default(""),
+    content: z.string().max(200_000).default(""),
+  })
+  .strict();
 export type AdventureModuleUpdateAssetRequest = z.infer<
   typeof adventureModuleUpdateAssetRequestSchema
 >;

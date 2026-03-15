@@ -369,9 +369,14 @@ interface AssetFormState {
   assetSlug: string;
   title: string;
   summary: string;
-  baseAssetSlug: AdventureModuleDetail["assets"][number]["baseAssetSlug"];
-  modifierSlug?: AdventureModuleDetail["assets"][number]["modifierSlug"];
+  modifier: string;
+  noun: string;
+  nounDescription: string;
+  adjectiveDescription: string;
+  iconUrl: string;
+  overlayUrl: string;
   content: string;
+  reauthorRequired: boolean;
 }
 
 interface LocationFormState {
@@ -516,9 +521,15 @@ const toAssetFormState = (
   assetSlug: asset.assetSlug,
   title: asset.title,
   summary: asset.summary ?? "",
-  baseAssetSlug: asset.baseAssetSlug,
-  modifierSlug: asset.modifierSlug,
+  modifier: asset.kind === "custom" ? asset.modifier : "",
+  noun: asset.kind === "custom" ? asset.noun : "",
+  nounDescription: asset.kind === "custom" ? asset.nounDescription : "",
+  adjectiveDescription:
+    asset.kind === "custom" ? asset.adjectiveDescription : "",
+  iconUrl: asset.kind === "custom" ? asset.iconUrl : "",
+  overlayUrl: asset.kind === "custom" ? asset.overlayUrl : "",
   content: normalizeLegacyGameCardMarkdown(asset.content),
+  reauthorRequired: asset.kind === "legacy_layered",
 });
 
 const toLocationFormState = (
@@ -947,52 +958,214 @@ const validateAssetForm = (
 ): {
   title: string;
   summary: string;
-  baseAssetSlug: AssetFormState["baseAssetSlug"];
-  modifierSlug?: AssetFormState["modifierSlug"];
+  modifier: string;
+  noun: string;
+  nounDescription: string;
+  adjectiveDescription: string;
+  iconUrl: string;
+  overlayUrl: string;
   content: string;
   error?: string;
 } => {
   const title = form.title.trim();
+  const summary = form.summary.trim();
+  const modifier = form.modifier.trim();
+  const noun = form.noun.trim();
+  const nounDescription = form.nounDescription.trim();
+  const adjectiveDescription = form.adjectiveDescription.trim();
+  const iconUrl = form.iconUrl.trim();
+  const overlayUrl = form.overlayUrl.trim();
+  const content = normalizeLegacyGameCardMarkdown(form.content);
+
   if (title.length === 0) {
     return {
       title,
-      summary: form.summary.trim(),
-      baseAssetSlug: form.baseAssetSlug,
-      modifierSlug: form.modifierSlug,
-      content: normalizeLegacyGameCardMarkdown(form.content),
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
       error: "Asset name is required.",
     };
   }
   if (title.length > 120) {
     return {
       title,
-      summary: form.summary.trim(),
-      baseAssetSlug: form.baseAssetSlug,
-      modifierSlug: form.modifierSlug,
-      content: normalizeLegacyGameCardMarkdown(form.content),
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
       error: "Asset name must be at most 120 characters.",
     };
   }
 
-  const summary = form.summary.trim();
   if (summary.length > 500) {
     return {
       title,
       summary,
-      baseAssetSlug: form.baseAssetSlug,
-      modifierSlug: form.modifierSlug,
-      content: normalizeLegacyGameCardMarkdown(form.content),
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
       error: "Asset summary must be at most 500 characters.",
     };
   }
 
-  const content = normalizeLegacyGameCardMarkdown(form.content);
+  if (modifier.length > 120) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset modifier must be at most 120 characters.",
+    };
+  }
+
+  if (noun.length === 0) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset noun is required.",
+    };
+  }
+
+  if (noun.length > 120) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset noun must be at most 120 characters.",
+    };
+  }
+
+  if (nounDescription.length === 0) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset noun description is required.",
+    };
+  }
+
+  if (nounDescription.length > 500) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset noun description must be at most 500 characters.",
+    };
+  }
+
+  if (adjectiveDescription.length > 500) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset adjective description must be at most 500 characters.",
+    };
+  }
+
+  if (iconUrl.length === 0) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset icon URL is required.",
+    };
+  }
+
+  if (iconUrl.length > 500) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset icon URL must be at most 500 characters.",
+    };
+  }
+
+  if (overlayUrl.length > 500) {
+    return {
+      title,
+      summary,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
+      content,
+      error: "Asset overlay URL must be at most 500 characters.",
+    };
+  }
+
   if (content.length > 200_000) {
     return {
       title,
       summary,
-      baseAssetSlug: form.baseAssetSlug,
-      modifierSlug: form.modifierSlug,
+      modifier,
+      noun,
+      nounDescription,
+      adjectiveDescription,
+      iconUrl,
+      overlayUrl,
       content,
       error: "Asset markdown must be at most 200000 characters.",
     };
@@ -1001,8 +1174,12 @@ const validateAssetForm = (
   return {
     title,
     summary,
-    baseAssetSlug: form.baseAssetSlug,
-    modifierSlug: form.modifierSlug,
+    modifier,
+    noun,
+    nounDescription,
+    adjectiveDescription,
+    iconUrl,
+    overlayUrl,
     content,
   };
 };
@@ -1955,8 +2132,12 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         {
           title: validated.title,
           summary: validated.summary,
-          baseAssetSlug: validated.baseAssetSlug,
-          modifierSlug: validated.modifierSlug ?? null,
+          modifier: validated.modifier,
+          noun: validated.noun,
+          nounDescription: validated.nounDescription,
+          adjectiveDescription: validated.adjectiveDescription,
+          iconUrl: validated.iconUrl,
+          overlayUrl: validated.overlayUrl,
           content: validated.content,
         },
         creatorToken,
@@ -3224,11 +3405,15 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               activeAsset && assetForm ? (
                 <AdventureModuleAssetEditor
                   asset={{
-                    ...activeAsset,
+                    assetSlug: activeAsset.assetSlug,
                     title: assetForm.title,
                     summary: assetForm.summary,
-                    baseAssetSlug: assetForm.baseAssetSlug,
-                    modifierSlug: assetForm.modifierSlug,
+                    modifier: assetForm.modifier,
+                    noun: assetForm.noun,
+                    nounDescription: assetForm.nounDescription,
+                    adjectiveDescription: assetForm.adjectiveDescription,
+                    iconUrl: assetForm.iconUrl,
+                    overlayUrl: assetForm.overlayUrl,
                     content: assetForm.content,
                   }}
                   actors={moduleDetail.actors}
@@ -3236,6 +3421,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                   assets={moduleDetail.assets}
                   smartContextDocument={smartContextDocument}
                   editable={editable}
+                  reauthorRequired={assetForm.reauthorRequired}
                   validationMessage={assetValidationMessage}
                   onTitleChange={(nextValue) => {
                     setAssetValidationMessage(null);
@@ -3251,17 +3437,49 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                     );
                     setAssetDirty(true);
                   }}
-                  onBaseAssetChange={(nextValue) => {
-                    setAssetValidationMessage(null);
-                    setAssetForm((current) =>
-                      current ? { ...current, baseAssetSlug: nextValue } : current,
-                    );
-                    setAssetDirty(true);
-                  }}
                   onModifierChange={(nextValue) => {
                     setAssetValidationMessage(null);
                     setAssetForm((current) =>
-                      current ? { ...current, modifierSlug: nextValue } : current,
+                      current ? { ...current, modifier: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onNounChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, noun: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onNounDescriptionChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current
+                        ? { ...current, nounDescription: nextValue }
+                        : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onAdjectiveDescriptionChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current
+                        ? { ...current, adjectiveDescription: nextValue }
+                        : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onIconUrlChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, iconUrl: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onOverlayUrlChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, overlayUrl: nextValue } : current,
                     );
                     setAssetDirty(true);
                   }}

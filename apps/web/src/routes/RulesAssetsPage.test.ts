@@ -9,5 +9,12 @@ test("RulesAssetsPage renders base and medieval asset groups with @asset shortco
   assert.match(source, /"Asset Medieval"/);
   assert.match(source, /@asset\/&lt;slug&gt;/);
   assert.match(source, /createAssetShortcode/);
-  assert.match(source, /CodeCopyRow code=\{createAssetShortcode\(asset\.slug\)\}/);
+  assert.match(
+    source,
+    /CodeCopyRow[\s\S]*createAssetShortcode\(asset\.slug, appliedModifierSlug\)/,
+  );
+  assert.match(source, /Modifier/);
+  assert.match(source, /type="checkbox"/);
+  assert.match(source, /type="radio"/);
+  assert.match(source, /assetModifierCards\.map/);
 });

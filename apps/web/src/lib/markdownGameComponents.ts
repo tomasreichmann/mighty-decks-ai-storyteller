@@ -3,7 +3,14 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
-import { assetBaseCardsBySlug } from "../data/assetCards";
+import type {
+  AssetBaseSlug,
+  AssetModifierSlug,
+} from "@mighty-decks/spec/assetCards";
+import {
+  assetBaseCardsBySlug,
+  assetModifierCardsBySlug,
+} from "../data/assetCards";
 import {
   rulesEffectCards,
   rulesOutcomeCards,
@@ -23,15 +30,23 @@ export type { GameCardType } from "./gameCardMarkdown";
 export interface GameCardOption {
   type: GameCardType;
   slug: string;
+  modifierSlug?: string;
   legacyToken: string;
   jsx: string;
   label: string;
 }
 
-type ResolvedAssetCardRecord = Pick<
-  AdventureModuleResolvedAsset,
-  "assetSlug" | "baseAssetSlug" | "modifierSlug" | "title"
->;
+interface GenericResolvedAssetCardRecord {
+  kind: "generic";
+  assetSlug: AssetBaseSlug;
+  baseAssetSlug: AssetBaseSlug;
+  modifierSlug?: AssetModifierSlug;
+  title: string;
+}
+
+type ResolvedAssetCardRecord =
+  | AdventureModuleResolvedAsset
+  | GenericResolvedAssetCardRecord;
 
 export type ResolvedGameCard =
   | {
@@ -110,6 +125,7 @@ const builtInAssetsBySlug = new Map(
   Array.from(assetBaseCardsBySlug.values()).map((asset) => [
     asset.slug.toLocaleLowerCase(),
     {
+      kind: "generic",
       assetSlug: asset.slug,
       baseAssetSlug: asset.slug,
       modifierSlug: undefined,
@@ -140,11 +156,17 @@ const toOption = (
   type: GameCardType,
   slug: string,
   title: string,
+  options: {
+    modifierSlug?: string;
+  } = {},
 ): GameCardOption => ({
   type,
   slug,
+  modifierSlug: options.modifierSlug,
   legacyToken: `@${gameCardTypeToLegacyPrefix[type]}/${slug}`,
-  jsx: createGameCardJsx(type, slug),
+  jsx: createGameCardJsx(type, slug, {
+    modifierSlug: options.modifierSlug,
+  }),
   label: `${title} (${slug})`,
 });
 
@@ -193,7 +215,9 @@ export const buildGameCardOptionsByType = (
   ...baseGameCardOptionsByType,
   ActorCard: actors.map(createActorGameCardOption),
   CounterCard: counters.map(createCounterGameCardOption),
-  AssetCard: assets.map(createAssetGameCardOption),
+  AssetCard: assets
+    .filter((asset) => asset.kind === "custom")
+    .map(createAssetGameCardOption),
 });
 
 export const gameCardOptionsByType = buildGameCardOptionsByType();
@@ -204,6 +228,7 @@ export const resolveGameCard = (
   moduleActorsBySlug?: ReadonlyMap<string, AdventureModuleResolvedActor>,
   moduleCountersBySlug?: ReadonlyMap<string, AdventureModuleResolvedCounter>,
   moduleAssetsBySlug?: ReadonlyMap<string, AdventureModuleResolvedAsset>,
+  modifierSlug?: string,
 ): ResolvedGameCard | null => {
   const key = slug.trim().toLocaleLowerCase();
   switch (type) {
@@ -273,10 +298,54 @@ export const resolveGameCard = (
       };
     }
     case "AssetCard": {
-      const asset = moduleAssetsBySlug?.get(key) ?? builtInAssetsBySlug.get(key);
+      const normalizedModifierSlug =
+        typeof modifierSlug === "string" && modifierSlug.trim().length > 0
+          ? modifierSlug.trim()
+          : undefined;
+
+      if (normalizedModifierSlug) {
+        if (!assetModifierCardsBySlug.has(normalizedModifierSlug as AssetModifierSlug)) {
+          return null;
+        }
+
+        const asset = builtInAssetsBySlug.get(key);
+        if (!asset) {
+          return null;
+        }
+
+        const validatedModifierSlug =
+          normalizedModifierSlug as AssetModifierSlug;
+
+        return {
+          type,
+          slug: asset.assetSlug,
+          legacyToken: `@asset/${asset.assetSlug}`,
+          jsx: createGameCardJsx(type, asset.assetSlug, {
+            modifierSlug: validatedModifierSlug,
+          }),
+          asset: {
+            ...asset,
+            modifierSlug: validatedModifierSlug,
+          },
+        };
+      }
+
+      const moduleAsset = moduleAssetsBySlug?.get(key);
+      if (moduleAsset) {
+        return {
+          type,
+          slug: moduleAsset.assetSlug,
+          legacyToken: `@asset/${moduleAsset.assetSlug}`,
+          jsx: createGameCardJsx(type, moduleAsset.assetSlug),
+          asset: moduleAsset,
+        };
+      }
+
+      const asset = builtInAssetsBySlug.get(key);
       if (!asset) {
         return null;
       }
+
       return {
         type,
         slug: asset.assetSlug,
@@ -306,6 +375,7 @@ export const resolveLegacyGameCardToken = (
     moduleActorsBySlug,
     moduleCountersBySlug,
     moduleAssetsBySlug,
+    parsed.modifierSlug,
   );
 };
 

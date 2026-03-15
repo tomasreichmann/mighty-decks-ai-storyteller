@@ -122,6 +122,29 @@ export const GameCardView = ({
         />
       );
     case "AssetCard":
+      if (gameCard.asset.kind === "custom") {
+        return (
+          <AssetCard
+            className={cn("w-full max-w-[13rem]", className)}
+            kind="custom"
+            modifier={gameCard.asset.modifier}
+            noun={gameCard.asset.noun}
+            nounDescription={gameCard.asset.nounDescription}
+            adjectiveDescription={gameCard.asset.adjectiveDescription}
+            iconUrl={gameCard.asset.iconUrl}
+            overlayUrl={gameCard.asset.overlayUrl}
+          />
+        );
+      }
+      if (gameCard.asset.kind === "legacy_layered") {
+        return (
+          <AssetCard
+            className={cn("w-full max-w-[13rem]", className)}
+            kind="legacy_layered"
+            title={gameCard.asset.title}
+          />
+        );
+      }
       return (
         <AssetCard
           className={cn("w-full max-w-[13rem]", className)}

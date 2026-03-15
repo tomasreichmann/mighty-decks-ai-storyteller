@@ -74,6 +74,19 @@ const defaultLocationIntroductionMarkdown =
 const defaultLocationDescriptionMarkdown =
   "- Actors usually here\n- Assets that can be found here\n- Exits to other locations\n- Hazards or pressure that shape the scene";
 
+const createBlankCustomAssetCard = (
+  fragmentId: string,
+): AdventureModuleIndex["assetCards"][number] => ({
+  fragmentId,
+  kind: "custom",
+  modifier: "",
+  noun: "",
+  nounDescription: "",
+  adjectiveDescription: "",
+  iconUrl: "",
+  overlayUrl: "",
+});
+
 const isMissingFileError = (error: unknown): boolean => {
   const nodeError = error as NodeJS.ErrnoException;
   return Boolean(nodeError && typeof nodeError === "object" && nodeError.code === "ENOENT");
@@ -200,8 +213,28 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
     }),
     assetCards: assetFragmentIds.map((fragmentId) => {
       const existing = assetCardsByFragmentId.get(fragmentId);
+      if (existing?.kind === "custom") {
+        return {
+          fragmentId,
+          kind: "custom",
+          modifier: typeof existing.modifier === "string" ? existing.modifier : "",
+          noun: typeof existing.noun === "string" ? existing.noun : "",
+          nounDescription:
+            typeof existing.nounDescription === "string"
+              ? existing.nounDescription
+              : "",
+          adjectiveDescription:
+            typeof existing.adjectiveDescription === "string"
+              ? existing.adjectiveDescription
+              : "",
+          iconUrl: typeof existing.iconUrl === "string" ? existing.iconUrl : "",
+          overlayUrl:
+            typeof existing.overlayUrl === "string" ? existing.overlayUrl : "",
+        };
+      }
       return {
         fragmentId,
+        kind: "legacy_layered",
         baseAssetSlug:
           typeof existing?.baseAssetSlug === "string"
             ? existing.baseAssetSlug
@@ -1056,7 +1089,7 @@ export class AdventureModuleStore {
         title: normalizedTitle,
         path: `assets/${assetSlug}.mdx`,
         summary: "Describe what this asset enables, risks, or unlocks.",
-        tags: ["asset", "layered_asset"],
+        tags: ["asset"],
         containsSpoilers: false,
         intendedAudience: "shared",
       };
@@ -1066,10 +1099,7 @@ export class AdventureModuleStore {
         assetFragmentIds: [...loaded.index.assetFragmentIds, fragmentId],
         assetCards: [
           ...loaded.index.assetCards,
-          {
-            fragmentId,
-            baseAssetSlug: defaultAssetBaseSlug,
-          },
+          createBlankCustomAssetCard(fragmentId),
         ],
         fragments: [...loaded.index.fragments, fragmentRef],
         artifacts: [
@@ -1122,8 +1152,12 @@ export class AdventureModuleStore {
     creatorToken?: string;
     title: string;
     summary: string;
-    baseAssetSlug: AdventureModuleIndex["assetCards"][number]["baseAssetSlug"];
-    modifierSlug?: AdventureModuleIndex["assetCards"][number]["modifierSlug"];
+    modifier: string;
+    noun: string;
+    nounDescription: string;
+    adjectiveDescription: string;
+    iconUrl: string;
+    overlayUrl: string;
     content: string;
   }): Promise<AdventureModuleDetail> {
     const moduleId = options.moduleId;
@@ -1166,8 +1200,13 @@ export class AdventureModuleStore {
         }
         return {
           fragmentId: assetCard.fragmentId,
-          baseAssetSlug: options.baseAssetSlug,
-          ...(options.modifierSlug ? { modifierSlug: options.modifierSlug } : {}),
+          kind: "custom",
+          modifier: options.modifier.trim(),
+          noun: options.noun.trim(),
+          nounDescription: options.nounDescription.trim(),
+          adjectiveDescription: options.adjectiveDescription.trim(),
+          iconUrl: options.iconUrl.trim(),
+          overlayUrl: options.overlayUrl.trim(),
         };
       });
 
@@ -2270,15 +2309,31 @@ export class AdventureModuleStore {
         return [];
       }
       return [
-        {
-          fragmentId,
-          assetSlug: deriveAssetSlugFromPath(fragmentRef.path),
-          title: fragmentRef.title,
-          summary: fragmentRef.summary,
-          baseAssetSlug: assetCard.baseAssetSlug,
-          modifierSlug: assetCard.modifierSlug,
-          content: fragmentContentById.get(fragmentId) ?? "",
-        },
+        assetCard.kind === "custom"
+          ? {
+              fragmentId,
+              assetSlug: deriveAssetSlugFromPath(fragmentRef.path),
+              title: fragmentRef.title,
+              summary: fragmentRef.summary,
+              kind: "custom",
+              modifier: assetCard.modifier,
+              noun: assetCard.noun,
+              nounDescription: assetCard.nounDescription,
+              adjectiveDescription: assetCard.adjectiveDescription,
+              iconUrl: assetCard.iconUrl,
+              overlayUrl: assetCard.overlayUrl,
+              content: fragmentContentById.get(fragmentId) ?? "",
+            }
+          : {
+              fragmentId,
+              assetSlug: deriveAssetSlugFromPath(fragmentRef.path),
+              title: fragmentRef.title,
+              summary: fragmentRef.summary,
+              kind: "legacy_layered",
+              baseAssetSlug: assetCard.baseAssetSlug,
+              modifierSlug: assetCard.modifierSlug,
+              content: fragmentContentById.get(fragmentId) ?? "",
+            },
       ];
     });
   }
@@ -2581,10 +2636,7 @@ export class AdventureModuleStore {
       counters: [],
       assetFragmentIds: ["frag-asset-main"],
       assetCards: [
-        {
-          fragmentId: "frag-asset-main",
-          baseAssetSlug: defaultAssetBaseSlug,
-        },
+        createBlankCustomAssetCard("frag-asset-main"),
       ],
       itemFragmentIds: [],
       encounterFragmentIds: ["frag-encounter-main"],

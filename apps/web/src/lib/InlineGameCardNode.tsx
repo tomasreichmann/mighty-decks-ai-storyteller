@@ -55,13 +55,21 @@ const InlineGameCardDecorator = ({
   const [isSelected, setIsSelected] = useState(false);
   const cardType = lexicalNode.getCardType();
   const slug = lexicalNode.getSlug();
+  const modifierSlug = lexicalNode.getModifierSlug();
 
   const resolvedGameCard = useMemo(() => {
     if (!isGameCardType(cardType) || !slug) {
       return null;
     }
-    return resolveGameCard(cardType, slug, actorsBySlug, countersBySlug, assetsBySlug);
-  }, [actorsBySlug, assetsBySlug, cardType, countersBySlug, slug]);
+    return resolveGameCard(
+      cardType,
+      slug,
+      actorsBySlug,
+      countersBySlug,
+      assetsBySlug,
+      modifierSlug ?? undefined,
+    );
+  }, [actorsBySlug, assetsBySlug, cardType, countersBySlug, modifierSlug, slug]);
 
   useEffect(() => {
     const syncSelectedState = (): void => {
@@ -163,21 +171,28 @@ const InlineGameCardDecorator = ({
 
 interface SerializedInlineGameCardNode {
   type: "inline-game-card";
-  version: 1;
+  version: 2;
   cardType: string | null;
   slug: string | null;
+  modifierSlug?: string | null;
 }
 
 export class InlineGameCardNode extends lexical.DecoratorNode<JSX.Element> {
   __cardType: string | null;
   __slug: string | null;
+  __modifierSlug: string | null;
 
   static override getType(): string {
     return "inline-game-card";
   }
 
   static override clone(node: InlineGameCardNode): InlineGameCardNode {
-    return new InlineGameCardNode(node.__cardType, node.__slug, node.__key);
+    return new InlineGameCardNode(
+      node.__cardType,
+      node.__slug,
+      node.__modifierSlug,
+      node.__key,
+    );
   }
 
   static override importJSON(
@@ -186,21 +201,29 @@ export class InlineGameCardNode extends lexical.DecoratorNode<JSX.Element> {
     return $createInlineGameCardNode(
       serializedNode.cardType,
       serializedNode.slug,
+      serializedNode.modifierSlug ?? null,
     );
   }
 
-  constructor(cardType: string | null, slug: string | null, key?: string) {
+  constructor(
+    cardType: string | null,
+    slug: string | null,
+    modifierSlug: string | null,
+    key?: string,
+  ) {
     super(key);
     this.__cardType = cardType;
     this.__slug = slug;
+    this.__modifierSlug = modifierSlug;
   }
 
   override exportJSON(): SerializedInlineGameCardNode {
     return {
       type: "inline-game-card",
-      version: 1,
+      version: 2,
       cardType: this.getCardType(),
       slug: this.getSlug(),
+      modifierSlug: this.getModifierSlug(),
     };
   }
 
@@ -228,6 +251,10 @@ export class InlineGameCardNode extends lexical.DecoratorNode<JSX.Element> {
     return this.__slug;
   }
 
+  getModifierSlug(): string | null {
+    return this.__modifierSlug;
+  }
+
   override decorate(parentEditor: ParentEditorLike): JSX.Element {
     return (
       <InlineGameCardDecorator
@@ -241,7 +268,8 @@ export class InlineGameCardNode extends lexical.DecoratorNode<JSX.Element> {
 export const $createInlineGameCardNode = (
   cardType: string | null,
   slug: string | null,
-): InlineGameCardNode => new InlineGameCardNode(cardType, slug);
+  modifierSlug: string | null = null,
+): InlineGameCardNode => new InlineGameCardNode(cardType, slug, modifierSlug);
 
 export const $isInlineGameCardNode = (
   value: unknown,

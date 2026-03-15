@@ -15,7 +15,7 @@ export type LegacyGameCardTokenType =
   | "asset";
 
 const INLINE_TOKEN_PATTERN =
-  /(^|\s)(@(outcome|effect|stunt|actor|counter|asset)\/[A-Za-z0-9_-]+)(?=\s|$)/g;
+  /(^|\s)(@(outcome|effect|stunt|actor|counter|asset)\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)(?=\s|$)/g;
 const FENCE_PATTERN = /^([`~]{3,})(.*)$/;
 const INLINE_CODE_SPLIT_PATTERN = /(`+[^`]*`+)/g;
 const INDENTED_CODE_LINE_PATTERN = /^(?: {4}|\t)/;
@@ -32,7 +32,15 @@ const legacyTypeToGameCardType: Record<LegacyGameCardTokenType, GameCardType> = 
 export const createGameCardJsx = (
   type: GameCardType,
   slug: string,
-): string => `<GameCard type="${type}" slug="${slug}" />`;
+  options: {
+    modifierSlug?: string;
+  } = {},
+): string => {
+  const modifierSlug = options.modifierSlug?.trim() ?? "";
+  return modifierSlug.length > 0
+    ? `<GameCard type="${type}" slug="${slug}" modifierSlug="${modifierSlug}" />`
+    : `<GameCard type="${type}" slug="${slug}" />`;
+};
 
 export const parseLegacyGameCardToken = (
   token: string,
@@ -41,11 +49,26 @@ export const parseLegacyGameCardToken = (
       legacyType: LegacyGameCardTokenType;
       type: GameCardType;
       slug: string;
+      modifierSlug?: string;
       token: string;
     }
   | null => {
-  const match = /^@(outcome|effect|stunt|actor|counter|asset)\/([A-Za-z0-9_-]+)$/.exec(
-    token.trim(),
+  const trimmedToken = token.trim();
+  const assetMatch = /^@asset\/([A-Za-z0-9_-]+)(?:\/([A-Za-z0-9_-]+))?$/.exec(
+    trimmedToken,
+  );
+  if (assetMatch) {
+    return {
+      legacyType: "asset",
+      type: "AssetCard",
+      slug: assetMatch[1],
+      modifierSlug: assetMatch[2],
+      token: trimmedToken,
+    };
+  }
+
+  const match = /^@(outcome|effect|stunt|actor|counter)\/([A-Za-z0-9_-]+)$/.exec(
+    trimmedToken,
   );
   if (!match) {
     return null;
@@ -58,7 +81,7 @@ export const parseLegacyGameCardToken = (
     legacyType,
     type: legacyTypeToGameCardType[legacyType],
     slug,
-    token: token.trim(),
+    token: trimmedToken,
   };
 };
 
@@ -78,7 +101,9 @@ const replaceLegacyTokensOutsideInlineCode = (value: string): string => {
           if (!parsed) {
             return `${leadingWhitespace}${token}`;
           }
-          return `${leadingWhitespace}${createGameCardJsx(parsed.type, parsed.slug)}`;
+          return `${leadingWhitespace}${createGameCardJsx(parsed.type, parsed.slug, {
+            modifierSlug: parsed.modifierSlug,
+          })}`;
         },
       );
     })

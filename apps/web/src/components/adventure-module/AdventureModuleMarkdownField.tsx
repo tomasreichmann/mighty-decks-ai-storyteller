@@ -5,6 +5,7 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type { AssetBaseSlug } from "@mighty-decks/spec/assetCards";
 import {
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
@@ -34,6 +35,7 @@ import {
   startWorkflowLabRun,
   stopWorkflowLabRun,
 } from "../../lib/workflowLabApi";
+import { assetBaseCardsByGroup, assetModifierCards } from "../../data/assetCards";
 import { Button } from "../common/Button";
 import { ContextMenu, type ContextMenuRow } from "../common/ContextMenu";
 import type { DropdownTriggerRenderProps } from "../common/Dropdown";
@@ -60,7 +62,10 @@ import {
   GameCardCatalogContext,
   type CounterAdjustTarget,
 } from "../../lib/gameCardCatalogContext";
-import { normalizeLegacyGameCardMarkdown } from "../../lib/gameCardMarkdown";
+import {
+  createGameCardJsx,
+  normalizeLegacyGameCardMarkdown,
+} from "../../lib/gameCardMarkdown";
 import { gameCardInlineFlowPlugin } from "../../lib/gameCardInlineFlowPlugin";
 import { normalizeMarkdownEditorChange } from "../../lib/markdownEditorChange";
 import { GameCardJsxEditor } from "./GameCardJsxEditor";
@@ -189,14 +194,21 @@ const renderSmartMenuTrigger = (
 );
 
 interface CreateEditorPluginsArgs {
-  insertType: GameCardType;
+  insertType: ToolbarInsertType;
   insertSlug: string;
   insertOptions: GameCardOption[];
+  genericAssetBaseSlug: string;
+  genericAssetModifierSlug: string;
   insertDisabled: boolean;
-  onInsertTypeChange: (nextType: GameCardType) => void;
+  insertButtonDisabled: boolean;
+  onInsertTypeChange: (nextType: ToolbarInsertType) => void;
   onInsertSlugChange: (nextSlug: string) => void;
+  onGenericAssetBaseSlugChange: (nextSlug: AssetBaseSlug) => void;
+  onGenericAssetModifierSlugChange: (nextSlug: string) => void;
   onInsert: () => void;
 }
+
+type ToolbarInsertType = GameCardType | "GenericAsset" | "CustomAsset";
 
 const gameCardJsxDescriptor: JsxComponentDescriptor = {
   name: "GameCard",
@@ -204,6 +216,7 @@ const gameCardJsxDescriptor: JsxComponentDescriptor = {
   props: [
     { name: "type", type: "string", required: true },
     { name: "slug", type: "string", required: true },
+    { name: "modifierSlug", type: "string" },
   ],
   hasChildren: false,
   Editor: GameCardJsxEditor,
@@ -213,9 +226,14 @@ const renderToolbarInsertControls = ({
   insertType,
   insertSlug,
   insertOptions,
+  genericAssetBaseSlug,
+  genericAssetModifierSlug,
   insertDisabled,
+  insertButtonDisabled,
   onInsertTypeChange,
   onInsertSlugChange,
+  onGenericAssetBaseSlugChange,
+  onGenericAssetModifierSlugChange,
   onInsert,
 }: CreateEditorPluginsArgs): JSX.Element => (
   <span className="ml-1 inline-flex items-center gap-1 border-l-2 border-kac-iron-dark/30 pl-2">
@@ -223,7 +241,7 @@ const renderToolbarInsertControls = ({
       aria-label="Insert card type"
       value={insertType}
       onChange={(event) =>
-        onInsertTypeChange(event.target.value as GameCardType)
+        onInsertTypeChange(event.target.value as ToolbarInsertType)
       }
       disabled={insertDisabled}
       className="h-7 min-w-[6.6rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
@@ -233,30 +251,89 @@ const renderToolbarInsertControls = ({
       <option value="StuntCard">Stunt</option>
       <option value="ActorCard">Actor</option>
       <option value="CounterCard">Counter</option>
-      <option value="AssetCard">Asset</option>
+      <option value="GenericAsset">Generic Asset</option>
+      <option value="CustomAsset">Custom Asset</option>
     </select>
-    <select
-      aria-label="Insert card"
-      value={insertSlug}
-      onChange={(event) => onInsertSlugChange(event.target.value)}
-      disabled={insertDisabled}
-      className="h-7 min-w-[11rem] max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {insertOptions.length > 0 ? (
-        insertOptions.map((option) => (
-          <option key={option.legacyToken} value={option.slug}>
-            {option.label}
-          </option>
-        ))
-      ) : (
-        <option value="">No cards</option>
-      )}
-    </select>
+    {insertType === "GenericAsset" ? (
+      <>
+        <select
+          aria-label="Generic asset modifier"
+          value={genericAssetModifierSlug}
+          onChange={(event) =>
+            onGenericAssetModifierSlugChange(event.target.value)
+          }
+          disabled={insertDisabled}
+          className="h-7 min-w-[8rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <option value="">-</option>
+          {assetModifierCards.map((modifier) => (
+            <option key={modifier.slug} value={modifier.slug}>
+              {modifier.title}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Generic asset base"
+          value={genericAssetBaseSlug}
+          onChange={(event) =>
+            onGenericAssetBaseSlugChange(event.target.value as AssetBaseSlug)
+          }
+          disabled={insertDisabled}
+          className="h-7 min-w-[11rem] max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {(["Asset Base", "Asset Medieval"] as const).map((groupLabel) => (
+            <optgroup key={groupLabel} label={groupLabel}>
+              {assetBaseCardsByGroup[groupLabel].map((baseAsset) => (
+                <option key={baseAsset.slug} value={baseAsset.slug}>
+                  {baseAsset.title}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </>
+    ) : insertType === "CustomAsset" ? (
+      <select
+        aria-label="Insert custom asset"
+        value={insertSlug}
+        onChange={(event) => onInsertSlugChange(event.target.value)}
+        disabled={insertDisabled}
+        className="h-7 min-w-[11rem] max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {insertOptions.length > 0 ? (
+          insertOptions.map((option) => (
+            <option key={option.legacyToken} value={option.slug}>
+              {option.label}
+            </option>
+          ))
+        ) : (
+          <option value="">No custom assets</option>
+        )}
+      </select>
+    ) : (
+      <select
+        aria-label="Insert card"
+        value={insertSlug}
+        onChange={(event) => onInsertSlugChange(event.target.value)}
+        disabled={insertDisabled}
+        className="h-7 min-w-[11rem] max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {insertOptions.length > 0 ? (
+          insertOptions.map((option) => (
+            <option key={option.legacyToken} value={option.slug}>
+              {option.label}
+            </option>
+          ))
+        ) : (
+          <option value="">No cards</option>
+        )}
+      </select>
+    )}
     <Button
       variant="solid"
       color="gold"
       size="sm"
-      disabled={insertDisabled}
+      disabled={insertButtonDisabled}
       className="h-7 px-2 text-xs"
       onClick={onInsert}
     >
@@ -811,10 +888,31 @@ export const AdventureModuleMarkdownField = ({
     () => buildGameCardOptionsByType(actors, counters, assets),
     [actors, assets, counters],
   );
-  const [insertType, setInsertType] = useState<GameCardType>(defaultGameCardType);
+  const genericAssetBaseOptions = useMemo(
+    () =>
+      (["Asset Base", "Asset Medieval"] as const).flatMap((groupLabel) =>
+        assetBaseCardsByGroup[groupLabel].map((asset) => ({
+          groupLabel,
+          slug: asset.slug,
+        })),
+      ),
+    [],
+  );
+  const [insertType, setInsertType] =
+    useState<ToolbarInsertType>(defaultGameCardType);
   const [insertSlug, setInsertSlug] = useState<string>(
     () => gameCardOptionsByType[defaultGameCardType][0]?.slug ?? "",
   );
+  const [genericAssetBaseSlug, setGenericAssetBaseSlug] =
+    useState<AssetBaseSlug>(
+      () =>
+        (genericAssetBaseOptions[0]?.slug ??
+          assetBaseCardsByGroup["Asset Base"][0]?.slug ??
+          assetBaseCardsByGroup["Asset Medieval"][0]?.slug ??
+          "") as AssetBaseSlug,
+    );
+  const [genericAssetModifierSlug, setGenericAssetModifierSlug] =
+    useState<string>("");
   const [insertStatusMessage, setInsertStatusMessage] = useState<string | null>(
     null,
   );
@@ -838,8 +936,12 @@ export const AdventureModuleMarkdownField = ({
       smartContextDocument,
     ],
   );
+  const resolvedInsertType: GameCardType =
+    insertType === "GenericAsset" || insertType === "CustomAsset"
+      ? "AssetCard"
+      : insertType;
   useEffect(() => {
-    const options = gameCardOptionsByType[insertType];
+    const options = gameCardOptionsByType[resolvedInsertType];
     if (options.length === 0) {
       if (insertSlug !== "") {
         setInsertSlug("");
@@ -849,7 +951,17 @@ export const AdventureModuleMarkdownField = ({
     if (!options.some((option) => option.slug === insertSlug)) {
       setInsertSlug(options[0].slug);
     }
-  }, [insertSlug, insertType]);
+  }, [gameCardOptionsByType, insertSlug, resolvedInsertType]);
+  useEffect(() => {
+    if (genericAssetBaseOptions.length === 0) {
+      return;
+    }
+    if (
+      !genericAssetBaseOptions.some((option) => option.slug === genericAssetBaseSlug)
+    ) {
+      setGenericAssetBaseSlug(genericAssetBaseOptions[0].slug);
+    }
+  }, [genericAssetBaseOptions, genericAssetBaseSlug]);
 
   const handleInsertComponent = (componentMarkdown: string): boolean => {
     if (!editable || !editorRef.current) {
@@ -883,10 +995,33 @@ export const AdventureModuleMarkdownField = ({
     maxLength,
     onChange,
   });
-  const insertOptions = gameCardOptionsByType[insertType];
-  const insertDisabled =
-    !editable || smartActions.running || insertOptions.length === 0;
+  const insertOptions = gameCardOptionsByType[resolvedInsertType];
+  const insertHasChoices =
+    insertType === "GenericAsset"
+      ? genericAssetBaseOptions.length > 0
+      : insertOptions.length > 0;
+  const insertControlsDisabled = !editable || smartActions.running;
+  const insertDisabled = insertControlsDisabled || !insertHasChoices;
   const handleInsertFromToolbar = (): void => {
+    if (insertType === "GenericAsset") {
+      const assetSlug = genericAssetBaseSlug.trim();
+      if (!assetSlug) {
+        setInsertErrorMessage("Select a base asset before inserting.");
+        return;
+      }
+      if (
+        !handleInsertComponent(
+          createGameCardJsx("AssetCard", assetSlug, {
+            modifierSlug: genericAssetModifierSlug.trim() || undefined,
+          }),
+        )
+      ) {
+        return;
+      }
+      setInsertStatusMessage("Inserted Generic Asset card.");
+      return;
+    }
+
     const selected = insertOptions.find((option) => option.slug === insertSlug);
     if (!selected) {
       setInsertErrorMessage("Select a card before inserting.");
@@ -896,7 +1031,9 @@ export const AdventureModuleMarkdownField = ({
       return;
     }
     setInsertStatusMessage(
-      `Inserted ${gameCardTypeLabel[insertType]} card.`,
+      insertType === "CustomAsset"
+        ? "Inserted Custom Asset card."
+        : `Inserted ${gameCardTypeLabel[resolvedInsertType]} card.`,
     );
   };
   const plugins = useMemo(
@@ -905,7 +1042,10 @@ export const AdventureModuleMarkdownField = ({
         insertType,
         insertSlug,
         insertOptions,
-        insertDisabled,
+        genericAssetBaseSlug,
+        genericAssetModifierSlug,
+        insertDisabled: insertControlsDisabled,
+        insertButtonDisabled: insertDisabled,
         onInsertTypeChange: (nextType) => {
           setInsertType(nextType);
           setInsertErrorMessage(null);
@@ -914,10 +1054,21 @@ export const AdventureModuleMarkdownField = ({
           setInsertSlug(nextSlug);
           setInsertErrorMessage(null);
         },
+        onGenericAssetBaseSlugChange: (nextSlug) => {
+          setGenericAssetBaseSlug(nextSlug);
+          setInsertErrorMessage(null);
+        },
+        onGenericAssetModifierSlugChange: (nextSlug) => {
+          setGenericAssetModifierSlug(nextSlug);
+          setInsertErrorMessage(null);
+        },
         onInsert: handleInsertFromToolbar,
       }),
     [
+      genericAssetBaseSlug,
+      genericAssetModifierSlug,
       handleInsertFromToolbar,
+      insertControlsDisabled,
       insertDisabled,
       insertOptions,
       insertSlug,

@@ -77,7 +77,13 @@ const createValidIndexCandidate = () => ({
   assetCards: [
     {
       fragmentId: "frag-asset-main",
-      baseAssetSlug: "base_package",
+      kind: "custom",
+      modifier: "Smoldering",
+      noun: "Lantern Shard",
+      nounDescription: "Glows brighter around hidden doors.",
+      adjectiveDescription: "Whispers when ward-lines start to fail.",
+      iconUrl: "https://example.com/assets/lantern-shard.png",
+      overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
     },
   ],
   itemFragmentIds: [],
@@ -294,6 +300,42 @@ test("adventureModuleIndexSchema rejects missing asset card metadata", () => {
       }),
     /missing asset card metadata/i,
   );
+});
+
+test("adventureModuleIndexSchema accepts custom asset card metadata", () => {
+  const parsed = adventureModuleIndexSchema.parse({
+    ...createValidIndexCandidate(),
+    assetCards: [
+      {
+        fragmentId: "frag-asset-main",
+        kind: "custom",
+        modifier: "Smoldering",
+        noun: "Lantern Shard",
+        nounDescription: "Glows brighter around hidden doors.",
+        adjectiveDescription: "Whispers when ward-lines start to fail.",
+        iconUrl: "https://example.com/assets/lantern-shard.png",
+        overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
+      },
+    ],
+  });
+
+  assert.equal(parsed.assetCards[0]?.kind, "custom");
+});
+
+test("adventureModuleIndexSchema accepts tagged legacy layered asset metadata", () => {
+  const parsed = adventureModuleIndexSchema.parse({
+    ...createValidIndexCandidate(),
+    assetCards: [
+      {
+        fragmentId: "frag-asset-main",
+        kind: "legacy_layered",
+        baseAssetSlug: "base_package",
+        modifierSlug: "base_hidden",
+      },
+    ],
+  });
+
+  assert.equal(parsed.assetCards[0]?.kind, "legacy_layered");
 });
 
 test("adventureModuleIndexSchema rejects missing location detail metadata", () => {

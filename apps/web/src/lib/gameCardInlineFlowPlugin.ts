@@ -107,6 +107,7 @@ const gameCardFlowImportVisitor: MdastImportVisitor<any> = {
       $createInlineGameCardNode(
         getStringAttribute(mdastNode.attributes, "type"),
         getStringAttribute(mdastNode.attributes, "slug"),
+        getStringAttribute(mdastNode.attributes, "modifierSlug"),
       ),
     );
   },
@@ -131,6 +132,15 @@ const inlineGameCardExportVisitor: LexicalVisitor = {
           name: "slug",
           value: inlineGameCardNode.getSlug() ?? "",
         },
+        ...(inlineGameCardNode.getModifierSlug()
+          ? [
+              {
+                type: "mdxJsxAttribute" as const,
+                name: "modifierSlug",
+                value: inlineGameCardNode.getModifierSlug(),
+              },
+            ]
+          : []),
       ],
       children: [],
     });

@@ -27,6 +27,12 @@ test("createGameCardJsx emits canonical GameCard source", () => {
     createGameCardJsx("AssetCard", "storm-lantern"),
     '<GameCard type="AssetCard" slug="storm-lantern" />',
   );
+  assert.equal(
+    createGameCardJsx("AssetCard", "medieval_lantern", {
+      modifierSlug: "base_hidden",
+    }),
+    '<GameCard type="AssetCard" slug="medieval_lantern" modifierSlug="base_hidden" />',
+  );
 });
 
 test("normalizeLegacyGameCardMarkdown upgrades legacy tokens to canonical GameCard JSX", () => {
@@ -134,6 +140,27 @@ test("normalizeLegacyGameCardMarkdown upgrades asset shortcodes with underscore 
       '<GameCard type="AssetCard" slug="base_light_weapon" />',
       "",
       'Keep <GameCard type="AssetCard" slug="medieval_lantern" /> close at hand.',
+    ].join("\n"),
+  );
+});
+
+test("normalizeLegacyGameCardMarkdown upgrades asset shortcodes with modifier slugs", () => {
+  const markdown = [
+    "Apply a modifier from the rules reference.",
+    "",
+    "@asset/medieval_lantern/base_hidden",
+    "",
+    "Keep @asset/base_light/base_empowered ready for the next scene.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Apply a modifier from the rules reference.",
+      "",
+      '<GameCard type="AssetCard" slug="medieval_lantern" modifierSlug="base_hidden" />',
+      "",
+      'Keep <GameCard type="AssetCard" slug="base_light" modifierSlug="base_empowered" /> ready for the next scene.',
     ].join("\n"),
   );
 });

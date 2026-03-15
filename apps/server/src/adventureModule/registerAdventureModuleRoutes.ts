@@ -452,9 +452,12 @@ export const registerAdventureModuleRoutes = (
           creatorToken,
           title: payload.title,
           summary: payload.summary,
-          baseAssetSlug: payload.baseAssetSlug,
-          modifierSlug:
-            payload.modifierSlug === null ? undefined : payload.modifierSlug,
+          modifier: payload.modifier,
+          noun: payload.noun,
+          nounDescription: payload.nounDescription,
+          adjectiveDescription: payload.adjectiveDescription,
+          iconUrl: payload.iconUrl,
+          overlayUrl: payload.overlayUrl,
           content: payload.content,
         });
         return reply.send(adventureModuleUpdateAssetResponseSchema.parse(next));
