@@ -10,6 +10,7 @@ import { Text } from "../common/Text";
 interface AdventureModuleBaseTabPanelProps {
   moduleId: string;
   creatorToken?: string;
+  coverImageUrl?: string;
   premise: string;
   haveTags: string[];
   avoidTags: string[];
@@ -31,6 +32,7 @@ interface AdventureModuleBaseTabPanelProps {
 export const AdventureModuleBaseTabPanel = ({
   moduleId,
   creatorToken,
+  coverImageUrl,
   premise,
   haveTags,
   avoidTags,
@@ -82,6 +84,7 @@ export const AdventureModuleBaseTabPanel = ({
       <AdventureModuleTitleImagePanel
         moduleId={moduleId}
         creatorToken={creatorToken}
+        coverImageUrl={coverImageUrl}
         moduleTitle={moduleTitle}
         moduleSummary={moduleSummary}
         moduleIntent={moduleIntent}

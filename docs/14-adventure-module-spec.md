@@ -16,7 +16,7 @@ Boundary rules for this milestone:
 - No change to current live-session state machine (`lobby -> vote -> play -> ending`)
 - No change to current Socket.IO event contracts
 - No database implementation in this milestone
-- Runtime authoring support is currently limited to Adventure Module create/edit flows plus typed actor, counter, and asset authoring
+- Runtime authoring support is currently limited to Adventure Module create/edit flows plus typed actor, counter, asset, and location authoring
 - Deliverable includes shared schema, local file persistence, REST authoring endpoints, and matching web authoring UI
 
 ---
@@ -122,6 +122,17 @@ Asset-specific requirements:
 - Base asset selection is limited to the filtered `base` and `medieval` catalogs.
 - Every `assetFragmentId` must have exactly one matching asset-card metadata entry.
 - Resolved authoring reads join fragment metadata and asset-card metadata into an `assets` array for the web client.
+
+Location-specific requirements:
+
+- Location fragments remain normal markdown-backed `location` fragments.
+- Module index authoring metadata includes a `locationDetails` collection keyed by location `fragmentId`.
+- Each location-detail metadata entry stores optional `titleImageUrl`, `introductionMarkdown`, `descriptionMarkdown`, optional `mapImageUrl`, and zero or more `mapPins`.
+- Every `locationFragmentId` must have exactly one matching location-detail metadata entry.
+- Each map pin stores a stable `pinId`, `x` and `y` coordinates in the `0..100` range, and a target `fragmentId`.
+- Map pin targets are limited to existing `location`, `actor`, `encounter`, or `quest` fragments so location and actor slug renames do not break links.
+- Resolved authoring reads join fragment metadata and location-detail metadata into a `locations` array for the web client.
+- Legacy modules missing `locationDetails` metadata backfill from the raw location fragment body by treating it as `descriptionMarkdown` until the location is saved.
 
 ---
 
@@ -301,11 +312,14 @@ if (!result.success) {
 
 ## 11. Current Implemented Authoring Contracts
 
-The current implementation adds typed actor, counter, and asset authoring APIs on top of the shared spec:
+The current implementation adds typed actor, counter, asset, and location authoring APIs on top of the shared spec:
 
 - `POST /api/adventure-modules/:moduleId/actors`
 - `PUT /api/adventure-modules/:moduleId/actors/:actorSlug`
 - `DELETE /api/adventure-modules/:moduleId/actors/:actorSlug`
+- `POST /api/adventure-modules/:moduleId/locations`
+- `PUT /api/adventure-modules/:moduleId/locations/:locationSlug`
+- `DELETE /api/adventure-modules/:moduleId/locations/:locationSlug`
 - `POST /api/adventure-modules/:moduleId/counters`
 - `PUT /api/adventure-modules/:moduleId/counters/:counterSlug`
 - `DELETE /api/adventure-modules/:moduleId/counters/:counterSlug`
@@ -316,14 +330,17 @@ The current implementation adds typed actor, counter, and asset authoring APIs o
 These endpoints:
 
 - create actor fragments with module-scoped slugs derived from the saved actor title
+- create location fragments with module-scoped slugs derived from the saved location title
+- persist typed location metadata alongside location fragment references, including optional title image, introduction markdown, description markdown, optional map image, and map pins
 - persist typed layered-card metadata alongside fragment references
 - persist typed counter records directly on the module index with slugs derived from the saved counter title
 - create asset fragments with module-scoped slugs derived from the saved asset title
 - persist typed asset-card metadata alongside asset fragment references
-- return resolved `AdventureModuleDetail` payloads including joined `actors`, `counters`, and `assets`
+- return resolved `AdventureModuleDetail` payloads including joined `locations`, `actors`, `counters`, and `assets`
 
 Legacy module compatibility:
 
+- Modules missing `locationDetails` metadata are backfilled with safe defaults on read, seeding `descriptionMarkdown` from the legacy raw fragment content.
 - Modules missing `actorCards` metadata are backfilled with safe defaults on read.
 - Modules missing `assetCards` metadata are backfilled with safe defaults on read.
 - The normalized shape is persisted on the next successful write.
@@ -335,4 +352,4 @@ Legacy module compatibility:
 - Session orchestration changes
 - Cloud publishing pipeline
 - Minis/map rendering features
-- Non-actor, non-counter, non-asset typed entity editors (locations, encounters, quests)
+- Encounter and quest typed entity editors

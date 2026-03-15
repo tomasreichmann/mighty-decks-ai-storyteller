@@ -15,6 +15,7 @@ import {
   adventureModuleFragmentKindSchema,
   adventureModuleFragmentRefSchema,
   adventureModuleIndexSchema,
+  adventureModuleLocationMapPinSchema,
   adventureModuleLaunchProfileSchema,
   adventureModuleSessionScopeSchema,
   adventureModuleStatusSchema,
@@ -166,6 +167,21 @@ export type AdventureModuleResolvedAsset = z.infer<
   typeof adventureModuleResolvedAssetSchema
 >;
 
+export const adventureModuleResolvedLocationSchema = z.object({
+  fragmentId: identifierSchema,
+  locationSlug: slugSchema,
+  title: shortTextSchema,
+  summary: mediumTextSchema.optional(),
+  titleImageUrl: z.string().min(1).max(500).optional(),
+  introductionMarkdown: z.string().max(200_000).default(""),
+  descriptionMarkdown: z.string().max(200_000).default(""),
+  mapImageUrl: z.string().min(1).max(500).optional(),
+  mapPins: z.array(adventureModuleLocationMapPinSchema).max(100).default([]),
+});
+export type AdventureModuleResolvedLocation = z.infer<
+  typeof adventureModuleResolvedLocationSchema
+>;
+
 export const adventureModuleAuthoringFragmentSchema = z.object({
   fragment: adventureModuleFragmentRefSchema,
   content: z.string().max(200_000).default(""),
@@ -178,6 +194,7 @@ export const adventureModuleDetailSchema = z
   .object({
     index: adventureModuleIndexSchema,
     fragments: z.array(adventureModuleAuthoringFragmentSchema).max(400),
+    locations: z.array(adventureModuleResolvedLocationSchema).max(80).default([]),
     actors: z.array(adventureModuleResolvedActorSchema).max(80).default([]),
     counters: z.array(adventureModuleResolvedCounterSchema).max(80).default([]),
     assets: z.array(adventureModuleResolvedAssetSchema).max(80).default([]),
@@ -226,6 +243,59 @@ export const adventureModuleDetailSchema = z
           code: z.ZodIssueCode.custom,
           message: `resolved actor ${actor.fragmentId} does not match index actor card metadata`,
           path: ["actors"],
+        });
+      }
+    }
+
+    const locationIds = new Set(module.index.locationFragmentIds);
+    const locationDetailByFragmentId = new Map(
+      module.index.locationDetails.map((locationDetail) => [locationDetail.fragmentId, locationDetail] as const),
+    );
+
+    for (const location of module.locations) {
+      if (!locationIds.has(location.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved location references unknown fragment ${location.fragmentId}`,
+          path: ["locations"],
+        });
+      }
+      const locationDetail = locationDetailByFragmentId.get(location.fragmentId);
+      if (!locationDetail) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved location missing location detail metadata for ${location.fragmentId}`,
+          path: ["locations"],
+        });
+        continue;
+      }
+      const fragmentRecord =
+        module.fragments.find(
+          (fragment) => fragment.fragment.fragmentId === location.fragmentId,
+        ) ?? null;
+      const usesLegacyDescriptionFallback =
+        !locationDetail.titleImageUrl &&
+        !locationDetail.mapImageUrl &&
+        locationDetail.introductionMarkdown.length === 0 &&
+        locationDetail.descriptionMarkdown.length === 0 &&
+        locationDetail.mapPins.length === 0 &&
+        location.titleImageUrl === undefined &&
+        location.mapImageUrl === undefined &&
+        location.introductionMarkdown.length === 0 &&
+        location.mapPins.length === 0 &&
+        location.descriptionMarkdown === (fragmentRecord?.content ?? "");
+      if (
+        location.titleImageUrl !== locationDetail.titleImageUrl ||
+        location.introductionMarkdown !== locationDetail.introductionMarkdown ||
+        (!usesLegacyDescriptionFallback &&
+          location.descriptionMarkdown !== locationDetail.descriptionMarkdown) ||
+        location.mapImageUrl !== locationDetail.mapImageUrl ||
+        JSON.stringify(location.mapPins) !== JSON.stringify(locationDetail.mapPins)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved location ${location.fragmentId} does not match index location metadata`,
+          path: ["locations"],
         });
       }
     }
@@ -336,6 +406,32 @@ export const adventureModuleCreateActorRequestSchema = z.object({
 });
 export type AdventureModuleCreateActorRequest = z.infer<
   typeof adventureModuleCreateActorRequestSchema
+>;
+
+export const adventureModuleCreateLocationRequestSchema = z.object({
+  title: shortTextSchema.default("New Location"),
+});
+export type AdventureModuleCreateLocationRequest = z.infer<
+  typeof adventureModuleCreateLocationRequestSchema
+>;
+
+export const adventureModuleUpdateLocationRequestSchema = z.object({
+  title: shortTextSchema,
+  summary: z.string().max(500).default(""),
+  titleImageUrl: z.union([z.string().min(1).max(500), z.null()]).optional(),
+  introductionMarkdown: z.string().max(200_000).default(""),
+  descriptionMarkdown: z.string().max(200_000).default(""),
+  mapImageUrl: z.union([z.string().min(1).max(500), z.null()]).optional(),
+  mapPins: z.array(adventureModuleLocationMapPinSchema).max(100).default([]),
+});
+export type AdventureModuleUpdateLocationRequest = z.infer<
+  typeof adventureModuleUpdateLocationRequestSchema
+>;
+
+export const adventureModuleUpdateLocationResponseSchema =
+  adventureModuleDetailSchema;
+export type AdventureModuleUpdateLocationResponse = z.infer<
+  typeof adventureModuleUpdateLocationResponseSchema
 >;
 
 export const adventureModuleUpdateActorRequestSchema = z.object({

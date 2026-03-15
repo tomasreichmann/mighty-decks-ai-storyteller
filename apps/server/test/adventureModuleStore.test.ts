@@ -921,3 +921,253 @@ test("backfills missing actor card metadata for legacy modules", async () => {
   assert.equal(Array.isArray(persistedIndex.actorCards), true);
   assert.equal(persistedIndex.actorCards?.length, 1);
 });
+
+test("creates, updates, renames, and deletes locations while preserving map pin fragment targets", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const module = await store.createModule({
+    creatorToken: "token-location",
+    title: "Location Module",
+  });
+
+  const locationStore = store as unknown as {
+    createLocation: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<{
+      locations: Array<{
+        fragmentId: string;
+        locationSlug: string;
+        title: string;
+        introductionMarkdown: string;
+        descriptionMarkdown: string;
+      }>;
+    }>;
+    updateLocation: (input: {
+      moduleId: string;
+      locationSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      titleImageUrl?: string;
+      introductionMarkdown: string;
+      descriptionMarkdown: string;
+      mapImageUrl?: string;
+      mapPins: Array<{
+        pinId: string;
+        x: number;
+        y: number;
+        targetFragmentId: string;
+      }>;
+    }) => Promise<{
+      locations: Array<{
+        fragmentId: string;
+        locationSlug: string;
+        title: string;
+        summary?: string;
+        titleImageUrl?: string;
+        introductionMarkdown: string;
+        descriptionMarkdown: string;
+        mapImageUrl?: string;
+        mapPins: Array<{
+          pinId: string;
+          x: number;
+          y: number;
+          targetFragmentId: string;
+        }>;
+      }>;
+    }>;
+    deleteLocation: (input: {
+      moduleId: string;
+      locationSlug: string;
+      creatorToken?: string;
+    }) => Promise<{
+      locations: Array<{
+        locationSlug: string;
+      }>;
+    }>;
+  };
+
+  const created = await locationStore.createLocation({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-location",
+    title: "Sunken Courtyard",
+  });
+  const createdLocation = created.locations.find(
+    (location) => location.locationSlug === "sunken-courtyard",
+  );
+  assert.ok(createdLocation);
+  assert.equal(createdLocation.title, "Sunken Courtyard");
+
+  const updated = await locationStore.updateLocation({
+    moduleId: module.index.moduleId,
+    locationSlug: "sunken-courtyard",
+    creatorToken: "token-location",
+    title: "Hidden Courtyard",
+    summary: "Flooded negotiation square beneath rusted prayer bells.",
+    titleImageUrl: "https://example.com/location-title.png",
+    introductionMarkdown:
+      "Rain hammers the stones while bells shiver overhead.",
+    descriptionMarkdown:
+      "Actors: smugglers and debt collectors. Assets: hidden contraband. Exits: archive stair and drain gate. Hazards: slick stone and sight lines from above.",
+    mapImageUrl: "https://example.com/location-map.png",
+    mapPins: [
+      {
+        pinId: "pin-location-link",
+        x: 25,
+        y: 40,
+        targetFragmentId: "frag-location-main",
+      },
+      {
+        pinId: "pin-actor-link",
+        x: 54,
+        y: 28,
+        targetFragmentId: "frag-actor-main",
+      },
+      {
+        pinId: "pin-encounter-link",
+        x: 68,
+        y: 56,
+        targetFragmentId: "frag-encounter-main",
+      },
+      {
+        pinId: "pin-quest-link",
+        x: 84,
+        y: 18,
+        targetFragmentId: "frag-quest-main",
+      },
+    ],
+  });
+
+  const updatedLocation = updated.locations.find(
+    (location) => location.locationSlug === "hidden-courtyard",
+  );
+  assert.ok(updatedLocation);
+  assert.equal(updatedLocation.title, "Hidden Courtyard");
+  assert.equal(updatedLocation.summary, "Flooded negotiation square beneath rusted prayer bells.");
+  assert.equal(updatedLocation.titleImageUrl, "https://example.com/location-title.png");
+  assert.equal(updatedLocation.mapImageUrl, "https://example.com/location-map.png");
+  assert.equal(updatedLocation.mapPins.length, 4);
+  assert.equal(updatedLocation.mapPins[1]?.targetFragmentId, "frag-actor-main");
+
+  const storedIndexRaw = await readFile(
+    join(rootDir, module.index.moduleId, "index.json"),
+    "utf8",
+  );
+  assert.match(storedIndexRaw, /locations\/hidden-courtyard\.mdx/);
+  await assert.rejects(
+    () =>
+      readFile(
+        join(rootDir, module.index.moduleId, "locations", "sunken-courtyard.mdx"),
+        "utf8",
+      ),
+    { code: "ENOENT" },
+  );
+  const renamedLocationFile = await readFile(
+    join(rootDir, module.index.moduleId, "locations", "hidden-courtyard.mdx"),
+    "utf8",
+  );
+  assert.match(renamedLocationFile, /## Introduction/);
+  assert.match(renamedLocationFile, /## Description/);
+  assert.match(renamedLocationFile, /Rain hammers the stones/);
+
+  const afterDelete = await locationStore.deleteLocation({
+    moduleId: module.index.moduleId,
+    locationSlug: "hidden-courtyard",
+    creatorToken: "token-location",
+  });
+  assert.equal(
+    afterDelete.locations.some((location) => location.locationSlug === "hidden-courtyard"),
+    false,
+  );
+});
+
+test("backfills missing location metadata from legacy fragment content on read and persists it on write", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const created = await store.createModule({
+    creatorToken: "token-legacy-location",
+    title: "Legacy Location Module",
+  });
+
+  const indexPath = join(rootDir, created.index.moduleId, "index.json");
+  const locationPath = join(
+    rootDir,
+    created.index.moduleId,
+    "locations",
+    "primary-location.mdx",
+  );
+  const legacyIndex = JSON.parse(await readFile(indexPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  delete legacyIndex.locationDetails;
+  await writeFile(indexPath, JSON.stringify(legacyIndex, null, 2), "utf8");
+  await writeFile(
+    locationPath,
+    "# Primary Location\n\nLegacy location detail that should be preserved.",
+    "utf8",
+  );
+
+  const loaded = (await store.getModule(
+    created.index.moduleId,
+    "token-legacy-location",
+  )) as unknown as {
+    locations?: Array<{
+      locationSlug: string;
+      introductionMarkdown: string;
+      descriptionMarkdown: string;
+    }>;
+  } | null;
+  assert.ok(loaded);
+  assert.equal(loaded?.locations?.[0]?.locationSlug, "primary-location");
+  assert.equal(loaded?.locations?.[0]?.introductionMarkdown, "");
+  assert.match(
+    loaded?.locations?.[0]?.descriptionMarkdown ?? "",
+    /Legacy location detail/,
+  );
+
+  const locationStore = store as unknown as {
+    updateLocation: (input: {
+      moduleId: string;
+      locationSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      titleImageUrl?: string;
+      introductionMarkdown: string;
+      descriptionMarkdown: string;
+      mapImageUrl?: string;
+      mapPins: Array<{
+        pinId: string;
+        x: number;
+        y: number;
+        targetFragmentId: string;
+      }>;
+    }) => Promise<unknown>;
+  };
+
+  await locationStore.updateLocation({
+    moduleId: created.index.moduleId,
+    locationSlug: "primary-location",
+    creatorToken: "token-legacy-location",
+    title: "Primary Location",
+    summary: "Backfilled from legacy markdown.",
+    introductionMarkdown: "",
+    descriptionMarkdown:
+      loaded?.locations?.[0]?.descriptionMarkdown ?? "Legacy location detail.",
+    mapPins: [],
+  });
+
+  const persistedIndex = JSON.parse(await readFile(indexPath, "utf8")) as {
+    locationDetails?: Array<{
+      fragmentId: string;
+      descriptionMarkdown: string;
+    }>;
+  };
+  assert.equal(Array.isArray(persistedIndex.locationDetails), true);
+  assert.equal(persistedIndex.locationDetails?.length, 1);
+  assert.match(
+    persistedIndex.locationDetails?.[0]?.descriptionMarkdown ?? "",
+    /Legacy location detail/,
+  );
+});

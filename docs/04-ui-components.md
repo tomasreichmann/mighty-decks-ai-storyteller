@@ -228,7 +228,7 @@ Tabs:
 - `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, shortcode copy, and delete actions
 - `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, shortcode copy, and delete actions
 - `assets`: `AdventureModuleAssetsTabPanel` showing searchable layered `AssetCard` entries, `Create Asset`, shortcode copy, and delete actions
-- `locations`: placeholder
+- `locations`: `AdventureModuleLocationsTabPanel` showing searchable location cards, title-image previews, `Create Location`, shortcode copy, and delete actions
 - `encounters`: placeholder
 - `quests`: placeholder
 
@@ -250,13 +250,15 @@ List-tab primary actions:
 
 ### `/adventure-module/:slug/:tab/:entityId`
 
-Entity editor route. Actor, counter, and asset editing are implemented in this step; other entity editors remain placeholders.
+Entity editor route. Actor, counter, asset, and location editing are implemented in this step; encounter and quest entity editors remain placeholders.
 
 Components:
 
 - `AdventureModuleActorEditor`
 - `AdventureModuleCounterEditor`
 - `AdventureModuleAssetEditor`
+- `AdventureModuleLocationEditor`
+- `AdventureModuleLocationMapEditor`
 - `AdventureModuleTabPlaceholder` for remaining placeholder entity routes
 
 Actor editor baseline fields:
@@ -286,12 +288,23 @@ Asset editor baseline fields:
 - markdown body with inline `GameCard` embeds
 - live layered `AssetCard` preview
 
+Location editor baseline fields:
+
+- name
+- short summary
+- title image URL plus generated-image picker
+- markdown introduction
+- markdown description
+- map image URL plus generated-image picker
+- interactive map pins linking to locations, actors, encounters, and quests
+
 Behavior:
 
 - `/adventure-module/:slug/actors/:entityId` renders a live actor editor with autosave, live layered preview, and actor slug display that regenerates from the saved title.
 - `/adventure-module/:slug/counters/:entityId` renders a live counter editor with autosave and shared current/max value controls.
 - `/adventure-module/:slug/assets/:entityId` renders a live asset editor with autosave, grouped base picker, layered preview, and asset slug display that regenerates from the saved title.
-- Other entity routes remain active placeholders while their typed editors are pending.
+- `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image generation/paste controls, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
+- Encounter and quest entity routes remain active placeholders while their typed editors are pending.
 
 ---
 

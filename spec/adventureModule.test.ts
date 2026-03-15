@@ -29,6 +29,41 @@ const createValidIndexCandidate = () => ({
   settingFragmentId: "frag-setting",
   componentMapFragmentId: "frag-component-map",
   locationFragmentIds: ["frag-location-main"],
+  locationDetails: [
+    {
+      fragmentId: "frag-location-main",
+      titleImageUrl: "https://example.com/location.png",
+      introductionMarkdown: "A floodlit plaza opens before the party.",
+      descriptionMarkdown: "Actors gather here and the eastern gate leads onward.",
+      mapImageUrl: "https://example.com/location-map.png",
+      mapPins: [
+        {
+          pinId: "pin-main-location",
+          x: 22,
+          y: 48,
+          targetFragmentId: "frag-location-main",
+        },
+        {
+          pinId: "pin-main-actor",
+          x: 54,
+          y: 36,
+          targetFragmentId: "frag-actor-main",
+        },
+        {
+          pinId: "pin-main-encounter",
+          x: 79,
+          y: 61,
+          targetFragmentId: "frag-encounter-main",
+        },
+        {
+          pinId: "pin-main-quest",
+          x: 88,
+          y: 18,
+          targetFragmentId: "frag-quest-main",
+        },
+      ],
+    },
+  ],
   actorFragmentIds: ["frag-actor-main"],
   actorCards: [
     {
@@ -39,6 +74,12 @@ const createValidIndexCandidate = () => ({
   ],
   counters: [],
   assetFragmentIds: ["frag-asset-main"],
+  assetCards: [
+    {
+      fragmentId: "frag-asset-main",
+      baseAssetSlug: "base_package",
+    },
+  ],
   itemFragmentIds: [],
   encounterFragmentIds: ["frag-encounter-main"],
   questFragmentIds: ["frag-quest-main"],
@@ -246,7 +287,78 @@ test("adventureModuleIndexSchema rejects duplicate counter slugs", () => {
 
 test("adventureModuleIndexSchema rejects missing asset card metadata", () => {
   assert.throws(
-    () => adventureModuleIndexSchema.parse(createValidIndexCandidate()),
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        assetCards: [],
+      }),
     /missing asset card metadata/i,
+  );
+});
+
+test("adventureModuleIndexSchema rejects missing location detail metadata", () => {
+  assert.throws(
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        locationDetails: [],
+      }),
+    /missing location detail metadata/i,
+  );
+});
+
+test("adventureModuleIndexSchema rejects duplicate location pin ids", () => {
+  assert.throws(
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        locationDetails: [
+          {
+            fragmentId: "frag-location-main",
+            introductionMarkdown: "Intro",
+            descriptionMarkdown: "Description",
+            mapPins: [
+              {
+                pinId: "pin-duplicate",
+                x: 10,
+                y: 10,
+                targetFragmentId: "frag-actor-main",
+              },
+              {
+                pinId: "pin-duplicate",
+                x: 20,
+                y: 20,
+                targetFragmentId: "frag-quest-main",
+              },
+            ],
+          },
+        ],
+      }),
+    /duplicate location map pin id/i,
+  );
+});
+
+test("adventureModuleIndexSchema rejects location pin targets outside supported kinds", () => {
+  assert.throws(
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        locationDetails: [
+          {
+            fragmentId: "frag-location-main",
+            introductionMarkdown: "Intro",
+            descriptionMarkdown: "Description",
+            mapPins: [
+              {
+                pinId: "pin-invalid-target",
+                x: 35,
+                y: 55,
+                targetFragmentId: "frag-asset-main",
+              },
+            ],
+          },
+        ],
+      }),
+    /location map pin target/i,
   );
 });

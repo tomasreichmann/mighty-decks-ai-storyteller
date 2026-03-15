@@ -5,6 +5,7 @@ import {
   adventureModuleCreateActorRequestSchema,
   adventureModuleCreateAssetRequestSchema,
   adventureModuleCreateCounterRequestSchema,
+  adventureModuleCreateLocationRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
@@ -22,6 +23,8 @@ import {
   adventureModuleUpdateAssetResponseSchema,
   adventureModuleUpdateCounterRequestSchema,
   adventureModuleUpdateCounterResponseSchema,
+  adventureModuleUpdateLocationRequestSchema,
+  adventureModuleUpdateLocationResponseSchema,
   adventureModuleUpdateCoverImageRequestSchema,
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateResponseSchema,
@@ -51,6 +54,9 @@ const assetSlugParamsSchema = z.object({
 });
 const counterSlugParamsSchema = z.object({
   counterSlug: entitySlugSchema,
+});
+const locationSlugParamsSchema = z.object({
+  locationSlug: entitySlugSchema,
 });
 
 const parseCreatorToken = (request: FastifyRequest): string | undefined => {
@@ -197,6 +203,76 @@ export const registerAdventureModuleRoutes = (
           moduleId,
           fragmentId,
           content: payload.content,
+          creatorToken,
+        });
+        return reply.send(adventureModuleUpdateResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.post("/api/adventure-modules/:moduleId/locations", async (request, reply) => {
+    const creatorToken = parseCreatorToken(request);
+    const { moduleId = "" } = request.params as { moduleId?: string };
+    try {
+      const payload = adventureModuleCreateLocationRequestSchema.parse(request.body);
+      const next = await options.store.createLocation({
+        moduleId,
+        creatorToken,
+        title: payload.title,
+      });
+      return reply.code(201).send(adventureModuleCreateResponseSchema.parse(next));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.put(
+    "/api/adventure-modules/:moduleId/locations/:locationSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", locationSlug = "" } = request.params as {
+        moduleId?: string;
+        locationSlug?: string;
+      };
+      try {
+        const params = locationSlugParamsSchema.parse({ locationSlug });
+        const payload = adventureModuleUpdateLocationRequestSchema.parse(request.body);
+        const next = await options.store.updateLocation({
+          moduleId,
+          locationSlug: params.locationSlug,
+          creatorToken,
+          title: payload.title,
+          summary: payload.summary,
+          titleImageUrl:
+            payload.titleImageUrl === null ? undefined : payload.titleImageUrl,
+          introductionMarkdown: payload.introductionMarkdown,
+          descriptionMarkdown: payload.descriptionMarkdown,
+          mapImageUrl:
+            payload.mapImageUrl === null ? undefined : payload.mapImageUrl,
+          mapPins: payload.mapPins,
+        });
+        return reply.send(adventureModuleUpdateLocationResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.delete(
+    "/api/adventure-modules/:moduleId/locations/:locationSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", locationSlug = "" } = request.params as {
+        moduleId?: string;
+        locationSlug?: string;
+      };
+      try {
+        const params = locationSlugParamsSchema.parse({ locationSlug });
+        const next = await options.store.deleteLocation({
+          moduleId,
+          locationSlug: params.locationSlug,
           creatorToken,
         });
         return reply.send(adventureModuleUpdateResponseSchema.parse(next));

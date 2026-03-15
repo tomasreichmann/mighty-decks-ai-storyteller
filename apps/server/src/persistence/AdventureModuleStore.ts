@@ -21,6 +21,7 @@ import {
   type AdventureModuleFragmentKind,
   type AdventureModuleFragmentRef,
   type AdventureModuleIndex,
+  type AdventureModuleLocationDetail,
 } from "@mighty-decks/spec/adventureModule";
 import { atomicWriteTextFile } from "../utils/atomicFileWrite";
 
@@ -67,6 +68,11 @@ const toSlug = (value: string): string => {
     .replace(/^-+|-+$/g, "");
   return normalized.length > 0 ? normalized.slice(0, 120) : makeId("module");
 };
+
+const defaultLocationIntroductionMarkdown =
+  "Describe what players immediately notice when they arrive here.";
+const defaultLocationDescriptionMarkdown =
+  "- Actors usually here\n- Assets that can be found here\n- Exits to other locations\n- Hazards or pressure that shape the scene";
 
 const isMissingFileError = (error: unknown): boolean => {
   const nodeError = error as NodeJS.ErrnoException;
@@ -116,6 +122,26 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
         (value): value is string => typeof value === "string" && value.trim().length > 0,
       )
     : [];
+  const locationFragmentIds = Array.isArray(normalized.locationFragmentIds)
+    ? normalized.locationFragmentIds.filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
+  const rawLocationDetails = Array.isArray(normalized.locationDetails)
+    ? normalized.locationDetails
+    : [];
+  const locationDetailsByFragmentId = new Map<string, Record<string, unknown>>();
+  for (const locationDetail of rawLocationDetails) {
+    if (!locationDetail || typeof locationDetail !== "object" || Array.isArray(locationDetail)) {
+      continue;
+    }
+    const locationDetailRecord = locationDetail as Record<string, unknown>;
+    const fragmentId = locationDetailRecord.fragmentId;
+    if (typeof fragmentId !== "string" || fragmentId.trim().length === 0) {
+      continue;
+    }
+    locationDetailsByFragmentId.set(fragmentId, locationDetailRecord);
+  }
   const rawAssetCards = Array.isArray(normalized.assetCards) ? normalized.assetCards : [];
   const assetCardsByFragmentId = new Map<string, Record<string, unknown>>();
   for (const assetCard of rawAssetCards) {
@@ -132,6 +158,29 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
 
   return {
     ...normalized,
+    locationDetails: locationFragmentIds.map((fragmentId) => {
+      const existing = locationDetailsByFragmentId.get(fragmentId);
+      return {
+        fragmentId,
+        ...(typeof existing?.titleImageUrl === "string" &&
+        existing.titleImageUrl.trim().length > 0
+          ? { titleImageUrl: existing.titleImageUrl.trim() }
+          : {}),
+        introductionMarkdown:
+          typeof existing?.introductionMarkdown === "string"
+            ? existing.introductionMarkdown
+            : "",
+        descriptionMarkdown:
+          typeof existing?.descriptionMarkdown === "string"
+            ? existing.descriptionMarkdown
+            : "",
+        ...(typeof existing?.mapImageUrl === "string" &&
+        existing.mapImageUrl.trim().length > 0
+          ? { mapImageUrl: existing.mapImageUrl.trim() }
+          : {}),
+        mapPins: Array.isArray(existing?.mapPins) ? existing.mapPins : [],
+      };
+    }),
     actorCards: actorFragmentIds.map((fragmentId) => {
       const existing = actorCardsByFragmentId.get(fragmentId);
       return {
@@ -187,6 +236,9 @@ const fragmentKindWeight = (kind: AdventureModuleFragmentKind): number => {
 };
 
 const deriveActorSlugFromPath = (fragmentPath: string): string =>
+  toSlug(basename(fragmentPath, extname(fragmentPath)));
+
+const deriveLocationSlugFromPath = (fragmentPath: string): string =>
   toSlug(basename(fragmentPath, extname(fragmentPath)));
 
 const deriveAssetSlugFromPath = (fragmentPath: string): string =>
@@ -372,12 +424,14 @@ export class AdventureModuleStore {
 
     const fragments = await this.loadFragmentContents(loaded.index, loaded.moduleDir);
     const ownedByRequester = loaded.system.creatorTokenHash === hashCreatorToken(creatorToken);
+    const locations = this.resolveLocations(loaded.index, fragments);
     const actors = this.resolveActors(loaded.index, fragments);
     const counters = this.resolveCounters(loaded.index);
     const assets = this.resolveAssets(loaded.index, fragments);
     return adventureModuleDetailSchema.parse({
       index: loaded.index,
       fragments,
+      locations,
       actors,
       counters,
       assets,
@@ -418,6 +472,7 @@ export class AdventureModuleStore {
         ...loaded.index,
         ...options.index,
         locationFragmentIds: loaded.index.locationFragmentIds,
+        locationDetails: loaded.index.locationDetails,
         actorFragmentIds: loaded.index.actorFragmentIds,
         actorCards: loaded.index.actorCards,
         counters: loaded.index.counters,
@@ -486,6 +541,297 @@ export class AdventureModuleStore {
       const next = await this.getModule(moduleId, options.creatorToken);
       if (!next) {
         throw new AdventureModuleValidationError("Updated module could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async createLocation(options: {
+    moduleId: string;
+    creatorToken?: string;
+    title: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0 ? options.title.trim() : "New Location";
+      const locationSlug = this.makeUniqueLocationSlug(normalizedTitle, loaded.index);
+      const fragmentId = makeId("frag-location");
+      const fragmentRef: AdventureModuleFragmentRef = {
+        fragmentId,
+        kind: "location",
+        title: normalizedTitle,
+        path: `locations/${locationSlug}.mdx`,
+        summary: "Describe what players sense immediately and what matters here.",
+        tags: ["location", "map"],
+        containsSpoilers: false,
+        intendedAudience: "shared",
+      };
+      const locationDetail: AdventureModuleLocationDetail = {
+        fragmentId,
+        introductionMarkdown: defaultLocationIntroductionMarkdown,
+        descriptionMarkdown: defaultLocationDescriptionMarkdown,
+        mapPins: [],
+      };
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        locationFragmentIds: [...loaded.index.locationFragmentIds, fragmentId],
+        locationDetails: [...loaded.index.locationDetails, locationDetail],
+        fragments: [...loaded.index.fragments, fragmentRef],
+        artifacts: [
+          ...loaded.index.artifacts,
+          {
+            artifactId: `artifact-${fragmentId}`,
+            kind: "mdx",
+            path: fragmentRef.path,
+            title: fragmentRef.title,
+            sourceFragmentId: fragmentId,
+            contentType: "text/markdown",
+            generatedBy: "author",
+            createdAtIso: nowIso,
+          },
+        ],
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(loaded.moduleDir, fragmentRef.path);
+      await mkdir(dirname(absolutePath), { recursive: true });
+      await atomicWriteTextFile(
+        absolutePath,
+        this.composeLocationFragmentContent(
+          normalizedTitle,
+          locationDetail.introductionMarkdown,
+          locationDetail.descriptionMarkdown,
+        ),
+      );
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+      } catch (error) {
+        await this.rollbackLocationCreate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Created location could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async updateLocation(options: {
+    moduleId: string;
+    locationSlug: string;
+    creatorToken?: string;
+    title: string;
+    summary: string;
+    titleImageUrl?: string;
+    introductionMarkdown: string;
+    descriptionMarkdown: string;
+    mapImageUrl?: string;
+    mapPins: AdventureModuleLocationDetail["mapPins"];
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const locationRecord = this.findLocationRecord(loaded.index, options.locationSlug);
+      if (!locationRecord) {
+        throw new AdventureModuleValidationError("Location slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0
+          ? options.title.trim()
+          : locationRecord.fragment.title;
+      const nextLocationSlug = this.makeUniqueLocationSlug(
+        normalizedTitle,
+        loaded.index,
+        locationRecord.fragment.fragmentId,
+      );
+      const nextLocationPath = `locations/${nextLocationSlug}.mdx`;
+      const nextFragments = loaded.index.fragments.map((fragment) => {
+        if (fragment.fragmentId !== locationRecord.fragment.fragmentId) {
+          return fragment;
+        }
+        return {
+          ...fragment,
+          title: normalizedTitle,
+          path: nextLocationPath,
+          summary:
+            options.summary.trim().length > 0 ? options.summary.trim() : undefined,
+        };
+      });
+
+      const normalizedTitleImageUrl =
+        typeof options.titleImageUrl === "string" &&
+        options.titleImageUrl.trim().length > 0
+          ? options.titleImageUrl.trim()
+          : undefined;
+      const normalizedMapImageUrl =
+        typeof options.mapImageUrl === "string" &&
+        options.mapImageUrl.trim().length > 0
+          ? options.mapImageUrl.trim()
+          : undefined;
+
+      const nextLocationDetails = loaded.index.locationDetails.map((locationDetail) => {
+        if (locationDetail.fragmentId !== locationRecord.fragment.fragmentId) {
+          return locationDetail;
+        }
+        return {
+          fragmentId: locationDetail.fragmentId,
+          ...(normalizedTitleImageUrl
+            ? { titleImageUrl: normalizedTitleImageUrl }
+            : {}),
+          introductionMarkdown: options.introductionMarkdown,
+          descriptionMarkdown: options.descriptionMarkdown,
+          ...(normalizedMapImageUrl ? { mapImageUrl: normalizedMapImageUrl } : {}),
+          mapPins: options.mapPins,
+        };
+      });
+
+      const nextArtifacts = loaded.index.artifacts.map((artifact) => {
+        if (artifact.sourceFragmentId !== locationRecord.fragment.fragmentId) {
+          return artifact;
+        }
+        return {
+          ...artifact,
+          path: nextLocationPath,
+          title: normalizedTitle,
+        };
+      });
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        fragments: nextFragments,
+        locationDetails: nextLocationDetails,
+        artifacts: nextArtifacts,
+        updatedAtIso: nowIso,
+      });
+
+      const previousAbsolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        locationRecord.fragment.path,
+      );
+      const nextAbsolutePath = this.resolveSafePath(loaded.moduleDir, nextLocationPath);
+      const previousContent = await this.readExistingTextFile(previousAbsolutePath);
+      await mkdir(dirname(nextAbsolutePath), { recursive: true });
+      await atomicWriteTextFile(
+        nextAbsolutePath,
+        this.composeLocationFragmentContent(
+          normalizedTitle,
+          options.introductionMarkdown,
+          options.descriptionMarkdown,
+        ),
+      );
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        if (nextAbsolutePath !== previousAbsolutePath) {
+          await rm(previousAbsolutePath, { recursive: true, force: true });
+        }
+      } catch (error) {
+        await this.rollbackLocationUpdate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          previousAbsolutePath,
+          nextAbsolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Updated location could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async deleteLocation(options: {
+    moduleId: string;
+    locationSlug: string;
+    creatorToken?: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const locationRecord = this.findLocationRecord(loaded.index, options.locationSlug);
+      if (!locationRecord) {
+        throw new AdventureModuleValidationError("Location slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const fragmentId = locationRecord.fragment.fragmentId;
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        locationFragmentIds: loaded.index.locationFragmentIds.filter(
+          (entry) => entry !== fragmentId,
+        ),
+        locationDetails: loaded.index.locationDetails.filter(
+          (locationDetail) => locationDetail.fragmentId !== fragmentId,
+        ),
+        fragments: loaded.index.fragments.filter(
+          (fragment) => fragment.fragmentId !== fragmentId,
+        ),
+        artifacts: loaded.index.artifacts.filter(
+          (artifact) => artifact.sourceFragmentId !== fragmentId,
+        ),
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        locationRecord.fragment.path,
+      );
+      const previousContent = await this.readExistingTextFile(absolutePath);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        await rm(absolutePath, { recursive: true, force: true });
+      } catch (error) {
+        await this.rollbackLocationDelete(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Deleted location could not be loaded.");
       }
       return next;
     });
@@ -1421,8 +1767,29 @@ export class AdventureModuleStore {
     return `# ${title}\n\n## Public Face\n\nDescribe how this actor appears to players.\n\n## Agenda\n\n- Add the actor's main motivation.\n- Add what they want right now.\n\n## Pressure Moves\n\n- Add how they escalate the scene.\n`;
   }
 
+  private composeLocationFragmentContent(
+    title: string,
+    introductionMarkdown: string,
+    descriptionMarkdown: string,
+  ): string {
+    const normalizedIntroduction =
+      introductionMarkdown.trim().length > 0
+        ? introductionMarkdown.trim()
+        : "";
+    const normalizedDescription =
+      descriptionMarkdown.trim().length > 0
+        ? descriptionMarkdown.trim()
+        : "";
+
+    return `# ${title}\n\n## Introduction\n\n${normalizedIntroduction}\n\n## Description\n\n${normalizedDescription}\n`;
+  }
+
   private createAssetFragmentContent(title: string): string {
     return `# ${title}\n\n## What It Is\n\nDescribe what this asset looks like and why it matters.\n\n## Leverage\n\n- Add what this asset makes easier.\n- Add who wants it or fears it.\n\n## Complications\n\n- Add the cost, limit, or risk of using it.\n`;
+  }
+
+  private normalizeLocationFragmentContent(content: string): string {
+    return content.replace(/\r\n/g, "\n").trim();
   }
 
   private async readExistingTextFile(path: string): Promise<string> {
@@ -1450,6 +1817,19 @@ export class AdventureModuleStore {
   }
 
   private async rollbackAssetCreate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      rm(fragmentPath, { recursive: true, force: true }),
+    ]);
+  }
+
+  private async rollbackLocationCreate(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
     previousSystem: ModuleSystemMetadata,
@@ -1516,6 +1896,33 @@ export class AdventureModuleStore {
     await Promise.allSettled(rollbackTasks);
   }
 
+  private async rollbackLocationUpdate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    previousFragmentPath: string,
+    nextFragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    const rollbackTasks: Array<Promise<unknown>> = [
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+    ];
+
+    if (previousFragmentPath === nextFragmentPath) {
+      rollbackTasks.push(atomicWriteTextFile(previousFragmentPath, previousContent));
+    } else {
+      rollbackTasks.push(
+        mkdir(dirname(previousFragmentPath), { recursive: true }).then(() =>
+          atomicWriteTextFile(previousFragmentPath, previousContent),
+        ),
+      );
+      rollbackTasks.push(rm(nextFragmentPath, { recursive: true, force: true }));
+    }
+
+    await Promise.allSettled(rollbackTasks);
+  }
+
   private async rollbackActorDelete(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
@@ -1546,6 +1953,54 @@ export class AdventureModuleStore {
         atomicWriteTextFile(fragmentPath, previousContent),
       ),
     ]);
+  }
+
+  private async rollbackLocationDelete(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      mkdir(dirname(fragmentPath), { recursive: true }).then(() =>
+        atomicWriteTextFile(fragmentPath, previousContent),
+      ),
+    ]);
+  }
+
+  private makeUniqueLocationSlug(
+    title: string,
+    index: AdventureModuleIndex,
+    excludeFragmentId?: string,
+  ): string {
+    const baseSlug = toSlug(title);
+    const existingLocationSlugs = new Set(
+      index.locationFragmentIds
+        .filter((fragmentId) => fragmentId !== excludeFragmentId)
+        .map((fragmentId) => index.fragments.find((fragment) => fragment.fragmentId === fragmentId))
+        .filter(
+          (
+            fragment,
+          ): fragment is AdventureModuleFragmentRef => Boolean(fragment?.path),
+        )
+        .map((fragment) => deriveLocationSlugFromPath(fragment.path)),
+    );
+
+    if (!existingLocationSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    for (let suffix = 2; suffix < 10_000; suffix += 1) {
+      const candidate = toSlug(`${baseSlug}-${suffix}`);
+      if (!existingLocationSlugs.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    throw new AdventureModuleValidationError("Could not allocate a unique location slug.");
   }
 
   private makeUniqueActorSlug(
@@ -1656,6 +2111,24 @@ export class AdventureModuleStore {
     return null;
   }
 
+  private findLocationRecord(
+    index: AdventureModuleIndex,
+    locationSlug: string,
+  ): { fragment: AdventureModuleFragmentRef } | null {
+    for (const locationFragmentId of index.locationFragmentIds) {
+      const fragment = index.fragments.find(
+        (entry) => entry.fragmentId === locationFragmentId,
+      );
+      if (!fragment) {
+        continue;
+      }
+      if (deriveLocationSlugFromPath(fragment.path) === locationSlug) {
+        return { fragment };
+      }
+    }
+    return null;
+  }
+
   private findAssetRecord(
     index: AdventureModuleIndex,
     assetSlug: string,
@@ -1689,6 +2162,56 @@ export class AdventureModuleStore {
       return floorValue;
     }
     return Math.min(floorValue, Math.max(0, Math.trunc(maxValue)));
+  }
+
+  private resolveLocations(
+    index: AdventureModuleIndex,
+    fragments: AdventureModuleDetail["fragments"],
+  ): AdventureModuleDetail["locations"] {
+    const fragmentContentById = new Map(
+      fragments.map((fragment) => [fragment.fragment.fragmentId, fragment.content] as const),
+    );
+    const locationDetailByFragmentId = new Map(
+      index.locationDetails.map((locationDetail) => [locationDetail.fragmentId, locationDetail] as const),
+    );
+
+    return index.locationFragmentIds.flatMap((fragmentId) => {
+      const fragmentRef = index.fragments.find((fragment) => fragment.fragmentId === fragmentId);
+      const locationDetail = locationDetailByFragmentId.get(fragmentId);
+      if (!fragmentRef || !locationDetail) {
+        return [];
+      }
+
+      const storedFragmentContent = fragmentContentById.get(fragmentId) ?? "";
+      const isLegacyFallbackCandidate =
+        !locationDetail.titleImageUrl &&
+        !locationDetail.mapImageUrl &&
+        locationDetail.introductionMarkdown.length === 0 &&
+        locationDetail.descriptionMarkdown.length === 0 &&
+        locationDetail.mapPins.length === 0;
+      const shouldUseLegacyDescription =
+        isLegacyFallbackCandidate &&
+        this.normalizeLocationFragmentContent(storedFragmentContent) !==
+          this.normalizeLocationFragmentContent(
+            this.composeLocationFragmentContent(fragmentRef.title, "", ""),
+          );
+
+      return [
+        {
+          fragmentId,
+          locationSlug: deriveLocationSlugFromPath(fragmentRef.path),
+          title: fragmentRef.title,
+          summary: fragmentRef.summary,
+          titleImageUrl: locationDetail.titleImageUrl,
+          introductionMarkdown: locationDetail.introductionMarkdown,
+          descriptionMarkdown: shouldUseLegacyDescription
+            ? storedFragmentContent
+            : locationDetail.descriptionMarkdown,
+          mapImageUrl: locationDetail.mapImageUrl,
+          mapPins: locationDetail.mapPins.map((mapPin) => ({ ...mapPin })),
+        },
+      ];
+    });
   }
 
   private resolveActors(
@@ -1850,6 +2373,9 @@ export class AdventureModuleStore {
   private createDefaultFragmentContent(
     index: AdventureModuleIndex,
   ): AdventureModuleDetail["fragments"] {
+    const locationDetailByFragmentId = new Map(
+      index.locationDetails.map((locationDetail) => [locationDetail.fragmentId, locationDetail] as const),
+    );
     const contentByKind: Partial<Record<AdventureModuleFragmentKind, string>> = {
       index: "# Module Index\n\nThis module index is managed by the authoring editor.",
       storyteller_summary:
@@ -1858,7 +2384,6 @@ export class AdventureModuleStore {
         "# Player Summary\n\nSpoiler-free invitation text for potential players.",
       palette: "# Palette\n\n## Dos\n- Keep pressure visible\n\n## Donts\n- Do not hard-lock progress",
       setting: "# Setting\n\nDescribe the core premise, tone, and pressure vectors.",
-      location: "# Location\n\nDetail notable places and possible routes.",
       actor: "# Actor\n\nKey goals, behavior under pressure, and leverage.",
       asset: "# Asset\n\nImportant resources and scene leverage.",
       item: "# Item\n\nOptional tools or relics that affect choices.",
@@ -1872,8 +2397,16 @@ export class AdventureModuleStore {
     return index.fragments.map((fragment) => ({
       fragment,
       content:
+        fragment.kind === "location"
+          ? this.composeLocationFragmentContent(
+              fragment.title,
+              locationDetailByFragmentId.get(fragment.fragmentId)?.introductionMarkdown ?? "",
+              locationDetailByFragmentId.get(fragment.fragmentId)?.descriptionMarkdown ?? "",
+            )
+          : (
         contentByKind[fragment.kind] ??
-        `# ${fragment.title}\n\nDraft content for ${fragment.kind.replaceAll("_", " ")}.`,
+        `# ${fragment.title}\n\nDraft content for ${fragment.kind.replaceAll("_", " ")}.`
+            ),
     }));
   }
 
@@ -2029,6 +2562,14 @@ export class AdventureModuleStore {
       settingFragmentId: "frag-setting",
       componentMapFragmentId: "frag-component-map",
       locationFragmentIds: ["frag-location-main"],
+      locationDetails: [
+        {
+          fragmentId: "frag-location-main",
+          introductionMarkdown: defaultLocationIntroductionMarkdown,
+          descriptionMarkdown: defaultLocationDescriptionMarkdown,
+          mapPins: [],
+        },
+      ],
       actorFragmentIds: ["frag-actor-main"],
       actorCards: [
         {

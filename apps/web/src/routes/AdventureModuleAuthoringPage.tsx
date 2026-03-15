@@ -11,6 +11,8 @@ import { AdventureModuleAssetEditor } from "../components/adventure-module/Adven
 import { AdventureModuleAssetsTabPanel } from "../components/adventure-module/AdventureModuleAssetsTabPanel";
 import { AdventureModuleCounterEditor } from "../components/adventure-module/AdventureModuleCounterEditor";
 import { AdventureModuleCountersTabPanel } from "../components/adventure-module/AdventureModuleCountersTabPanel";
+import { AdventureModuleLocationEditor } from "../components/adventure-module/AdventureModuleLocationEditor";
+import { AdventureModuleLocationsTabPanel } from "../components/adventure-module/AdventureModuleLocationsTabPanel";
 import {
   AutosaveStatusBadge,
   type AutosaveStatus,
@@ -28,17 +30,21 @@ import {
   type EntityListItem,
   type EntityListTab,
 } from "../components/adventure-module/EntityList";
+import type { AdventureModuleLocationPinTarget } from "../components/adventure-module/AdventureModuleLocationMapEditor";
 import {
   createAdventureModuleActor,
   createAdventureModuleAsset,
   createAdventureModuleCounter,
+  createAdventureModuleLocation,
   deleteAdventureModuleActor,
   deleteAdventureModuleAsset,
   deleteAdventureModuleCounter,
+  deleteAdventureModuleLocation,
   getAdventureModuleBySlug,
   updateAdventureModuleAsset,
   updateAdventureModuleCounter,
   updateAdventureModuleActor,
+  updateAdventureModuleLocation,
   updateAdventureModuleFragment,
   updateAdventureModuleIndex,
 } from "../lib/adventureModuleApi";
@@ -368,6 +374,18 @@ interface AssetFormState {
   content: string;
 }
 
+interface LocationFormState {
+  fragmentId: string;
+  locationSlug: string;
+  title: string;
+  summary: string;
+  titleImageUrl: string;
+  introductionMarkdown: string;
+  descriptionMarkdown: string;
+  mapImageUrl: string;
+  mapPins: AdventureModuleDetail["locations"][number]["mapPins"];
+}
+
 const toBaseFormState = (index: AdventureModuleIndex): BaseFormState => ({
   title: index.title,
   premise: index.premise,
@@ -503,6 +521,24 @@ const toAssetFormState = (
   content: normalizeLegacyGameCardMarkdown(asset.content),
 });
 
+const toLocationFormState = (
+  location: AdventureModuleDetail["locations"][number],
+): LocationFormState => ({
+  fragmentId: location.fragmentId,
+  locationSlug: location.locationSlug,
+  title: location.title,
+  summary: location.summary ?? "",
+  titleImageUrl: location.titleImageUrl ?? "",
+  introductionMarkdown: normalizeLegacyGameCardMarkdown(
+    location.introductionMarkdown,
+  ),
+  descriptionMarkdown: normalizeLegacyGameCardMarkdown(
+    location.descriptionMarkdown,
+  ),
+  mapImageUrl: location.mapImageUrl ?? "",
+  mapPins: location.mapPins.map((pin) => ({ ...pin })),
+});
+
 const clampCounterValue = (currentValue: number, maxValue?: number): number => {
   const normalizedCurrentValue = Math.max(0, Math.trunc(currentValue));
   if (typeof maxValue !== "number") {
@@ -520,6 +556,11 @@ const toEntitySlug = (value: string): string => {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return normalized.length > 0 ? normalized.slice(0, 120) : "untitled";
+};
+
+const toFragmentPathSlug = (value: string): string => {
+  const normalized = value.replace(/^.*[\\/]/, "").replace(/\.[^.]+$/, "");
+  return toEntitySlug(normalized);
 };
 
 const makeUniqueCounterSlug = (
@@ -966,6 +1007,147 @@ const validateAssetForm = (
   };
 };
 
+const validateLocationForm = (
+  form: LocationFormState,
+): {
+  title: string;
+  summary: string;
+  titleImageUrl: string | null;
+  introductionMarkdown: string;
+  descriptionMarkdown: string;
+  mapImageUrl: string | null;
+  mapPins: LocationFormState["mapPins"];
+  error?: string;
+} => {
+  const title = form.title.trim();
+  if (title.length === 0) {
+    return {
+      title,
+      summary: form.summary.trim(),
+      titleImageUrl: form.titleImageUrl.trim() || null,
+      introductionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.introductionMarkdown,
+      ),
+      descriptionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.descriptionMarkdown,
+      ),
+      mapImageUrl: form.mapImageUrl.trim() || null,
+      mapPins: form.mapPins.map((pin) => ({ ...pin })),
+      error: "Location name is required.",
+    };
+  }
+  if (title.length > 120) {
+    return {
+      title,
+      summary: form.summary.trim(),
+      titleImageUrl: form.titleImageUrl.trim() || null,
+      introductionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.introductionMarkdown,
+      ),
+      descriptionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.descriptionMarkdown,
+      ),
+      mapImageUrl: form.mapImageUrl.trim() || null,
+      mapPins: form.mapPins.map((pin) => ({ ...pin })),
+      error: "Location name must be at most 120 characters.",
+    };
+  }
+
+  const summary = form.summary.trim();
+  if (summary.length > 500) {
+    return {
+      title,
+      summary,
+      titleImageUrl: form.titleImageUrl.trim() || null,
+      introductionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.introductionMarkdown,
+      ),
+      descriptionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.descriptionMarkdown,
+      ),
+      mapImageUrl: form.mapImageUrl.trim() || null,
+      mapPins: form.mapPins.map((pin) => ({ ...pin })),
+      error: "Location summary must be at most 500 characters.",
+    };
+  }
+
+  const titleImageUrl = form.titleImageUrl.trim();
+  if (titleImageUrl.length > 500) {
+    return {
+      title,
+      summary,
+      titleImageUrl: titleImageUrl.slice(0, 500),
+      introductionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.introductionMarkdown,
+      ),
+      descriptionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.descriptionMarkdown,
+      ),
+      mapImageUrl: form.mapImageUrl.trim() || null,
+      mapPins: form.mapPins.map((pin) => ({ ...pin })),
+      error: "Title image URL must be at most 500 characters.",
+    };
+  }
+
+  const introductionMarkdown = normalizeLegacyGameCardMarkdown(
+    form.introductionMarkdown,
+  );
+  if (introductionMarkdown.length > 200_000) {
+    return {
+      title,
+      summary,
+      titleImageUrl: titleImageUrl || null,
+      introductionMarkdown,
+      descriptionMarkdown: normalizeLegacyGameCardMarkdown(
+        form.descriptionMarkdown,
+      ),
+      mapImageUrl: form.mapImageUrl.trim() || null,
+      mapPins: form.mapPins.map((pin) => ({ ...pin })),
+      error: "Introduction markdown must be at most 200000 characters.",
+    };
+  }
+
+  const descriptionMarkdown = normalizeLegacyGameCardMarkdown(
+    form.descriptionMarkdown,
+  );
+  if (descriptionMarkdown.length > 200_000) {
+    return {
+      title,
+      summary,
+      titleImageUrl: titleImageUrl || null,
+      introductionMarkdown,
+      descriptionMarkdown,
+      mapImageUrl: form.mapImageUrl.trim() || null,
+      mapPins: form.mapPins.map((pin) => ({ ...pin })),
+      error: "Description markdown must be at most 200000 characters.",
+    };
+  }
+
+  const mapImageUrl = form.mapImageUrl.trim();
+  if (mapImageUrl.length > 500) {
+    return {
+      title,
+      summary,
+      titleImageUrl: titleImageUrl || null,
+      introductionMarkdown,
+      descriptionMarkdown,
+      mapImageUrl: mapImageUrl.slice(0, 500),
+      mapPins: form.mapPins.map((pin) => ({ ...pin })),
+      error: "Map image URL must be at most 500 characters.",
+    };
+  }
+
+  return {
+    title,
+    summary,
+    titleImageUrl: titleImageUrl || null,
+    introductionMarkdown,
+    descriptionMarkdown,
+    mapImageUrl: mapImageUrl || null,
+    mapPins: form.mapPins.map((pin) => ({ ...pin })),
+  };
+};
+
 export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const navigate = useNavigate();
   const { slug, tab, entityId } = useParams<{
@@ -992,6 +1174,9 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       infoText: "",
     });
   const [actorForm, setActorForm] = useState<ActorFormState | null>(null);
+  const [locationForm, setLocationForm] = useState<LocationFormState | null>(
+    null,
+  );
   const [counterForm, setCounterForm] = useState<CounterFormState | null>(null);
   const [assetForm, setAssetForm] = useState<AssetFormState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1000,6 +1185,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const [playerInfoDirty, setPlayerInfoDirty] = useState(false);
   const [storytellerInfoDirty, setStorytellerInfoDirty] = useState(false);
   const [actorDirty, setActorDirty] = useState(false);
+  const [locationDirty, setLocationDirty] = useState(false);
   const [counterDirty, setCounterDirty] = useState(false);
   const [assetDirty, setAssetDirty] = useState(false);
   const [baseValidationMessage, setBaseValidationMessage] = useState<
@@ -1014,6 +1200,9 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const [actorValidationMessage, setActorValidationMessage] = useState<
     string | null
   >(null);
+  const [locationValidationMessage, setLocationValidationMessage] = useState<
+    string | null
+  >(null);
   const [counterValidationMessage, setCounterValidationMessage] = useState<string | null>(
     null,
   );
@@ -1021,9 +1210,13 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     null,
   );
   const [actorCreateError, setActorCreateError] = useState<string | null>(null);
+  const [locationCreateError, setLocationCreateError] = useState<string | null>(
+    null,
+  );
   const [counterCreateError, setCounterCreateError] = useState<string | null>(null);
   const [assetCreateError, setAssetCreateError] = useState<string | null>(null);
   const [creatingActor, setCreatingActor] = useState(false);
+  const [creatingLocation, setCreatingLocation] = useState(false);
   const [creatingCounter, setCreatingCounter] = useState(false);
   const [creatingAsset, setCreatingAsset] = useState(false);
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>("idle");
@@ -1080,15 +1273,18 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         setPlayerInfoDirty(false);
         setStorytellerInfoDirty(false);
         setActorDirty(false);
+        setLocationDirty(false);
         setCounterDirty(false);
         setAssetDirty(false);
         setBaseValidationMessage(null);
         setPlayerInfoValidationMessage(null);
         setStorytellerInfoValidationMessage(null);
         setActorValidationMessage(null);
+        setLocationValidationMessage(null);
         setCounterValidationMessage(null);
         setAssetValidationMessage(null);
         setActorCreateError(null);
+        setLocationCreateError(null);
         setCounterCreateError(null);
         setAssetCreateError(null);
         setAutosaveStatus("idle");
@@ -1122,6 +1318,17 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     return (
       moduleDetail.actors.find((actor) => actor.actorSlug === normalizedEntityId) ??
       null
+    );
+  }, [activeTab, moduleDetail, normalizedEntityId]);
+
+  const activeLocation = useMemo(() => {
+    if (activeTab !== "locations" || !normalizedEntityId || !moduleDetail) {
+      return null;
+    }
+    return (
+      moduleDetail.locations.find(
+        (location) => location.locationSlug === normalizedEntityId,
+      ) ?? null
     );
   }, [activeTab, moduleDetail, normalizedEntityId]);
 
@@ -1159,6 +1366,23 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setActorDirty(false);
     setActorValidationMessage(null);
   }, [activeActor, activeTab, normalizedEntityId]);
+
+  useEffect(() => {
+    if (activeTab !== "locations" || !normalizedEntityId) {
+      setLocationForm(null);
+      setLocationDirty(false);
+      setLocationValidationMessage(null);
+      return;
+    }
+    if (!activeLocation) {
+      setLocationForm(null);
+      setLocationDirty(false);
+      return;
+    }
+    setLocationForm(toLocationFormState(activeLocation));
+    setLocationDirty(false);
+    setLocationValidationMessage(null);
+  }, [activeLocation, activeTab, normalizedEntityId]);
 
   useEffect(() => {
     if (activeTab !== "counters" || !normalizedEntityId) {
@@ -1526,6 +1750,89 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     }
   }, [activeTab, actorForm, creatorToken, moduleDetail, navigate, normalizedEntityId]);
 
+  const persistLocation = useCallback(async (): Promise<void> => {
+    if (
+      !moduleDetail ||
+      !moduleDetail.ownedByRequester ||
+      activeTab !== "locations" ||
+      !locationForm
+    ) {
+      return;
+    }
+    if (savingRef.current) {
+      return;
+    }
+
+    const validated = validateLocationForm(locationForm);
+    if (validated.error) {
+      setLocationValidationMessage(validated.error);
+      setAutosaveStatus("error");
+      setAutosaveMessage(validated.error);
+      return;
+    }
+
+    savingRef.current = true;
+    setLocationValidationMessage(null);
+    setAutosaveStatus("saving");
+    setAutosaveMessage(undefined);
+    setError(null);
+    setLocationCreateError(null);
+
+    try {
+      const nextDetail = await updateAdventureModuleLocation(
+        moduleDetail.index.moduleId,
+        locationForm.locationSlug,
+        {
+          title: validated.title,
+          summary: validated.summary,
+          titleImageUrl: validated.titleImageUrl,
+          introductionMarkdown: validated.introductionMarkdown,
+          descriptionMarkdown: validated.descriptionMarkdown,
+          mapImageUrl: validated.mapImageUrl,
+          mapPins: validated.mapPins,
+        },
+        creatorToken,
+      );
+
+      setModuleDetail(nextDetail);
+      const nextLocation =
+        nextDetail.locations.find(
+          (resolvedLocation) =>
+            resolvedLocation.fragmentId === locationForm.fragmentId,
+        ) ?? null;
+      setLocationForm(nextLocation ? toLocationFormState(nextLocation) : null);
+      setLocationDirty(false);
+      if (
+        nextLocation &&
+        nextLocation.locationSlug !== locationForm.locationSlug &&
+        activeTab === "locations" &&
+        normalizedEntityId === locationForm.locationSlug
+      ) {
+        navigate(
+          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/locations/${encodeURIComponent(nextLocation.locationSlug)}`,
+          { replace: true },
+        );
+      }
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (saveError) {
+      const message =
+        saveError instanceof Error ? saveError.message : "Autosave failed.";
+      setError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      savingRef.current = false;
+    }
+  }, [
+    activeTab,
+    creatorToken,
+    locationForm,
+    moduleDetail,
+    navigate,
+    normalizedEntityId,
+  ]);
+
   const persistCounter = useCallback(async (): Promise<void> => {
     if (
       !moduleDetail ||
@@ -1728,6 +2035,47 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     }
   }, [creatingActor, creatorToken, moduleDetail, navigate]);
 
+  const handleCreateLocation = useCallback(async (): Promise<void> => {
+    if (!moduleDetail?.ownedByRequester || creatingLocation) {
+      return;
+    }
+
+    setCreatingLocation(true);
+    setLocationCreateError(null);
+    setError(null);
+
+    try {
+      const nextDetail = await createAdventureModuleLocation(
+        moduleDetail.index.moduleId,
+        { title: "New Location" },
+        creatorToken,
+      );
+      setModuleDetail(nextDetail);
+      const createdLocation =
+        nextDetail.locations[nextDetail.locations.length - 1];
+      if (!createdLocation) {
+        throw new Error("Created location could not be resolved.");
+      }
+      setLocationForm(toLocationFormState(createdLocation));
+      setLocationDirty(false);
+      navigate(
+        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/locations/${encodeURIComponent(createdLocation.locationSlug)}`,
+      );
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (createError) {
+      const message =
+        createError instanceof Error
+          ? createError.message
+          : "Could not create location.";
+      setLocationCreateError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      setCreatingLocation(false);
+    }
+  }, [creatingLocation, creatorToken, moduleDetail, navigate]);
+
   const handleCreateCounter = useCallback(async (): Promise<void> => {
     if (!moduleDetail?.ownedByRequester || creatingCounter) {
       return;
@@ -1838,6 +2186,50 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       } catch (deleteError) {
         const message =
           deleteError instanceof Error ? deleteError.message : "Could not delete actor.";
+        setError(message);
+        setAutosaveStatus("error");
+        setAutosaveMessage(message);
+      }
+    },
+    [activeTab, creatorToken, moduleDetail, navigate, normalizedEntityId],
+  );
+
+  const handleDeleteLocation = useCallback(
+    async (locationSlug: string, title: string): Promise<void> => {
+      if (!moduleDetail?.ownedByRequester) {
+        return;
+      }
+      if (!window.confirm(`Delete "${title}"?`)) {
+        return;
+      }
+
+      setError(null);
+      setLocationCreateError(null);
+      setAutosaveStatus("saving");
+      setAutosaveMessage(undefined);
+
+      try {
+        const nextDetail = await deleteAdventureModuleLocation(
+          moduleDetail.index.moduleId,
+          locationSlug,
+          creatorToken,
+        );
+        setModuleDetail(nextDetail);
+        setLocationDirty(false);
+        setLocationValidationMessage(null);
+        if (activeTab === "locations" && normalizedEntityId === locationSlug) {
+          setLocationForm(null);
+          navigate(
+            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/locations`,
+          );
+        }
+        setAutosaveStatus("saved");
+        setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+      } catch (deleteError) {
+        const message =
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Could not delete location.";
         setError(message);
         setAutosaveStatus("error");
         setAutosaveMessage(message);
@@ -2202,6 +2594,39 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
 
   useEffect(() => {
     if (
+      !locationDirty ||
+      !moduleDetail?.ownedByRequester ||
+      activeTab !== "locations" ||
+      !entityId
+    ) {
+      return;
+    }
+
+    setAutosaveStatus("queued");
+    setAutosaveMessage("pending");
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = window.setTimeout(() => {
+      void persistLocation();
+    }, 1000);
+
+    return () => {
+      if (saveTimerRef.current !== null) {
+        window.clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+    };
+  }, [
+    activeTab,
+    entityId,
+    locationDirty,
+    moduleDetail?.ownedByRequester,
+    persistLocation,
+  ]);
+
+  useEffect(() => {
+    if (
       !counterDirty ||
       !moduleDetail?.ownedByRequester ||
       activeTab !== "counters" ||
@@ -2319,6 +2744,17 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     void persistActor();
   };
 
+  const handleLocationFieldBlur = (): void => {
+    if (!locationDirty || !moduleDetail?.ownedByRequester) {
+      return;
+    }
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    void persistLocation();
+  };
+
   const handleCounterFieldBlur = (): void => {
     if (!counterDirty || !moduleDetail?.ownedByRequester) {
       return;
@@ -2367,6 +2803,68 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       storytellerInfoForm.infoText,
       storytellerInfoForm.summary,
     ],
+  );
+  const locationPinTargetOptions = useMemo<
+    AdventureModuleLocationPinTarget[]
+  >(() => {
+    if (!moduleDetail) {
+      return [];
+    }
+
+    const moduleSlug = encodeURIComponent(moduleDetail.index.slug);
+    const currentLocationFragmentId = locationForm?.fragmentId;
+    const locationTargets: AdventureModuleLocationPinTarget[] =
+      moduleDetail.locations
+        .filter((location) => location.fragmentId !== currentLocationFragmentId)
+        .map((location) => ({
+          fragmentId: location.fragmentId,
+          kind: "location",
+          slug: location.locationSlug,
+          title: location.title,
+          summary: location.summary,
+          titleImageUrl: location.titleImageUrl,
+          routePath: `/adventure-module/${moduleSlug}/locations/${encodeURIComponent(location.locationSlug)}`,
+        }));
+    const actorTargets: AdventureModuleLocationPinTarget[] =
+      moduleDetail.actors.map((actor) => ({
+        fragmentId: actor.fragmentId,
+        kind: "actor",
+        slug: actor.actorSlug,
+        title: actor.title,
+        summary: actor.summary,
+        actorCard: {
+          baseLayerSlug: actor.baseLayerSlug,
+          tacticalRoleSlug: actor.tacticalRoleSlug,
+          tacticalSpecialSlug: actor.tacticalSpecialSlug,
+        },
+        routePath: `/adventure-module/${moduleSlug}/actors/${encodeURIComponent(actor.actorSlug)}`,
+      }));
+    const encounterAndQuestTargets: AdventureModuleLocationPinTarget[] =
+      moduleDetail.index.fragments.flatMap((fragment) => {
+        if (fragment.kind !== "encounter" && fragment.kind !== "quest") {
+          return [];
+        }
+        const fragmentSlug = toFragmentPathSlug(fragment.path);
+        return [
+          {
+            fragmentId: fragment.fragmentId,
+            kind: fragment.kind,
+            slug: fragmentSlug,
+            title: fragment.title,
+            summary: fragment.summary,
+            routePath: `/adventure-module/${moduleSlug}/${fragment.kind === "encounter" ? "encounters" : "quests"}/${encodeURIComponent(fragmentSlug)}`,
+          },
+        ];
+      });
+
+    return [...locationTargets, ...actorTargets, ...encounterAndQuestTargets];
+  }, [locationForm?.fragmentId, moduleDetail]);
+
+  const openLocationPinTarget = useCallback(
+    (target: AdventureModuleLocationPinTarget): void => {
+      navigate(target.routePath);
+    },
+    [navigate],
   );
 
   return (
@@ -2529,6 +3027,117 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               ) : (
                 <AdventureModuleTabPlaceholder
                   description={`Actor "${normalizedEntityId ?? entityId}" could not be found in this module.`}
+                />
+              )
+            ) : activeTab === "locations" ? (
+              activeLocation && locationForm ? (
+                <AdventureModuleLocationEditor
+                  location={{
+                    ...activeLocation,
+                    title: locationForm.title,
+                    summary: locationForm.summary,
+                    titleImageUrl: locationForm.titleImageUrl || undefined,
+                    introductionMarkdown: locationForm.introductionMarkdown,
+                    descriptionMarkdown: locationForm.descriptionMarkdown,
+                    mapImageUrl: locationForm.mapImageUrl || undefined,
+                    mapPins: locationForm.mapPins,
+                  }}
+                  actors={moduleDetail.actors}
+                  counters={moduleDetail.counters}
+                  assets={moduleDetail.assets}
+                  smartContextDocument={smartContextDocument}
+                  editable={editable}
+                  validationMessage={locationValidationMessage}
+                  pinTargets={locationPinTargetOptions}
+                  onTitleChange={(nextValue) => {
+                    setLocationValidationMessage(null);
+                    setLocationForm((current) =>
+                      current ? { ...current, title: nextValue } : current,
+                    );
+                    setLocationDirty(true);
+                  }}
+                  onSummaryChange={(nextValue) => {
+                    setLocationValidationMessage(null);
+                    setLocationForm((current) =>
+                      current ? { ...current, summary: nextValue } : current,
+                    );
+                    setLocationDirty(true);
+                  }}
+                  onTitleImageUrlChange={(nextValue) => {
+                    setLocationValidationMessage(null);
+                    setLocationForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            titleImageUrl: nextValue,
+                          }
+                        : current,
+                    );
+                    setLocationDirty(true);
+                  }}
+                  onIntroductionChange={(nextValue) => {
+                    setLocationValidationMessage(null);
+                    setLocationForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            introductionMarkdown: nextValue,
+                          }
+                        : current,
+                    );
+                    setLocationDirty(true);
+                  }}
+                  onDescriptionChange={(nextValue) => {
+                    setLocationValidationMessage(null);
+                    setLocationForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            descriptionMarkdown: nextValue,
+                          }
+                        : current,
+                    );
+                    setLocationDirty(true);
+                  }}
+                  onMapImageUrlChange={(nextValue) => {
+                    setLocationValidationMessage(null);
+                    setLocationForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            mapImageUrl: nextValue,
+                          }
+                        : current,
+                    );
+                    setLocationDirty(true);
+                  }}
+                  onMapPinsChange={(nextValue) => {
+                    setLocationValidationMessage(null);
+                    setLocationForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            mapPins: nextValue.map((pin) => ({ ...pin })),
+                          }
+                        : current,
+                    );
+                    setLocationDirty(true);
+                  }}
+                  onOpenPinTarget={openLocationPinTarget}
+                  onFieldBlur={handleLocationFieldBlur}
+                  onAdjustCounterValue={(counterSlug, delta, target) => {
+                    void handleAdjustCounterValue(counterSlug, delta, target);
+                  }}
+                  onDelete={() => {
+                    void handleDeleteLocation(
+                      activeLocation.locationSlug,
+                      activeLocation.title,
+                    );
+                  }}
+                />
+              ) : (
+                <AdventureModuleTabPlaceholder
+                  description={`Location "${normalizedEntityId ?? entityId}" could not be found in this module.`}
                 />
               )
             ) : activeTab === "counters" ? (
@@ -2795,6 +3404,24 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onDeleteActor={(actorSlug, title) => {
                 void handleDeleteActor(actorSlug, title);
+              }}
+            />
+          ) : activeTab === "locations" ? (
+            <AdventureModuleLocationsTabPanel
+              locations={moduleDetail.locations}
+              editable={editable}
+              creating={creatingLocation}
+              createError={locationCreateError}
+              onCreate={() => {
+                void handleCreateLocation();
+              }}
+              onOpenLocation={(locationSlug) => {
+                navigate(
+                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/locations/${encodeURIComponent(locationSlug)}`,
+                );
+              }}
+              onDeleteLocation={(locationSlug, title) => {
+                void handleDeleteLocation(locationSlug, title);
               }}
             />
           ) : activeTab === "counters" ? (

@@ -2,7 +2,7 @@
 
 This document is the canonical user flow for authoring Adventure Modules.
 
-This is a docs/design milestone only. It does not implement runtime API or UI code in this step.
+It tracks the currently implemented authoring shell plus the remaining planned gaps.
 
 ---
 
@@ -122,12 +122,13 @@ Shell behavior:
 - `Actors` is editable in this step.
 - `Counters` is editable in this step.
 - `Assets` is editable in this step.
-- `Locations`, `Encounters`, and `Quests` remain explicit placeholders in this step.
+- `Locations` is editable in this step.
+- `Encounters` and `Quests` remain explicit placeholders in this step.
 
 Tab state behavior:
 
 - Changing tabs preserves module context and current tab route.
-- Base, Player Info, and Storyteller Info tab edits persist via debounced autosave.
+- Base, Player Info, Storyteller Info, and typed entity editors persist via debounced autosave plus save-on-blur.
 
 ---
 
@@ -226,17 +227,22 @@ Create/edit navigation:
 
 ### 5.6 Locations Tab (`/locations`)
 
-Status in this step: placeholder only.
-
-Per-row actions:
-
-- `Edit`
-- `Clone`
-- `Delete`
-
 Primary action:
 
 - `Create a Location`
+
+List behavior:
+
+- The tab renders a searchable grid of location entries resolved from module location fragments plus `locationDetails` metadata.
+- Each location card shows title, summary, title-image preview when present, and stable shortcode text.
+- `Copy Shortcode` copies `@location/<location-slug>` for manual insertion in markdown source mode.
+- `Delete` removes the location immediately after confirmation.
+- Clicking a card navigates to `/adventure-module/:slug/locations/:entityId`.
+
+Create/edit navigation:
+
+- Create calls `POST /api/adventure-modules/:moduleId/locations`, then redirects to `/adventure-module/:slug/locations/:entityId` using the generated location slug.
+- Edit redirects to `/adventure-module/:slug/locations/:entityId`.
 
 ### 5.7 Encounters Tab (`/encounters`)
 
@@ -294,9 +300,10 @@ Route pattern: `/adventure-module/:slug/:tab/:entityId`
 Status in this step:
 
 - `actors` entity routes are implemented
+- `locations` entity routes are implemented
 - `counters` entity routes are implemented
 - `assets` entity routes are implemented
-- remaining entity routes remain placeholders
+- `encounters` and `quests` entity routes remain placeholders
 
 Future target semantics for entity editors:
 
@@ -350,7 +357,25 @@ Asset editor behavior:
 - Asset slug is generated from the saved title and updates when the asset name changes.
 - The editor shows a live layered `AssetCard` preview assembled from the selected base asset and optional modifier overlay.
 
-Equivalent typed editors for location, encounter, and quest remain future work.
+Location edit example fields:
+
+- Location name.
+- Short summary.
+- Title image URL with generated-image picker.
+- Introduction markdown body.
+- Description markdown body.
+- Map image URL with generated-image picker.
+- Interactive map pin list and canvas.
+
+Location editor behavior:
+
+- Updates persist through `PUT /api/adventure-modules/:moduleId/locations/:locationSlug`.
+- Deletes persist through `DELETE /api/adventure-modules/:moduleId/locations/:locationSlug`.
+- Location slug is generated from the saved title and updates when the location name changes.
+- The editor supports manual image URLs plus generated-image selection for both title image and map image.
+- Map pins are stored by target `fragmentId`, can be added/removed/moved, exclude the current location from the picker, preview their linked content on hover, and navigate to the linked authoring route on click.
+
+Equivalent typed editors for encounter and quest remain future work.
 
 ---
 
@@ -375,7 +400,7 @@ Archive action:
 
 ## 8. Proposed API and Interface Additions (Docs-Level)
 
-These are the current contracts for actor, counter, and asset authoring plus proposed contracts for the remaining entity types:
+These are the current contracts for actor, counter, asset, and location authoring plus proposed contracts for the remaining entity types:
 
 - Slug availability: `GET /api/adventure-modules/slug-availability?slug=:slug`, response `{ slug: string; available: boolean; reason?: string }`.
 - Module read by slug: `GET /api/adventure-modules/by-slug/:slug`, response mirrors module detail read shape.
@@ -390,6 +415,9 @@ These are the current contracts for actor, counter, and asset authoring plus pro
 - Asset create: `POST /api/adventure-modules/:moduleId/assets`.
 - Asset update: `PUT /api/adventure-modules/:moduleId/assets/:entityId`.
 - Asset delete: `DELETE /api/adventure-modules/:moduleId/assets/:entityId`.
+- Location create: `POST /api/adventure-modules/:moduleId/locations`.
+- Location update: `PUT /api/adventure-modules/:moduleId/locations/:entityId`.
+- Location delete: `DELETE /api/adventure-modules/:moduleId/locations/:entityId`.
 - Remaining entity create: `POST /api/adventure-modules/:moduleId/:entityType`.
 - Remaining entity update: `PUT /api/adventure-modules/:moduleId/:entityType/:entityId`.
 - Entity clone: `POST /api/adventure-modules/:moduleId/:entityType/:entityId/clone`.
@@ -421,8 +449,9 @@ UX behavior checks:
 - Tab navigation keeps module context.
 - Create entity redirects to entity edit route.
 - Debounced autosave saves field updates and reports status.
-- Actor cards open the actor editor, counter cards open the counter editor, asset cards open the asset editor, and actor/counter/asset shortcodes normalize to canonical `<GameCard />` source without mutating inline or fenced code blocks.
-- Actor, counter, and asset deletes do not rewrite stored markdown; stale references rely on invalid-card fallback rendering.
+- Actor cards open the actor editor, location cards open the location editor, counter cards open the counter editor, asset cards open the asset editor, and actor/counter/asset shortcodes normalize to canonical `<GameCard />` source without mutating inline or fenced code blocks.
+- Location editor persists introduction/description markdown, title and map image fields, and interactive map pins without breaking route navigation after slug changes.
+- Actor, counter, asset, and location deletes do not rewrite stored markdown; stale references rely on invalid-card fallback rendering.
 - Publish exposes module to non-author list views.
 - Archive hides module from non-author list while preserving author access.
 

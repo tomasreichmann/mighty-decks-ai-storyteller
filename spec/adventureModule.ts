@@ -223,6 +223,39 @@ export type AdventureModuleAssetCard = z.infer<
   typeof adventureModuleAssetCardSchema
 >;
 
+export const adventureModuleLocationMapPinSchema = z.object({
+  pinId: identifierSchema,
+  x: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+  targetFragmentId: identifierSchema,
+});
+export type AdventureModuleLocationMapPin = z.infer<
+  typeof adventureModuleLocationMapPinSchema
+>;
+
+export const adventureModuleLocationDetailSchema = z
+  .object({
+    fragmentId: identifierSchema,
+    titleImageUrl: z.string().min(1).max(500).optional(),
+    introductionMarkdown: z.string().max(200_000).default(""),
+    descriptionMarkdown: z.string().max(200_000).default(""),
+    mapImageUrl: z.string().min(1).max(500).optional(),
+    mapPins: z.array(adventureModuleLocationMapPinSchema).max(100).default([]),
+  })
+  .superRefine((detail, ctx) => {
+    const pinIds = detail.mapPins.map((pin) => pin.pinId);
+    for (const duplicate of duplicateValues(pinIds)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate location map pin id: ${duplicate}`,
+        path: ["mapPins"],
+      });
+    }
+  });
+export type AdventureModuleLocationDetail = z.infer<
+  typeof adventureModuleLocationDetailSchema
+>;
+
 export const adventureModuleCounterSchema = z
   .object({
     slug: slugSchema,
@@ -521,6 +554,7 @@ export const adventureModuleIndexSchema = z
     settingFragmentId: identifierSchema,
     componentMapFragmentId: identifierSchema,
     locationFragmentIds: z.array(identifierSchema).min(1).max(40),
+    locationDetails: z.array(adventureModuleLocationDetailSchema).max(40).default([]),
     actorFragmentIds: z.array(identifierSchema).max(40),
     actorCards: z.array(adventureModuleActorCardSchema).max(40).default([]),
     counters: z.array(adventureModuleCounterSchema).max(80).default([]),
@@ -599,6 +633,67 @@ export const adventureModuleIndexSchema = z
     for (const locationId of index.locationFragmentIds) {
       ensureFragment(locationId, "location", ["locationFragmentIds"]);
     }
+
+    const locationDetailFragmentIds = index.locationDetails.map(
+      (locationDetail) => locationDetail.fragmentId,
+    );
+    for (const duplicate of duplicateValues(locationDetailFragmentIds)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate location detail fragment id: ${duplicate}`,
+        path: ["locationDetails"],
+      });
+    }
+
+    const locationIdSet = new Set(index.locationFragmentIds);
+    const locationDetailByFragmentId = new Map(
+      index.locationDetails.map((locationDetail) => [locationDetail.fragmentId, locationDetail] as const),
+    );
+
+    for (const locationId of index.locationFragmentIds) {
+      if (!locationDetailByFragmentId.has(locationId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `missing location detail metadata for fragment id: ${locationId}`,
+          path: ["locationDetails"],
+        });
+      }
+    }
+    for (const locationDetail of index.locationDetails) {
+      if (!locationIdSet.has(locationDetail.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `location detail metadata references unknown location fragment id: ${locationDetail.fragmentId}`,
+          path: ["locationDetails"],
+        });
+      }
+
+      for (const mapPin of locationDetail.mapPins) {
+        const targetFragment = fragmentsById.get(mapPin.targetFragmentId);
+        if (!targetFragment) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `location map pin target fragment not found: ${mapPin.targetFragmentId}`,
+            path: ["locationDetails"],
+          });
+          continue;
+        }
+
+        if (
+          targetFragment.kind !== "location" &&
+          targetFragment.kind !== "actor" &&
+          targetFragment.kind !== "encounter" &&
+          targetFragment.kind !== "quest"
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `location map pin target ${mapPin.targetFragmentId} must reference a location, actor, encounter, or quest fragment`,
+            path: ["locationDetails"],
+          });
+        }
+      }
+    }
+
     for (const actorId of index.actorFragmentIds) {
       ensureFragment(actorId, "actor", ["actorFragmentIds"]);
     }

@@ -10,3 +10,37 @@ test("AdventureModuleAuthoringPage places Assets tab after Counters", () => {
 
   assert.match(source, /"actors"[\s\S]*"counters"[\s\S]*"assets"[\s\S]*"locations"/);
 });
+
+test("AdventureModuleAuthoringPage wires real locations authoring components and APIs", () => {
+  const source = readFileSync(
+    "apps/web/src/routes/AdventureModuleAuthoringPage.tsx",
+    "utf8",
+  );
+
+  assert.match(source, /AdventureModuleLocationEditor/);
+  assert.match(source, /AdventureModuleLocationsTabPanel/);
+  assert.match(source, /createAdventureModuleLocation/);
+  assert.match(source, /updateAdventureModuleLocation/);
+  assert.match(source, /deleteAdventureModuleLocation/);
+});
+
+test("AdventureModuleAuthoringPage includes explicit locations list and editor branches", () => {
+  const source = readFileSync(
+    "apps/web/src/routes/AdventureModuleAuthoringPage.tsx",
+    "utf8",
+  );
+
+  assert.match(source, /activeTab === "locations"/);
+  assert.match(source, /onOpenLocation/);
+  assert.match(source, /onDeleteLocation/);
+});
+
+test("AdventureModuleAuthoringPage uses real location list and editor components", () => {
+  const source = readFileSync(
+    "apps/web/src/routes/AdventureModuleAuthoringPage.tsx",
+    "utf8",
+  );
+
+  assert.match(source, /AdventureModuleLocationsTabPanel/);
+  assert.match(source, /AdventureModuleLocationEditor/);
+});

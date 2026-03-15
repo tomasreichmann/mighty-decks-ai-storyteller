@@ -34,6 +34,21 @@ const flushMicrotasks = async (turns = 6): Promise<void> => {
   }
 };
 
+const waitFor = async (
+  predicate: () => boolean,
+  timeoutMs = 500,
+  intervalMs = 10,
+): Promise<void> => {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  assert.equal(predicate(), true);
+};
+
 const baseRuntimeConfig: RuntimeConfig = {
   ...defaultRuntimeConfig,
   voteTimeoutMs: 20000,
@@ -2230,7 +2245,7 @@ test("evicts inactive adventures and restores from latest snapshot on reconnect"
   await flushMicrotasks();
 
   manager.leaveBySocket("socket-player-1");
-  await new Promise((resolve) => setTimeout(resolve, 20));
+  await waitFor(() => manager.getAdventure(adventureId) === null);
 
   assert.equal(manager.getAdventure(adventureId), null);
   const persisted = snapshotStore.loadLatestSnapshotSync(adventureId);

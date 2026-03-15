@@ -381,6 +381,123 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
   });
   assert.equal(deleteAssetResponse.statusCode, 200);
 
+  const createLocationResponse = await app.inject({
+    method: "POST",
+    url: `/api/adventure-modules/${moduleId}/locations`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Sunken Courtyard",
+    },
+  });
+  assert.equal(createLocationResponse.statusCode, 201);
+  const createLocationPayload = createLocationResponse.json() as {
+    locations?: Array<{
+      locationSlug: string;
+      title: string;
+      introductionMarkdown: string;
+      descriptionMarkdown: string;
+    }>;
+  };
+  assert.equal(
+    createLocationPayload.locations?.some(
+      (location) => location.locationSlug === "sunken-courtyard",
+    ),
+    true,
+  );
+
+  const updateLocationResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/locations/sunken-courtyard`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Hidden Courtyard",
+      summary: "Flooded negotiation square beneath rusted prayer bells.",
+      titleImageUrl: "https://example.com/location-title.png",
+      introductionMarkdown:
+        "Read to players: rain hammers the stones while bells shiver overhead.",
+      descriptionMarkdown:
+        "Actors: smugglers and debt collectors. Assets: hidden contraband. Exits: archive stair and drain gate. Hazards: slick stone and sight lines from above.",
+      mapImageUrl: "https://example.com/location-map.png",
+      mapPins: [
+        {
+          pinId: "pin-location-link",
+          x: 25,
+          y: 40,
+          targetFragmentId: "frag-location-main",
+        },
+        {
+          pinId: "pin-actor-link",
+          x: 54,
+          y: 28,
+          targetFragmentId: "frag-actor-main",
+        },
+        {
+          pinId: "pin-encounter-link",
+          x: 68,
+          y: 56,
+          targetFragmentId: "frag-encounter-main",
+        },
+        {
+          pinId: "pin-quest-link",
+          x: 84,
+          y: 18,
+          targetFragmentId: "frag-quest-main",
+        },
+      ],
+    },
+  });
+  assert.equal(updateLocationResponse.statusCode, 200);
+  const updatedLocationPayload = updateLocationResponse.json() as {
+    locations?: Array<{
+      locationSlug: string;
+      title: string;
+      titleImageUrl?: string;
+      mapImageUrl?: string;
+      mapPins: Array<{
+        pinId: string;
+        targetFragmentId: string;
+      }>;
+    }>;
+  };
+  const updatedLocation = updatedLocationPayload.locations?.find(
+    (location) => location.locationSlug === "hidden-courtyard",
+  );
+  assert.ok(updatedLocation);
+  assert.equal(updatedLocation.title, "Hidden Courtyard");
+  assert.equal(updatedLocation.titleImageUrl, "https://example.com/location-title.png");
+  assert.equal(updatedLocation.mapImageUrl, "https://example.com/location-map.png");
+  assert.equal(updatedLocation.mapPins.length, 4);
+  assert.equal(updatedLocation.mapPins[1]?.targetFragmentId, "frag-actor-main");
+
+  const forbiddenLocationUpdateResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/locations/hidden-courtyard`,
+    headers: {
+      [CREATOR_HEADER]: "creator-b",
+    },
+    payload: {
+      title: "Blocked Courtyard",
+      summary: "forbidden",
+      introductionMarkdown: "forbidden",
+      descriptionMarkdown: "forbidden",
+      mapPins: [],
+    },
+  });
+  assert.equal(forbiddenLocationUpdateResponse.statusCode, 403);
+
+  const deleteLocationResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}/locations/hidden-courtyard`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(deleteLocationResponse.statusCode, 200);
+
   const forbiddenActorUpdateResponse = await app.inject({
     method: "PUT",
     url: `/api/adventure-modules/${moduleId}/actors/river-smuggler-nyra`,
