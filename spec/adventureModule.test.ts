@@ -243,3 +243,10 @@ test("adventureModuleIndexSchema rejects duplicate counter slugs", () => {
     /duplicate counter slug/i,
   );
 });
+
+test("adventureModuleIndexSchema rejects missing asset card metadata", () => {
+  assert.throws(
+    () => adventureModuleIndexSchema.parse(createValidIndexCandidate()),
+    /missing asset card metadata/i,
+  );
+});

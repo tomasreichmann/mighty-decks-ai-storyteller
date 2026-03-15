@@ -16,7 +16,7 @@ Current route families:
 - `/adventure/:adventureId`, `/adventure/:adventureId/player`, `/adventure/:adventureId/screen`
 - `/adventure-module/list`, `/adventure-module/new`, `/adventure-module/:slug/:tab`, `/adventure-module/:slug/:tab/:entityId`
 - `/workflow-lab`, `/workflow-lab/:workflowId`
-- `/rules`, `/rules/outcomes`, `/rules/effects`, `/rules/stunts`
+- `/rules`, `/rules/outcomes`, `/rules/effects`, `/rules/stunts`, `/rules/assets`
 - `/image`
 
 ## Current Status

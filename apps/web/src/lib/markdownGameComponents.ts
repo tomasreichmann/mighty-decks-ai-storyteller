@@ -1,7 +1,9 @@
 import type {
   AdventureModuleResolvedActor,
+  AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
+import { assetBaseCardsBySlug } from "../data/assetCards";
 import {
   rulesEffectCards,
   rulesOutcomeCards,
@@ -25,6 +27,11 @@ export interface GameCardOption {
   jsx: string;
   label: string;
 }
+
+type ResolvedAssetCardRecord = Pick<
+  AdventureModuleResolvedAsset,
+  "assetSlug" | "baseAssetSlug" | "modifierSlug" | "title"
+>;
 
 export type ResolvedGameCard =
   | {
@@ -61,6 +68,13 @@ export type ResolvedGameCard =
       legacyToken: string;
       jsx: string;
       counter: AdventureModuleResolvedCounter;
+    }
+  | {
+      type: "AssetCard";
+      slug: string;
+      legacyToken: string;
+      jsx: string;
+      asset: ResolvedAssetCardRecord;
     };
 
 const dedupeBySlug = <T extends { slug: string }>(records: T[]): T[] => {
@@ -92,6 +106,17 @@ const effectBySlug = new Map(
 const stuntBySlug = new Map(
   stuntCards.map((card) => [card.slug.toLocaleLowerCase(), card] as const),
 );
+const builtInAssetsBySlug = new Map(
+  Array.from(assetBaseCardsBySlug.values()).map((asset) => [
+    asset.slug.toLocaleLowerCase(),
+    {
+      assetSlug: asset.slug,
+      baseAssetSlug: asset.slug,
+      modifierSlug: undefined,
+      title: asset.title,
+    } satisfies ResolvedAssetCardRecord,
+  ] as const),
+);
 
 export const gameCardTypes = [
   "OutcomeCard",
@@ -99,6 +124,7 @@ export const gameCardTypes = [
   "StuntCard",
   "ActorCard",
   "CounterCard",
+  "AssetCard",
 ] as const satisfies readonly GameCardType[];
 
 const gameCardTypeToLegacyPrefix: Record<GameCardType, string> = {
@@ -107,6 +133,7 @@ const gameCardTypeToLegacyPrefix: Record<GameCardType, string> = {
   StuntCard: "stunt",
   ActorCard: "actor",
   CounterCard: "counter",
+  AssetCard: "asset",
 };
 
 const toOption = (
@@ -127,6 +154,7 @@ export const gameCardTypeLabel: Record<GameCardType, string> = {
   StuntCard: "Stunt",
   ActorCard: "Actor",
   CounterCard: "Counter",
+  AssetCard: "Asset",
 };
 
 const baseGameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
@@ -139,6 +167,7 @@ const baseGameCardOptionsByType: Record<GameCardType, GameCardOption[]> = {
   StuntCard: stuntCards.map((card) => toOption("StuntCard", card.slug, card.title)),
   ActorCard: [],
   CounterCard: [],
+  AssetCard: [],
 };
 
 export const createActorGameCardOption = (
@@ -151,13 +180,20 @@ export const createCounterGameCardOption = (
 ): GameCardOption =>
   toOption("CounterCard", counter.slug, counter.title);
 
+export const createAssetGameCardOption = (
+  asset: AdventureModuleResolvedAsset,
+): GameCardOption =>
+  toOption("AssetCard", asset.assetSlug, asset.title);
+
 export const buildGameCardOptionsByType = (
   actors: readonly AdventureModuleResolvedActor[] = [],
   counters: readonly AdventureModuleResolvedCounter[] = [],
+  assets: readonly AdventureModuleResolvedAsset[] = [],
 ): Record<GameCardType, GameCardOption[]> => ({
   ...baseGameCardOptionsByType,
   ActorCard: actors.map(createActorGameCardOption),
   CounterCard: counters.map(createCounterGameCardOption),
+  AssetCard: assets.map(createAssetGameCardOption),
 });
 
 export const gameCardOptionsByType = buildGameCardOptionsByType();
@@ -167,6 +203,7 @@ export const resolveGameCard = (
   slug: string,
   moduleActorsBySlug?: ReadonlyMap<string, AdventureModuleResolvedActor>,
   moduleCountersBySlug?: ReadonlyMap<string, AdventureModuleResolvedCounter>,
+  moduleAssetsBySlug?: ReadonlyMap<string, AdventureModuleResolvedAsset>,
 ): ResolvedGameCard | null => {
   const key = slug.trim().toLocaleLowerCase();
   switch (type) {
@@ -235,6 +272,19 @@ export const resolveGameCard = (
         counter,
       };
     }
+    case "AssetCard": {
+      const asset = moduleAssetsBySlug?.get(key) ?? builtInAssetsBySlug.get(key);
+      if (!asset) {
+        return null;
+      }
+      return {
+        type,
+        slug: asset.assetSlug,
+        legacyToken: `@asset/${asset.assetSlug}`,
+        jsx: createGameCardJsx(type, asset.assetSlug),
+        asset,
+      };
+    }
     default:
       return null;
   }
@@ -244,6 +294,7 @@ export const resolveLegacyGameCardToken = (
   value: string,
   moduleActorsBySlug?: ReadonlyMap<string, AdventureModuleResolvedActor>,
   moduleCountersBySlug?: ReadonlyMap<string, AdventureModuleResolvedCounter>,
+  moduleAssetsBySlug?: ReadonlyMap<string, AdventureModuleResolvedAsset>,
 ): ResolvedGameCard | null => {
   const parsed = parseLegacyGameCardToken(value);
   if (!parsed) {
@@ -254,6 +305,7 @@ export const resolveLegacyGameCardToken = (
     parsed.slug,
     moduleActorsBySlug,
     moduleCountersBySlug,
+    moduleAssetsBySlug,
   );
 };
 

@@ -11,6 +11,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add typed Adventure Module actor authoring with create/edit APIs, resolved actor detail payloads, layered actor-card metadata, and legacy-module backfill for missing actor card records.
 - Add layered ActorCard rendering, actor list authoring UI, actor editor UI, and actor shortcode copy support in the Adventure Module authoring flow.
 - Add typed Adventure Module counter authoring with create/edit APIs, resolved counter detail payloads, vendored counter icon assets, and shared authoring-side counter values.
+- Add typed Adventure Module asset authoring with create/edit/delete APIs, resolved asset detail payloads, filtered base/medieval asset catalogs, and vendored asset images for authored AssetCards.
 
 ### Changed
 
@@ -21,7 +22,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Remove the Adventure Module markdown editor content frame so rich text and source content blend into the page background while the toolbar keeps the only surface treatment.
 - Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local actors render as canonical `<GameCard type="ActorCard" />` embeds while `@actor/<slug>` remains supported.
 - Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local counters render as canonical `<GameCard type="CounterCard" />` embeds while `@counter/<slug>` remains supported.
+- Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local assets render as canonical `<GameCard type="AssetCard" />` embeds while `@asset/<slug>` remains supported.
 - Add typed actor and counter delete support in Adventure Module authoring, including list/editor delete actions and invalid-card fallback for stale embeds.
+- Move the Adventure Module `Assets` tab after `Counters` and replace the placeholder with searchable AssetCard authoring plus grouped `Asset Base` and `Asset Medieval` pickers.
+- Switch the `/rules` reference pages to copy `@type/<slug>` shortcodes instead of raw `<GameCard />` JSX, add `/rules/assets`, and accept underscore-based asset shortcodes in rich-text markdown normalization.
 
 ### Fixed
 
@@ -37,6 +41,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add a root `README.md` covering the current repo overview, implementation status, setup, AI configuration, contribution expectations, and deployment paths.
 - Update Adventure Module authoring docs to reflect the implemented Actors tab, actor editor route, typed actor APIs, and actor embed behavior.
 - Update Adventure Module authoring docs to reflect the implemented Counters tab, typed counter APIs, and typed actor/counter delete routes.
+- Update Adventure Module docs to reflect typed asset authoring, AssetCard embeds, and the implemented Assets tab/editor flow.
+- Update the route and UI docs for the new `/rules/assets` reference page and the shortcode-first copy behavior used by the rules reference pages.
 
 ## [0.1.0] - 2026-03-13
 

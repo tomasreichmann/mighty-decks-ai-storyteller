@@ -16,7 +16,7 @@ Boundary rules for this milestone:
 - No change to current live-session state machine (`lobby -> vote -> play -> ending`)
 - No change to current Socket.IO event contracts
 - No database implementation in this milestone
-- Runtime authoring support is currently limited to Adventure Module create/edit flows plus typed actor and counter authoring
+- Runtime authoring support is currently limited to Adventure Module create/edit flows plus typed actor, counter, and asset authoring
 - Deliverable includes shared schema, local file persistence, REST authoring endpoints, and matching web authoring UI
 
 ---
@@ -114,6 +114,15 @@ Counter-specific requirements:
 - Each counter stores `iconSlug`, `title`, `currentValue`, optional `maxValue`, and `description`.
 - Resolved authoring reads surface these records directly in a `counters` array for the web client.
 
+Asset-specific requirements:
+
+- Asset fragments remain normal markdown-backed `asset` fragments.
+- Module index authoring metadata includes an `assetCards` collection keyed by asset `fragmentId`.
+- Each asset-card metadata entry stores `baseAssetSlug` and optional `modifierSlug`.
+- Base asset selection is limited to the filtered `base` and `medieval` catalogs.
+- Every `assetFragmentId` must have exactly one matching asset-card metadata entry.
+- Resolved authoring reads join fragment metadata and asset-card metadata into an `assets` array for the web client.
+
 ---
 
 ## 5. Quest Graph Model (Node-Based)
@@ -184,7 +193,8 @@ Authoring embed rules:
 
 - Canonical actor embeds use `<GameCard type="ActorCard" slug="<actor-slug>" />`.
 - Canonical counter embeds use `<GameCard type="CounterCard" slug="<counter-slug>" />`.
-- Legacy `@actor/<actor-slug>` and `@counter/<counter-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
+- Canonical asset embeds use `<GameCard type="AssetCard" slug="<asset-slug>" />`.
+- Legacy `@actor/<actor-slug>`, `@counter/<counter-slug>`, and `@asset/<asset-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
 
 ---
 
@@ -291,7 +301,7 @@ if (!result.success) {
 
 ## 11. Current Implemented Authoring Contracts
 
-The current implementation adds typed actor and counter authoring APIs on top of the shared spec:
+The current implementation adds typed actor, counter, and asset authoring APIs on top of the shared spec:
 
 - `POST /api/adventure-modules/:moduleId/actors`
 - `PUT /api/adventure-modules/:moduleId/actors/:actorSlug`
@@ -299,17 +309,23 @@ The current implementation adds typed actor and counter authoring APIs on top of
 - `POST /api/adventure-modules/:moduleId/counters`
 - `PUT /api/adventure-modules/:moduleId/counters/:counterSlug`
 - `DELETE /api/adventure-modules/:moduleId/counters/:counterSlug`
+- `POST /api/adventure-modules/:moduleId/assets`
+- `PUT /api/adventure-modules/:moduleId/assets/:assetSlug`
+- `DELETE /api/adventure-modules/:moduleId/assets/:assetSlug`
 
 These endpoints:
 
 - create actor fragments with module-scoped slugs derived from the saved actor title
 - persist typed layered-card metadata alongside fragment references
 - persist typed counter records directly on the module index with slugs derived from the saved counter title
-- return resolved `AdventureModuleDetail` payloads including joined `actors` and `counters`
+- create asset fragments with module-scoped slugs derived from the saved asset title
+- persist typed asset-card metadata alongside asset fragment references
+- return resolved `AdventureModuleDetail` payloads including joined `actors`, `counters`, and `assets`
 
 Legacy module compatibility:
 
 - Modules missing `actorCards` metadata are backfilled with safe defaults on read.
+- Modules missing `assetCards` metadata are backfilled with safe defaults on read.
 - The normalized shape is persisted on the next successful write.
 
 ## 12. Explicit Out-of-Scope for This Milestone
@@ -319,4 +335,4 @@ Legacy module compatibility:
 - Session orchestration changes
 - Cloud publishing pipeline
 - Minis/map rendering features
-- Non-actor, non-counter typed entity editors (locations, encounters, quests, assets)
+- Non-actor, non-counter, non-asset typed entity editors (locations, encounters, quests)

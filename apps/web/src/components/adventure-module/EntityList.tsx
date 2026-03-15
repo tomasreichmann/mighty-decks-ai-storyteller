@@ -10,8 +10,7 @@ export type EntityListTab =
   | "actors"
   | "locations"
   | "encounters"
-  | "quests"
-  | "assets";
+  | "quests";
 
 export interface EntityListItem {
   slug: string;

@@ -12,8 +12,8 @@ export const RulesOutcomesPage = (): JSX.Element => {
           Outcome Cards
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Copy <code>{"<GameCard type=\"OutcomeCard\" slug=\"success\" />"}</code>{" "}
-          into Adventure Module markdown editors.
+          Copy <code>{"@outcome/success"}</code> into Adventure Module markdown
+          editors.
         </Text>
       </div>
 
@@ -29,7 +29,7 @@ export const RulesOutcomesPage = (): JSX.Element => {
               className="stack h-full gap-2"
             >
               <GameCardView gameCard={gameCard} className="mx-auto" />
-              <CodeCopyRow code={gameCard.jsx} />
+              <CodeCopyRow code={gameCard.legacyToken} />
             </div>
           );
         })}

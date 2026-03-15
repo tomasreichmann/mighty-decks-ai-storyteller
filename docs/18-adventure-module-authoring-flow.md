@@ -51,10 +51,11 @@ Authoring tabs:
 - `player-info`
 - `storyteller-info`
 - `actors`
+- `counters`
+- `assets`
 - `locations`
 - `encounters`
 - `quests`
-- `assets`
 
 Entity edit routes:
 
@@ -114,12 +115,14 @@ Route: `/adventure-module/:slug/:tab`
 Shell behavior:
 
 - Top area shows module name, slug, ownership state, and autosave status.
-- Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Locations`, `Encounters`, `Quests`, `Assets`.
+- Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
 - `Player Info` is editable in this step (`player summary` + `player info text`).
 - `Storyteller Info` is editable in this step (`storyteller summary` + `storyteller info text`).
 - `Actors` is editable in this step.
-- `Locations`, `Encounters`, `Quests`, and `Assets` remain explicit placeholders in this step.
+- `Counters` is editable in this step.
+- `Assets` is editable in this step.
+- `Locations`, `Encounters`, and `Quests` remain explicit placeholders in this step.
 
 Tab state behavior:
 
@@ -163,7 +166,7 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
-- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...` and `@counter/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, and `@asset/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - Player text must remain spoiler-safe at publish validation.
 
 ### 5.3 Storyteller Info Tab (`/storyteller-info`)
@@ -178,7 +181,7 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
-- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...` and `@counter/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
+- Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, and `@asset/...` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - Storyteller text can include spoilers.
 
 ### 5.4 Actors Tab (`/actors`)
@@ -265,17 +268,22 @@ Primary action:
 
 ### 5.9 Assets Tab (`/assets`)
 
-Status in this step: placeholder only.
-
-Per-row actions:
-
-- `Edit`
-- `Clone`
-- `Delete`
-
 Primary action:
 
 - `Create an Asset`
+
+List behavior:
+
+- The tab renders a searchable grid of layered `AssetCard` entries resolved from module asset fragments.
+- Each asset card shows title, summary, and stable shortcode text.
+- `Copy Shortcode` copies `@asset/<asset-slug>` for manual insertion in markdown source mode.
+- `Delete` removes the asset immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-card rendering.
+- Clicking a card navigates to `/adventure-module/:slug/assets/:entityId`.
+
+Create/edit navigation:
+
+- Create calls `POST /api/adventure-modules/:moduleId/assets`, then redirects to `/adventure-module/:slug/assets/:entityId` using the generated asset slug.
+- Edit redirects to `/adventure-module/:slug/assets/:entityId`.
 
 ---
 
@@ -287,6 +295,7 @@ Status in this step:
 
 - `actors` entity routes are implemented
 - `counters` entity routes are implemented
+- `assets` entity routes are implemented
 - remaining entity routes remain placeholders
 
 Future target semantics for entity editors:
@@ -326,7 +335,22 @@ Counter editor behavior:
 - Counter slug is generated from the saved title and updates when the counter name changes.
 - The editor shows a live `CounterCard` preview with shared `+` and `-` controls for current and max values.
 
-Equivalent typed editors for location, encounter, quest, and asset remain future work.
+Asset edit example fields:
+
+- Asset name.
+- Short summary.
+- Base asset grouped under `Asset Base` and `Asset Medieval`.
+- Optional asset modifier.
+- Markdown body with inline asset `GameCard` rendering.
+
+Asset editor behavior:
+
+- Updates persist through `PUT /api/adventure-modules/:moduleId/assets/:assetSlug`.
+- Deletes persist through `DELETE /api/adventure-modules/:moduleId/assets/:assetSlug`.
+- Asset slug is generated from the saved title and updates when the asset name changes.
+- The editor shows a live layered `AssetCard` preview assembled from the selected base asset and optional modifier overlay.
+
+Equivalent typed editors for location, encounter, and quest remain future work.
 
 ---
 
@@ -351,7 +375,7 @@ Archive action:
 
 ## 8. Proposed API and Interface Additions (Docs-Level)
 
-These are the current contracts for actor and counter authoring plus proposed contracts for the remaining entity types:
+These are the current contracts for actor, counter, and asset authoring plus proposed contracts for the remaining entity types:
 
 - Slug availability: `GET /api/adventure-modules/slug-availability?slug=:slug`, response `{ slug: string; available: boolean; reason?: string }`.
 - Module read by slug: `GET /api/adventure-modules/by-slug/:slug`, response mirrors module detail read shape.
@@ -363,6 +387,9 @@ These are the current contracts for actor and counter authoring plus proposed co
 - Counter create: `POST /api/adventure-modules/:moduleId/counters`.
 - Counter update: `PUT /api/adventure-modules/:moduleId/counters/:entityId`.
 - Counter delete: `DELETE /api/adventure-modules/:moduleId/counters/:entityId`.
+- Asset create: `POST /api/adventure-modules/:moduleId/assets`.
+- Asset update: `PUT /api/adventure-modules/:moduleId/assets/:entityId`.
+- Asset delete: `DELETE /api/adventure-modules/:moduleId/assets/:entityId`.
 - Remaining entity create: `POST /api/adventure-modules/:moduleId/:entityType`.
 - Remaining entity update: `PUT /api/adventure-modules/:moduleId/:entityType/:entityId`.
 - Entity clone: `POST /api/adventure-modules/:moduleId/:entityType/:entityId/clone`.
@@ -394,8 +421,8 @@ UX behavior checks:
 - Tab navigation keeps module context.
 - Create entity redirects to entity edit route.
 - Debounced autosave saves field updates and reports status.
-- Actor cards open the actor editor, counter cards open the counter editor, and actor/counter shortcodes normalize to canonical `<GameCard />` source without mutating inline or fenced code blocks.
-- Actor and counter deletes do not rewrite stored markdown; stale references rely on invalid-card fallback rendering.
+- Actor cards open the actor editor, counter cards open the counter editor, asset cards open the asset editor, and actor/counter/asset shortcodes normalize to canonical `<GameCard />` source without mutating inline or fenced code blocks.
+- Actor, counter, and asset deletes do not rewrite stored markdown; stale references rely on invalid-card fallback rendering.
 - Publish exposes module to non-author list views.
 - Archive hides module from non-author list while preserving author access.
 

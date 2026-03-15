@@ -227,10 +227,10 @@ Tabs:
 - `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, and autosave
 - `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, shortcode copy, and delete actions
 - `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, shortcode copy, and delete actions
+- `assets`: `AdventureModuleAssetsTabPanel` showing searchable layered `AssetCard` entries, `Create Asset`, shortcode copy, and delete actions
 - `locations`: placeholder
 - `encounters`: placeholder
 - `quests`: placeholder
-- `assets`: placeholder
 
 List-tab row actions:
 
@@ -250,12 +250,14 @@ List-tab primary actions:
 
 ### `/adventure-module/:slug/:tab/:entityId`
 
-Entity editor route. Actor and counter editing are implemented in this step; other entity editors remain placeholders.
+Entity editor route. Actor, counter, and asset editing are implemented in this step; other entity editors remain placeholders.
 
 Components:
 
 - `AdventureModuleActorEditor`
-- `AdventureModuleTabPlaceholder` for non-actor entities
+- `AdventureModuleCounterEditor`
+- `AdventureModuleAssetEditor`
+- `AdventureModuleTabPlaceholder` for remaining placeholder entity routes
 
 Actor editor baseline fields:
 
@@ -275,10 +277,46 @@ Counter editor baseline fields:
 - description
 - live `CounterCard` preview with shared `+` and `-` controls for both current and max values when a max exists
 
+Asset editor baseline fields:
+
+- name
+- short summary
+- grouped base asset picker (`Asset Base`, `Asset Medieval`)
+- optional asset modifier
+- markdown body with inline `GameCard` embeds
+- live layered `AssetCard` preview
+
 Behavior:
 
 - `/adventure-module/:slug/actors/:entityId` renders a live actor editor with autosave, live layered preview, and actor slug display that regenerates from the saved title.
+- `/adventure-module/:slug/counters/:entityId` renders a live counter editor with autosave and shared current/max value controls.
+- `/adventure-module/:slug/assets/:entityId` renders a live asset editor with autosave, grouped base picker, layered preview, and asset slug display that regenerates from the saved title.
 - Other entity routes remain active placeholders while their typed editors are pending.
+
+---
+
+### `/rules/*`
+
+Reference route family for markdown-authoring-safe Mighty Decks component snippets.
+
+Components:
+
+- `Tabs`
+- `GameCardView`
+- `AssetCard`
+- `CodeCopyRow`
+
+Routes:
+
+- `/rules/outcomes`
+- `/rules/effects`
+- `/rules/stunts`
+- `/rules/assets`
+
+Behavior:
+
+- copy rows use legacy `@type/<slug>` shortcodes because rich-text Adventure Module editors normalize pasted tokens into canonical stored `<GameCard />` embeds
+- the assets view is grouped into `Asset Base` and `Asset Medieval` sections
 
 ---
 

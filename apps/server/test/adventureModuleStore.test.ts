@@ -141,7 +141,7 @@ test("creates, reads, updates, and previews adventure modules", async () => {
   assert.equal(ownerPreview.storytellerSummary?.hidden, false);
 });
 
-test("updates actor and counter slugs when titles change", async () => {
+test("updates actor, counter, and asset slugs when titles change", async () => {
   const { store, rootDir } = await createStoreWithRoot();
   const module = await store.createModule({
     creatorToken: "token-actor",
@@ -276,6 +276,39 @@ test("updates actor and counter slugs when titles change", async () => {
         description?: string;
       }>;
     }>;
+    createAsset: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<{
+      assets: Array<{
+        assetSlug: string;
+        title: string;
+        summary?: string;
+        baseAssetSlug: string;
+        modifierSlug?: string;
+        content: string;
+      }>;
+    }>;
+    updateAsset: (input: {
+      moduleId: string;
+      assetSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      baseAssetSlug: string;
+      modifierSlug?: string;
+      content: string;
+    }) => Promise<{
+      assets: Array<{
+        assetSlug: string;
+        title: string;
+        summary?: string;
+        baseAssetSlug: string;
+        modifierSlug?: string;
+        content: string;
+      }>;
+    }>;
   };
 
   const createdCounter = await entityStore.createCounter({
@@ -305,9 +338,61 @@ test("updates actor and counter slugs when titles change", async () => {
   assert.equal(updatedCounter.title, "Danger Clock");
   assert.equal(updatedCounter.currentValue, 2);
   assert.equal(updatedCounter.maxValue, 4);
+
+  const createdAsset = await entityStore.createAsset({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-actor",
+    title: "Signal Lantern",
+  });
+  assert.equal(
+    createdAsset.assets.some((asset) => asset.assetSlug === "signal-lantern"),
+    true,
+  );
+
+  const updatedAssetState = await entityStore.updateAsset({
+    moduleId: module.index.moduleId,
+    assetSlug: "signal-lantern",
+    creatorToken: "token-actor",
+    title: "Storm Lantern",
+    summary: "Portable ward light with a hidden shutter.",
+    baseAssetSlug: "medieval_lantern",
+    modifierSlug: "base_hidden",
+    content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+  });
+  const updatedAsset = updatedAssetState.assets.find(
+    (asset) => asset.assetSlug === "storm-lantern",
+  );
+  assert.ok(updatedAsset);
+  assert.equal(updatedAsset.title, "Storm Lantern");
+  assert.equal(updatedAsset.summary, "Portable ward light with a hidden shutter.");
+  assert.equal(updatedAsset.baseAssetSlug, "medieval_lantern");
+  assert.equal(updatedAsset.modifierSlug, "base_hidden");
+  assert.equal(
+    updatedAsset.content,
+    "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+  );
+
+  const storedIndexRaw = await readFile(
+    join(rootDir, module.index.moduleId, "index.json"),
+    "utf8",
+  );
+  assert.match(storedIndexRaw, /assets\/storm-lantern\.mdx/);
+  await assert.rejects(
+    () =>
+      readFile(
+        join(rootDir, module.index.moduleId, "assets", "signal-lantern.mdx"),
+        "utf8",
+      ),
+    { code: "ENOENT" },
+  );
+  const renamedAssetFile = await readFile(
+    join(rootDir, module.index.moduleId, "assets", "storm-lantern.mdx"),
+    "utf8",
+  );
+  assert.match(renamedAssetFile, /Keeps the corridor lit in rain and fog/);
 });
 
-test("creates, updates, clamps, and deletes counters while allowing actor deletion", async () => {
+test("creates, updates, clamps, and deletes counters and assets while allowing actor deletion", async () => {
   const store = await createStore();
   const module = await store.createModule({
     creatorToken: "token-counter",
@@ -382,18 +467,64 @@ test("creates, updates, clamps, and deletes counters while allowing actor deleti
         actorSlug: string;
       }>;
     }>;
+    createAsset?: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<{
+      assets: Array<{
+        assetSlug: string;
+        title: string;
+        baseAssetSlug: string;
+        modifierSlug?: string;
+      }>;
+    }>;
+    updateAsset?: (input: {
+      moduleId: string;
+      assetSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      baseAssetSlug: string;
+      modifierSlug?: string;
+      content: string;
+    }) => Promise<{
+      assets: Array<{
+        assetSlug: string;
+        title: string;
+        summary?: string;
+        baseAssetSlug: string;
+        modifierSlug?: string;
+        content: string;
+      }>;
+    }>;
+    deleteAsset?: (input: {
+      moduleId: string;
+      assetSlug: string;
+      creatorToken?: string;
+    }) => Promise<{
+      assets: Array<{
+        assetSlug: string;
+      }>;
+    }>;
   };
 
   assert.equal(typeof entityStore.createCounter, "function");
   assert.equal(typeof entityStore.updateCounter, "function");
   assert.equal(typeof entityStore.deleteCounter, "function");
   assert.equal(typeof entityStore.deleteActor, "function");
+  assert.equal(typeof entityStore.createAsset, "function");
+  assert.equal(typeof entityStore.updateAsset, "function");
+  assert.equal(typeof entityStore.deleteAsset, "function");
 
   if (
     typeof entityStore.createCounter !== "function" ||
     typeof entityStore.updateCounter !== "function" ||
     typeof entityStore.deleteCounter !== "function" ||
-    typeof entityStore.deleteActor !== "function"
+    typeof entityStore.deleteActor !== "function" ||
+    typeof entityStore.createAsset !== "function" ||
+    typeof entityStore.updateAsset !== "function" ||
+    typeof entityStore.deleteAsset !== "function"
   ) {
     return;
   }
@@ -432,13 +563,40 @@ test("creates, updates, clamps, and deletes counters while allowing actor deleti
     "Escalates the heat across every scene.",
   );
 
+  const createdAsset = await entityStore.createAsset({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-counter",
+    title: "Signal Lantern",
+  });
+  const createdAssetRecord = createdAsset.assets.find(
+    (asset) => asset.assetSlug === "signal-lantern",
+  );
+  assert.ok(createdAssetRecord);
+
+  const updatedAsset = await entityStore.updateAsset({
+    moduleId: module.index.moduleId,
+    assetSlug: "signal-lantern",
+    creatorToken: "token-counter",
+    title: "Storm Lantern",
+    summary: "Portable ward light with a hidden shutter.",
+    baseAssetSlug: "medieval_lantern",
+    modifierSlug: "base_hidden",
+    content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+  });
+  const updatedAssetRecord = updatedAsset.assets.find(
+    (asset) => asset.assetSlug === "storm-lantern",
+  );
+  assert.ok(updatedAssetRecord);
+  assert.equal(updatedAssetRecord.baseAssetSlug, "medieval_lantern");
+  assert.equal(updatedAssetRecord.modifierSlug, "base_hidden");
+
   const withReferencedMarkdown = await store.updateIndex({
     moduleId: module.index.moduleId,
     creatorToken: "token-counter",
     index: {
       ...updated.index,
       playerSummaryMarkdown:
-        '<GameCard type="ActorCard" slug="primary-actor" /> <GameCard type="CounterCard" slug="threat-clock" />',
+        '<GameCard type="ActorCard" slug="primary-actor" /> <GameCard type="CounterCard" slug="threat-clock" /> <GameCard type="AssetCard" slug="storm-lantern" />',
     },
   });
 
@@ -449,6 +607,16 @@ test("creates, updates, clamps, and deletes counters while allowing actor deleti
   });
   assert.equal(
     afterDeleteCounter.counters.some((counter) => counter.slug === "threat-clock"),
+    false,
+  );
+
+  const afterDeleteAsset = await entityStore.deleteAsset({
+    moduleId: module.index.moduleId,
+    assetSlug: "storm-lantern",
+    creatorToken: "token-counter",
+  });
+  assert.equal(
+    afterDeleteAsset.assets.some((asset) => asset.assetSlug === "storm-lantern"),
     false,
   );
 

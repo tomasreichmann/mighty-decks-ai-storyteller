@@ -4,6 +4,10 @@ import {
   actorTacticalRoleSlugSchema,
   actorTacticalSpecialSlugSchema,
 } from "./actorCards";
+import {
+  assetBaseSlugSchema,
+  assetModifierSlugSchema,
+} from "./assetCards";
 import { counterIconSlugSchema } from "./counterCards";
 
 const identifierSchema = z.string().min(1).max(120);
@@ -208,6 +212,15 @@ export const adventureModuleActorCardSchema = z.object({
 });
 export type AdventureModuleActorCard = z.infer<
   typeof adventureModuleActorCardSchema
+>;
+
+export const adventureModuleAssetCardSchema = z.object({
+  fragmentId: identifierSchema,
+  baseAssetSlug: assetBaseSlugSchema,
+  modifierSlug: assetModifierSlugSchema.optional(),
+});
+export type AdventureModuleAssetCard = z.infer<
+  typeof adventureModuleAssetCardSchema
 >;
 
 export const adventureModuleCounterSchema = z
@@ -511,7 +524,8 @@ export const adventureModuleIndexSchema = z
     actorFragmentIds: z.array(identifierSchema).max(40),
     actorCards: z.array(adventureModuleActorCardSchema).max(40).default([]),
     counters: z.array(adventureModuleCounterSchema).max(80).default([]),
-    assetFragmentIds: z.array(identifierSchema).min(1).max(40),
+    assetFragmentIds: z.array(identifierSchema).max(40),
+    assetCards: z.array(adventureModuleAssetCardSchema).max(40).default([]),
     itemFragmentIds: z.array(identifierSchema).max(40).default([]),
     encounterFragmentIds: z.array(identifierSchema).min(1).max(60),
     questFragmentIds: z.array(identifierSchema).min(1).max(30),
@@ -631,6 +645,37 @@ export const adventureModuleIndexSchema = z
     for (const assetId of index.assetFragmentIds) {
       ensureFragment(assetId, "asset", ["assetFragmentIds"]);
     }
+
+    const assetCardFragmentIds = index.assetCards.map((assetCard) => assetCard.fragmentId);
+    for (const duplicate of duplicateValues(assetCardFragmentIds)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate asset card fragment id: ${duplicate}`,
+        path: ["assetCards"],
+      });
+    }
+
+    const assetIdSet = new Set(index.assetFragmentIds);
+    const assetCardIdSet = new Set(assetCardFragmentIds);
+    for (const assetId of index.assetFragmentIds) {
+      if (!assetCardIdSet.has(assetId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `missing asset card metadata for fragment id: ${assetId}`,
+          path: ["assetCards"],
+        });
+      }
+    }
+    for (const assetCard of index.assetCards) {
+      if (!assetIdSet.has(assetCard.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `asset card metadata references unknown asset fragment id: ${assetCard.fragmentId}`,
+          path: ["assetCards"],
+        });
+      }
+    }
+
     for (const itemId of index.itemFragmentIds) {
       ensureFragment(itemId, "item", ["itemFragmentIds"]);
     }

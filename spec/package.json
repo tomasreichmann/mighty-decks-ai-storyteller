@@ -21,6 +21,10 @@
       "types": "./dist/actorCards.d.ts",
       "import": "./dist/actorCards.js"
     },
+    "./assetCards": {
+      "types": "./dist/assetCards.d.ts",
+      "import": "./dist/assetCards.js"
+    },
     "./counterCards": {
       "types": "./dist/counterCards.d.ts",
       "import": "./dist/counterCards.js"

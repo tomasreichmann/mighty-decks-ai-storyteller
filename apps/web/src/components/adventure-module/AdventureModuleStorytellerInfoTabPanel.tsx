@@ -1,6 +1,7 @@
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 import type {
   AdventureModuleResolvedActor,
+  AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
@@ -14,6 +15,7 @@ interface AdventureModuleStorytellerInfoTabPanelProps {
   smartContextDocument: SmartInputDocumentContext;
   actors?: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
+  assets?: AdventureModuleResolvedAsset[];
   editable: boolean;
   validationMessage?: string | null;
   onSummaryChange: (nextValue: string) => void;
@@ -34,6 +36,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
   smartContextDocument,
   actors = [],
   counters = [],
+  assets = [],
   editable,
   validationMessage,
   onSummaryChange,
@@ -50,6 +53,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
         smartContextDocument={smartContextDocument}
         actors={actors}
         counters={counters}
+        assets={assets}
         value={summary}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
@@ -66,6 +70,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
         smartContextDocument={smartContextDocument}
         actors={actors}
         counters={counters}
+        assets={assets}
         value={infoText}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}

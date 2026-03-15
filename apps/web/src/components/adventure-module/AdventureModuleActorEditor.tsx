@@ -1,5 +1,6 @@
 import type {
   AdventureModuleResolvedActor,
+  AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
@@ -20,6 +21,7 @@ interface AdventureModuleActorEditorProps {
   actor: AdventureModuleResolvedActor;
   actors: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
+  assets?: AdventureModuleResolvedAsset[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
   validationMessage?: string | null;
@@ -50,6 +52,7 @@ export const AdventureModuleActorEditor = ({
   actor,
   actors,
   counters = [],
+  assets = [],
   smartContextDocument,
   editable,
   validationMessage,
@@ -195,6 +198,7 @@ export const AdventureModuleActorEditor = ({
           smartContextDocument={smartContextDocument}
           actors={actors}
           counters={counters}
+          assets={assets}
           value={actor.content}
           editable={editable}
           maxLength={MAX_MARKDOWN_LENGTH}

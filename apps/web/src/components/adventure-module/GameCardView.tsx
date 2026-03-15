@@ -3,6 +3,7 @@ import { useGameCardCatalogContext } from "../../lib/gameCardCatalogContext";
 import { cn } from "../../utils/cn";
 import { type ResolvedGameCard } from "../../lib/markdownGameComponents";
 import { ActorCard } from "../cards/ActorCard";
+import { AssetCard } from "../cards/AssetCard";
 import { CounterCard } from "../cards/CounterCard";
 import { LayeredCard } from "../cards/LayeredCard";
 
@@ -118,6 +119,14 @@ export const GameCardView = ({
               ? () => onAdjustCounterValue(gameCard.counter.slug, 1, "max")
               : undefined
           }
+        />
+      );
+    case "AssetCard":
+      return (
+        <AssetCard
+          className={cn("w-full max-w-[13rem]", className)}
+          baseAssetSlug={gameCard.asset.baseAssetSlug}
+          modifierSlug={gameCard.asset.modifierSlug}
         />
       );
     default:

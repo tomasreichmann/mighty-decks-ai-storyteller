@@ -316,6 +316,71 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
   });
   assert.equal(deleteCounterResponse.statusCode, 200);
 
+  const createAssetResponse = await app.inject({
+    method: "POST",
+    url: `/api/adventure-modules/${moduleId}/assets`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Signal Lantern",
+    },
+  });
+  assert.equal(createAssetResponse.statusCode, 201);
+  const createAssetPayload = createAssetResponse.json() as {
+    assets?: Array<{
+      assetSlug: string;
+      title: string;
+      baseAssetSlug: string;
+    }>;
+  };
+  assert.equal(
+    createAssetPayload.assets?.some(
+      (asset) => asset.assetSlug === "signal-lantern",
+    ),
+    true,
+  );
+
+  const updateAssetResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/assets/signal-lantern`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Storm Lantern",
+      summary: "Portable ward light with a hidden shutter.",
+      baseAssetSlug: "medieval_lantern",
+      modifierSlug: "base_hidden",
+      content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+    },
+  });
+  assert.equal(updateAssetResponse.statusCode, 200);
+  const updatedAssetPayload = updateAssetResponse.json() as {
+    assets?: Array<{
+      assetSlug: string;
+      title: string;
+      baseAssetSlug: string;
+      modifierSlug?: string;
+    }>;
+  };
+  const updatedAsset = updatedAssetPayload.assets?.find(
+    (asset) => asset.assetSlug === "storm-lantern",
+  );
+  assert.ok(updatedAsset);
+  assert.equal(updatedAsset.title, "Storm Lantern");
+  assert.equal(updatedAsset.baseAssetSlug, "medieval_lantern");
+  assert.equal(updatedAsset.modifierSlug, "base_hidden");
+
+  const deleteAssetResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}/assets/storm-lantern`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(deleteAssetResponse.statusCode, 200);
+
   const forbiddenActorUpdateResponse = await app.inject({
     method: "PUT",
     url: `/api/adventure-modules/${moduleId}/actors/river-smuggler-nyra`,

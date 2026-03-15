@@ -8,7 +8,7 @@ export const RulesIndexPage = (): JSX.Element => {
         Rules navigation stub
       </Text>
       <Text variant="body" color="iron-light" className="text-sm">
-        Choose Outcomes, Effects, or Stunts. Full rulebook content will be added in a later milestone.
+        Choose Outcomes, Effects, Stunts, or Assets. Full rulebook content will be added in a later milestone.
       </Text>
     </Panel>
   );

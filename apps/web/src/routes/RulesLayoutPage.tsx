@@ -6,6 +6,7 @@ const rulesTabs: TabItem[] = [
   { to: "/rules/outcomes", label: "Outcomes" },
   { to: "/rules/effects", label: "Effects" },
   { to: "/rules/stunts", label: "Stunts" },
+  { to: "/rules/assets", label: "Assets" },
 ];
 
 export const RulesLayoutPage = (): JSX.Element => {

@@ -4,6 +4,10 @@ import {
   actorTacticalRoleSlugSchema,
   actorTacticalSpecialSlugSchema,
 } from "./actorCards";
+import {
+  assetBaseSlugSchema,
+  assetModifierSlugSchema,
+} from "./assetCards";
 import { counterIconSlugSchema } from "./counterCards";
 import {
   adventureModuleCounterSchema,
@@ -149,6 +153,19 @@ export type AdventureModuleResolvedCounter = z.infer<
   typeof adventureModuleResolvedCounterSchema
 >;
 
+export const adventureModuleResolvedAssetSchema = z.object({
+  fragmentId: identifierSchema,
+  assetSlug: slugSchema,
+  title: shortTextSchema,
+  summary: mediumTextSchema.optional(),
+  baseAssetSlug: assetBaseSlugSchema,
+  modifierSlug: assetModifierSlugSchema.optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleResolvedAsset = z.infer<
+  typeof adventureModuleResolvedAssetSchema
+>;
+
 export const adventureModuleAuthoringFragmentSchema = z.object({
   fragment: adventureModuleFragmentRefSchema,
   content: z.string().max(200_000).default(""),
@@ -163,6 +180,7 @@ export const adventureModuleDetailSchema = z
     fragments: z.array(adventureModuleAuthoringFragmentSchema).max(400),
     actors: z.array(adventureModuleResolvedActorSchema).max(80).default([]),
     counters: z.array(adventureModuleResolvedCounterSchema).max(80).default([]),
+    assets: z.array(adventureModuleResolvedAssetSchema).max(80).default([]),
     ownedByRequester: z.boolean().default(false),
   })
   .superRefine((module, ctx) => {
@@ -237,6 +255,40 @@ export const adventureModuleDetailSchema = z
           code: z.ZodIssueCode.custom,
           message: `resolved counter ${counter.slug} does not match index metadata`,
           path: ["counters"],
+        });
+      }
+    }
+
+    const assetIds = new Set(module.index.assetFragmentIds);
+    const assetCardByFragmentId = new Map(
+      module.index.assetCards.map((assetCard) => [assetCard.fragmentId, assetCard] as const),
+    );
+
+    for (const asset of module.assets) {
+      if (!assetIds.has(asset.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved asset references unknown fragment ${asset.fragmentId}`,
+          path: ["assets"],
+        });
+      }
+      const assetCard = assetCardByFragmentId.get(asset.fragmentId);
+      if (!assetCard) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved asset missing asset card metadata for ${asset.fragmentId}`,
+          path: ["assets"],
+        });
+        continue;
+      }
+      if (
+        asset.baseAssetSlug !== assetCard.baseAssetSlug ||
+        asset.modifierSlug !== assetCard.modifierSlug
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved asset ${asset.fragmentId} does not match index asset card metadata`,
+          path: ["assets"],
         });
       }
     }
@@ -327,6 +379,30 @@ export const adventureModuleUpdateCounterResponseSchema =
   adventureModuleDetailSchema;
 export type AdventureModuleUpdateCounterResponse = z.infer<
   typeof adventureModuleUpdateCounterResponseSchema
+>;
+
+export const adventureModuleCreateAssetRequestSchema = z.object({
+  title: shortTextSchema.default("New Asset"),
+});
+export type AdventureModuleCreateAssetRequest = z.infer<
+  typeof adventureModuleCreateAssetRequestSchema
+>;
+
+export const adventureModuleUpdateAssetRequestSchema = z.object({
+  title: shortTextSchema,
+  summary: z.string().max(500).default(""),
+  baseAssetSlug: assetBaseSlugSchema,
+  modifierSlug: z.union([assetModifierSlugSchema, z.null()]).optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleUpdateAssetRequest = z.infer<
+  typeof adventureModuleUpdateAssetRequestSchema
+>;
+
+export const adventureModuleUpdateAssetResponseSchema =
+  adventureModuleDetailSchema;
+export type AdventureModuleUpdateAssetResponse = z.infer<
+  typeof adventureModuleUpdateAssetResponseSchema
 >;
 
 export const adventureModulePreviewQuerySchema = z.object({

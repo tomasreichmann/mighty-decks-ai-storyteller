@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { FocusEvent } from "react";
 import type {
   AdventureModuleResolvedActor,
+  AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import {
@@ -96,6 +97,7 @@ export interface AdventureModuleMarkdownFieldProps {
   smartContextDocument: SmartInputDocumentContext;
   actors?: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
+  assets?: AdventureModuleResolvedAsset[];
   value: string;
   editable: boolean;
   maxLength: number;
@@ -231,6 +233,7 @@ const renderToolbarInsertControls = ({
       <option value="StuntCard">Stunt</option>
       <option value="ActorCard">Actor</option>
       <option value="CounterCard">Counter</option>
+      <option value="AssetCard">Asset</option>
     </select>
     <select
       aria-label="Insert card"
@@ -761,6 +764,7 @@ export const AdventureModuleMarkdownField = ({
   smartContextDocument,
   actors = [],
   counters = [],
+  assets = [],
   value,
   editable,
   maxLength,
@@ -796,9 +800,16 @@ export const AdventureModuleMarkdownField = ({
       ),
     [counters],
   );
+  const assetsBySlug = useMemo(
+    () =>
+      new Map(
+        assets.map((asset) => [asset.assetSlug.toLocaleLowerCase(), asset] as const),
+      ),
+    [assets],
+  );
   const gameCardOptionsByType = useMemo(
-    () => buildGameCardOptionsByType(actors, counters),
-    [actors, counters],
+    () => buildGameCardOptionsByType(actors, counters, assets),
+    [actors, assets, counters],
   );
   const [insertType, setInsertType] = useState<GameCardType>(defaultGameCardType);
   const [insertSlug, setInsertSlug] = useState<string>(
@@ -1039,6 +1050,8 @@ export const AdventureModuleMarkdownField = ({
               actorsBySlug,
               counters,
               countersBySlug,
+              assets,
+              assetsBySlug,
               onAdjustCounterValue,
             }}
           >

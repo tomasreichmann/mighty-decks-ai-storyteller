@@ -14,7 +14,8 @@ const isGameCardType = (value: string | null): value is GameCardType =>
   value === "EffectCard" ||
   value === "StuntCard" ||
   value === "ActorCard" ||
-  value === "CounterCard";
+  value === "CounterCard" ||
+  value === "AssetCard";
 
 const hasNodeSelection = (
   selection: ReturnType<typeof lexical.$getSelection>,
@@ -48,7 +49,7 @@ const InlineGameCardDecorator = ({
   lexicalNode,
   parentEditor,
 }: InlineGameCardDecoratorProps): JSX.Element => {
-  const { actorsBySlug, countersBySlug } = useGameCardCatalogContext();
+  const { actorsBySlug, countersBySlug, assetsBySlug } = useGameCardCatalogContext();
   const nodeKey = lexicalNode.getKey();
   const nodeType = lexicalNode.getType();
   const [isSelected, setIsSelected] = useState(false);
@@ -59,8 +60,8 @@ const InlineGameCardDecorator = ({
     if (!isGameCardType(cardType) || !slug) {
       return null;
     }
-    return resolveGameCard(cardType, slug, actorsBySlug, countersBySlug);
-  }, [actorsBySlug, cardType, countersBySlug, slug]);
+    return resolveGameCard(cardType, slug, actorsBySlug, countersBySlug, assetsBySlug);
+  }, [actorsBySlug, assetsBySlug, cardType, countersBySlug, slug]);
 
   useEffect(() => {
     const syncSelectedState = (): void => {

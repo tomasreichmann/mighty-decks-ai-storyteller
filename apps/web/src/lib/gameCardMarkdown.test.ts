@@ -23,6 +23,10 @@ test("createGameCardJsx emits canonical GameCard source", () => {
     createGameCardJsx("CounterCard", "threat-clock"),
     '<GameCard type="CounterCard" slug="threat-clock" />',
   );
+  assert.equal(
+    createGameCardJsx("AssetCard", "storm-lantern"),
+    '<GameCard type="AssetCard" slug="storm-lantern" />',
+  );
 });
 
 test("normalizeLegacyGameCardMarkdown upgrades legacy tokens to canonical GameCard JSX", () => {
@@ -88,6 +92,48 @@ test("normalizeLegacyGameCardMarkdown upgrades counter shortcodes to canonical G
       '<GameCard type="CounterCard" slug="threat-clock" />',
       "",
       'Keep <GameCard type="CounterCard" slug="escape-clock" /> visible in the same paragraph.',
+    ].join("\n"),
+  );
+});
+
+test("normalizeLegacyGameCardMarkdown upgrades asset shortcodes to canonical GameCard JSX", () => {
+  const markdown = [
+    "Bring the gear online.",
+    "",
+    "@asset/storm-lantern",
+    "",
+    "Then pass @asset/wardens-seal across the table.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Bring the gear online.",
+      "",
+      '<GameCard type="AssetCard" slug="storm-lantern" />',
+      "",
+      'Then pass <GameCard type="AssetCard" slug="wardens-seal" /> across the table.',
+    ].join("\n"),
+  );
+});
+
+test("normalizeLegacyGameCardMarkdown upgrades asset shortcodes with underscore slugs", () => {
+  const markdown = [
+    "Open the shared catalog.",
+    "",
+    "@asset/base_light_weapon",
+    "",
+    "Keep @asset/medieval_lantern close at hand.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Open the shared catalog.",
+      "",
+      '<GameCard type="AssetCard" slug="base_light_weapon" />',
+      "",
+      'Keep <GameCard type="AssetCard" slug="medieval_lantern" /> close at hand.',
     ].join("\n"),
   );
 });

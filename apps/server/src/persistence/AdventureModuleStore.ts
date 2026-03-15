@@ -6,6 +6,7 @@ import {
   defaultActorBaseLayerSlug,
   defaultActorTacticalRoleSlug,
 } from "@mighty-decks/spec/actorCards";
+import { defaultAssetBaseSlug } from "@mighty-decks/spec/assetCards";
 import { defaultCounterIconSlug } from "@mighty-decks/spec/counterCards";
 import {
   adventureModuleDetailSchema,
@@ -96,10 +97,6 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
         (value): value is string => typeof value === "string" && value.trim().length > 0,
       )
     : [];
-  if (actorFragmentIds.length === 0) {
-    return normalized;
-  }
-
   const rawActorCards = Array.isArray(normalized.actorCards) ? normalized.actorCards : [];
   const actorCardsByFragmentId = new Map<string, Record<string, unknown>>();
   for (const actorCard of rawActorCards) {
@@ -112,6 +109,25 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
       continue;
     }
     actorCardsByFragmentId.set(fragmentId, actorCardRecord);
+  }
+
+  const assetFragmentIds = Array.isArray(normalized.assetFragmentIds)
+    ? normalized.assetFragmentIds.filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
+  const rawAssetCards = Array.isArray(normalized.assetCards) ? normalized.assetCards : [];
+  const assetCardsByFragmentId = new Map<string, Record<string, unknown>>();
+  for (const assetCard of rawAssetCards) {
+    if (!assetCard || typeof assetCard !== "object" || Array.isArray(assetCard)) {
+      continue;
+    }
+    const assetCardRecord = assetCard as Record<string, unknown>;
+    const fragmentId = assetCardRecord.fragmentId;
+    if (typeof fragmentId !== "string" || fragmentId.trim().length === 0) {
+      continue;
+    }
+    assetCardsByFragmentId.set(fragmentId, assetCardRecord);
   }
 
   return {
@@ -130,6 +146,19 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
             : defaultActorTacticalRoleSlug,
         ...(typeof existing?.tacticalSpecialSlug === "string"
           ? { tacticalSpecialSlug: existing.tacticalSpecialSlug }
+          : {}),
+      };
+    }),
+    assetCards: assetFragmentIds.map((fragmentId) => {
+      const existing = assetCardsByFragmentId.get(fragmentId);
+      return {
+        fragmentId,
+        baseAssetSlug:
+          typeof existing?.baseAssetSlug === "string"
+            ? existing.baseAssetSlug
+            : defaultAssetBaseSlug,
+        ...(typeof existing?.modifierSlug === "string"
+          ? { modifierSlug: existing.modifierSlug }
           : {}),
       };
     }),
@@ -158,6 +187,9 @@ const fragmentKindWeight = (kind: AdventureModuleFragmentKind): number => {
 };
 
 const deriveActorSlugFromPath = (fragmentPath: string): string =>
+  toSlug(basename(fragmentPath, extname(fragmentPath)));
+
+const deriveAssetSlugFromPath = (fragmentPath: string): string =>
   toSlug(basename(fragmentPath, extname(fragmentPath)));
 
 export class AdventureModuleNotFoundError extends Error {
@@ -342,11 +374,13 @@ export class AdventureModuleStore {
     const ownedByRequester = loaded.system.creatorTokenHash === hashCreatorToken(creatorToken);
     const actors = this.resolveActors(loaded.index, fragments);
     const counters = this.resolveCounters(loaded.index);
+    const assets = this.resolveAssets(loaded.index, fragments);
     return adventureModuleDetailSchema.parse({
       index: loaded.index,
       fragments,
       actors,
       counters,
+      assets,
       ownedByRequester,
     });
   }
@@ -378,8 +412,25 @@ export class AdventureModuleStore {
 
       const nowIso = new Date().toISOString();
       await this.assertSlugAvailable(options.index.slug, moduleId);
+      // Keep entity collections authoritative in typed create/update/delete flows.
+      // Generic index updates are used for module-level metadata and summary markdown.
       const normalizedIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
         ...options.index,
+        locationFragmentIds: loaded.index.locationFragmentIds,
+        actorFragmentIds: loaded.index.actorFragmentIds,
+        actorCards: loaded.index.actorCards,
+        counters: loaded.index.counters,
+        assetFragmentIds: loaded.index.assetFragmentIds,
+        assetCards: loaded.index.assetCards,
+        itemFragmentIds: loaded.index.itemFragmentIds,
+        encounterFragmentIds: loaded.index.encounterFragmentIds,
+        questFragmentIds: loaded.index.questFragmentIds,
+        imagePromptFragmentIds: loaded.index.imagePromptFragmentIds,
+        fragments: loaded.index.fragments,
+        questGraphs: loaded.index.questGraphs,
+        componentOpportunities: loaded.index.componentOpportunities,
+        artifacts: loaded.index.artifacts,
         updatedAtIso: nowIso,
       });
 
@@ -638,6 +689,199 @@ export class AdventureModuleStore {
     });
   }
 
+  public async createAsset(options: {
+    moduleId: string;
+    creatorToken?: string;
+    title: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0 ? options.title.trim() : "New Asset";
+      const assetSlug = this.makeUniqueAssetSlug(normalizedTitle, loaded.index);
+      const fragmentId = makeId("frag-asset");
+      const fragmentRef: AdventureModuleFragmentRef = {
+        fragmentId,
+        kind: "asset",
+        title: normalizedTitle,
+        path: `assets/${assetSlug}.mdx`,
+        summary: "Describe what this asset enables, risks, or unlocks.",
+        tags: ["asset", "layered_asset"],
+        containsSpoilers: false,
+        intendedAudience: "shared",
+      };
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        assetFragmentIds: [...loaded.index.assetFragmentIds, fragmentId],
+        assetCards: [
+          ...loaded.index.assetCards,
+          {
+            fragmentId,
+            baseAssetSlug: defaultAssetBaseSlug,
+          },
+        ],
+        fragments: [...loaded.index.fragments, fragmentRef],
+        artifacts: [
+          ...loaded.index.artifacts,
+          {
+            artifactId: `artifact-${fragmentId}`,
+            kind: "mdx",
+            path: fragmentRef.path,
+            title: fragmentRef.title,
+            sourceFragmentId: fragmentId,
+            contentType: "text/markdown",
+            generatedBy: "author",
+            createdAtIso: nowIso,
+          },
+        ],
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(loaded.moduleDir, fragmentRef.path);
+      await mkdir(dirname(absolutePath), { recursive: true });
+      await atomicWriteTextFile(absolutePath, this.createAssetFragmentContent(normalizedTitle));
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+      } catch (error) {
+        await this.rollbackAssetCreate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Created asset could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async updateAsset(options: {
+    moduleId: string;
+    assetSlug: string;
+    creatorToken?: string;
+    title: string;
+    summary: string;
+    baseAssetSlug: AdventureModuleIndex["assetCards"][number]["baseAssetSlug"];
+    modifierSlug?: AdventureModuleIndex["assetCards"][number]["modifierSlug"];
+    content: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const assetRecord = this.findAssetRecord(loaded.index, options.assetSlug);
+      if (!assetRecord) {
+        throw new AdventureModuleValidationError("Asset slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0
+          ? options.title.trim()
+          : assetRecord.fragment.title;
+      const nextAssetSlug = this.makeUniqueAssetSlug(
+        normalizedTitle,
+        loaded.index,
+        assetRecord.fragment.fragmentId,
+      );
+      const nextAssetPath = `assets/${nextAssetSlug}.mdx`;
+      const nextFragments = loaded.index.fragments.map((fragment) => {
+        if (fragment.fragmentId !== assetRecord.fragment.fragmentId) {
+          return fragment;
+        }
+        return {
+          ...fragment,
+          title: normalizedTitle,
+          path: nextAssetPath,
+          summary:
+            options.summary.trim().length > 0 ? options.summary.trim() : undefined,
+        };
+      });
+
+      const nextAssetCards = loaded.index.assetCards.map((assetCard) => {
+        if (assetCard.fragmentId !== assetRecord.fragment.fragmentId) {
+          return assetCard;
+        }
+        return {
+          fragmentId: assetCard.fragmentId,
+          baseAssetSlug: options.baseAssetSlug,
+          ...(options.modifierSlug ? { modifierSlug: options.modifierSlug } : {}),
+        };
+      });
+
+      const nextArtifacts = loaded.index.artifacts.map((artifact) => {
+        if (artifact.sourceFragmentId !== assetRecord.fragment.fragmentId) {
+          return artifact;
+        }
+        return {
+          ...artifact,
+          path: nextAssetPath,
+          title: normalizedTitle,
+        };
+      });
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        fragments: nextFragments,
+        assetCards: nextAssetCards,
+        artifacts: nextArtifacts,
+        updatedAtIso: nowIso,
+      });
+
+      const previousAbsolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        assetRecord.fragment.path,
+      );
+      const nextAbsolutePath = this.resolveSafePath(loaded.moduleDir, nextAssetPath);
+      const previousContent = await this.readExistingTextFile(previousAbsolutePath);
+      await mkdir(dirname(nextAbsolutePath), { recursive: true });
+      await atomicWriteTextFile(nextAbsolutePath, options.content);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        if (nextAbsolutePath !== previousAbsolutePath) {
+          await rm(previousAbsolutePath, { recursive: true, force: true });
+        }
+      } catch (error) {
+        await this.rollbackAssetUpdate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          previousAbsolutePath,
+          nextAbsolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Updated asset could not be loaded.");
+      }
+      return next;
+    });
+  }
+
   public async createCounter(options: {
     moduleId: string;
     creatorToken?: string;
@@ -779,6 +1023,72 @@ export class AdventureModuleStore {
       const next = await this.getModule(moduleId, options.creatorToken);
       if (!next) {
         throw new AdventureModuleValidationError("Deleted counter could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async deleteAsset(options: {
+    moduleId: string;
+    assetSlug: string;
+    creatorToken?: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const assetRecord = this.findAssetRecord(loaded.index, options.assetSlug);
+      if (!assetRecord) {
+        throw new AdventureModuleValidationError("Asset slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const fragmentId = assetRecord.fragment.fragmentId;
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        assetFragmentIds: loaded.index.assetFragmentIds.filter(
+          (entry) => entry !== fragmentId,
+        ),
+        assetCards: loaded.index.assetCards.filter(
+          (assetCard) => assetCard.fragmentId !== fragmentId,
+        ),
+        fragments: loaded.index.fragments.filter(
+          (fragment) => fragment.fragmentId !== fragmentId,
+        ),
+        artifacts: loaded.index.artifacts.filter(
+          (artifact) => artifact.sourceFragmentId !== fragmentId,
+        ),
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        assetRecord.fragment.path,
+      );
+      const previousContent = await this.readExistingTextFile(absolutePath);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        await rm(absolutePath, { recursive: true, force: true });
+      } catch (error) {
+        await this.rollbackAssetDelete(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Deleted asset could not be loaded.");
       }
       return next;
     });
@@ -1111,6 +1421,10 @@ export class AdventureModuleStore {
     return `# ${title}\n\n## Public Face\n\nDescribe how this actor appears to players.\n\n## Agenda\n\n- Add the actor's main motivation.\n- Add what they want right now.\n\n## Pressure Moves\n\n- Add how they escalate the scene.\n`;
   }
 
+  private createAssetFragmentContent(title: string): string {
+    return `# ${title}\n\n## What It Is\n\nDescribe what this asset looks like and why it matters.\n\n## Leverage\n\n- Add what this asset makes easier.\n- Add who wants it or fears it.\n\n## Complications\n\n- Add the cost, limit, or risk of using it.\n`;
+  }
+
   private async readExistingTextFile(path: string): Promise<string> {
     try {
       return await readFile(path, "utf8");
@@ -1123,6 +1437,19 @@ export class AdventureModuleStore {
   }
 
   private async rollbackActorCreate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      rm(fragmentPath, { recursive: true, force: true }),
+    ]);
+  }
+
+  private async rollbackAssetCreate(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
     previousSystem: ModuleSystemMetadata,
@@ -1162,7 +1489,50 @@ export class AdventureModuleStore {
     await Promise.allSettled(rollbackTasks);
   }
 
+  private async rollbackAssetUpdate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    previousFragmentPath: string,
+    nextFragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    const rollbackTasks: Array<Promise<unknown>> = [
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+    ];
+
+    if (previousFragmentPath === nextFragmentPath) {
+      rollbackTasks.push(atomicWriteTextFile(previousFragmentPath, previousContent));
+    } else {
+      rollbackTasks.push(
+        mkdir(dirname(previousFragmentPath), { recursive: true }).then(() =>
+          atomicWriteTextFile(previousFragmentPath, previousContent),
+        ),
+      );
+      rollbackTasks.push(rm(nextFragmentPath, { recursive: true, force: true }));
+    }
+
+    await Promise.allSettled(rollbackTasks);
+  }
+
   private async rollbackActorDelete(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      mkdir(dirname(fragmentPath), { recursive: true }).then(() =>
+        atomicWriteTextFile(fragmentPath, previousContent),
+      ),
+    ]);
+  }
+
+  private async rollbackAssetDelete(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
     previousSystem: ModuleSystemMetadata,
@@ -1210,6 +1580,38 @@ export class AdventureModuleStore {
     throw new AdventureModuleValidationError("Could not allocate a unique actor slug.");
   }
 
+  private makeUniqueAssetSlug(
+    title: string,
+    index: AdventureModuleIndex,
+    excludeFragmentId?: string,
+  ): string {
+    const baseSlug = toSlug(title);
+    const existingAssetSlugs = new Set(
+      index.assetFragmentIds
+        .filter((fragmentId) => fragmentId !== excludeFragmentId)
+        .map((fragmentId) => index.fragments.find((fragment) => fragment.fragmentId === fragmentId))
+        .filter(
+          (
+            fragment,
+          ): fragment is AdventureModuleFragmentRef => Boolean(fragment?.path),
+        )
+        .map((fragment) => deriveAssetSlugFromPath(fragment.path)),
+    );
+
+    if (!existingAssetSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    for (let suffix = 2; suffix < 10_000; suffix += 1) {
+      const candidate = toSlug(`${baseSlug}-${suffix}`);
+      if (!existingAssetSlugs.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    throw new AdventureModuleValidationError("Could not allocate a unique asset slug.");
+  }
+
   private makeUniqueCounterSlug(
     title: string,
     index: AdventureModuleIndex,
@@ -1248,6 +1650,24 @@ export class AdventureModuleStore {
         continue;
       }
       if (deriveActorSlugFromPath(fragment.path) === actorSlug) {
+        return { fragment };
+      }
+    }
+    return null;
+  }
+
+  private findAssetRecord(
+    index: AdventureModuleIndex,
+    assetSlug: string,
+  ): { fragment: AdventureModuleFragmentRef } | null {
+    for (const assetFragmentId of index.assetFragmentIds) {
+      const fragment = index.fragments.find(
+        (entry) => entry.fragmentId === assetFragmentId,
+      );
+      if (!fragment) {
+        continue;
+      }
+      if (deriveAssetSlugFromPath(fragment.path) === assetSlug) {
         return { fragment };
       }
     }
@@ -1307,6 +1727,37 @@ export class AdventureModuleStore {
     index: AdventureModuleIndex,
   ): AdventureModuleDetail["counters"] {
     return index.counters.map((counter) => ({ ...counter }));
+  }
+
+  private resolveAssets(
+    index: AdventureModuleIndex,
+    fragments: AdventureModuleDetail["fragments"],
+  ): AdventureModuleDetail["assets"] {
+    const fragmentContentById = new Map(
+      fragments.map((fragment) => [fragment.fragment.fragmentId, fragment.content] as const),
+    );
+    const assetCardByFragmentId = new Map(
+      index.assetCards.map((assetCard) => [assetCard.fragmentId, assetCard] as const),
+    );
+
+    return index.assetFragmentIds.flatMap((fragmentId) => {
+      const fragmentRef = index.fragments.find((fragment) => fragment.fragmentId === fragmentId);
+      const assetCard = assetCardByFragmentId.get(fragmentId);
+      if (!fragmentRef || !assetCard) {
+        return [];
+      }
+      return [
+        {
+          fragmentId,
+          assetSlug: deriveAssetSlugFromPath(fragmentRef.path),
+          title: fragmentRef.title,
+          summary: fragmentRef.summary,
+          baseAssetSlug: assetCard.baseAssetSlug,
+          modifierSlug: assetCard.modifierSlug,
+          content: fragmentContentById.get(fragmentId) ?? "",
+        },
+      ];
+    });
   }
 
   private async loadFragmentContents(
@@ -1588,6 +2039,12 @@ export class AdventureModuleStore {
       ],
       counters: [],
       assetFragmentIds: ["frag-asset-main"],
+      assetCards: [
+        {
+          fragmentId: "frag-asset-main",
+          baseAssetSlug: defaultAssetBaseSlug,
+        },
+      ],
       itemFragmentIds: [],
       encounterFragmentIds: ["frag-encounter-main"],
       questFragmentIds: ["frag-quest-main"],

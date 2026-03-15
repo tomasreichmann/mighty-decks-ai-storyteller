@@ -1,5 +1,6 @@
 export * from "./adventureState";
 export * from "./actorCards";
+export * from "./assetCards";
 export * from "./counterCards";
 export * from "./adventureModule";
 export * from "./adventureModuleAuthoring";

@@ -12,8 +12,8 @@ export const RulesStuntsPage = (): JSX.Element => {
           Stunt Cards
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Showing {rulesStuntCards.length} stunt cards with canonical GameCard
-          JSX for Adventure Module editors.
+          Copy each <code>@stunt/&lt;slug&gt;</code> shortcode into Adventure
+          Module markdown editors.
         </Text>
       </div>
 
@@ -26,7 +26,7 @@ export const RulesStuntsPage = (): JSX.Element => {
           return (
             <div key={stunt.slug} className="stack h-full gap-2">
               <GameCardView gameCard={gameCard} className="mx-auto" />
-              <CodeCopyRow code={gameCard.jsx} />
+              <CodeCopyRow code={gameCard.legacyToken} />
             </div>
           );
         })}

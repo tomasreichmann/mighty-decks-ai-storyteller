@@ -1,5 +1,6 @@
 import {
   adventureModuleCreateActorRequestSchema,
+  adventureModuleCreateAssetRequestSchema,
   adventureModuleCreateCounterRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
@@ -10,6 +11,8 @@ import {
   adventureModuleSlugAvailabilityResponseSchema,
   adventureModuleUpdateActorRequestSchema,
   adventureModuleUpdateActorResponseSchema,
+  adventureModuleUpdateAssetRequestSchema,
+  adventureModuleUpdateAssetResponseSchema,
   adventureModuleUpdateCounterRequestSchema,
   adventureModuleUpdateCounterResponseSchema,
   adventureModuleUpdateFragmentRequestSchema,
@@ -17,6 +20,7 @@ import {
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateResponseSchema,
   type AdventureModuleCreateActorRequest,
+  type AdventureModuleCreateAssetRequest,
   type AdventureModuleCreateCounterRequest,
   type AdventureModuleUpdateCoverImageRequest,
   type AdventureModuleCloneRequest,
@@ -291,6 +295,64 @@ export const updateAdventureModuleCounter = async (
     },
   );
   return adventureModuleUpdateCounterResponseSchema.parse(payload);
+};
+
+export const createAdventureModuleAsset = async (
+  moduleId: string,
+  request: AdventureModuleCreateAssetRequest,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/assets`),
+    {
+      method: "POST",
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
+      body: JSON.stringify(adventureModuleCreateAssetRequestSchema.parse(request)),
+    },
+  );
+  return adventureModuleCreateResponseSchema.parse(payload);
+};
+
+export const updateAdventureModuleAsset = async (
+  moduleId: string,
+  assetSlug: string,
+  request: {
+    title: string;
+    summary: string;
+    baseAssetSlug: string;
+    modifierSlug?: string | null;
+    content: string;
+  },
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/assets/${encodeURIComponent(assetSlug)}`,
+    ),
+    {
+      method: "PUT",
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
+      body: JSON.stringify(adventureModuleUpdateAssetRequestSchema.parse(request)),
+    },
+  );
+  return adventureModuleUpdateAssetResponseSchema.parse(payload);
+};
+
+export const deleteAdventureModuleAsset = async (
+  moduleId: string,
+  assetSlug: string,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/assets/${encodeURIComponent(assetSlug)}`,
+    ),
+    {
+      method: "DELETE",
+      headers: buildHeaders(creatorToken),
+    },
+  );
+  return adventureModuleUpdateResponseSchema.parse(payload);
 };
 
 export const deleteAdventureModuleCounter = async (

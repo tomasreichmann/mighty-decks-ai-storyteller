@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   adventureModuleBySlugParamsSchema,
   adventureModuleCreateActorRequestSchema,
+  adventureModuleCreateAssetRequestSchema,
   adventureModuleCreateCounterRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
@@ -17,6 +18,8 @@ import {
   adventureModuleUpdateFragmentRequestSchema,
   adventureModuleUpdateActorRequestSchema,
   adventureModuleUpdateActorResponseSchema,
+  adventureModuleUpdateAssetRequestSchema,
+  adventureModuleUpdateAssetResponseSchema,
   adventureModuleUpdateCounterRequestSchema,
   adventureModuleUpdateCounterResponseSchema,
   adventureModuleUpdateCoverImageRequestSchema,
@@ -42,6 +45,9 @@ const entitySlugSchema = z
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be lowercase kebab-case");
 const actorSlugParamsSchema = z.object({
   actorSlug: entitySlugSchema,
+});
+const assetSlugParamsSchema = z.object({
+  assetSlug: entitySlugSchema,
 });
 const counterSlugParamsSchema = z.object({
   counterSlug: entitySlugSchema,
@@ -328,6 +334,73 @@ export const registerAdventureModuleRoutes = (
         const next = await options.store.deleteCounter({
           moduleId,
           counterSlug: params.counterSlug,
+          creatorToken,
+        });
+        return reply.send(adventureModuleUpdateResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.post("/api/adventure-modules/:moduleId/assets", async (request, reply) => {
+    const creatorToken = parseCreatorToken(request);
+    const { moduleId = "" } = request.params as { moduleId?: string };
+    try {
+      const payload = adventureModuleCreateAssetRequestSchema.parse(request.body);
+      const next = await options.store.createAsset({
+        moduleId,
+        creatorToken,
+        title: payload.title,
+      });
+      return reply.code(201).send(adventureModuleCreateResponseSchema.parse(next));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.put(
+    "/api/adventure-modules/:moduleId/assets/:assetSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", assetSlug = "" } = request.params as {
+        moduleId?: string;
+        assetSlug?: string;
+      };
+      try {
+        const params = assetSlugParamsSchema.parse({ assetSlug });
+        const payload = adventureModuleUpdateAssetRequestSchema.parse(request.body);
+        const next = await options.store.updateAsset({
+          moduleId,
+          assetSlug: params.assetSlug,
+          creatorToken,
+          title: payload.title,
+          summary: payload.summary,
+          baseAssetSlug: payload.baseAssetSlug,
+          modifierSlug:
+            payload.modifierSlug === null ? undefined : payload.modifierSlug,
+          content: payload.content,
+        });
+        return reply.send(adventureModuleUpdateAssetResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.delete(
+    "/api/adventure-modules/:moduleId/assets/:assetSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", assetSlug = "" } = request.params as {
+        moduleId?: string;
+        assetSlug?: string;
+      };
+      try {
+        const params = assetSlugParamsSchema.parse({ assetSlug });
+        const next = await options.store.deleteAsset({
+          moduleId,
+          assetSlug: params.assetSlug,
           creatorToken,
         });
         return reply.send(adventureModuleUpdateResponseSchema.parse(next));

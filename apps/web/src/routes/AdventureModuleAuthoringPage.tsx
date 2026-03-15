@@ -7,6 +7,8 @@ import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
 import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
+import { AdventureModuleAssetEditor } from "../components/adventure-module/AdventureModuleAssetEditor";
+import { AdventureModuleAssetsTabPanel } from "../components/adventure-module/AdventureModuleAssetsTabPanel";
 import { AdventureModuleCounterEditor } from "../components/adventure-module/AdventureModuleCounterEditor";
 import { AdventureModuleCountersTabPanel } from "../components/adventure-module/AdventureModuleCountersTabPanel";
 import {
@@ -28,10 +30,13 @@ import {
 } from "../components/adventure-module/EntityList";
 import {
   createAdventureModuleActor,
+  createAdventureModuleAsset,
   createAdventureModuleCounter,
   deleteAdventureModuleActor,
+  deleteAdventureModuleAsset,
   deleteAdventureModuleCounter,
   getAdventureModuleBySlug,
+  updateAdventureModuleAsset,
   updateAdventureModuleCounter,
   updateAdventureModuleActor,
   updateAdventureModuleFragment,
@@ -48,10 +53,10 @@ const AUTHORING_TABS = [
   "storyteller-info",
   "actors",
   "counters",
+  "assets",
   "locations",
   "encounters",
   "quests",
-  "assets",
 ] as const;
 
 type AuthoringTab = (typeof AUTHORING_TABS)[number];
@@ -81,7 +86,6 @@ const ENTITY_LIST_TABS: EntityListTab[] = [
   "locations",
   "encounters",
   "quests",
-  "assets",
 ];
 
 const isEntityListTab = (value: AuthoringTab): value is EntityListTab =>
@@ -315,56 +319,6 @@ const ENTITY_TAB_CONFIG: Record<EntityListTab, EntityTabConfig> = {
       },
     ]),
   },
-  assets: {
-    tabLabel: "Assets",
-    singularLabel: "Asset",
-    createLabel: "Create Asset",
-    items: withPlaceholderImages([
-      {
-        slug: "lantern-shards",
-        title: "Lantern Shards",
-        description: "Cracked crystal fragments that store unstable light.",
-      },
-      {
-        slug: "smuggler-passkey",
-        title: "Smuggler Passkey",
-        description:
-          "Stamped token granting temporary passage through checkpoints.",
-      },
-      {
-        slug: "wardens-seal",
-        title: "Warden's Seal",
-        description: "Authority sigil capable of overriding civic locks.",
-      },
-      {
-        slug: "memory-fog-vial",
-        title: "Memory Fog Vial",
-        description: "Single-use gas that blurs faces and spoken details.",
-      },
-      {
-        slug: "clockwork-map",
-        title: "Clockwork Map",
-        description: "Self-updating chart tracking moving walls and shutters.",
-      },
-      {
-        slug: "broken-vow-ledger",
-        title: "Broken Vow Ledger",
-        description:
-          "Compromising account book tied to multiple power brokers.",
-      },
-      {
-        slug: "echo-repeater",
-        title: "Echo Repeater",
-        description: "Portable relay for signals across deep stone corridors.",
-      },
-      {
-        slug: "stormglass-compass",
-        title: "Stormglass Compass",
-        description:
-          "Direction finder that points toward active magical pressure.",
-      },
-    ]),
-  },
 };
 
 interface BaseFormState {
@@ -402,6 +356,16 @@ interface CounterFormState {
   currentValue: number;
   maxValue?: number;
   description: string;
+}
+
+interface AssetFormState {
+  fragmentId: string;
+  assetSlug: string;
+  title: string;
+  summary: string;
+  baseAssetSlug: AdventureModuleDetail["assets"][number]["baseAssetSlug"];
+  modifierSlug?: AdventureModuleDetail["assets"][number]["modifierSlug"];
+  content: string;
 }
 
 const toBaseFormState = (index: AdventureModuleIndex): BaseFormState => ({
@@ -527,6 +491,18 @@ const toCounterFormState = (
   description: counter.description ?? "",
 });
 
+const toAssetFormState = (
+  asset: AdventureModuleDetail["assets"][number],
+): AssetFormState => ({
+  fragmentId: asset.fragmentId,
+  assetSlug: asset.assetSlug,
+  title: asset.title,
+  summary: asset.summary ?? "",
+  baseAssetSlug: asset.baseAssetSlug,
+  modifierSlug: asset.modifierSlug,
+  content: normalizeLegacyGameCardMarkdown(asset.content),
+});
+
 const clampCounterValue = (currentValue: number, maxValue?: number): number => {
   const normalizedCurrentValue = Math.max(0, Math.trunc(currentValue));
   if (typeof maxValue !== "number") {
@@ -556,6 +532,32 @@ const makeUniqueCounterSlug = (
     detail.counters
       .filter((counter) => counter.slug !== excludeSlug)
       .map((counter) => counter.slug),
+  );
+
+  if (!existingSlugs.has(baseSlug)) {
+    return baseSlug;
+  }
+
+  for (let suffix = 2; suffix < 10_000; suffix += 1) {
+    const candidate = toEntitySlug(`${baseSlug}-${suffix}`);
+    if (!existingSlugs.has(candidate)) {
+      return candidate;
+    }
+  }
+
+  return baseSlug;
+};
+
+const makeUniqueAssetSlug = (
+  title: string,
+  detail: AdventureModuleDetail,
+  excludeSlug: string,
+): string => {
+  const baseSlug = toEntitySlug(title);
+  const existingSlugs = new Set(
+    detail.assets
+      .filter((asset) => asset.assetSlug !== excludeSlug)
+      .map((asset) => asset.assetSlug),
   );
 
   if (!existingSlugs.has(baseSlug)) {
@@ -899,6 +901,71 @@ const validateCounterForm = (
   };
 };
 
+const validateAssetForm = (
+  form: AssetFormState,
+): {
+  title: string;
+  summary: string;
+  baseAssetSlug: AssetFormState["baseAssetSlug"];
+  modifierSlug?: AssetFormState["modifierSlug"];
+  content: string;
+  error?: string;
+} => {
+  const title = form.title.trim();
+  if (title.length === 0) {
+    return {
+      title,
+      summary: form.summary.trim(),
+      baseAssetSlug: form.baseAssetSlug,
+      modifierSlug: form.modifierSlug,
+      content: normalizeLegacyGameCardMarkdown(form.content),
+      error: "Asset name is required.",
+    };
+  }
+  if (title.length > 120) {
+    return {
+      title,
+      summary: form.summary.trim(),
+      baseAssetSlug: form.baseAssetSlug,
+      modifierSlug: form.modifierSlug,
+      content: normalizeLegacyGameCardMarkdown(form.content),
+      error: "Asset name must be at most 120 characters.",
+    };
+  }
+
+  const summary = form.summary.trim();
+  if (summary.length > 500) {
+    return {
+      title,
+      summary,
+      baseAssetSlug: form.baseAssetSlug,
+      modifierSlug: form.modifierSlug,
+      content: normalizeLegacyGameCardMarkdown(form.content),
+      error: "Asset summary must be at most 500 characters.",
+    };
+  }
+
+  const content = normalizeLegacyGameCardMarkdown(form.content);
+  if (content.length > 200_000) {
+    return {
+      title,
+      summary,
+      baseAssetSlug: form.baseAssetSlug,
+      modifierSlug: form.modifierSlug,
+      content,
+      error: "Asset markdown must be at most 200000 characters.",
+    };
+  }
+
+  return {
+    title,
+    summary,
+    baseAssetSlug: form.baseAssetSlug,
+    modifierSlug: form.modifierSlug,
+    content,
+  };
+};
+
 export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const navigate = useNavigate();
   const { slug, tab, entityId } = useParams<{
@@ -926,6 +993,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     });
   const [actorForm, setActorForm] = useState<ActorFormState | null>(null);
   const [counterForm, setCounterForm] = useState<CounterFormState | null>(null);
+  const [assetForm, setAssetForm] = useState<AssetFormState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [baseDirty, setBaseDirty] = useState(false);
@@ -933,6 +1001,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const [storytellerInfoDirty, setStorytellerInfoDirty] = useState(false);
   const [actorDirty, setActorDirty] = useState(false);
   const [counterDirty, setCounterDirty] = useState(false);
+  const [assetDirty, setAssetDirty] = useState(false);
   const [baseValidationMessage, setBaseValidationMessage] = useState<
     string | null
   >(null);
@@ -948,10 +1017,15 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const [counterValidationMessage, setCounterValidationMessage] = useState<string | null>(
     null,
   );
+  const [assetValidationMessage, setAssetValidationMessage] = useState<string | null>(
+    null,
+  );
   const [actorCreateError, setActorCreateError] = useState<string | null>(null);
   const [counterCreateError, setCounterCreateError] = useState<string | null>(null);
+  const [assetCreateError, setAssetCreateError] = useState<string | null>(null);
   const [creatingActor, setCreatingActor] = useState(false);
   const [creatingCounter, setCreatingCounter] = useState(false);
+  const [creatingAsset, setCreatingAsset] = useState(false);
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>("idle");
   const [autosaveMessage, setAutosaveMessage] = useState<string | undefined>(
     undefined,
@@ -1007,13 +1081,16 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         setStorytellerInfoDirty(false);
         setActorDirty(false);
         setCounterDirty(false);
+        setAssetDirty(false);
         setBaseValidationMessage(null);
         setPlayerInfoValidationMessage(null);
         setStorytellerInfoValidationMessage(null);
         setActorValidationMessage(null);
         setCounterValidationMessage(null);
+        setAssetValidationMessage(null);
         setActorCreateError(null);
         setCounterCreateError(null);
+        setAssetCreateError(null);
         setAutosaveStatus("idle");
         setAutosaveMessage(undefined);
       })
@@ -1057,6 +1134,15 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     );
   }, [activeTab, moduleDetail, normalizedEntityId]);
 
+  const activeAsset = useMemo(() => {
+    if (activeTab !== "assets" || !normalizedEntityId || !moduleDetail) {
+      return null;
+    }
+    return (
+      moduleDetail.assets.find((asset) => asset.assetSlug === normalizedEntityId) ?? null
+    );
+  }, [activeTab, moduleDetail, normalizedEntityId]);
+
   useEffect(() => {
     if (activeTab !== "actors" || !normalizedEntityId) {
       setActorForm(null);
@@ -1090,6 +1176,23 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setCounterDirty(false);
     setCounterValidationMessage(null);
   }, [activeCounter, activeTab, normalizedEntityId]);
+
+  useEffect(() => {
+    if (activeTab !== "assets" || !normalizedEntityId) {
+      setAssetForm(null);
+      setAssetDirty(false);
+      setAssetValidationMessage(null);
+      return;
+    }
+    if (!activeAsset) {
+      setAssetForm(null);
+      setAssetDirty(false);
+      return;
+    }
+    setAssetForm(toAssetFormState(activeAsset));
+    setAssetDirty(false);
+    setAssetValidationMessage(null);
+  }, [activeAsset, activeTab, normalizedEntityId]);
 
   const persistBase = useCallback(async (): Promise<void> => {
     if (!moduleDetail || !moduleDetail.ownedByRequester) {
@@ -1505,6 +1608,88 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     }
   }, [activeTab, counterForm, creatorToken, moduleDetail, navigate, normalizedEntityId]);
 
+  const persistAsset = useCallback(async (): Promise<void> => {
+    if (
+      !moduleDetail ||
+      !moduleDetail.ownedByRequester ||
+      activeTab !== "assets" ||
+      !assetForm
+    ) {
+      return;
+    }
+    if (savingRef.current) {
+      return;
+    }
+
+    const validated = validateAssetForm(assetForm);
+    if (validated.error) {
+      setAssetValidationMessage(validated.error);
+      setAutosaveStatus("error");
+      setAutosaveMessage(validated.error);
+      return;
+    }
+
+    savingRef.current = true;
+    setAssetValidationMessage(null);
+    setAutosaveStatus("saving");
+    setAutosaveMessage(undefined);
+    setError(null);
+    setAssetCreateError(null);
+
+    try {
+      const expectedAssetSlug = makeUniqueAssetSlug(
+        validated.title,
+        moduleDetail,
+        assetForm.assetSlug,
+      );
+      const nextDetail = await updateAdventureModuleAsset(
+        moduleDetail.index.moduleId,
+        assetForm.assetSlug,
+        {
+          title: validated.title,
+          summary: validated.summary,
+          baseAssetSlug: validated.baseAssetSlug,
+          modifierSlug: validated.modifierSlug ?? null,
+          content: validated.content,
+        },
+        creatorToken,
+      );
+
+      setModuleDetail(nextDetail);
+      const nextAsset =
+        nextDetail.assets.find(
+          (resolvedAsset) => resolvedAsset.assetSlug === expectedAssetSlug,
+        ) ??
+        nextDetail.assets.find(
+          (resolvedAsset) => resolvedAsset.fragmentId === assetForm.fragmentId,
+        ) ??
+        null;
+      setAssetForm(nextAsset ? toAssetFormState(nextAsset) : null);
+      setAssetDirty(false);
+      if (
+        nextAsset &&
+        nextAsset.assetSlug !== assetForm.assetSlug &&
+        activeTab === "assets" &&
+        normalizedEntityId === assetForm.assetSlug
+      ) {
+        navigate(
+          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/assets/${encodeURIComponent(nextAsset.assetSlug)}`,
+          { replace: true },
+        );
+      }
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (saveError) {
+      const message =
+        saveError instanceof Error ? saveError.message : "Autosave failed.";
+      setError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      savingRef.current = false;
+    }
+  }, [activeTab, assetForm, creatorToken, moduleDetail, navigate, normalizedEntityId]);
+
   const handleCreateActor = useCallback(async (): Promise<void> => {
     if (!moduleDetail?.ownedByRequester || creatingActor) {
       return;
@@ -1580,6 +1765,44 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setCreatingCounter(false);
     }
   }, [creatingCounter, creatorToken, moduleDetail, navigate]);
+
+  const handleCreateAsset = useCallback(async (): Promise<void> => {
+    if (!moduleDetail?.ownedByRequester || creatingAsset) {
+      return;
+    }
+
+    setCreatingAsset(true);
+    setAssetCreateError(null);
+    setError(null);
+
+    try {
+      const nextDetail = await createAdventureModuleAsset(
+        moduleDetail.index.moduleId,
+        { title: "New Asset" },
+        creatorToken,
+      );
+      setModuleDetail(nextDetail);
+      const createdAsset = nextDetail.assets[nextDetail.assets.length - 1];
+      if (!createdAsset) {
+        throw new Error("Created asset could not be resolved.");
+      }
+      setAssetForm(toAssetFormState(createdAsset));
+      setAssetDirty(false);
+      navigate(
+        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/assets/${encodeURIComponent(createdAsset.assetSlug)}`,
+      );
+      setAutosaveStatus("saved");
+      setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+    } catch (createError) {
+      const message =
+        createError instanceof Error ? createError.message : "Could not create asset.";
+      setAssetCreateError(message);
+      setAutosaveStatus("error");
+      setAutosaveMessage(message);
+    } finally {
+      setCreatingAsset(false);
+    }
+  }, [creatingAsset, creatorToken, moduleDetail, navigate]);
 
   const handleDeleteActor = useCallback(
     async (actorSlug: string, title: string): Promise<void> => {
@@ -1657,6 +1880,48 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       } catch (deleteError) {
         const message =
           deleteError instanceof Error ? deleteError.message : "Could not delete counter.";
+        setError(message);
+        setAutosaveStatus("error");
+        setAutosaveMessage(message);
+      }
+    },
+    [activeTab, creatorToken, moduleDetail, navigate, normalizedEntityId],
+  );
+
+  const handleDeleteAsset = useCallback(
+    async (assetSlug: string, title: string): Promise<void> => {
+      if (!moduleDetail?.ownedByRequester) {
+        return;
+      }
+      if (!window.confirm(`Delete "${title}"?`)) {
+        return;
+      }
+
+      setError(null);
+      setAssetCreateError(null);
+      setAutosaveStatus("saving");
+      setAutosaveMessage(undefined);
+
+      try {
+        const nextDetail = await deleteAdventureModuleAsset(
+          moduleDetail.index.moduleId,
+          assetSlug,
+          creatorToken,
+        );
+        setModuleDetail(nextDetail);
+        setAssetDirty(false);
+        setAssetValidationMessage(null);
+        if (activeTab === "assets" && normalizedEntityId === assetSlug) {
+          setAssetForm(null);
+          navigate(
+            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/assets`,
+          );
+        }
+        setAutosaveStatus("saved");
+        setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
+      } catch (deleteError) {
+        const message =
+          deleteError instanceof Error ? deleteError.message : "Could not delete asset.";
         setError(message);
         setAutosaveStatus("error");
         setAutosaveMessage(message);
@@ -1968,6 +2233,39 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     persistCounter,
   ]);
 
+  useEffect(() => {
+    if (
+      !assetDirty ||
+      !moduleDetail?.ownedByRequester ||
+      activeTab !== "assets" ||
+      !entityId
+    ) {
+      return;
+    }
+
+    setAutosaveStatus("queued");
+    setAutosaveMessage("pending");
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = window.setTimeout(() => {
+      void persistAsset();
+    }, 1000);
+
+    return () => {
+      if (saveTimerRef.current !== null) {
+        window.clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+    };
+  }, [
+    activeTab,
+    assetDirty,
+    entityId,
+    moduleDetail?.ownedByRequester,
+    persistAsset,
+  ]);
+
   useEffect(
     () => () => {
       if (saveTimerRef.current !== null) {
@@ -2030,6 +2328,17 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       saveTimerRef.current = null;
     }
     void persistCounter();
+  };
+
+  const handleAssetFieldBlur = (): void => {
+    if (!assetDirty || !moduleDetail?.ownedByRequester) {
+      return;
+    }
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    void persistAsset();
   };
 
   const editable = Boolean(moduleDetail?.ownedByRequester);
@@ -2148,6 +2457,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                   }}
                   actors={moduleDetail.actors}
                   counters={moduleDetail.counters}
+                  assets={moduleDetail.assets}
                   smartContextDocument={smartContextDocument}
                   editable={editable}
                   validationMessage={actorValidationMessage}
@@ -2301,6 +2611,68 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                   description={`Counter "${normalizedEntityId ?? entityId}" could not be found in this module.`}
                 />
               )
+            ) : activeTab === "assets" ? (
+              activeAsset && assetForm ? (
+                <AdventureModuleAssetEditor
+                  asset={{
+                    ...activeAsset,
+                    title: assetForm.title,
+                    summary: assetForm.summary,
+                    baseAssetSlug: assetForm.baseAssetSlug,
+                    modifierSlug: assetForm.modifierSlug,
+                    content: assetForm.content,
+                  }}
+                  actors={moduleDetail.actors}
+                  counters={moduleDetail.counters}
+                  assets={moduleDetail.assets}
+                  smartContextDocument={smartContextDocument}
+                  editable={editable}
+                  validationMessage={assetValidationMessage}
+                  onTitleChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, title: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onSummaryChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, summary: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onBaseAssetChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, baseAssetSlug: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onModifierChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, modifierSlug: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onContentChange={(nextValue) => {
+                    setAssetValidationMessage(null);
+                    setAssetForm((current) =>
+                      current ? { ...current, content: nextValue } : current,
+                    );
+                    setAssetDirty(true);
+                  }}
+                  onFieldBlur={handleAssetFieldBlur}
+                  onDelete={() => {
+                    void handleDeleteAsset(activeAsset.assetSlug, activeAsset.title);
+                  }}
+                />
+              ) : (
+                <AdventureModuleTabPlaceholder
+                  description={`Asset "${normalizedEntityId ?? entityId}" could not be found in this module.`}
+                />
+              )
             ) : activeEntityTabConfig ? (
               <AdventureModuleTabPlaceholder
                 description={
@@ -2352,6 +2724,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               smartContextDocument={smartContextDocument}
               actors={moduleDetail.actors}
               counters={moduleDetail.counters}
+              assets={moduleDetail.assets}
               editable={editable}
               validationMessage={playerInfoValidationMessage}
               onSummaryChange={(nextValue) => {
@@ -2382,6 +2755,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               smartContextDocument={smartContextDocument}
               actors={moduleDetail.actors}
               counters={moduleDetail.counters}
+              assets={moduleDetail.assets}
               editable={editable}
               validationMessage={storytellerInfoValidationMessage}
               onSummaryChange={(nextValue) => {
@@ -2442,6 +2816,24 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onAdjustCounterValue={(counterSlug, delta, target) => {
                 void handleAdjustCounterValue(counterSlug, delta, target);
+              }}
+            />
+          ) : activeTab === "assets" ? (
+            <AdventureModuleAssetsTabPanel
+              assets={moduleDetail.assets}
+              editable={editable}
+              creating={creatingAsset}
+              createError={assetCreateError}
+              onCreate={() => {
+                void handleCreateAsset();
+              }}
+              onOpenAsset={(assetSlug) => {
+                navigate(
+                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/assets/${encodeURIComponent(assetSlug)}`,
+                );
+              }}
+              onDeleteAsset={(assetSlug, title) => {
+                void handleDeleteAsset(assetSlug, title);
               }}
             />
           ) : activeEntityTab && activeEntityTabConfig ? (
