@@ -35,6 +35,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Fixed
 
 - Resolve the built web client path relative to the server module location so Render's plain-Node startup still serves the frontend from the single service root.
+- Proxy local Vite `/api`, `/adventures`, `/health`, and `/socket.io` traffic through the web origin so Adventure Module list/create flows still work when the backend `PORT` is overridden in root `.env.local`.
 - Regenerate Adventure Module actor and counter slugs from saved titles, keep the authoring route in sync after renames, and allow actor/counter deletes to complete without sending an empty JSON body.
 - Tighten Counter editor numeric fields and move CounterCard +/- controls inline before the shared value so authoring cards keep the header on a single line.
 - Add a second inline `+` and `-` control pair after the max counter value so authoring cards can adjust both current and max values without leaving the card.

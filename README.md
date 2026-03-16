@@ -72,7 +72,8 @@ VITE_SERVER_URL=http://<host>:8081
 
 Notes:
 
-- In local Vite dev on port `5173`, the client defaults to `http://<same-host>:8081` if `VITE_SERVER_URL` is not set.
+- In local Vite dev on port `5173`, the browser stays on the Vite origin and the dev server proxies `/api`, `/adventures`, `/health`, and `/socket.io` to the backend `PORT`.
+- The Vite proxy reads `PORT` from the repo-root `.env.local` or falls back to `8081`, so local API calls stay aligned even if your backend is pinned to `8080`.
 - In the Render single-service deployment, the client uses same-origin API and Socket.IO calls, so `VITE_SERVER_URL` is not needed.
 - For split-origin setups such as Cloudflare Tunnel, set `VITE_SERVER_URL` to the public API origin.
 
@@ -128,6 +129,7 @@ This repo is local-first. The usual dev setup is:
 
 - server on `http://<host>:8081`
 - web on `http://<host>:5173`
+- Vite proxies local API and Socket.IO traffic to the backend `PORT`
 - phones connect to the Vite LAN URL
 - `CORS_ORIGINS` includes both localhost and your LAN origin
 

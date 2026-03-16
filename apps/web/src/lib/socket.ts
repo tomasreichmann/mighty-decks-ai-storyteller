@@ -6,12 +6,6 @@ const DEFAULT_LOCAL_DEV_SERVER_PORT = 8081;
 
 const readConfiguredServerUrl = (): string | undefined => import.meta.env?.VITE_SERVER_URL;
 
-const resolveLocalDevServerUrl = (pageUrl: URL): string => {
-  // Browsers may resolve "localhost" to ::1, while local server binds on 127.0.0.1.
-  const resolvedHost = pageUrl.hostname === "localhost" ? "127.0.0.1" : pageUrl.hostname;
-  return `${pageUrl.protocol}//${resolvedHost}:${DEFAULT_LOCAL_DEV_SERVER_PORT}`;
-};
-
 export const resolveServerUrlForPageUrl = (
   pageUrl: URL,
   configuredServerUrl?: string,
@@ -20,12 +14,7 @@ export const resolveServerUrlForPageUrl = (
     return configuredServerUrl;
   }
 
-  // Local/LAN dev commonly runs Vite on 5173 and server on 8081.
-  if (pageUrl.port === "5173") {
-    return resolveLocalDevServerUrl(pageUrl);
-  }
-
-  // Deployed single-service setup should use same-origin API + Socket.IO.
+  // Local Vite dev uses same-origin requests and proxies API + Socket.IO traffic.
   return pageUrl.origin;
 };
 
