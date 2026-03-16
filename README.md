@@ -60,19 +60,19 @@ pnpm install
 
 - Required for storyteller features: `OPENROUTER_API_KEY`
 - Required for cross-device local play: `CORS_ORIGINS=http://localhost:5173,http://<LAN-IP>:5173`
-- Common local defaults: `PORT=8080`, `MAX_ACTIVE_ADVENTURES=1`, `DEBUG_MODE=false`
+- Common local defaults: `PORT=8081`, `MAX_ACTIVE_ADVENTURES=1`, `DEBUG_MODE=false`
 
 The server loads environment files from either the repo root or `apps/server`, checking `.env.local` before `.env`.
 
 4. Optional: create `apps/web/.env.local` only when the web app must call a different origin than its own page origin.
 
 ```env
-VITE_SERVER_URL=http://<host>:8080
+VITE_SERVER_URL=http://<host>:8081
 ```
 
 Notes:
 
-- In local Vite dev on port `5173`, the client defaults to `http://<same-host>:8080` if `VITE_SERVER_URL` is not set.
+- In local Vite dev on port `5173`, the client defaults to `http://<same-host>:8081` if `VITE_SERVER_URL` is not set.
 - In the Render single-service deployment, the client uses same-origin API and Socket.IO calls, so `VITE_SERVER_URL` is not needed.
 - For split-origin setups such as Cloudflare Tunnel, set `VITE_SERVER_URL` to the public API origin.
 
@@ -126,7 +126,7 @@ If you only want the core AI storyteller runtime, start with `OPENROUTER_API_KEY
 
 This repo is local-first. The usual dev setup is:
 
-- server on `http://<host>:8080`
+- server on `http://<host>:8081`
 - web on `http://<host>:5173`
 - phones connect to the Vite LAN URL
 - `CORS_ORIGINS` includes both localhost and your LAN origin

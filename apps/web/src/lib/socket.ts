@@ -2,32 +2,42 @@ import { io, Socket } from "socket.io-client";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const DEFAULT_LOCAL_DEV_SERVER_PORT = 8081;
+
+const readConfiguredServerUrl = (): string | undefined => import.meta.env?.VITE_SERVER_URL;
 
 const resolveLocalDevServerUrl = (pageUrl: URL): string => {
   // Browsers may resolve "localhost" to ::1, while local server binds on 127.0.0.1.
   const resolvedHost = pageUrl.hostname === "localhost" ? "127.0.0.1" : pageUrl.hostname;
-  return `${pageUrl.protocol}//${resolvedHost}:8080`;
+  return `${pageUrl.protocol}//${resolvedHost}:${DEFAULT_LOCAL_DEV_SERVER_PORT}`;
 };
 
-export const resolveServerUrl = (): string => {
-  if (typeof window === "undefined") {
-    return import.meta.env.VITE_SERVER_URL ?? "http://localhost:8080";
-  }
-
-  const pageUrl = new URL(window.location.href);
-  const configuredServerUrl = import.meta.env.VITE_SERVER_URL;
-
+export const resolveServerUrlForPageUrl = (
+  pageUrl: URL,
+  configuredServerUrl?: string,
+): string => {
   if (configuredServerUrl) {
     return configuredServerUrl;
   }
 
-  // Local/LAN dev commonly runs Vite on 5173 and server on 8080.
+  // Local/LAN dev commonly runs Vite on 5173 and server on 8081.
   if (pageUrl.port === "5173") {
     return resolveLocalDevServerUrl(pageUrl);
   }
 
   // Deployed single-service setup should use same-origin API + Socket.IO.
   return pageUrl.origin;
+};
+
+export const resolveServerUrl = (): string => {
+  const configuredServerUrl = readConfiguredServerUrl();
+
+  if (typeof window === "undefined") {
+    return configuredServerUrl ?? `http://localhost:${DEFAULT_LOCAL_DEV_SERVER_PORT}`;
+  }
+
+  const pageUrl = new URL(window.location.href);
+  return resolveServerUrlForPageUrl(pageUrl, configuredServerUrl);
 };
 
 export const getServerUrlWarning = (serverUrl: string): string | null => {

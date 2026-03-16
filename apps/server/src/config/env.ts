@@ -17,7 +17,7 @@ for (const candidate of envCandidates) {
 }
 
 const envSchema = z.object({
-  PORT: z.coerce.number().int().min(1).max(65535).default(8080),
+  PORT: z.coerce.number().int().min(1).max(65535).default(8081),
   CORS_ORIGINS: z.string().min(1).default("http://localhost:5173"),
   OPENROUTER_API_KEY: z.string().optional(),
   FAL_API_KEY: z.string().optional(),

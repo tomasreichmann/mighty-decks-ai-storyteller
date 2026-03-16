@@ -44,7 +44,7 @@ ingress:
   - hostname: md-web.yourdomain.com
     service: http://localhost:5173
   - hostname: md-api.yourdomain.com
-    service: http://localhost:8080
+    service: http://localhost:8081
   - service: http_status:404
 ```
 
