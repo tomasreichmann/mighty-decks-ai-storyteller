@@ -468,6 +468,7 @@ export class AdventureModuleStore {
       actors,
       counters,
       assets,
+      coverImageUrl: loaded.system.coverImageUrl,
       ownedByRequester,
     });
   }

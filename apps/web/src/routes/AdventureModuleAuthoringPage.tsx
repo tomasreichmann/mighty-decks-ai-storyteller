@@ -3515,6 +3515,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
             <AdventureModuleBaseTabPanel
               moduleId={moduleDetail.index.moduleId}
               creatorToken={creatorToken}
+              coverImageUrl={moduleDetail.coverImageUrl}
               premise={baseForm.premise}
               haveTags={baseForm.haveTags}
               avoidTags={baseForm.avoidTags}

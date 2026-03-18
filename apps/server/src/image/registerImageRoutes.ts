@@ -3,6 +3,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import type {
   ImageGenerateJobRequest,
   ImageLookupGroupRequest,
+  ImageLookupGroupsByPromptRequest,
 } from "@mighty-decks/spec/imageGeneration";
 import { imageProviderSchema } from "@mighty-decks/spec/imageGeneration";
 import { ZodError } from "zod";
@@ -79,6 +80,43 @@ export const registerImageRoutes = (
       return reply.send({ group });
     } catch (error) {
       return sendError(reply, error, "Could not lookup image group.");
+    }
+  });
+
+  app.get("/api/image/groups/by-file/:fileName", async (request, reply) => {
+    const params = request.params as { fileName?: string };
+    const fileName = params.fileName?.trim();
+    if (!fileName || !isSafeFileName(fileName)) {
+      return reply.code(400).send({ message: "Invalid file name." });
+    }
+
+    try {
+      const group = service.lookupGroupByFileName(fileName);
+      return reply.send({ group: group ?? null });
+    } catch (error) {
+      return sendError(reply, error, "Could not lookup image group by file.");
+    }
+  });
+
+  app.post("/api/image/groups/lookup-by-prompt", async (request, reply) => {
+    try {
+      const groups = service.lookupGroupsByPrompt(
+        request.body as ImageLookupGroupsByPromptRequest,
+      );
+      return reply.send({ groups });
+    } catch (error) {
+      return sendError(reply, error, "Could not lookup image groups by prompt.");
+    }
+  });
+
+  app.get("/api/image/groups", async (request, reply) => {
+    try {
+      const query = request.query as { provider?: string };
+      const provider = imageProviderSchema.parse(query.provider ?? "fal");
+      const groups = service.listGroups(provider);
+      return reply.send({ groups });
+    } catch (error) {
+      return sendError(reply, error, "Could not list image groups.");
     }
   });
 

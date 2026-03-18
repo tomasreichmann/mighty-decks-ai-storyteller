@@ -12,7 +12,10 @@ import {
   fetchImageGroup,
   fetchImageJob,
   fetchImageModels,
+  listImageGroups,
   lookupImageGroup,
+  lookupImageGroupByFileName,
+  lookupImageGroupsByPrompt,
   setActiveImage,
 } from "../lib/imageApi";
 import {
@@ -114,6 +117,9 @@ interface UseImageGenerationResult {
   setCustomHeight: (value: string) => void;
   toggleFavorite: (modelId: string) => void;
   lookupCurrentGroup: (promptOverride?: string) => Promise<void>;
+  lookupGroupByFileName: (fileName: string) => Promise<void>;
+  lookupGroupsByPrompt: (promptOverride?: string) => Promise<GeneratedImageGroup[]>;
+  listAllGroups: () => Promise<GeneratedImageGroup[]>;
   submitJob: (promptOverride?: string) => Promise<void>;
   selectActiveImage: (imageId: string) => Promise<void>;
   deleteImage: (imageId: string) => Promise<void>;
@@ -278,6 +284,51 @@ export const useImageGeneration = (): UseImageGenerationResult => {
       setRefreshingGroup(false);
     }
   }, [prompt, provider, selectedModelId]);
+
+  const lookupGroupByFileNameFn = useCallback(async (fileName: string): Promise<void> => {
+    if (fileName.length === 0) {
+      return;
+    }
+
+    setRefreshingGroup(true);
+    setError(null);
+    try {
+      const matchedGroup = await lookupImageGroupByFileName(fileName);
+      setGroup(matchedGroup);
+    } catch (lookupError) {
+      setError(
+        lookupError instanceof Error
+          ? lookupError.message
+          : "Could not lookup image group by file.",
+      );
+    } finally {
+      setRefreshingGroup(false);
+    }
+  }, []);
+
+  const lookupGroupsByPromptFn = useCallback(async (promptOverride?: string): Promise<GeneratedImageGroup[]> => {
+    const targetPrompt = (promptOverride ?? prompt).trim();
+    if (targetPrompt.length === 0) {
+      return [];
+    }
+
+    try {
+      return await lookupImageGroupsByPrompt({
+        provider,
+        prompt: targetPrompt,
+      });
+    } catch {
+      return [];
+    }
+  }, [prompt, provider]);
+
+  const listAllGroupsFn = useCallback(async (): Promise<GeneratedImageGroup[]> => {
+    try {
+      return await listImageGroups(provider);
+    } catch {
+      return [];
+    }
+  }, [provider]);
 
   const submitJob = useCallback(async (promptOverride?: string): Promise<void> => {
     const normalizedPrompt = (promptOverride ?? prompt).trim();
@@ -465,6 +516,9 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     setCustomHeight,
     toggleFavorite,
     lookupCurrentGroup,
+    lookupGroupByFileName: lookupGroupByFileNameFn,
+    lookupGroupsByPrompt: lookupGroupsByPromptFn,
+    listAllGroups: listAllGroupsFn,
     submitJob,
     selectActiveImage,
     deleteImage,

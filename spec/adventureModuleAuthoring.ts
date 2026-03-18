@@ -214,6 +214,7 @@ export const adventureModuleDetailSchema = z
     actors: z.array(adventureModuleResolvedActorSchema).max(80).default([]),
     counters: z.array(adventureModuleResolvedCounterSchema).max(80).default([]),
     assets: z.array(adventureModuleResolvedAssetSchema).max(80).default([]),
+    coverImageUrl: z.string().min(1).max(500).optional(),
     ownedByRequester: z.boolean().default(false),
   })
   .superRefine((module, ctx) => {
