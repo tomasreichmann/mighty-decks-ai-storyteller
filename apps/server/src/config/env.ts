@@ -19,6 +19,9 @@ for (const candidate of envCandidates) {
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(8081),
   CORS_ORIGINS: z.string().min(1).default("http://localhost:5173"),
+  AI_TEXT_PROVIDER: z.enum(["openrouter", "claude_cli"]).default("openrouter"),
+  CLAUDE_CLI_MODEL: z.string().min(1).default("claude-sonnet-4-20250514"),
+  CLAUDE_CLI_MAX_CONCURRENT: z.coerce.number().int().min(1).max(10).default(2),
   OPENROUTER_API_KEY: z.string().optional(),
   FAL_API_KEY: z.string().optional(),
   LEONARDO_API_KEY: z.string().optional(),
@@ -166,6 +169,11 @@ const parseCorsOrigins = (rawValue: string): string[] =>
 export const env = {
   port: parsed.PORT,
   corsOrigins: parseCorsOrigins(parsed.CORS_ORIGINS),
+  textProvider: parsed.AI_TEXT_PROVIDER,
+  claudeCli: {
+    model: parsed.CLAUDE_CLI_MODEL,
+    maxConcurrent: parsed.CLAUDE_CLI_MAX_CONCURRENT,
+  },
   openRouterApiKey:
     parsed.OPENROUTER_API_KEY && parsed.OPENROUTER_API_KEY.trim().length > 0
       ? parsed.OPENROUTER_API_KEY.trim()
