@@ -2,7 +2,7 @@ import type {
   CharacterPortraitStatus,
 } from "@mighty-decks/spec/adventureState";
 import type { ImageModelSummary, ImageProvider } from "@mighty-decks/spec/imageGeneration";
-import type { OpenRouterClient } from "../ai/OpenRouterClient";
+import type { TextCompletionClient } from "../ai/OpenRouterClient";
 import { toCacheKey } from "./ImageNaming";
 import type { FalClient } from "./FalClient";
 import type { LeonardoClient } from "./LeonardoClient";
@@ -48,7 +48,7 @@ export interface CharacterPortraitServiceOptions {
   leonardoClient: LeonardoClient;
   imageStore: ImageStore;
   cache: CharacterPortraitCache;
-  openRouterClient: OpenRouterClient;
+  textClient: TextCompletionClient;
   disableImageGeneration: boolean;
   provider?: ImageProvider;
 }
@@ -210,7 +210,7 @@ export class CharacterPortraitService {
     const deterministicFallback = normalizePromptLine(
       `${CHARACTER_PORTRAIT_BASE_PROMPT} Character name: ${characterName}. Visual description: ${visualDescription || "unspecified"}.`,
     );
-    if (!this.options.openRouterClient.hasApiKey()) {
+    if (!this.options.textClient.isAvailable()) {
       return deterministicFallback;
     }
 
@@ -224,7 +224,7 @@ export class CharacterPortraitService {
       "Generate one final production-ready prompt now.",
     ].join("\n");
 
-    const completion = await this.options.openRouterClient.completeText({
+    const completion = await this.options.textClient.completeText({
       model: CHARACTER_PORTRAIT_PROMPT_MODEL,
       prompt: promptRequest,
       timeoutMs: CHARACTER_PORTRAIT_PROMPT_TIMEOUT_MS,
