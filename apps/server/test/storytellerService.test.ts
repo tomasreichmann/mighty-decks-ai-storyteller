@@ -55,6 +55,7 @@ const createOpenRouterStub = (
 
   const client = {
     hasApiKey: () => true,
+    isAvailable: () => true,
     completeText: async (request: TextCompletionRequest): Promise<string | null> => {
       calls.completeText.push(request);
       if (overrides.completeText) {
@@ -62,6 +63,14 @@ const createOpenRouterStub = (
       }
 
       return null;
+    },
+    completeTextWithMetadata: async (request: TextCompletionRequest): Promise<{ text: string | null } | null> => {
+      calls.completeText.push(request);
+      if (overrides.completeText) {
+        return { text: await overrides.completeText(request) };
+      }
+
+      return { text: null };
     },
     generateImage: async (request: ImageGenerationRequest): Promise<string | null> => {
       calls.generateImage.push(request);
@@ -122,6 +131,7 @@ test("uses loose scene controller parsing when JSON parsing fails", async () => 
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -172,6 +182,7 @@ test("parses fenced JSON scene output that contains arrays", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -208,6 +219,7 @@ test("builds an intermediate visual prompt before calling image generation", asy
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -234,6 +246,7 @@ test("builds a transcript illustration prompt before generating image and does n
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -307,6 +320,7 @@ test("falls back to secondary image model when primary image request is moderate
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models: {
       ...models,
@@ -335,6 +349,7 @@ test("does not retry image generation on permanent 4xx failures", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -358,6 +373,7 @@ test("supports disabling image generation via cost controls", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
     costControls: {
@@ -379,6 +395,7 @@ test("caches image generation results with TTL", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
     costControls: {
@@ -404,6 +421,7 @@ test("uses cached scene image generator when configured and skips OpenRouter ima
     [];
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
     sceneImageGenerator: {
@@ -454,6 +472,7 @@ test("caches generated pitch options with TTL", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
     costControls: {
@@ -486,6 +505,7 @@ test("uses expanded narration budget for information requests", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -516,6 +536,7 @@ test("narrateAction prompt includes closure pacing guidance and binding directiv
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -570,6 +591,7 @@ test("accepts plain prose narration output without requiring JSON", async () => 
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -623,6 +645,7 @@ test("parses scene reaction and keeps reward tied to goal completion", async () 
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -670,6 +693,7 @@ test("parses outcome decision intent and response mode from AI output", async ()
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -714,6 +738,7 @@ test("parses loose outcome decision output when JSON formatting is broken", asyn
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -754,6 +779,7 @@ test("keeps long loose outcome reasons intact when within player-display safety 
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -811,6 +837,7 @@ test("retries once with parse error context when outcome decision JSON is invali
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -860,6 +887,7 @@ test("does not override model no-check decisions for direct actions in high tens
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -902,6 +930,7 @@ test("does not force outcome checks for low-scrutiny direct actions in high tens
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -943,6 +972,7 @@ test("suppresses uncertainty-only outcome checks in low-tension beats", async ()
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -988,6 +1018,7 @@ test("suppresses low-tension threat checks when no immediate threat signal exist
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -1034,6 +1065,7 @@ test("suppresses repeated non-threat outcome checks right after outcome-card act
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -1081,6 +1113,7 @@ test("uses conservative fallback outcome behavior when outcome classifier is una
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -1113,6 +1146,7 @@ test("keeps fallback outcome checks off for low-scrutiny actions without direct 
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -1142,6 +1176,7 @@ test("answers metagame questions with internal context prompt", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -1190,6 +1225,7 @@ test("crafts session forward hook via AI output", async () => {
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -1230,6 +1266,7 @@ test("summarizeSession preserves markdown content and strips outer fences", asyn
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });
@@ -1259,6 +1296,7 @@ test("craftSessionForwardHook preserves markdown emphasis and strips outer fence
   });
 
   const service = new StorytellerService({
+    textClient: openRouter.client,
     openRouterClient: openRouter.client,
     models,
   });

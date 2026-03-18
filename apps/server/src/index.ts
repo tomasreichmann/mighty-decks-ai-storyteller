@@ -6,7 +6,9 @@ import { extname, resolve, sep } from "node:path";
 import { Server as SocketServer } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
 import { isSafeFileName } from "./image/ImageNaming";
+import { ClaudeCliClient } from "./ai/ClaudeCliClient";
 import { OpenRouterClient } from "./ai/OpenRouterClient";
+import type { TextCompletionClient } from "./ai/OpenRouterClient";
 import { StorytellerService } from "./ai/StorytellerService";
 import { createWorkflowAdapters } from "./ai/workflow/createWorkflowAdapters";
 import { FalQueueClient } from "./ai/workflow/FalQueueClient";
@@ -43,6 +45,17 @@ await app.register(cors, {
 const openRouterClient = new OpenRouterClient({
   apiKey: env.openRouterApiKey,
 });
+
+let textClient: TextCompletionClient = openRouterClient;
+if (env.textProvider === "claude_cli") {
+  const cliClient = new ClaudeCliClient({
+    model: env.claudeCli.model,
+    maxConcurrent: env.claudeCli.maxConcurrent,
+    textCallTimeoutMs: env.runtimeConfigDefaults.textCallTimeoutMs,
+  });
+  await cliClient.probe(app.log);
+  textClient = cliClient;
+}
 const falClient = new FalClient({
   apiKey: env.falApiKey,
   apiBaseUrl: env.imageGeneration.falApiBaseUrl,
@@ -103,7 +116,7 @@ const characterPortraitService = new CharacterPortraitService({
   leonardoClient,
   imageStore,
   cache: characterPortraitCache,
-  openRouterClient,
+  textClient,
   disableImageGeneration: env.costControls.disableImageGeneration,
 });
 
@@ -114,6 +127,7 @@ const diagnosticsLogger = new AdventureDiagnosticsLogger({
 });
 
 const storyteller = new StorytellerService({
+  textClient,
   openRouterClient,
   models: {
     narrativeDirector: env.models.narrativeDirector,

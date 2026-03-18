@@ -8,6 +8,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Add configurable AI text provider (`AI_TEXT_PROVIDER` env var) supporting `openrouter` (default, API-based) and `claude_cli` (local CLI). Set `AI_TEXT_PROVIDER=claude_cli` in `.env.local` to use Claude CLI for all text completions without an API key. New env vars: `CLAUDE_CLI_MODEL`, `CLAUDE_CLI_MAX_CONCURRENT`.
+- Extract `TextCompletionClient` interface from `OpenRouterClient` to allow pluggable text providers across the storyteller pipeline.
+
 - Add typed Adventure Module actor authoring with create/edit APIs, resolved actor detail payloads, layered actor-card metadata, and legacy-module backfill for missing actor card records.
 - Add layered ActorCard rendering, actor list authoring UI, actor editor UI, and actor shortcode copy support in the Adventure Module authoring flow.
 - Add typed Adventure Module counter authoring with create/edit APIs, resolved counter detail payloads, vendored counter icon assets, and shared authoring-side counter values.

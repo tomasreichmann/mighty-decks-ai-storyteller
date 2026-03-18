@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import type { OpenRouterClient } from "../src/ai/OpenRouterClient";
+import type { TextCompletionClient } from "../src/ai/OpenRouterClient";
 import { CharacterPortraitCache } from "../src/image/CharacterPortraitCache";
 import {
   CharacterPortraitService,
@@ -60,12 +60,12 @@ const createProviderStub = (options?: {
   };
 };
 
-const createOpenRouterStub = (options?: {
-  hasApiKey?: boolean;
+const createTextClientStub = (options?: {
+  isAvailable?: boolean;
   completeText?: () => Promise<string | null>;
-}): OpenRouterClient =>
+}): TextCompletionClient =>
   ({
-    hasApiKey: () => options?.hasApiKey ?? true,
+    isAvailable: () => options?.isAvailable ?? true,
     completeText: async () => {
       if (options?.completeText) {
         return options.completeText();
@@ -73,7 +73,13 @@ const createOpenRouterStub = (options?: {
 
       return "Painterly profile portrait prompt from model.";
     },
-  }) as unknown as OpenRouterClient;
+    completeTextWithMetadata: async () => {
+      const text = options?.completeText
+        ? await options.completeText()
+        : "Painterly profile portrait prompt from model.";
+      return { text };
+    },
+  }) as unknown as TextCompletionClient;
 
 test("normalizeCharacterNameKey is deterministic and whitespace-insensitive", () => {
   assert.equal(
@@ -148,7 +154,7 @@ test("CharacterPortraitService returns cached portrait even when image generatio
     leonardoClient: providers.leonardoClient,
     imageStore,
     cache,
-    openRouterClient: createOpenRouterStub(),
+    textClient: createTextClientStub(),
     disableImageGeneration: true,
   });
 
@@ -186,7 +192,7 @@ test("CharacterPortraitService returns disabled placeholder on cache miss when g
     leonardoClient: providers.leonardoClient,
     imageStore,
     cache,
-    openRouterClient: createOpenRouterStub(),
+    textClient: createTextClientStub(),
     disableImageGeneration: true,
   });
 
@@ -235,7 +241,7 @@ test("CharacterPortraitService deduplicates in-flight generation by normalized c
     leonardoClient: providers.leonardoClient,
     imageStore,
     cache,
-    openRouterClient: createOpenRouterStub(),
+    textClient: createTextClientStub(),
     disableImageGeneration: false,
   });
 
@@ -284,7 +290,7 @@ test("CharacterPortraitService returns failed placeholder on generation errors w
     leonardoClient: providers.leonardoClient,
     imageStore,
     cache,
-    openRouterClient: createOpenRouterStub(),
+    textClient: createTextClientStub(),
     disableImageGeneration: false,
   });
 

@@ -1,4 +1,4 @@
-import type { OpenRouterClient } from "../OpenRouterClient";
+import type { OpenRouterClient, TextCompletionClient } from "../OpenRouterClient";
 import { shorten } from "./text";
 import type {
   AiRequestDebugEvent,
@@ -7,7 +7,8 @@ import type {
 } from "./types";
 import { hasInlineDataImage } from "../../persistence/dataImageRewrite";
 
-interface ModelRunnerDependencies {
+export interface ModelRunnerDependencies {
+  textClient: TextCompletionClient;
   openRouterClient: OpenRouterClient;
   onAiRequest?: (entry: AiRequestDebugEvent) => void;
   inlineImageResolver?: {
@@ -75,7 +76,7 @@ const isModeratedImageFailure = (error: unknown): boolean => {
 };
 
 const completeTextWithUsage = async (
-  client: OpenRouterClient,
+  client: TextCompletionClient,
   request: {
     model: string;
     prompt: string;
@@ -85,7 +86,7 @@ const completeTextWithUsage = async (
     onStreamChunk?: (chunk: string) => void;
   },
 ): Promise<{ text: string | null; usage?: AiRequestDebugEvent["usage"] } | null> => {
-  const metadataClient = client as OpenRouterClient & {
+  const metadataClient = client as TextCompletionClient & {
     completeTextWithMetadata?: (request: {
       model: string;
       prompt: string;
@@ -154,7 +155,7 @@ export const runTextModelRequest = async (
   dependencies: ModelRunnerDependencies,
   request: TextModelRequest,
 ): Promise<string | null> => {
-  if (!dependencies.openRouterClient.hasApiKey()) {
+  if (!dependencies.textClient.isAvailable()) {
     if (request.context) {
       emitAiRequest(dependencies, {
         adventureId: request.context.adventureId,
@@ -167,7 +168,7 @@ export const runTextModelRequest = async (
         attempt: 1,
         fallback: false,
         status: "failed",
-        error: "OpenRouter API key missing.",
+        error: "Text provider unavailable.",
       });
     }
     return null;
@@ -198,7 +199,7 @@ export const runTextModelRequest = async (
 
       try {
         const completion = await completeTextWithUsage(
-          dependencies.openRouterClient,
+          dependencies.textClient,
           {
             model,
             prompt: request.prompt,
@@ -287,7 +288,7 @@ export const runImageModelRequestWithDetails = async (
   dependencies: ModelRunnerDependencies,
   request: ImageModelRequest,
 ): Promise<ImageModelRequestResult> => {
-  if (!dependencies.openRouterClient.hasApiKey()) {
+  if (!dependencies.openRouterClient.isAvailable()) {
     if (request.context) {
       emitAiRequest(dependencies, {
         adventureId: request.context.adventureId,

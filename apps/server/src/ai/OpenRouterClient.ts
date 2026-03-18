@@ -373,11 +373,23 @@ const supportsImageOnlyHint = (error: unknown): boolean => {
   return error.message.includes("No endpoints found that support the requested output modalities");
 };
 
-export class OpenRouterClient {
+export interface TextCompletionClient {
+  isAvailable(): boolean;
+  completeText(request: TextRequest): Promise<string | null>;
+  completeTextWithMetadata(
+    request: TextRequest,
+  ): Promise<OpenRouterTextResult | null>;
+}
+
+export class OpenRouterClient implements TextCompletionClient {
   public constructor(private readonly options: OpenRouterClientOptions) {}
 
   public hasApiKey(): boolean {
     return Boolean(this.options.apiKey);
+  }
+
+  public isAvailable(): boolean {
+    return this.hasApiKey();
   }
 
   public async completeText(request: TextRequest): Promise<string | null> {

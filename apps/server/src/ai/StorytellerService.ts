@@ -1155,7 +1155,7 @@ export class StorytellerService {
       };
     }
 
-    if (!this.options.openRouterClient.hasApiKey()) {
+    if (!this.options.openRouterClient.isAvailable()) {
       this.writeToCache(
         this.imageCache,
         imageCacheKey,
@@ -1185,6 +1185,7 @@ export class StorytellerService {
 
     const generated = await runImageModelRequestWithDetails(
       {
+        textClient: this.options.textClient,
         openRouterClient: this.options.openRouterClient,
         onAiRequest: this.options.onAiRequest,
         inlineImageResolver: this.options.inlineImageResolver,
@@ -1255,6 +1256,7 @@ export class StorytellerService {
 
     return runImageModelRequestWithDetails(
       {
+        textClient: this.options.textClient,
         openRouterClient: this.options.openRouterClient,
         onAiRequest: this.options.onAiRequest,
         inlineImageResolver: this.options.inlineImageResolver,
@@ -1275,6 +1277,7 @@ export class StorytellerService {
   ): Promise<string | null> {
     return runTextModelRequest(
       {
+        textClient: this.options.textClient,
         openRouterClient: this.options.openRouterClient,
         onAiRequest: this.options.onAiRequest,
       },

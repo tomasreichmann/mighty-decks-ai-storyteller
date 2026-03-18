@@ -8,7 +8,7 @@ import type {
   TranscriptIllustrationSubjectType,
   TranscriptEntry,
 } from "@mighty-decks/spec/adventureState";
-import type { OpenRouterClient } from "../OpenRouterClient";
+import type { OpenRouterClient, TextCompletionClient } from "../OpenRouterClient";
 import type { StorytellerModelConfig } from "./agentContracts";
 import type { PromptTemplateMap } from "./prompts";
 
@@ -44,6 +44,7 @@ export interface InlineImageResolver {
 export type NarrativeDetailLevel = "concise" | "standard" | "expanded";
 
 export interface StorytellerServiceOptions {
+  textClient: TextCompletionClient;
   openRouterClient: OpenRouterClient;
   models: StorytellerModelConfig;
   promptTemplates?: Partial<PromptTemplateMap>;
