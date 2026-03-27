@@ -142,6 +142,7 @@ Fields:
 - Premise.
 - Have tags.
 - Avoid tags.
+- Cover image URL plus generated-image selection.
 
 Behavior:
 
@@ -155,6 +156,10 @@ Behavior:
 - While a smart action is running, premise input is disabled.
 - Running controls include `Stop` and `Discard`.
 - Successful smart actions auto-apply and expose one-click rollback for the latest applied change.
+- Cover image selection persists through autosave and module-detail reloads because the saved `coverImageUrl` is returned in the authoring detail payload.
+- `Lookup Existing` works with or without a typed prompt.
+- With a prompt, the current model remains the primary match and same-prompt images from other models appear in a separate gallery.
+- Without a prompt, the generated-image picker can restore the saved image by file name and browse every stored image group for the provider.
 
 ### 5.2 Player Info Tab (`/player-info`)
 

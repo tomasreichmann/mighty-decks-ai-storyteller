@@ -69,7 +69,11 @@ const normalizePromptForMatch = (value: string): string =>
 const normalizeImageUrl = (value: string | null | undefined): string =>
   value?.trim() ?? "";
 
-// AIDEV-NOTE: Extracts the fileName from an image file URL like "/api/image/files/some-file.jpg"
+/**
+ * Extract the stored file name from an `/api/image/files/:fileName` URL.
+ * Falls back to the raw path segment when the file name is not valid URI
+ * encoding.
+ */
 const extractFileNameFromUrl = (url: string): string | null => {
   const prefix = "/api/image/files/";
   const trimmed = url.trim();
@@ -276,8 +280,8 @@ export const AdventureModuleGeneratedImageField = ({
     sortedModels,
   ]);
 
-  // AIDEV-NOTE: Auto-lookup on mount when a persisted image URL exists but no group is loaded.
-  // Uses fileName-based lookup so it works even though the prompt field is empty after remount.
+  // Rehydrate the persisted selection after remount by resolving the stored
+  // file URL back to its generation group.
   useEffect(() => {
     if (autoLookupDoneRef.current || disabled || group) {
       return;
@@ -303,8 +307,8 @@ export const AdventureModuleGeneratedImageField = ({
     if (!group) {
       return null;
     }
-    // AIDEV-NOTE: Accept the group if it matches prompt+model (normal flow) OR if it
-    // contains the currently persisted image (auto-restore flow after tab navigation).
+    // Accept either the current prompt/model pair or the persisted image URL so
+    // remounts can restore the matching batch without prompt state.
     const promptAndModelMatch =
       normalizePromptForMatch(group.prompt) ===
         normalizePromptForMatch(composedPrompt) &&
@@ -403,17 +407,14 @@ export const AdventureModuleGeneratedImageField = ({
     selectedModelId.trim().length > 0 &&
     hasPrompt &&
     !pending;
-  // AIDEV-NOTE: Lookup is always allowed (even with no prompt/URL) so the user can
-  // browse all previously generated images via the "list all groups" fallback.
   const canLookup =
     !disabled &&
     !loadingModels &&
     !pending;
 
-  // AIDEV-NOTE: Lookup handler that shows all available images.
-  // With a prompt: does prompt-specific lookup for the current model + cross-model search.
-  // Without a prompt (e.g. after tab navigation): loads ALL groups for the provider so
-  // the user can see every image they've generated, regardless of prompt or model.
+  // With a prompt, keep the current-model match primary and show other model
+  // matches separately. Without a prompt, fall back to browsing every stored
+  // group for the provider.
   const handleLookupWithCrossModel = useCallback(async () => {
     const normalizedValue = normalizeImageUrl(value);
     const userTypedPrompt = prompt.trim().length > 0;
@@ -430,9 +431,7 @@ export const AdventureModuleGeneratedImageField = ({
         setLoadingCrossModel(false);
       }
     } else {
-      // No prompt — load all groups so the user can browse everything.
-      // Show ALL groups in the cross-model section (don't filter any out),
-      // since the main gallery is empty when there's no prompt match.
+      // Without a prompt match, show every stored group in the fallback gallery.
       if (normalizedValue.length > 0) {
         const fileName = extractFileNameFromUrl(normalizedValue);
         if (fileName) {

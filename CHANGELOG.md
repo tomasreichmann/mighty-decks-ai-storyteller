@@ -19,7 +19,6 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add typed Adventure Module encounter authoring with create/edit/delete APIs, resolved encounter detail payloads, `encounterDetails` metadata, and legacy-module backfill for missing encounter metadata.
 - Add Adventure Module Locations tab and editor UI with title-image and map-image generation/paste flows, introduction/description markdown authoring, hover previews, and click-through map pins for locations, actors, encounters, and quests.
 - Add Adventure Module Encounters tab and editor UI with prerequisites, title-image generation/paste flows, encounter markdown authoring, canonical `<EncounterCard slug="..." />` embeds, and encounter card previews in rich text.
-- Add a hidden `/styleguide` route with `/styleguide/location-card` and `/styleguide/encounter-card` previews, plus shared internal scene-card treatment for local `LocationCard` and `EncounterCard` iteration.
 
 ### Changed
 
@@ -38,8 +37,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add typed actor and counter delete support in Adventure Module authoring, including list/editor delete actions and invalid-card fallback for stale embeds.
 - Move the Adventure Module `Assets` tab after `Counters` and replace the placeholder with searchable AssetCard authoring plus grouped `Asset Base` and `Asset Medieval` pickers.
 - Switch the `/rules` reference pages to copy `@type/<slug>` shortcodes instead of raw `<GameCard />` JSX, add `/rules/assets`, accept underscore-based asset shortcodes in rich-text markdown normalization, and let `/rules/assets` apply a selected modifier to every preview and copied shortcode.
-- Replace the `/rules/assets` modifier text labels with standalone modifier selector cards while keeping the shared asset preview and shortcode behavior unchanged.
-- Refresh the styleguide `LocationCard` to include a visible `Location` badge and full-width summary strip, and align the new `EncounterCard` to the same shared frame with a distinct `Encounter` badge.
+- Extend Base-tab generated-image lookup so the authoring UI can restore persisted title images by file name, show same-prompt matches from other models, and browse all stored provider images when no prompt is present.
+- Refresh the styleguide `LocationCard` to include a visible `Location` badge and full-width summary strip, align the new `EncounterCard` to the same shared frame with a distinct `Encounter` badge, and add `/styleguide/encounter-card`.
 
 ### Fixed
 
@@ -48,19 +47,21 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Regenerate Adventure Module actor and counter slugs from saved titles, keep the authoring route in sync after renames, and allow actor/counter deletes to complete without sending an empty JSON body.
 - Tighten Counter editor numeric fields and move CounterCard +/- controls inline before the shared value so authoring cards keep the header on a single line.
 - Add a second inline `+` and `-` control pair after the max counter value so authoring cards can adjust both current and max values without leaving the card.
+- Return `coverImageUrl` in Adventure Module detail payloads so Base-tab title image selection survives tab switches and remounts.
 
 ### Docs
 
 - Add the root changelog to track notable product, workflow, deployment, and documentation updates.
 - Add AI contributor instructions in `AGENTS.md` requiring documentation and changelog updates when repo behavior, contracts, routes, env vars, or deployment guidance change.
 - Add a root `README.md` covering the current repo overview, implementation status, setup, AI configuration, contribution expectations, and deployment paths.
+- Add a concise contributor style guide, add a root `CLAUDE.md`, and link shared conventions from `AGENTS.md`.
 - Update Adventure Module authoring docs to reflect the implemented Actors tab, actor editor route, typed actor APIs, and actor embed behavior.
 - Update Adventure Module authoring docs to reflect the implemented Counters tab, typed counter APIs, and typed actor/counter delete routes.
 - Update Adventure Module docs to reflect typed asset authoring, AssetCard embeds, and the implemented Assets tab/editor flow.
 - Update Adventure Module docs to reflect custom module assets, generic-vs-custom markdown insertion, and legacy asset reauthoring requirements.
 - Update Adventure Module docs to reflect the full current authoring entity catalog, typed encounter authoring, encounter embeds, refreshed location-vs-encounter card direction, and the new `/styleguide/encounter-card` route.
 - Update the route and UI docs for the new `/rules/assets` reference page, the shortcode-first copy behavior used by the rules reference pages, and the optional modifier-bearing asset shortcode format.
-- Update the route docs and README to document the hidden internal `/styleguide` component-lab routes.
+- Update Adventure Module authoring docs to reflect Base-tab cover-image persistence and the expanded generated-image lookup behavior added on March 27, 2026.
 
 ## [0.1.0] - 2026-03-13
 

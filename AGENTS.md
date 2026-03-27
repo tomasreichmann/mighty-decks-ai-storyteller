@@ -115,6 +115,7 @@ Use env-configured model IDs so we can swap freely in playtests.
 - Avoid adding dependencies unless necessary; explain why in PR notes
 - Keep UI components presentational; keep orchestration/state in hooks/stores
 - Never bake secrets/tension into player-visible payloads (debug-only)
+- For a concise summary of coding, comment, documentation, and verification conventions, see `docs/19-contributor-styleguide.md`.
 
 ### UI conventions
 
