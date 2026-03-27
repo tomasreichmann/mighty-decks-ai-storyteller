@@ -90,7 +90,12 @@ const renderPinTargetPreview = (
     );
   }
 
-  if (target.kind === "location" && target.titleImageUrl) {
+  if (
+    (target.kind === "location" || target.kind === "encounter") &&
+    target.titleImageUrl
+  ) {
+    const kindLabel =
+      target.kind.charAt(0).toLocaleUpperCase() + target.kind.slice(1);
     return (
       <div className="stack gap-2">
         <div className="aspect-[4/3] overflow-hidden rounded-sm border border-kac-iron/20 bg-kac-bone-light/70">
@@ -101,11 +106,14 @@ const renderPinTargetPreview = (
           />
         </div>
         <div className="stack gap-1">
+          <Text variant="note" color="gold-dark" className="text-[11px] uppercase">
+            {kindLabel}
+          </Text>
           <Text variant="emphasised" color="iron" className="text-sm">
             {target.title}
           </Text>
           <Text variant="body" color="iron-light" className="text-xs">
-            {target.summary ?? "Location"}
+            {target.summary ?? kindLabel}
           </Text>
         </div>
       </div>

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  createEncounterCardJsx,
   createGameCardJsx,
   normalizeLegacyGameCardMarkdown,
 } from "./gameCardMarkdown";
@@ -32,6 +33,13 @@ test("createGameCardJsx emits canonical GameCard source", () => {
       modifierSlug: "base_hidden",
     }),
     '<GameCard type="AssetCard" slug="medieval_lantern" modifierSlug="base_hidden" />',
+  );
+});
+
+test("createEncounterCardJsx emits canonical EncounterCard source", () => {
+  assert.equal(
+    createEncounterCardJsx("bridge-tribute-checkpoint"),
+    '<EncounterCard slug="bridge-tribute-checkpoint" />',
   );
 });
 

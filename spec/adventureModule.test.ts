@@ -88,6 +88,13 @@ const createValidIndexCandidate = () => ({
   ],
   itemFragmentIds: [],
   encounterFragmentIds: ["frag-encounter-main"],
+  encounterDetails: [
+    {
+      fragmentId: "frag-encounter-main",
+      prerequisites: "Level 3+ or already tracking the flooded bell quest.",
+      titleImageUrl: "https://example.com/encounter-title.png",
+    },
+  ],
   questFragmentIds: ["frag-quest-main"],
   imagePromptFragmentIds: [],
   fragments: [
@@ -346,6 +353,39 @@ test("adventureModuleIndexSchema rejects missing location detail metadata", () =
         locationDetails: [],
       }),
     /missing location detail metadata/i,
+  );
+});
+
+test("adventureModuleIndexSchema rejects missing encounter detail metadata", () => {
+  assert.throws(
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        encounterDetails: [],
+      }),
+    /missing encounter detail metadata/i,
+  );
+});
+
+test("adventureModuleIndexSchema rejects duplicate encounter detail fragment ids", () => {
+  assert.throws(
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        encounterDetails: [
+          {
+            fragmentId: "frag-encounter-main",
+            prerequisites: "Level 3+",
+            titleImageUrl: "https://example.com/encounter-a.png",
+          },
+          {
+            fragmentId: "frag-encounter-main",
+            prerequisites: "Ongoing flooded bell quest.",
+            titleImageUrl: "https://example.com/encounter-b.png",
+          },
+        ],
+      }),
+    /duplicate encounter detail fragment id/i,
   );
 });
 

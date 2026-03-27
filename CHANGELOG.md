@@ -16,8 +16,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add typed Adventure Module counter authoring with create/edit APIs, resolved counter detail payloads, vendored counter icon assets, and shared authoring-side counter values.
 - Add typed Adventure Module asset authoring with create/edit/delete APIs, resolved asset detail payloads, filtered base/medieval asset catalogs, and vendored asset images for authored AssetCards.
 - Add typed Adventure Module location authoring with create/edit/delete APIs, resolved location detail payloads, `locationDetails` metadata, interactive map pins, and legacy-module backfill for missing location metadata.
+- Add typed Adventure Module encounter authoring with create/edit/delete APIs, resolved encounter detail payloads, `encounterDetails` metadata, and legacy-module backfill for missing encounter metadata.
 - Add Adventure Module Locations tab and editor UI with title-image and map-image generation/paste flows, introduction/description markdown authoring, hover previews, and click-through map pins for locations, actors, encounters, and quests.
-- Add a hidden `/styleguide` route with a `/styleguide/location-card` preview, plus a new internal location `GameCard` and local `LocationCard` image treatment for design iteration.
+- Add Adventure Module Encounters tab and editor UI with prerequisites, title-image generation/paste flows, encounter markdown authoring, canonical `<EncounterCard slug="..." />` embeds, and encounter card previews in rich text.
+- Add a hidden `/styleguide` route with `/styleguide/location-card` and `/styleguide/encounter-card` previews, plus shared internal scene-card treatment for local `LocationCard` and `EncounterCard` iteration.
 
 ### Changed
 
@@ -31,11 +33,13 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local actors render as canonical `<GameCard type="ActorCard" />` embeds while `@actor/<slug>` remains supported.
 - Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local counters render as canonical `<GameCard type="CounterCard" />` embeds while `@counter/<slug>` remains supported.
 - Extend Adventure Module markdown normalization, toolbar insert options, and rich-text rendering so module-local assets render as canonical `<GameCard type="AssetCard" />` embeds while `@asset/<slug>` remains supported.
+- Extend Adventure Module markdown authoring so module-local encounters insert as canonical `<EncounterCard slug="..." />` embeds and render as encounter cards in Rich Text mode.
 - Split Adventure Module markdown asset insertion into `Generic Asset` and `Custom Asset`, carry optional `modifierSlug` through canonical `<GameCard type="AssetCard" />` embeds, and convert module-authored assets to custom card metadata instead of layered base/modifier selections.
 - Add typed actor and counter delete support in Adventure Module authoring, including list/editor delete actions and invalid-card fallback for stale embeds.
 - Move the Adventure Module `Assets` tab after `Counters` and replace the placeholder with searchable AssetCard authoring plus grouped `Asset Base` and `Asset Medieval` pickers.
 - Switch the `/rules` reference pages to copy `@type/<slug>` shortcodes instead of raw `<GameCard />` JSX, add `/rules/assets`, accept underscore-based asset shortcodes in rich-text markdown normalization, and let `/rules/assets` apply a selected modifier to every preview and copied shortcode.
 - Replace the `/rules/assets` modifier text labels with standalone modifier selector cards while keeping the shared asset preview and shortcode behavior unchanged.
+- Refresh the styleguide `LocationCard` to include a visible `Location` badge and full-width summary strip, and align the new `EncounterCard` to the same shared frame with a distinct `Encounter` badge.
 
 ### Fixed
 
@@ -54,7 +58,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Update Adventure Module authoring docs to reflect the implemented Counters tab, typed counter APIs, and typed actor/counter delete routes.
 - Update Adventure Module docs to reflect typed asset authoring, AssetCard embeds, and the implemented Assets tab/editor flow.
 - Update Adventure Module docs to reflect custom module assets, generic-vs-custom markdown insertion, and legacy asset reauthoring requirements.
-- Update Adventure Module docs to reflect typed location authoring, location image metadata, and interactive map-pin authoring while encounters and quests remain placeholders.
+- Update Adventure Module docs to reflect the full current authoring entity catalog, typed encounter authoring, encounter embeds, refreshed location-vs-encounter card direction, and the new `/styleguide/encounter-card` route.
 - Update the route and UI docs for the new `/rules/assets` reference page, the shortcode-first copy behavior used by the rules reference pages, and the optional modifier-bearing asset shortcode format.
 - Update the route docs and README to document the hidden internal `/styleguide` component-lab routes.
 

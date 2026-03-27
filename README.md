@@ -17,7 +17,7 @@ Current route families:
 - `/adventure-module/list`, `/adventure-module/new`, `/adventure-module/:slug/:tab`, `/adventure-module/:slug/:tab/:entityId`
 - `/workflow-lab`, `/workflow-lab/:workflowId`
 - `/rules`, `/rules/outcomes`, `/rules/effects`, `/rules/stunts`, `/rules/assets`
-- `/styleguide`, `/styleguide/location-card` (hidden internal component lab)
+- `/styleguide`, `/styleguide/location-card`, `/styleguide/encounter-card` (hidden internal component lab)
 - `/image`
 
 ## Current Status
@@ -25,7 +25,7 @@ Current route families:
 | Use case | What it covers | Status | Notes |
 | --- | --- | --- | --- |
 | AI Storyteller ad hoc sessions | Local multiplayer runtime with lobby, ready gate, pitch vote, narrated scenes, transcripts, async images, and ending flow | Partially implemented | Playable storyteller loop exists, but this is not a complete Mighty Decks runtime and only partial outcome-card related tooling is present |
-| Adventure Module authoring | Module list/create flows, base tab, player info, storyteller info, and supporting docs for future authoring flows | Partially implemented | Authoring surface exists, but several entity editors and full publish-to-runtime flows are still incomplete |
+| Adventure Module authoring | Module list/create flows, base tab, player info, storyteller info, actors, counters, assets, locations, encounters, markdown embeds, and supporting docs | Partially implemented | Core authoring for the current module entity types exists, but quest authoring UI and full publish-to-runtime flows are still incomplete |
 | Run an Adventure Module with a human or AI storyteller | Launching or facilitating a session directly from a module | Planned | Use cases and design docs exist, but no end-to-end runtime launch flow is implemented yet |
 
 The repo should not currently be read as a full implementation of Mighty Decks rules, components, or campaign systems.

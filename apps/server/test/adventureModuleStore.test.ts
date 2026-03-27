@@ -1319,3 +1319,334 @@ test("backfills missing location metadata from legacy fragment content on read a
     /Legacy location detail/,
   );
 });
+
+test("creates, updates, renames, and deletes encounters while cleaning structured references", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const module = await store.createModule({
+    creatorToken: "token-encounter",
+    title: "Encounter Module",
+  });
+
+  const encounterStore = store as unknown as {
+    createEncounter: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<{
+      encounters: Array<{
+        fragmentId: string;
+        encounterSlug: string;
+        title: string;
+        summary?: string;
+        prerequisites: string;
+        titleImageUrl?: string;
+        content: string;
+      }>;
+    }>;
+    updateEncounter: (input: {
+      moduleId: string;
+      encounterSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      prerequisites: string;
+      titleImageUrl?: string;
+      content: string;
+    }) => Promise<{
+      encounters: Array<{
+        fragmentId: string;
+        encounterSlug: string;
+        title: string;
+        summary?: string;
+        prerequisites: string;
+        titleImageUrl?: string;
+        content: string;
+      }>;
+      index: {
+        componentOpportunities: Array<{
+          fragmentId?: string;
+        }>;
+        questGraphs: Array<{
+          nodes: Array<{
+            encounterFragmentIds: string[];
+          }>;
+        }>;
+        locationDetails: Array<{
+          mapPins: Array<{
+            targetFragmentId: string;
+          }>;
+        }>;
+      };
+    }>;
+    deleteEncounter: (input: {
+      moduleId: string;
+      encounterSlug: string;
+      creatorToken?: string;
+    }) => Promise<{
+      encounters: Array<{
+        encounterSlug: string;
+      }>;
+      index: {
+        componentOpportunities: Array<{
+          fragmentId?: string;
+        }>;
+        questGraphs: Array<{
+          nodes: Array<{
+            encounterFragmentIds: string[];
+          }>;
+        }>;
+        locationDetails: Array<{
+          mapPins: Array<{
+            targetFragmentId: string;
+          }>;
+        }>;
+      };
+    }>;
+  };
+
+  const created = await encounterStore.createEncounter({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-encounter",
+    title: "Bridge Ambush",
+  });
+  const createdEncounter = created.encounters.find(
+    (encounter) => encounter.encounterSlug === "bridge-ambush",
+  );
+  assert.ok(createdEncounter);
+  assert.equal(createdEncounter.title, "Bridge Ambush");
+  assert.equal(createdEncounter.prerequisites, "");
+  assert.equal(typeof createdEncounter.content, "string");
+
+  const updated = await encounterStore.updateEncounter({
+    moduleId: module.index.moduleId,
+    encounterSlug: "bridge-ambush",
+    creatorToken: "token-encounter",
+    title: "Bridge Toll Ambush",
+    summary: "Pay, bluff, or fight through the armored toll blockade.",
+    prerequisites: "Already escaped the prison cells.",
+    titleImageUrl: "https://example.com/encounter-title.png",
+    content: "# Bridge Toll Ambush\n\nHold the bridge long enough to break through.",
+  });
+  const updatedEncounter = updated.encounters.find(
+    (encounter) => encounter.encounterSlug === "bridge-toll-ambush",
+  );
+  assert.ok(updatedEncounter);
+  assert.equal(updatedEncounter.title, "Bridge Toll Ambush");
+  assert.equal(
+    updatedEncounter.summary,
+    "Pay, bluff, or fight through the armored toll blockade.",
+  );
+  assert.equal(
+    updatedEncounter.prerequisites,
+    "Already escaped the prison cells.",
+  );
+  assert.equal(
+    updatedEncounter.titleImageUrl,
+    "https://example.com/encounter-title.png",
+  );
+  assert.equal(
+    updatedEncounter.content,
+    "# Bridge Toll Ambush\n\nHold the bridge long enough to break through.",
+  );
+
+  const indexPath = join(rootDir, module.index.moduleId, "index.json");
+  const storedIndex = JSON.parse(await readFile(indexPath, "utf8")) as {
+    locationDetails: Array<{
+      fragmentId: string;
+      mapPins: Array<{
+        pinId: string;
+        x: number;
+        y: number;
+        targetFragmentId: string;
+      }>;
+    }>;
+    questGraphs: Array<{
+      nodes: Array<{
+        nodeId: string;
+        encounterFragmentIds: string[];
+      }>;
+    }>;
+    componentOpportunities: Array<{
+      opportunityId: string;
+      componentType: string;
+      strength: string;
+      timing: string;
+      fragmentId?: string;
+      fragmentKind?: string;
+      questId?: string;
+      nodeId?: string;
+      placementLabel: string;
+      trigger: string;
+      rationale: string;
+    }>;
+  };
+  storedIndex.locationDetails[0]?.mapPins.push({
+    pinId: "pin-created-encounter",
+    x: 72,
+    y: 31,
+    targetFragmentId: updatedEncounter.fragmentId,
+  });
+  storedIndex.questGraphs[0]?.nodes[0]?.encounterFragmentIds.push(
+    updatedEncounter.fragmentId,
+  );
+  storedIndex.componentOpportunities.push({
+    opportunityId: "opp-created-encounter",
+    componentType: "counter",
+    strength: "recommended",
+    timing: "during_action",
+    fragmentId: updatedEncounter.fragmentId,
+    fragmentKind: "encounter",
+    questId: "quest-main",
+    nodeId: "node-entry",
+    placementLabel: "Bridge Pressure",
+    trigger: "When the toll guard pushes harder.",
+    rationale: "Tracks encounter-specific escalation.",
+  });
+  await writeFile(indexPath, JSON.stringify(storedIndex, null, 2), "utf8");
+
+  const storedIndexRaw = await readFile(indexPath, "utf8");
+  assert.match(storedIndexRaw, /encounters\/bridge-toll-ambush\.mdx/);
+  await assert.rejects(
+    () =>
+      readFile(
+        join(rootDir, module.index.moduleId, "encounters", "bridge-ambush.mdx"),
+        "utf8",
+      ),
+    { code: "ENOENT" },
+  );
+  const renamedEncounterFile = await readFile(
+    join(
+      rootDir,
+      module.index.moduleId,
+      "encounters",
+      "bridge-toll-ambush.mdx",
+    ),
+    "utf8",
+  );
+  assert.match(renamedEncounterFile, /Hold the bridge long enough/);
+
+  const afterDelete = await encounterStore.deleteEncounter({
+    moduleId: module.index.moduleId,
+    encounterSlug: "bridge-toll-ambush",
+    creatorToken: "token-encounter",
+  });
+  assert.equal(
+    afterDelete.encounters.some(
+      (encounter) => encounter.encounterSlug === "bridge-toll-ambush",
+    ),
+    false,
+  );
+  assert.equal(
+    afterDelete.index.locationDetails[0]?.mapPins.some(
+      (pin) => pin.targetFragmentId === updatedEncounter.fragmentId,
+    ),
+    false,
+  );
+  assert.equal(
+    afterDelete.index.questGraphs[0]?.nodes[0]?.encounterFragmentIds.includes(
+      updatedEncounter.fragmentId,
+    ),
+    false,
+  );
+  assert.equal(
+    afterDelete.index.componentOpportunities.some(
+      (opportunity) => opportunity.fragmentId === updatedEncounter.fragmentId,
+    ),
+    false,
+  );
+  await assert.rejects(
+    () =>
+      readFile(
+        join(
+          rootDir,
+          module.index.moduleId,
+          "encounters",
+          "bridge-toll-ambush.mdx",
+        ),
+        "utf8",
+      ),
+    { code: "ENOENT" },
+  );
+
+  await assert.rejects(
+    () =>
+      encounterStore.deleteEncounter({
+        moduleId: module.index.moduleId,
+        encounterSlug: "primary-encounter",
+        creatorToken: "token-encounter",
+      }),
+    AdventureModuleValidationError,
+  );
+});
+
+test("backfills missing encounter metadata from legacy index on read and persists it on write", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const created = await store.createModule({
+    creatorToken: "token-legacy-encounter",
+    title: "Legacy Encounter Module",
+  });
+
+  const indexPath = join(rootDir, created.index.moduleId, "index.json");
+  const legacyIndex = JSON.parse(await readFile(indexPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  delete legacyIndex.encounterDetails;
+  await writeFile(indexPath, JSON.stringify(legacyIndex, null, 2), "utf8");
+
+  const loaded = (await store.getModule(
+    created.index.moduleId,
+    "token-legacy-encounter",
+  )) as unknown as {
+    encounters?: Array<{
+      encounterSlug: string;
+      prerequisites: string;
+      titleImageUrl?: string;
+      content: string;
+    }>;
+  } | null;
+  assert.ok(loaded);
+  assert.equal(loaded?.encounters?.[0]?.encounterSlug, "primary-encounter");
+  assert.equal(loaded?.encounters?.[0]?.prerequisites, "");
+  assert.equal(loaded?.encounters?.[0]?.titleImageUrl, undefined);
+
+  const encounterStore = store as unknown as {
+    updateEncounter: (input: {
+      moduleId: string;
+      encounterSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      prerequisites: string;
+      titleImageUrl?: string;
+      content: string;
+    }) => Promise<unknown>;
+  };
+
+  await encounterStore.updateEncounter({
+    moduleId: created.index.moduleId,
+    encounterSlug: "primary-encounter",
+    creatorToken: "token-legacy-encounter",
+    title: "Primary Encounter",
+    summary: "Backfilled from legacy encounter metadata.",
+    prerequisites: "Level 2+",
+    titleImageUrl: "https://example.com/legacy-encounter.png",
+    content:
+      loaded?.encounters?.[0]?.content ?? "# Primary Encounter\n\nLegacy encounter detail.",
+  });
+
+  const persistedIndex = JSON.parse(await readFile(indexPath, "utf8")) as {
+    encounterDetails?: Array<{
+      fragmentId: string;
+      prerequisites: string;
+      titleImageUrl?: string;
+    }>;
+  };
+  assert.equal(Array.isArray(persistedIndex.encounterDetails), true);
+  assert.equal(persistedIndex.encounterDetails?.length, 1);
+  assert.equal(persistedIndex.encounterDetails?.[0]?.prerequisites, "Level 2+");
+  assert.equal(
+    persistedIndex.encounterDetails?.[0]?.titleImageUrl,
+    "https://example.com/legacy-encounter.png",
+  );
+});

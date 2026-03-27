@@ -524,6 +524,97 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
   });
   assert.equal(deleteLocationResponse.statusCode, 200);
 
+  const createEncounterResponse = await app.inject({
+    method: "POST",
+    url: `/api/adventure-modules/${moduleId}/encounters`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Bridge Ambush",
+    },
+  });
+  assert.equal(createEncounterResponse.statusCode, 201);
+  const createEncounterPayload = createEncounterResponse.json() as {
+    encounters?: Array<{
+      encounterSlug: string;
+      title: string;
+      prerequisites: string;
+    }>;
+  };
+  assert.equal(
+    createEncounterPayload.encounters?.some(
+      (encounter) => encounter.encounterSlug === "bridge-ambush",
+    ),
+    true,
+  );
+
+  const updateEncounterResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/encounters/bridge-ambush`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Bridge Toll Ambush",
+      summary: "Pay, bluff, or fight through the armored toll blockade.",
+      prerequisites: "Already escaped the prison cells.",
+      titleImageUrl: "https://example.com/encounter-title.png",
+      content: "# Bridge Toll Ambush\n\nHold the bridge long enough to break through.",
+    },
+  });
+  assert.equal(updateEncounterResponse.statusCode, 200);
+  const updatedEncounterPayload = updateEncounterResponse.json() as {
+    encounters?: Array<{
+      encounterSlug: string;
+      title: string;
+      summary?: string;
+      prerequisites: string;
+      titleImageUrl?: string;
+    }>;
+  };
+  const updatedEncounter = updatedEncounterPayload.encounters?.find(
+    (encounter) => encounter.encounterSlug === "bridge-toll-ambush",
+  );
+  assert.ok(updatedEncounter);
+  assert.equal(updatedEncounter.title, "Bridge Toll Ambush");
+  assert.equal(
+    updatedEncounter.summary,
+    "Pay, bluff, or fight through the armored toll blockade.",
+  );
+  assert.equal(
+    updatedEncounter.prerequisites,
+    "Already escaped the prison cells.",
+  );
+  assert.equal(
+    updatedEncounter.titleImageUrl,
+    "https://example.com/encounter-title.png",
+  );
+
+  const forbiddenEncounterUpdateResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/encounters/bridge-toll-ambush`,
+    headers: {
+      [CREATOR_HEADER]: "creator-b",
+    },
+    payload: {
+      title: "Blocked Encounter",
+      summary: "forbidden",
+      prerequisites: "forbidden",
+      content: "forbidden",
+    },
+  });
+  assert.equal(forbiddenEncounterUpdateResponse.statusCode, 403);
+
+  const deleteEncounterResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}/encounters/bridge-toll-ambush`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(deleteEncounterResponse.statusCode, 200);
+
   const forbiddenActorUpdateResponse = await app.inject({
     method: "PUT",
     url: `/api/adventure-modules/${moduleId}/actors/river-smuggler-nyra`,

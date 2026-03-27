@@ -42,6 +42,9 @@ export const createGameCardJsx = (
     : `<GameCard type="${type}" slug="${slug}" />`;
 };
 
+export const createEncounterCardJsx = (slug: string): string =>
+  `<EncounterCard slug="${slug}" />`;
+
 export const parseLegacyGameCardToken = (
   token: string,
 ):

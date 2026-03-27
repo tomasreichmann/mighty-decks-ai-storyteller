@@ -279,6 +279,15 @@ export type AdventureModuleLocationDetail = z.infer<
   typeof adventureModuleLocationDetailSchema
 >;
 
+export const adventureModuleEncounterDetailSchema = z.object({
+  fragmentId: identifierSchema,
+  prerequisites: z.string().max(240).default(""),
+  titleImageUrl: z.string().min(1).max(500).optional(),
+});
+export type AdventureModuleEncounterDetail = z.infer<
+  typeof adventureModuleEncounterDetailSchema
+>;
+
 export const adventureModuleCounterSchema = z
   .object({
     slug: slugSchema,
@@ -585,6 +594,7 @@ export const adventureModuleIndexSchema = z
     assetCards: z.array(adventureModuleAssetCardSchema).max(40).default([]),
     itemFragmentIds: z.array(identifierSchema).max(40).default([]),
     encounterFragmentIds: z.array(identifierSchema).min(1).max(60),
+    encounterDetails: z.array(adventureModuleEncounterDetailSchema).max(60).default([]),
     questFragmentIds: z.array(identifierSchema).min(1).max(30),
     imagePromptFragmentIds: z.array(identifierSchema).max(40).default([]),
     fragments: z.array(adventureModuleFragmentRefSchema).min(1).max(300),
@@ -800,6 +810,45 @@ export const adventureModuleIndexSchema = z
     for (const encounterId of index.encounterFragmentIds) {
       ensureFragment(encounterId, "encounter", ["encounterFragmentIds"]);
     }
+
+    const encounterDetailFragmentIds = index.encounterDetails.map(
+      (encounterDetail) => encounterDetail.fragmentId,
+    );
+    for (const duplicate of duplicateValues(encounterDetailFragmentIds)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate encounter detail fragment id: ${duplicate}`,
+        path: ["encounterDetails"],
+      });
+    }
+
+    const encounterIdSet = new Set(index.encounterFragmentIds);
+    const encounterDetailByFragmentId = new Map(
+      index.encounterDetails.map((encounterDetail) => [
+        encounterDetail.fragmentId,
+        encounterDetail,
+      ] as const),
+    );
+
+    for (const encounterId of index.encounterFragmentIds) {
+      if (!encounterDetailByFragmentId.has(encounterId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `missing encounter detail metadata for fragment id: ${encounterId}`,
+          path: ["encounterDetails"],
+        });
+      }
+    }
+    for (const encounterDetail of index.encounterDetails) {
+      if (!encounterIdSet.has(encounterDetail.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `encounter detail metadata references unknown encounter fragment id: ${encounterDetail.fragmentId}`,
+          path: ["encounterDetails"],
+        });
+      }
+    }
+
     for (const questId of index.questFragmentIds) {
       ensureFragment(questId, "quest", ["questFragmentIds"]);
     }

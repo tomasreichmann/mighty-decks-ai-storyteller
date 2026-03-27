@@ -44,3 +44,28 @@ test("AdventureModuleAuthoringPage uses real location list and editor components
   assert.match(source, /AdventureModuleLocationsTabPanel/);
   assert.match(source, /AdventureModuleLocationEditor/);
 });
+
+test("AdventureModuleAuthoringPage wires real encounter authoring components and APIs", () => {
+  const source = readFileSync(
+    "apps/web/src/routes/AdventureModuleAuthoringPage.tsx",
+    "utf8",
+  );
+
+  assert.match(source, /AdventureModuleEncounterEditor/);
+  assert.match(source, /AdventureModuleEncountersTabPanel/);
+  assert.match(source, /createAdventureModuleEncounter/);
+  assert.match(source, /updateAdventureModuleEncounter/);
+  assert.match(source, /deleteAdventureModuleEncounter/);
+});
+
+test("AdventureModuleAuthoringPage includes explicit encounters list and editor branches", () => {
+  const source = readFileSync(
+    "apps/web/src/routes/AdventureModuleAuthoringPage.tsx",
+    "utf8",
+  );
+
+  assert.match(source, /activeTab === "encounters"/);
+  assert.match(source, /onOpenEncounter/);
+  assert.match(source, /onDeleteEncounter/);
+  assert.doesNotMatch(source, /Create Encounter is intentionally a placeholder/);
+});

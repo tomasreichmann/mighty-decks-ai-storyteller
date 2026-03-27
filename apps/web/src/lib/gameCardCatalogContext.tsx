@@ -3,6 +3,7 @@ import type {
   AdventureModuleResolvedActor,
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
+  AdventureModuleResolvedEncounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 
 export type CounterAdjustTarget = "current" | "max";
@@ -14,6 +15,8 @@ export interface GameCardCatalogContextValue {
   countersBySlug: ReadonlyMap<string, AdventureModuleResolvedCounter>;
   assets: readonly AdventureModuleResolvedAsset[];
   assetsBySlug: ReadonlyMap<string, AdventureModuleResolvedAsset>;
+  encounters: readonly AdventureModuleResolvedEncounter[];
+  encountersBySlug: ReadonlyMap<string, AdventureModuleResolvedEncounter>;
   onAdjustCounterValue?: (
     counterSlug: string,
     delta: number,
@@ -24,6 +27,10 @@ export interface GameCardCatalogContextValue {
 const EMPTY_ACTORS_BY_SLUG = new Map<string, AdventureModuleResolvedActor>();
 const EMPTY_COUNTERS_BY_SLUG = new Map<string, AdventureModuleResolvedCounter>();
 const EMPTY_ASSETS_BY_SLUG = new Map<string, AdventureModuleResolvedAsset>();
+const EMPTY_ENCOUNTERS_BY_SLUG = new Map<
+  string,
+  AdventureModuleResolvedEncounter
+>();
 
 export const GameCardCatalogContext =
   createContext<GameCardCatalogContextValue>({
@@ -33,6 +40,8 @@ export const GameCardCatalogContext =
     countersBySlug: EMPTY_COUNTERS_BY_SLUG,
     assets: [],
     assetsBySlug: EMPTY_ASSETS_BY_SLUG,
+    encounters: [],
+    encountersBySlug: EMPTY_ENCOUNTERS_BY_SLUG,
   });
 
 export const useGameCardCatalogContext = (): GameCardCatalogContextValue =>

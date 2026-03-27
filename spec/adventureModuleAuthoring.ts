@@ -198,6 +198,19 @@ export type AdventureModuleResolvedLocation = z.infer<
   typeof adventureModuleResolvedLocationSchema
 >;
 
+export const adventureModuleResolvedEncounterSchema = z.object({
+  fragmentId: identifierSchema,
+  encounterSlug: slugSchema,
+  title: shortTextSchema,
+  summary: mediumTextSchema.optional(),
+  prerequisites: z.string().max(240).default(""),
+  titleImageUrl: z.string().min(1).max(500).optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleResolvedEncounter = z.infer<
+  typeof adventureModuleResolvedEncounterSchema
+>;
+
 export const adventureModuleAuthoringFragmentSchema = z.object({
   fragment: adventureModuleFragmentRefSchema,
   content: z.string().max(200_000).default(""),
@@ -211,6 +224,7 @@ export const adventureModuleDetailSchema = z
     index: adventureModuleIndexSchema,
     fragments: z.array(adventureModuleAuthoringFragmentSchema).max(400),
     locations: z.array(adventureModuleResolvedLocationSchema).max(80).default([]),
+    encounters: z.array(adventureModuleResolvedEncounterSchema).max(80).default([]),
     actors: z.array(adventureModuleResolvedActorSchema).max(80).default([]),
     counters: z.array(adventureModuleResolvedCounterSchema).max(80).default([]),
     assets: z.array(adventureModuleResolvedAssetSchema).max(80).default([]),
@@ -313,6 +327,43 @@ export const adventureModuleDetailSchema = z
           code: z.ZodIssueCode.custom,
           message: `resolved location ${location.fragmentId} does not match index location metadata`,
           path: ["locations"],
+        });
+      }
+    }
+
+    const encounterIds = new Set(module.index.encounterFragmentIds);
+    const encounterDetailByFragmentId = new Map(
+      module.index.encounterDetails.map((encounterDetail) => [
+        encounterDetail.fragmentId,
+        encounterDetail,
+      ] as const),
+    );
+
+    for (const encounter of module.encounters) {
+      if (!encounterIds.has(encounter.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved encounter references unknown fragment ${encounter.fragmentId}`,
+          path: ["encounters"],
+        });
+      }
+      const encounterDetail = encounterDetailByFragmentId.get(encounter.fragmentId);
+      if (!encounterDetail) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved encounter missing encounter detail metadata for ${encounter.fragmentId}`,
+          path: ["encounters"],
+        });
+        continue;
+      }
+      if (
+        encounter.prerequisites !== encounterDetail.prerequisites ||
+        encounter.titleImageUrl !== encounterDetail.titleImageUrl
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved encounter ${encounter.fragmentId} does not match index encounter metadata`,
+          path: ["encounters"],
         });
       }
     }
@@ -446,6 +497,13 @@ export type AdventureModuleCreateLocationRequest = z.infer<
   typeof adventureModuleCreateLocationRequestSchema
 >;
 
+export const adventureModuleCreateEncounterRequestSchema = z.object({
+  title: shortTextSchema.default("New Encounter"),
+});
+export type AdventureModuleCreateEncounterRequest = z.infer<
+  typeof adventureModuleCreateEncounterRequestSchema
+>;
+
 export const adventureModuleUpdateLocationRequestSchema = z.object({
   title: shortTextSchema,
   summary: z.string().max(500).default(""),
@@ -463,6 +521,23 @@ export const adventureModuleUpdateLocationResponseSchema =
   adventureModuleDetailSchema;
 export type AdventureModuleUpdateLocationResponse = z.infer<
   typeof adventureModuleUpdateLocationResponseSchema
+>;
+
+export const adventureModuleUpdateEncounterRequestSchema = z.object({
+  title: shortTextSchema,
+  summary: z.string().max(500).default(""),
+  prerequisites: z.string().max(240).default(""),
+  titleImageUrl: z.union([z.string().min(1).max(500), z.null()]).optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleUpdateEncounterRequest = z.infer<
+  typeof adventureModuleUpdateEncounterRequestSchema
+>;
+
+export const adventureModuleUpdateEncounterResponseSchema =
+  adventureModuleDetailSchema;
+export type AdventureModuleUpdateEncounterResponse = z.infer<
+  typeof adventureModuleUpdateEncounterResponseSchema
 >;
 
 export const adventureModuleUpdateActorRequestSchema = z.object({

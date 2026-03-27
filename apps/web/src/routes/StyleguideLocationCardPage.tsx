@@ -46,8 +46,8 @@ export const StyleguideLocationCardPage = (): JSX.Element => {
           Location Card
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          LocationCard direction with a 3:2 scene image, a gold title label in
-          the top-left, and a bone scene-description label in the bottom-right.
+          LocationCard direction with a 3:2 scene image, a gold title label, a
+          cloth Location badge, and a full-width summary strip.
         </Text>
       </div>
 
@@ -66,8 +66,12 @@ export const StyleguideLocationCardPage = (): JSX.Element => {
             LocationCard direction
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Focused on a single scene key art with the label treatment owned by
-            the location card instead of the shared ImageCard primitive.
+            The Location badge keeps this clearly distinct from the encounter
+            card while preserving the same shared scene-card frame.
+          </Text>
+          <Text variant="body" color="iron-light" className="text-sm">
+            Location badge uses the cloth label tone, and the summary sits in a
+            full-width bone strip instead of a floating callout.
           </Text>
         </div>
 

@@ -15,3 +15,14 @@ test("AdventureModuleMarkdownField exposes separate Generic Asset and Custom Ass
   assert.match(source, /modifierSlug/);
   assert.doesNotMatch(source, /Asset insert mode/);
 });
+
+test("AdventureModuleMarkdownField exposes Encounter insertion with canonical EncounterCard JSX", () => {
+  const source = readFileSync(
+    "apps/web/src/components/adventure-module/AdventureModuleMarkdownField.tsx",
+    "utf8",
+  );
+
+  assert.match(source, /<option value="EncounterCard">Encounter<\/option>/);
+  assert.match(source, /name: "EncounterCard"/);
+  assert.match(source, /createEncounterCardJsx/);
+});

@@ -20,6 +20,7 @@ import {
   adventureModuleIndexSchema,
   type AdventureModuleFragmentKind,
   type AdventureModuleFragmentRef,
+  type AdventureModuleEncounterDetail,
   type AdventureModuleIndex,
   type AdventureModuleLocationDetail,
 } from "@mighty-decks/spec/adventureModule";
@@ -140,6 +141,11 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
         (value): value is string => typeof value === "string" && value.trim().length > 0,
       )
     : [];
+  const encounterFragmentIds = Array.isArray(normalized.encounterFragmentIds)
+    ? normalized.encounterFragmentIds.filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
   const rawLocationDetails = Array.isArray(normalized.locationDetails)
     ? normalized.locationDetails
     : [];
@@ -154,6 +160,21 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
       continue;
     }
     locationDetailsByFragmentId.set(fragmentId, locationDetailRecord);
+  }
+  const rawEncounterDetails = Array.isArray(normalized.encounterDetails)
+    ? normalized.encounterDetails
+    : [];
+  const encounterDetailsByFragmentId = new Map<string, Record<string, unknown>>();
+  for (const encounterDetail of rawEncounterDetails) {
+    if (!encounterDetail || typeof encounterDetail !== "object" || Array.isArray(encounterDetail)) {
+      continue;
+    }
+    const encounterDetailRecord = encounterDetail as Record<string, unknown>;
+    const fragmentId = encounterDetailRecord.fragmentId;
+    if (typeof fragmentId !== "string" || fragmentId.trim().length === 0) {
+      continue;
+    }
+    encounterDetailsByFragmentId.set(fragmentId, encounterDetailRecord);
   }
   const rawAssetCards = Array.isArray(normalized.assetCards) ? normalized.assetCards : [];
   const assetCardsByFragmentId = new Map<string, Record<string, unknown>>();
@@ -192,6 +213,20 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
           ? { mapImageUrl: existing.mapImageUrl.trim() }
           : {}),
         mapPins: Array.isArray(existing?.mapPins) ? existing.mapPins : [],
+      };
+    }),
+    encounterDetails: encounterFragmentIds.map((fragmentId) => {
+      const existing = encounterDetailsByFragmentId.get(fragmentId);
+      return {
+        fragmentId,
+        prerequisites:
+          typeof existing?.prerequisites === "string"
+            ? existing.prerequisites
+            : "",
+        ...(typeof existing?.titleImageUrl === "string" &&
+        existing.titleImageUrl.trim().length > 0
+          ? { titleImageUrl: existing.titleImageUrl.trim() }
+          : {}),
       };
     }),
     actorCards: actorFragmentIds.map((fragmentId) => {
@@ -272,6 +307,9 @@ const deriveActorSlugFromPath = (fragmentPath: string): string =>
   toSlug(basename(fragmentPath, extname(fragmentPath)));
 
 const deriveLocationSlugFromPath = (fragmentPath: string): string =>
+  toSlug(basename(fragmentPath, extname(fragmentPath)));
+
+const deriveEncounterSlugFromPath = (fragmentPath: string): string =>
   toSlug(basename(fragmentPath, extname(fragmentPath)));
 
 const deriveAssetSlugFromPath = (fragmentPath: string): string =>
@@ -458,6 +496,7 @@ export class AdventureModuleStore {
     const fragments = await this.loadFragmentContents(loaded.index, loaded.moduleDir);
     const ownedByRequester = loaded.system.creatorTokenHash === hashCreatorToken(creatorToken);
     const locations = this.resolveLocations(loaded.index, fragments);
+    const encounters = this.resolveEncounters(loaded.index, fragments);
     const actors = this.resolveActors(loaded.index, fragments);
     const counters = this.resolveCounters(loaded.index);
     const assets = this.resolveAssets(loaded.index, fragments);
@@ -465,6 +504,7 @@ export class AdventureModuleStore {
       index: loaded.index,
       fragments,
       locations,
+      encounters,
       actors,
       counters,
       assets,
@@ -514,6 +554,7 @@ export class AdventureModuleStore {
         assetCards: loaded.index.assetCards,
         itemFragmentIds: loaded.index.itemFragmentIds,
         encounterFragmentIds: loaded.index.encounterFragmentIds,
+        encounterDetails: loaded.index.encounterDetails,
         questFragmentIds: loaded.index.questFragmentIds,
         imagePromptFragmentIds: loaded.index.imagePromptFragmentIds,
         fragments: loaded.index.fragments,
@@ -866,6 +907,302 @@ export class AdventureModuleStore {
       const next = await this.getModule(moduleId, options.creatorToken);
       if (!next) {
         throw new AdventureModuleValidationError("Deleted location could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async createEncounter(options: {
+    moduleId: string;
+    creatorToken?: string;
+    title: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0 ? options.title.trim() : "New Encounter";
+      const encounterSlug = this.makeUniqueEncounterSlug(normalizedTitle, loaded.index);
+      const fragmentId = makeId("frag-encounter");
+      const fragmentRef: AdventureModuleFragmentRef = {
+        fragmentId,
+        kind: "encounter",
+        title: normalizedTitle,
+        path: `encounters/${encounterSlug}.mdx`,
+        summary: "Describe the player goal, pressure, and likely complications.",
+        tags: ["encounter", "scene"],
+        containsSpoilers: false,
+        intendedAudience: "shared",
+      };
+      const encounterDetail: AdventureModuleEncounterDetail = {
+        fragmentId,
+        prerequisites: "",
+      };
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        encounterFragmentIds: [...loaded.index.encounterFragmentIds, fragmentId],
+        encounterDetails: [...loaded.index.encounterDetails, encounterDetail],
+        fragments: [...loaded.index.fragments, fragmentRef],
+        artifacts: [
+          ...loaded.index.artifacts,
+          {
+            artifactId: `artifact-${fragmentId}`,
+            kind: "mdx",
+            path: fragmentRef.path,
+            title: fragmentRef.title,
+            sourceFragmentId: fragmentId,
+            contentType: "text/markdown",
+            generatedBy: "author",
+            createdAtIso: nowIso,
+          },
+        ],
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(loaded.moduleDir, fragmentRef.path);
+      await mkdir(dirname(absolutePath), { recursive: true });
+      await atomicWriteTextFile(
+        absolutePath,
+        this.createEncounterFragmentContent(normalizedTitle),
+      );
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+      } catch (error) {
+        await this.rollbackEncounterCreate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Created encounter could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async updateEncounter(options: {
+    moduleId: string;
+    encounterSlug: string;
+    creatorToken?: string;
+    title: string;
+    summary: string;
+    prerequisites: string;
+    titleImageUrl?: string;
+    content: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const encounterRecord = this.findEncounterRecord(
+        loaded.index,
+        options.encounterSlug,
+      );
+      if (!encounterRecord) {
+        throw new AdventureModuleValidationError("Encounter slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0
+          ? options.title.trim()
+          : encounterRecord.fragment.title;
+      const nextEncounterSlug = this.makeUniqueEncounterSlug(
+        normalizedTitle,
+        loaded.index,
+        encounterRecord.fragment.fragmentId,
+      );
+      const nextEncounterPath = `encounters/${nextEncounterSlug}.mdx`;
+      const nextFragments = loaded.index.fragments.map((fragment) => {
+        if (fragment.fragmentId !== encounterRecord.fragment.fragmentId) {
+          return fragment;
+        }
+        return {
+          ...fragment,
+          title: normalizedTitle,
+          path: nextEncounterPath,
+          summary:
+            options.summary.trim().length > 0 ? options.summary.trim() : undefined,
+        };
+      });
+
+      const normalizedTitleImageUrl =
+        typeof options.titleImageUrl === "string" &&
+        options.titleImageUrl.trim().length > 0
+          ? options.titleImageUrl.trim()
+          : undefined;
+      const nextEncounterDetails = loaded.index.encounterDetails.map((encounterDetail) => {
+        if (encounterDetail.fragmentId !== encounterRecord.fragment.fragmentId) {
+          return encounterDetail;
+        }
+        return {
+          fragmentId: encounterDetail.fragmentId,
+          prerequisites: options.prerequisites,
+          ...(normalizedTitleImageUrl
+            ? { titleImageUrl: normalizedTitleImageUrl }
+            : {}),
+        };
+      });
+      const nextArtifacts = loaded.index.artifacts.map((artifact) => {
+        if (artifact.sourceFragmentId !== encounterRecord.fragment.fragmentId) {
+          return artifact;
+        }
+        return {
+          ...artifact,
+          path: nextEncounterPath,
+          title: normalizedTitle,
+        };
+      });
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        fragments: nextFragments,
+        encounterDetails: nextEncounterDetails,
+        artifacts: nextArtifacts,
+        updatedAtIso: nowIso,
+      });
+
+      const previousAbsolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        encounterRecord.fragment.path,
+      );
+      const nextAbsolutePath = this.resolveSafePath(loaded.moduleDir, nextEncounterPath);
+      const previousContent = await this.readExistingTextFile(previousAbsolutePath);
+      await mkdir(dirname(nextAbsolutePath), { recursive: true });
+      await atomicWriteTextFile(nextAbsolutePath, options.content);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        if (nextAbsolutePath !== previousAbsolutePath) {
+          await rm(previousAbsolutePath, { recursive: true, force: true });
+        }
+      } catch (error) {
+        await this.rollbackEncounterUpdate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          previousAbsolutePath,
+          nextAbsolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Updated encounter could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async deleteEncounter(options: {
+    moduleId: string;
+    encounterSlug: string;
+    creatorToken?: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      if (loaded.index.encounterFragmentIds.length <= 1) {
+        throw new AdventureModuleValidationError(
+          "At least one encounter must remain in the module.",
+        );
+      }
+
+      const encounterRecord = this.findEncounterRecord(
+        loaded.index,
+        options.encounterSlug,
+      );
+      if (!encounterRecord) {
+        throw new AdventureModuleValidationError("Encounter slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const fragmentId = encounterRecord.fragment.fragmentId;
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        locationDetails: loaded.index.locationDetails.map((locationDetail) => ({
+          ...locationDetail,
+          mapPins: locationDetail.mapPins.filter(
+            (mapPin) => mapPin.targetFragmentId !== fragmentId,
+          ),
+        })),
+        encounterFragmentIds: loaded.index.encounterFragmentIds.filter(
+          (entry) => entry !== fragmentId,
+        ),
+        encounterDetails: loaded.index.encounterDetails.filter(
+          (encounterDetail) => encounterDetail.fragmentId !== fragmentId,
+        ),
+        fragments: loaded.index.fragments.filter(
+          (fragment) => fragment.fragmentId !== fragmentId,
+        ),
+        questGraphs: loaded.index.questGraphs.map((questGraph) => ({
+          ...questGraph,
+          nodes: questGraph.nodes.map((node) => ({
+            ...node,
+            encounterFragmentIds: node.encounterFragmentIds.filter(
+              (encounterFragmentId) => encounterFragmentId !== fragmentId,
+            ),
+          })),
+        })),
+        componentOpportunities: loaded.index.componentOpportunities.filter(
+          (opportunity) => opportunity.fragmentId !== fragmentId,
+        ),
+        artifacts: loaded.index.artifacts.filter(
+          (artifact) => artifact.sourceFragmentId !== fragmentId,
+        ),
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        encounterRecord.fragment.path,
+      );
+      const previousContent = await this.readExistingTextFile(absolutePath);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        await rm(absolutePath, { recursive: true, force: true });
+      } catch (error) {
+        await this.rollbackEncounterDelete(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Deleted encounter could not be loaded.");
       }
       return next;
     });
@@ -1807,6 +2144,10 @@ export class AdventureModuleStore {
     return `# ${title}\n\n## Public Face\n\nDescribe how this actor appears to players.\n\n## Agenda\n\n- Add the actor's main motivation.\n- Add what they want right now.\n\n## Pressure Moves\n\n- Add how they escalate the scene.\n`;
   }
 
+  private createEncounterFragmentContent(title: string): string {
+    return `# ${title}\n\n## Goal\n\nDescribe what the players are trying to accomplish in this encounter.\n\n## Pressure\n\n- Add what makes this encounter urgent.\n- Add how the situation escalates if the players stall.\n\n## Resolution\n\n- Add likely success, cost, and fail-forward outcomes.\n`;
+  }
+
   private composeLocationFragmentContent(
     title: string,
     introductionMarkdown: string,
@@ -1870,6 +2211,19 @@ export class AdventureModuleStore {
   }
 
   private async rollbackLocationCreate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      rm(fragmentPath, { recursive: true, force: true }),
+    ]);
+  }
+
+  private async rollbackEncounterCreate(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
     previousSystem: ModuleSystemMetadata,
@@ -1963,6 +2317,33 @@ export class AdventureModuleStore {
     await Promise.allSettled(rollbackTasks);
   }
 
+  private async rollbackEncounterUpdate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    previousFragmentPath: string,
+    nextFragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    const rollbackTasks: Array<Promise<unknown>> = [
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+    ];
+
+    if (previousFragmentPath === nextFragmentPath) {
+      rollbackTasks.push(atomicWriteTextFile(previousFragmentPath, previousContent));
+    } else {
+      rollbackTasks.push(
+        mkdir(dirname(previousFragmentPath), { recursive: true }).then(() =>
+          atomicWriteTextFile(previousFragmentPath, previousContent),
+        ),
+      );
+      rollbackTasks.push(rm(nextFragmentPath, { recursive: true, force: true }));
+    }
+
+    await Promise.allSettled(rollbackTasks);
+  }
+
   private async rollbackActorDelete(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
@@ -2011,6 +2392,22 @@ export class AdventureModuleStore {
     ]);
   }
 
+  private async rollbackEncounterDelete(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      mkdir(dirname(fragmentPath), { recursive: true }).then(() =>
+        atomicWriteTextFile(fragmentPath, previousContent),
+      ),
+    ]);
+  }
+
   private makeUniqueLocationSlug(
     title: string,
     index: AdventureModuleIndex,
@@ -2041,6 +2438,38 @@ export class AdventureModuleStore {
     }
 
     throw new AdventureModuleValidationError("Could not allocate a unique location slug.");
+  }
+
+  private makeUniqueEncounterSlug(
+    title: string,
+    index: AdventureModuleIndex,
+    excludeFragmentId?: string,
+  ): string {
+    const baseSlug = toSlug(title);
+    const existingEncounterSlugs = new Set(
+      index.encounterFragmentIds
+        .filter((fragmentId) => fragmentId !== excludeFragmentId)
+        .map((fragmentId) => index.fragments.find((fragment) => fragment.fragmentId === fragmentId))
+        .filter(
+          (
+            fragment,
+          ): fragment is AdventureModuleFragmentRef => Boolean(fragment?.path),
+        )
+        .map((fragment) => deriveEncounterSlugFromPath(fragment.path)),
+    );
+
+    if (!existingEncounterSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    for (let suffix = 2; suffix < 10_000; suffix += 1) {
+      const candidate = toSlug(`${baseSlug}-${suffix}`);
+      if (!existingEncounterSlugs.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    throw new AdventureModuleValidationError("Could not allocate a unique encounter slug.");
   }
 
   private makeUniqueActorSlug(
@@ -2169,6 +2598,24 @@ export class AdventureModuleStore {
     return null;
   }
 
+  private findEncounterRecord(
+    index: AdventureModuleIndex,
+    encounterSlug: string,
+  ): { fragment: AdventureModuleFragmentRef } | null {
+    for (const encounterFragmentId of index.encounterFragmentIds) {
+      const fragment = index.fragments.find(
+        (entry) => entry.fragmentId === encounterFragmentId,
+      );
+      if (!fragment) {
+        continue;
+      }
+      if (deriveEncounterSlugFromPath(fragment.path) === encounterSlug) {
+        return { fragment };
+      }
+    }
+    return null;
+  }
+
   private findAssetRecord(
     index: AdventureModuleIndex,
     assetSlug: string,
@@ -2249,6 +2696,41 @@ export class AdventureModuleStore {
             : locationDetail.descriptionMarkdown,
           mapImageUrl: locationDetail.mapImageUrl,
           mapPins: locationDetail.mapPins.map((mapPin) => ({ ...mapPin })),
+        },
+      ];
+    });
+  }
+
+  private resolveEncounters(
+    index: AdventureModuleIndex,
+    fragments: AdventureModuleDetail["fragments"],
+  ): AdventureModuleDetail["encounters"] {
+    const fragmentContentById = new Map(
+      fragments.map((fragment) => [fragment.fragment.fragmentId, fragment.content] as const),
+    );
+    const encounterDetailByFragmentId = new Map(
+      index.encounterDetails.map((encounterDetail) => [
+        encounterDetail.fragmentId,
+        encounterDetail,
+      ] as const),
+    );
+
+    return index.encounterFragmentIds.flatMap((fragmentId) => {
+      const fragmentRef = index.fragments.find((fragment) => fragment.fragmentId === fragmentId);
+      const encounterDetail = encounterDetailByFragmentId.get(fragmentId);
+      if (!fragmentRef || !encounterDetail) {
+        return [];
+      }
+
+      return [
+        {
+          fragmentId,
+          encounterSlug: deriveEncounterSlugFromPath(fragmentRef.path),
+          title: fragmentRef.title,
+          summary: fragmentRef.summary,
+          prerequisites: encounterDetail.prerequisites,
+          titleImageUrl: encounterDetail.titleImageUrl,
+          content: fragmentContentById.get(fragmentId) ?? "",
         },
       ];
     });
@@ -2641,6 +3123,12 @@ export class AdventureModuleStore {
       ],
       itemFragmentIds: [],
       encounterFragmentIds: ["frag-encounter-main"],
+      encounterDetails: [
+        {
+          fragmentId: "frag-encounter-main",
+          prerequisites: "",
+        },
+      ],
       questFragmentIds: ["frag-quest-main"],
       imagePromptFragmentIds: [],
       fragments,

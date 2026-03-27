@@ -4,7 +4,7 @@ import { SceneCardFrame } from "./SceneCardFrame";
 
 void React;
 
-interface LocationCardProps {
+interface EncounterCardProps {
   imageUrl: string;
   imageAlt?: string;
   title: ReactNode;
@@ -12,20 +12,20 @@ interface LocationCardProps {
   className?: string;
 }
 
-export const LocationCard = ({
+export const EncounterCard = ({
   imageUrl,
   imageAlt = "",
   title,
   description,
   className = "",
-}: LocationCardProps): JSX.Element => {
+}: EncounterCardProps): JSX.Element => {
   return (
     <SceneCardFrame
       imageUrl={imageUrl}
       imageAlt={imageAlt}
       title={title}
-      typeLabel="Location"
-      typeVariant="cloth"
+      typeLabel="Encounter"
+      typeVariant="fire"
       description={description}
       className={className}
     />

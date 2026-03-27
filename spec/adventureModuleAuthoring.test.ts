@@ -77,6 +77,13 @@ const createValidModuleDetailCandidate = () => ({
     ],
     itemFragmentIds: [],
     encounterFragmentIds: ["frag-encounter-main"],
+    encounterDetails: [
+      {
+        fragmentId: "frag-encounter-main",
+        prerequisites: "Level 3+ or already tracking the flooded bell quest.",
+        titleImageUrl: "https://example.com/encounter-title.png",
+      },
+    ],
     questFragmentIds: ["frag-quest-main"],
     imagePromptFragmentIds: [],
     fragments: [
@@ -419,6 +426,17 @@ const createValidModuleDetailCandidate = () => ({
       ],
     },
   ],
+  encounters: [
+    {
+      fragmentId: "frag-encounter-main",
+      encounterSlug: "primary-encounter",
+      title: "Primary Encounter",
+      summary: "Cross the flooding plaza before the bell rings twice.",
+      prerequisites: "Level 3+ or already tracking the flooded bell quest.",
+      titleImageUrl: "https://example.com/encounter-title.png",
+      content: "# Primary Encounter",
+    },
+  ],
   ownedByRequester: true,
 });
 
@@ -479,6 +497,30 @@ test("adventureModuleDetailSchema accepts resolved custom assets joined from cus
   assert.equal(parsed.assets[0]?.noun, "Lantern Shard");
 });
 
+test("adventureModuleDetailSchema accepts resolved encounters joined from encounter metadata", () => {
+  const parsed = adventureModuleDetailSchema.parse(createValidModuleDetailCandidate());
+
+  assert.equal(parsed.encounters.length, 1);
+  assert.equal(parsed.encounters[0]?.encounterSlug, "primary-encounter");
+  assert.equal(
+    parsed.encounters[0]?.prerequisites,
+    "Level 3+ or already tracking the flooded bell quest.",
+  );
+});
+
+test("adventureModuleDetailSchema rejects resolved encounters that do not match encounter metadata", () => {
+  const candidate = createValidModuleDetailCandidate();
+  candidate.encounters[0] = {
+    ...candidate.encounters[0],
+    titleImageUrl: "https://example.com/unexpected-encounter-image.png",
+  };
+
+  assert.throws(
+    () => adventureModuleDetailSchema.parse(candidate),
+    /resolved encounter .* does not match index encounter metadata/i,
+  );
+});
+
 test("adventureModuleUpdateAssetRequestSchema accepts custom asset fields", () => {
   const parsed = adventureModuleUpdateAssetRequestSchema.parse({
     title: "Storm Lantern",
@@ -506,5 +548,26 @@ test("adventureModuleUpdateAssetRequestSchema rejects legacy layered asset paylo
         content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
       }),
     /baseAssetSlug|modifierSlug/i,
+  );
+});
+
+test("adventureModule encounter request schemas accept encounter authoring fields", async () => {
+  const mod = await import("./adventureModuleAuthoring");
+
+  const createParsed = mod.adventureModuleCreateEncounterRequestSchema.parse({
+    title: "Rope Bridge Escape",
+  });
+  const updateParsed = mod.adventureModuleUpdateEncounterRequestSchema.parse({
+    title: "Rope Bridge Escape",
+    summary: "Cross the collapsing bridge before the rear guard catches up.",
+    prerequisites: "Already escaped the prison cells.",
+    titleImageUrl: "https://example.com/bridge-escape.png",
+    content: "# Rope Bridge Escape\n\nKeep the bridge intact long enough to cross.",
+  });
+
+  assert.equal(createParsed.title, "Rope Bridge Escape");
+  assert.equal(
+    updateParsed.prerequisites,
+    "Already escaped the prison cells.",
   );
 });

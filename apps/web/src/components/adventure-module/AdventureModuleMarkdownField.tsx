@@ -4,6 +4,7 @@ import type {
   AdventureModuleResolvedActor,
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
+  AdventureModuleResolvedEncounter,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { AssetBaseSlug } from "@mighty-decks/spec/assetCards";
 import {
@@ -59,15 +60,21 @@ import {
   type GameCardType,
 } from "../../lib/markdownGameComponents";
 import {
+  buildEncounterCardOptions,
+  type EncounterCardOption,
+} from "../../lib/markdownEncounterComponents";
+import {
   GameCardCatalogContext,
   type CounterAdjustTarget,
 } from "../../lib/gameCardCatalogContext";
 import {
+  createEncounterCardJsx,
   createGameCardJsx,
   normalizeLegacyGameCardMarkdown,
 } from "../../lib/gameCardMarkdown";
 import { gameCardInlineFlowPlugin } from "../../lib/gameCardInlineFlowPlugin";
 import { normalizeMarkdownEditorChange } from "../../lib/markdownEditorChange";
+import { EncounterCardJsxEditor } from "./EncounterCardJsxEditor";
 import { GameCardJsxEditor } from "./GameCardJsxEditor";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
 
@@ -103,6 +110,7 @@ export interface AdventureModuleMarkdownFieldProps {
   actors?: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
+  encounters?: AdventureModuleResolvedEncounter[];
   value: string;
   editable: boolean;
   maxLength: number;
@@ -196,7 +204,7 @@ const renderSmartMenuTrigger = (
 interface CreateEditorPluginsArgs {
   insertType: ToolbarInsertType;
   insertSlug: string;
-  insertOptions: GameCardOption[];
+  insertOptions: (GameCardOption | EncounterCardOption)[];
   genericAssetBaseSlug: string;
   genericAssetModifierSlug: string;
   insertDisabled: boolean;
@@ -208,7 +216,11 @@ interface CreateEditorPluginsArgs {
   onInsert: () => void;
 }
 
-type ToolbarInsertType = GameCardType | "GenericAsset" | "CustomAsset";
+type ToolbarInsertType =
+  | GameCardType
+  | "GenericAsset"
+  | "CustomAsset"
+  | "EncounterCard";
 
 const gameCardJsxDescriptor: JsxComponentDescriptor = {
   name: "GameCard",
@@ -220,6 +232,14 @@ const gameCardJsxDescriptor: JsxComponentDescriptor = {
   ],
   hasChildren: false,
   Editor: GameCardJsxEditor,
+};
+
+const encounterCardJsxDescriptor: JsxComponentDescriptor = {
+  name: "EncounterCard",
+  kind: "flow",
+  props: [{ name: "slug", type: "string", required: true }],
+  hasChildren: false,
+  Editor: EncounterCardJsxEditor,
 };
 
 const renderToolbarInsertControls = ({
@@ -251,6 +271,7 @@ const renderToolbarInsertControls = ({
       <option value="StuntCard">Stunt</option>
       <option value="ActorCard">Actor</option>
       <option value="CounterCard">Counter</option>
+      <option value="EncounterCard">Encounter</option>
       <option value="GenericAsset">Generic Asset</option>
       <option value="CustomAsset">Custom Asset</option>
     </select>
@@ -302,7 +323,7 @@ const renderToolbarInsertControls = ({
       >
         {insertOptions.length > 0 ? (
           insertOptions.map((option) => (
-            <option key={option.legacyToken} value={option.slug}>
+            <option key={option.jsx} value={option.slug}>
               {option.label}
             </option>
           ))
@@ -320,7 +341,7 @@ const renderToolbarInsertControls = ({
       >
         {insertOptions.length > 0 ? (
           insertOptions.map((option) => (
-            <option key={option.legacyToken} value={option.slug}>
+            <option key={option.jsx} value={option.slug}>
               {option.label}
             </option>
           ))
@@ -351,7 +372,7 @@ const createEditorPlugins = (toolbarArgs: CreateEditorPluginsArgs) => [
   linkDialogPlugin(),
   gameCardInlineFlowPlugin(),
   jsxPlugin({
-    jsxComponentDescriptors: [gameCardJsxDescriptor],
+    jsxComponentDescriptors: [gameCardJsxDescriptor, encounterCardJsxDescriptor],
   }),
   markdownShortcutPlugin(),
   diffSourcePlugin({
@@ -842,6 +863,7 @@ export const AdventureModuleMarkdownField = ({
   actors = [],
   counters = [],
   assets = [],
+  encounters = [],
   value,
   editable,
   maxLength,
@@ -884,9 +906,23 @@ export const AdventureModuleMarkdownField = ({
       ),
     [assets],
   );
+  const encountersBySlug = useMemo(
+    () =>
+      new Map(
+        encounters.map((encounter) => [
+          encounter.encounterSlug.toLocaleLowerCase(),
+          encounter,
+        ] as const),
+      ),
+    [encounters],
+  );
   const gameCardOptionsByType = useMemo(
     () => buildGameCardOptionsByType(actors, counters, assets),
     [actors, assets, counters],
+  );
+  const encounterCardOptions = useMemo(
+    () => buildEncounterCardOptions(encounters),
+    [encounters],
   );
   const genericAssetBaseOptions = useMemo(
     () =>
@@ -939,9 +975,14 @@ export const AdventureModuleMarkdownField = ({
   const resolvedInsertType: GameCardType =
     insertType === "GenericAsset" || insertType === "CustomAsset"
       ? "AssetCard"
-      : insertType;
+      : insertType === "EncounterCard"
+        ? "OutcomeCard"
+        : insertType;
   useEffect(() => {
-    const options = gameCardOptionsByType[resolvedInsertType];
+    const options =
+      insertType === "EncounterCard"
+        ? encounterCardOptions
+        : gameCardOptionsByType[resolvedInsertType];
     if (options.length === 0) {
       if (insertSlug !== "") {
         setInsertSlug("");
@@ -951,7 +992,13 @@ export const AdventureModuleMarkdownField = ({
     if (!options.some((option) => option.slug === insertSlug)) {
       setInsertSlug(options[0].slug);
     }
-  }, [gameCardOptionsByType, insertSlug, resolvedInsertType]);
+  }, [
+    encounterCardOptions,
+    gameCardOptionsByType,
+    insertSlug,
+    insertType,
+    resolvedInsertType,
+  ]);
   useEffect(() => {
     if (genericAssetBaseOptions.length === 0) {
       return;
@@ -995,7 +1042,10 @@ export const AdventureModuleMarkdownField = ({
     maxLength,
     onChange,
   });
-  const insertOptions = gameCardOptionsByType[resolvedInsertType];
+  const insertOptions =
+    insertType === "EncounterCard"
+      ? encounterCardOptions
+      : gameCardOptionsByType[resolvedInsertType];
   const insertHasChoices =
     insertType === "GenericAsset"
       ? genericAssetBaseOptions.length > 0
@@ -1019,6 +1069,21 @@ export const AdventureModuleMarkdownField = ({
         return;
       }
       setInsertStatusMessage("Inserted Generic Asset card.");
+      return;
+    }
+
+    if (insertType === "EncounterCard") {
+      const selectedEncounter = encounterCardOptions.find(
+        (option) => option.slug === insertSlug,
+      );
+      if (!selectedEncounter) {
+        setInsertErrorMessage("Select an encounter before inserting.");
+        return;
+      }
+      if (!handleInsertComponent(createEncounterCardJsx(selectedEncounter.slug))) {
+        return;
+      }
+      setInsertStatusMessage("Inserted Encounter card.");
       return;
     }
 
@@ -1203,6 +1268,8 @@ export const AdventureModuleMarkdownField = ({
               countersBySlug,
               assets,
               assetsBySlug,
+              encounters,
+              encountersBySlug,
               onAdjustCounterValue,
             }}
           >

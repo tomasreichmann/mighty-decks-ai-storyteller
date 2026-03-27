@@ -4,24 +4,19 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
-  AdventureModuleResolvedLocation,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
+import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
 import { AdventureModuleGeneratedImageField } from "./AdventureModuleGeneratedImageField";
-import {
-  AdventureModuleLocationMapEditor,
-  type AdventureModuleLocationPinTarget,
-} from "./AdventureModuleLocationMapEditor";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
-import { Panel } from "../common/Panel";
 
-interface AdventureModuleLocationEditorProps {
-  location: AdventureModuleResolvedLocation;
+interface AdventureModuleEncounterEditorProps {
+  encounter: AdventureModuleResolvedEncounter;
   actors: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
@@ -29,16 +24,12 @@ interface AdventureModuleLocationEditorProps {
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
   validationMessage?: string | null;
-  pinTargets: AdventureModuleLocationPinTarget[];
   onTitleChange: (nextValue: string) => void;
   onSummaryChange: (nextValue: string) => void;
+  onPrerequisitesChange: (nextValue: string) => void;
   onTitleImageUrlChange: (nextValue: string) => void;
-  onIntroductionChange: (nextValue: string) => void;
-  onDescriptionChange: (nextValue: string) => void;
-  onMapImageUrlChange: (nextValue: string) => void;
-  onMapPinsChange: (nextPins: AdventureModuleResolvedLocation["mapPins"]) => void;
+  onContentChange: (nextValue: string) => void;
   onFieldBlur: () => void;
-  onOpenPinTarget: (target: AdventureModuleLocationPinTarget) => void;
   onAdjustCounterValue?: (
     counterSlug: string,
     delta: number,
@@ -47,40 +38,30 @@ interface AdventureModuleLocationEditorProps {
   onDelete?: () => void;
 }
 
-interface LocationImageFieldProps {
-  imageLabel: string;
+interface EncounterImageFieldProps {
   value?: string;
   editable: boolean;
   identityKey: string;
-  previewEmptyLabel: string;
-  promptDescription: string;
   resolveContextLines: (selectedContextTags: string[]) => string[];
-  defaultContextTags: readonly string[];
   onChange: (nextValue: string) => void;
   onFieldBlur: () => void;
 }
 
 const MAX_MARKDOWN_LENGTH = 200_000;
-const LOCATION_IMAGE_CONTEXT_TAG_OPTIONS = [
-  "Location Name",
-  "Location Summary",
-  "Introduction",
-  "Description",
+const ENCOUNTER_IMAGE_CONTEXT_TAG_OPTIONS = [
+  "Encounter Name",
+  "Encounter Summary",
+  "Prerequisites",
+  "Script",
   "Module Title",
   "Premise",
   "Player Summary",
   "Storyteller Summary",
 ] as const;
-const DEFAULT_TITLE_IMAGE_CONTEXT_TAGS = [
-  "Location Name",
-  "Location Summary",
-  "Introduction",
-  "Module Title",
-  "Premise",
-] as const;
-const DEFAULT_MAP_IMAGE_CONTEXT_TAGS = [
-  "Location Name",
-  "Description",
+const DEFAULT_ENCOUNTER_IMAGE_CONTEXT_TAGS = [
+  "Encounter Name",
+  "Encounter Summary",
+  "Script",
   "Module Title",
   "Premise",
 ] as const;
@@ -91,40 +72,40 @@ const deleteButtonClassName =
 const toSnippet = (value: string, maxLength: number): string =>
   toMarkdownPlainTextSnippet(value, maxLength).trim();
 
-const buildLocationImageContextLines = (
+const buildEncounterImageContextLines = (
   selectedContextTags: string[],
-  location: AdventureModuleResolvedLocation,
+  encounter: AdventureModuleResolvedEncounter,
   smartContextDocument: SmartInputDocumentContext,
 ): string[] => {
   const lines: string[] = [];
 
   for (const selectedTag of selectedContextTags) {
     switch (selectedTag) {
-      case "Location Name": {
-        const snippet = toSnippet(location.title, 120);
+      case "Encounter Name": {
+        const snippet = toSnippet(encounter.title, 120);
         if (snippet.length > 0) {
-          lines.push(`Location name: ${snippet}`);
+          lines.push(`Encounter name: ${snippet}`);
         }
         break;
       }
-      case "Location Summary": {
-        const snippet = toSnippet(location.summary ?? "", 320);
+      case "Encounter Summary": {
+        const snippet = toSnippet(encounter.summary ?? "", 320);
         if (snippet.length > 0) {
-          lines.push(`Location summary: ${snippet}`);
+          lines.push(`Encounter summary: ${snippet}`);
         }
         break;
       }
-      case "Introduction": {
-        const snippet = toSnippet(location.introductionMarkdown, 500);
+      case "Prerequisites": {
+        const snippet = toSnippet(encounter.prerequisites, 220);
         if (snippet.length > 0) {
-          lines.push(`Flavor text: ${snippet}`);
+          lines.push(`Prerequisites: ${snippet}`);
         }
         break;
       }
-      case "Description": {
-        const snippet = toSnippet(location.descriptionMarkdown, 550);
+      case "Script": {
+        const snippet = toSnippet(encounter.content, 650);
         if (snippet.length > 0) {
-          lines.push(`Location details: ${snippet}`);
+          lines.push(`Encounter script: ${snippet}`);
         }
         break;
       }
@@ -164,45 +145,41 @@ const buildLocationImageContextLines = (
   return lines;
 };
 
-const LocationImageField = ({
-  imageLabel,
+const EncounterImageField = ({
   value,
   editable,
   identityKey,
-  previewEmptyLabel,
-  promptDescription,
   resolveContextLines,
-  defaultContextTags,
   onChange,
   onFieldBlur,
-}: LocationImageFieldProps): JSX.Element => {
+}: EncounterImageFieldProps): JSX.Element => {
   return (
     <Panel contentClassName="stack gap-4">
       <div className="stack gap-1">
         <Text variant="h3" color="iron">
-          {imageLabel}
+          Title Image
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Paste a final image URL or generate options and pick one.
+          Paste a final image URL or generate encounter key art and pick one.
         </Text>
       </div>
 
       <AdventureModuleGeneratedImageField
-        label={imageLabel}
-        promptLabel={`${imageLabel} Prompt`}
-        promptDescription={promptDescription}
-        contextLabel={`${imageLabel} Context`}
+        label="Title Image"
+        promptLabel="Title Image Prompt"
+        promptDescription="Generate a visual key art image for this encounter."
+        contextLabel="Title Image Context"
         contextDescription="Edit the base prompt text. Selected context tags are appended for generation and lookup, but are not shown in the prompt field."
-        workflowContextIntro={`${imageLabel} prompt for adventure module location art. Refine wording while preserving visual clarity and useful scene composition.`}
-        contextTagOptions={LOCATION_IMAGE_CONTEXT_TAG_OPTIONS}
-        defaultContextTags={defaultContextTags}
+        workflowContextIntro="Title image prompt for adventure module encounter art. Refine wording while preserving a clear playable scene and strong visual focus."
+        contextTagOptions={ENCOUNTER_IMAGE_CONTEXT_TAG_OPTIONS}
+        defaultContextTags={DEFAULT_ENCOUNTER_IMAGE_CONTEXT_TAGS}
         resolveContextLines={resolveContextLines}
-        emptyLabel={previewEmptyLabel}
-        pendingLabel={`Generating ${imageLabel.toLocaleLowerCase()}...`}
+        emptyLabel="No title image selected yet."
+        pendingLabel="Generating title image..."
         disabled={!editable}
         identityKey={identityKey}
         value={value ?? ""}
-        valueFieldLabel={`${imageLabel} URL`}
+        valueFieldLabel="Title Image URL"
         valueFieldDescription="Paste an existing image URL or pick one from the generated batch below."
         onChange={onChange}
         onBlur={onFieldBlur}
@@ -211,8 +188,8 @@ const LocationImageField = ({
   );
 };
 
-export const AdventureModuleLocationEditor = ({
-  location,
+export const AdventureModuleEncounterEditor = ({
+  encounter,
   actors,
   counters = [],
   assets = [],
@@ -220,27 +197,23 @@ export const AdventureModuleLocationEditor = ({
   smartContextDocument,
   editable,
   validationMessage,
-  pinTargets,
   onTitleChange,
   onSummaryChange,
+  onPrerequisitesChange,
   onTitleImageUrlChange,
-  onIntroductionChange,
-  onDescriptionChange,
-  onMapImageUrlChange,
-  onMapPinsChange,
+  onContentChange,
   onFieldBlur,
-  onOpenPinTarget,
   onAdjustCounterValue,
   onDelete,
-}: AdventureModuleLocationEditorProps): JSX.Element => {
+}: AdventureModuleEncounterEditorProps): JSX.Element => {
   const resolveImageContextLines = useCallback(
     (selectedContextTags: string[]) =>
-      buildLocationImageContextLines(
+      buildEncounterImageContextLines(
         selectedContextTags,
-        location,
+        encounter,
         smartContextDocument,
       ),
-    [location, smartContextDocument],
+    [encounter, smartContextDocument],
   );
 
   return (
@@ -250,10 +223,11 @@ export const AdventureModuleLocationEditor = ({
           <div className="flex items-start justify-between gap-3">
             <div className="stack gap-1">
               <Text variant="h3" color="iron">
-                Location
+                Encounter
               </Text>
               <Text variant="body" color="iron-light" className="text-sm">
-                Define the location title, summary, and slug-driven route.
+                Define the encounter title, short description, prerequisites,
+                and slug-driven route.
               </Text>
             </div>
             {onDelete ? (
@@ -263,34 +237,45 @@ export const AdventureModuleLocationEditor = ({
                 disabled={!editable}
                 className={deleteButtonClassName}
               >
-                Delete Location
+                Delete Encounter
               </button>
             ) : null}
           </div>
 
           <TextField
-            label="Location Name"
+            label="Encounter Name"
             maxLength={120}
-            value={location.title}
+            value={encounter.title}
             onChange={(event) => onTitleChange(event.target.value)}
             onBlur={onFieldBlur}
             disabled={!editable}
           />
 
           <TextArea
-            label="Summary"
+            label="Short Description"
             maxLength={500}
             rows={4}
-            value={location.summary ?? ""}
+            value={encounter.summary ?? ""}
             onChange={(event) => onSummaryChange(event.target.value)}
             onBlur={onFieldBlur}
             disabled={!editable}
-            description="Used in the Locations tab list and quick references."
+            description="Used on encounter cards in authoring lists and markdown embeds."
+          />
+
+          <TextArea
+            label="Prerequisites"
+            maxLength={240}
+            rows={3}
+            value={encounter.prerequisites}
+            onChange={(event) => onPrerequisitesChange(event.target.value)}
+            onBlur={onFieldBlur}
+            disabled={!editable}
+            description="Short guidance like minimum level, required clue, or active quest."
           />
 
           <Text variant="note" color="iron-light" className="text-sm !opacity-100">
-            Location slug: <code>{location.locationSlug}</code>. It is
-            regenerated from the location name when you save.
+            Encounter slug: <code>{encounter.encounterSlug}</code>. It is
+            regenerated from the encounter name when you save.
           </Text>
 
           {validationMessage ? (
@@ -300,83 +285,33 @@ export const AdventureModuleLocationEditor = ({
           ) : null}
         </Panel>
 
-        <LocationImageField
-          imageLabel="Title Image"
-          value={location.titleImageUrl}
+        <EncounterImageField
+          value={encounter.titleImageUrl}
           editable={editable}
-          identityKey={`${location.fragmentId}-title-image`}
-          previewEmptyLabel="No title image selected yet."
-          promptDescription="Generate a visual key art image for this location."
+          identityKey={`${encounter.fragmentId}-title-image`}
           resolveContextLines={resolveImageContextLines}
-          defaultContextTags={DEFAULT_TITLE_IMAGE_CONTEXT_TAGS}
           onChange={onTitleImageUrlChange}
           onFieldBlur={onFieldBlur}
         />
       </div>
 
       <AdventureModuleMarkdownField
-        label="Introduction"
-        description="Usually read aloud directly to players as flavor text when they arrive."
-        selfContextTag="Player Info"
-        smartContextDocument={smartContextDocument}
-        actors={actors}
-        counters={counters}
-        assets={assets}
-        encounters={encounters}
-        value={location.introductionMarkdown}
-        editable={editable}
-        maxLength={MAX_MARKDOWN_LENGTH}
-        onChange={onIntroductionChange}
-        onFieldBlur={onFieldBlur}
-        onAdjustCounterValue={onAdjustCounterValue}
-        contentEditableClassName="min-h-[12rem]"
-      />
-
-      <AdventureModuleMarkdownField
-        label="Description"
-        description="Record who is usually here, what can be found, exits, hazards, and other reusable prep."
+        label="Encounter Script"
+        description="Author the encounter beat, player goal, pressure, consequences, and reusable GM guidance. EncounterCard embeds render inline in Rich Text."
         selfContextTag="Storyteller Info"
         smartContextDocument={smartContextDocument}
         actors={actors}
         counters={counters}
         assets={assets}
         encounters={encounters}
-        value={location.descriptionMarkdown}
+        value={encounter.content}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
-        onChange={onDescriptionChange}
+        onChange={onContentChange}
         onFieldBlur={onFieldBlur}
         onAdjustCounterValue={onAdjustCounterValue}
-        contentEditableClassName="min-h-[16rem]"
+        contentEditableClassName="min-h-[18rem]"
       />
-
-        <LocationImageField
-          imageLabel="Map Image"
-          value={location.mapImageUrl}
-          editable={editable}
-          identityKey={`${location.fragmentId}-map-image`}
-          previewEmptyLabel="No map image selected yet."
-          promptDescription="Generate the interactive map image used for pin placement."
-          resolveContextLines={resolveImageContextLines}
-          defaultContextTags={DEFAULT_MAP_IMAGE_CONTEXT_TAGS}
-          onChange={onMapImageUrlChange}
-          onFieldBlur={onFieldBlur}
-        />
-
-      <AdventureModuleLocationMapEditor
-        mapImageUrl={location.mapImageUrl}
-        pins={location.mapPins}
-        editable={editable}
-        pinTargets={pinTargets}
-        onPinsChange={onMapPinsChange}
-        onFieldBlur={onFieldBlur}
-        onOpenPinTarget={onOpenPinTarget}
-      />
-
-      <Text variant="note" color="iron-light" className="text-sm !opacity-100">
-        Location pins can link to other locations, actors, encounters, or
-        quests. Current location links are excluded from the picker.
-      </Text>
     </div>
   );
 };

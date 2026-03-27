@@ -99,6 +99,25 @@ Summary-specific requirements:
 - Authoring metadata includes `storytellerSummaryMarkdown` on module index for extended storyteller-facing markdown body used by `/storyteller-info` editing.
 - Authoring metadata includes `playerSummaryMarkdown` on module index for extended player-facing markdown body used by `/player-info` editing.
 
+Authoring entity catalog:
+
+| Entity | Purpose | Storage model | Current authoring status |
+| --- | --- | --- | --- |
+| Player | Spoiler-safe player-facing summary and reference text | `player_summary` fragment plus index `playerSummaryMarkdown` | Implemented |
+| Storyteller | Spoiler-ready facilitator summary and guidance | `storyteller_summary` fragment plus index `storytellerSummaryMarkdown` | Implemented |
+| Actor | Character, faction representative, ally, rival, or threat face | `actor` fragment plus `actorCards` metadata | Implemented |
+| Counter | Shared reusable numeric pressure or progress tracker | Typed index `counters` records | Implemented |
+| Asset | Reusable object, resource, clue, or leverage source | `asset` fragment plus `assetCards` metadata | Implemented |
+| Location | Place, travel node, map area, or reusable environment setup | `location` fragment plus `locationDetails` metadata | Implemented |
+| Encounter | Self-contained playable beat with a concrete player goal | `encounter` fragment plus `encounterDetails` metadata | Implemented |
+| Quest | Cohesive story arc that links encounters, events, and locations | `quest` fragment plus quest graph metadata | Documentation and data model implemented; dedicated quest editor remains future work |
+
+Notes:
+
+- `Player` and `Storyteller` are authored info surfaces, not standalone CRUD entity kinds.
+- `Encounter` is authored as a single playable scene or challenge beat.
+- `Quest` remains the higher-level story structure that groups encounters, locations, transitions, and conclusions.
+
 Actor-specific requirements:
 
 - Actor fragments remain normal markdown-backed `actor` fragments.
@@ -136,6 +155,21 @@ Location-specific requirements:
 - Map pin targets are limited to existing `location`, `actor`, `encounter`, or `quest` fragments so location and actor slug renames do not break links.
 - Resolved authoring reads join fragment metadata and location-detail metadata into a `locations` array for the web client.
 - Legacy modules missing `locationDetails` metadata backfill from the raw location fragment body by treating it as `descriptionMarkdown` until the location is saved.
+
+Encounter-specific requirements:
+
+- Encounter fragments remain normal markdown-backed `encounter` fragments.
+- Module index authoring metadata includes an `encounterDetails` collection keyed by encounter `fragmentId`.
+- Each encounter-detail metadata entry stores `prerequisites` and optional `titleImageUrl`.
+- Every `encounterFragmentId` must have exactly one matching encounter-detail metadata entry.
+- Resolved authoring reads join fragment metadata and encounter-detail metadata into an `encounters` array for the web client.
+- Legacy modules missing `encounterDetails` metadata backfill with empty `prerequisites` and no `titleImageUrl` until the encounter is saved.
+
+Quest-specific requirements:
+
+- Quest fragments remain normal markdown-backed `quest` fragments.
+- Quest sequencing and dependency structure continue to live in quest graph metadata rather than in the quest fragment body alone.
+- Quest authoring UI remains a future step, but quest fragments already participate in map-pin linking and module validation.
 
 ---
 
@@ -209,6 +243,7 @@ Authoring embed rules:
 - Canonical counter embeds use `<GameCard type="CounterCard" slug="<counter-slug>" />`.
 - Canonical custom asset embeds use `<GameCard type="AssetCard" slug="<asset-slug>" />`.
 - Canonical generic built-in asset embeds use `<GameCard type="AssetCard" slug="<base-asset-slug>" modifierSlug="<modifier-slug>" />`, omitting `modifierSlug` when no modifier is selected.
+- Canonical encounter embeds use `<EncounterCard slug="<encounter-slug>" />`.
 - Legacy `@actor/<actor-slug>`, `@counter/<counter-slug>`, `@asset/<asset-slug>`, and `@asset/<asset-slug>/<modifier-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
 
 ---
@@ -357,4 +392,4 @@ Legacy module compatibility:
 - Session orchestration changes
 - Cloud publishing pipeline
 - Minis/map rendering features
-- Encounter and quest typed entity editors
+- Dedicated quest typed entity editor

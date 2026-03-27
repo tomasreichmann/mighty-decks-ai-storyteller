@@ -5,6 +5,7 @@ import {
   adventureModuleCreateActorRequestSchema,
   adventureModuleCreateAssetRequestSchema,
   adventureModuleCreateCounterRequestSchema,
+  adventureModuleCreateEncounterRequestSchema,
   adventureModuleCreateLocationRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
@@ -23,6 +24,8 @@ import {
   adventureModuleUpdateAssetResponseSchema,
   adventureModuleUpdateCounterRequestSchema,
   adventureModuleUpdateCounterResponseSchema,
+  adventureModuleUpdateEncounterRequestSchema,
+  adventureModuleUpdateEncounterResponseSchema,
   adventureModuleUpdateLocationRequestSchema,
   adventureModuleUpdateLocationResponseSchema,
   adventureModuleUpdateCoverImageRequestSchema,
@@ -57,6 +60,9 @@ const counterSlugParamsSchema = z.object({
 });
 const locationSlugParamsSchema = z.object({
   locationSlug: entitySlugSchema,
+});
+const encounterSlugParamsSchema = z.object({
+  encounterSlug: entitySlugSchema,
 });
 
 const parseCreatorToken = (request: FastifyRequest): string | undefined => {
@@ -273,6 +279,73 @@ export const registerAdventureModuleRoutes = (
         const next = await options.store.deleteLocation({
           moduleId,
           locationSlug: params.locationSlug,
+          creatorToken,
+        });
+        return reply.send(adventureModuleUpdateResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.post("/api/adventure-modules/:moduleId/encounters", async (request, reply) => {
+    const creatorToken = parseCreatorToken(request);
+    const { moduleId = "" } = request.params as { moduleId?: string };
+    try {
+      const payload = adventureModuleCreateEncounterRequestSchema.parse(request.body);
+      const next = await options.store.createEncounter({
+        moduleId,
+        creatorToken,
+        title: payload.title,
+      });
+      return reply.code(201).send(adventureModuleCreateResponseSchema.parse(next));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.put(
+    "/api/adventure-modules/:moduleId/encounters/:encounterSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", encounterSlug = "" } = request.params as {
+        moduleId?: string;
+        encounterSlug?: string;
+      };
+      try {
+        const params = encounterSlugParamsSchema.parse({ encounterSlug });
+        const payload = adventureModuleUpdateEncounterRequestSchema.parse(request.body);
+        const next = await options.store.updateEncounter({
+          moduleId,
+          encounterSlug: params.encounterSlug,
+          creatorToken,
+          title: payload.title,
+          summary: payload.summary,
+          prerequisites: payload.prerequisites,
+          titleImageUrl:
+            payload.titleImageUrl === null ? undefined : payload.titleImageUrl,
+          content: payload.content,
+        });
+        return reply.send(adventureModuleUpdateEncounterResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.delete(
+    "/api/adventure-modules/:moduleId/encounters/:encounterSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", encounterSlug = "" } = request.params as {
+        moduleId?: string;
+        encounterSlug?: string;
+      };
+      try {
+        const params = encounterSlugParamsSchema.parse({ encounterSlug });
+        const next = await options.store.deleteEncounter({
+          moduleId,
+          encounterSlug: params.encounterSlug,
           creatorToken,
         });
         return reply.send(adventureModuleUpdateResponseSchema.parse(next));
