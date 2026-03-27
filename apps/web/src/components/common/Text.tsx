@@ -1,5 +1,8 @@
+import React from "react";
 import { ElementType, PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
+
+void React;
 
 export type TextVariant =
   | "h1"

@@ -17,6 +17,7 @@ Current route families:
 - `/adventure-module/list`, `/adventure-module/new`, `/adventure-module/:slug/:tab`, `/adventure-module/:slug/:tab/:entityId`
 - `/workflow-lab`, `/workflow-lab/:workflowId`
 - `/rules`, `/rules/outcomes`, `/rules/effects`, `/rules/stunts`, `/rules/assets`
+- `/styleguide`, `/styleguide/location-card` (hidden internal component lab)
 - `/image`
 
 ## Current Status

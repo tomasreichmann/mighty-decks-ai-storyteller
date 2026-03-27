@@ -334,8 +334,45 @@ Behavior:
 
 - copy rows use legacy `@type/<slug>` shortcodes because rich-text Adventure Module editors normalize pasted tokens into canonical stored `<GameCard />` embeds
 - the assets view is grouped into `Asset Base` and `Asset Medieval` sections
-- `/rules/assets` includes a `Modifier` checkbox that reveals modifier radio buttons and applies the selected modifier across every displayed asset preview
+- `/rules/assets` includes a `Modifier` checkbox that reveals modifier selector cards showing only the modifier and applies the selected modifier across every displayed asset preview
 - when a modifier is selected on `/rules/assets`, copy rows emit `@asset/<slug>/<modifier-slug>` so pasted shortcodes normalize into canonical asset embeds with `modifierSlug`
+
+---
+
+### `/styleguide`
+
+Hidden internal route for component iteration and design comparison work.
+
+Components:
+
+- `StyleguideIndexPage`
+- `GameCard` (location variant only, internal)
+- `LocationCard` (styleguide-local image treatment)
+
+Behavior:
+
+- direct-route accessible but intentionally unlinked from the public app flows
+- lists available component labs for contributor use
+- currently links to `/styleguide/location-card`
+
+---
+
+### `/styleguide/location-card`
+
+Hidden internal gallery for location-focused `GameCard` exploration.
+
+Components:
+
+- `GameCard` with `type="location"`
+- one image-first location card direction rendered from sample data
+- local `LocationCard` composition for the framed image plus label overlays
+
+Behavior:
+
+- single-card design preview
+- title and scene-description labels are owned by `LocationCard`, not `ImageCard`
+- no markdown `GameCard` pipeline integration in this slice
+- intended for visual iteration before authoring/runtime adoption
 
 ---
 

@@ -4,12 +4,14 @@ import type {
   AssetModifierSlug,
 } from "@mighty-decks/spec/assetCards";
 import { AssetCard } from "../components/cards/AssetCard";
+import { AssetModifierCard } from "../components/cards/AssetModifierCard";
 import { CodeCopyRow } from "../components/common/CodeCopyRow";
 import { Text } from "../components/common/Text";
 import {
   assetBaseCardsByGroup,
   assetModifierCards,
 } from "../data/assetCards";
+import { cn } from "../utils/cn";
 
 void React;
 
@@ -61,22 +63,33 @@ export const RulesAssetsPage = (): JSX.Element => {
         </label>
 
         {modifierEnabled ? (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {assetModifierCards.map((modifier) => (
               <label
                 key={modifier.slug}
-                className="inline-flex items-center gap-2 rounded border border-kac-iron/25 bg-white/40 px-3 py-2 font-ui text-sm text-kac-iron"
+                className="block cursor-pointer"
               >
                 <input
                   type="radio"
                   name="rules-assets-modifier"
                   value={modifier.slug}
+                  aria-label={`Select ${modifier.title} modifier`}
+                  className="sr-only"
                   checked={selectedModifierSlug === modifier.slug}
                   onChange={() => {
                     setSelectedModifierSlug(modifier.slug);
                   }}
                 />
-                <span>{modifier.title}</span>
+                <div
+                  className={cn(
+                    "rounded-[0.95rem] p-1 transition duration-150",
+                    selectedModifierSlug === modifier.slug
+                      ? "bg-[#d6bb94] shadow-[0_0_0_2px_rgba(121,86,45,0.4)]"
+                      : "bg-white/25 hover:bg-white/40",
+                  )}
+                >
+                  <AssetModifierCard modifierSlug={modifier.slug} className="mx-auto" />
+                </div>
               </label>
             ))}
           </div>

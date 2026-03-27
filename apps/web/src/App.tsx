@@ -46,6 +46,13 @@ const RulesStuntsPage = lazy(async () => ({
 const ScreenPage = lazy(async () => ({
   default: (await import("./routes/ScreenPage")).ScreenPage,
 }));
+const StyleguideIndexPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideIndexPage")).StyleguideIndexPage,
+}));
+const StyleguideLocationCardPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideLocationCardPage"))
+    .StyleguideLocationCardPage,
+}));
 const WorkflowLabPage = lazy(async () => ({
   default: (await import("./routes/WorkflowLabPage")).WorkflowLabPage,
 }));
@@ -96,6 +103,11 @@ export const App = (): JSX.Element => {
           />
           <Route path="/workflow-lab" element={<WorkflowLabPage />} />
           <Route path="/workflow-lab/:workflowId" element={<WorkflowLabPage />} />
+          <Route path="/styleguide" element={<StyleguideIndexPage />} />
+          <Route
+            path="/styleguide/location-card"
+            element={<StyleguideLocationCardPage />}
+          />
           <Route path="/adventure/:adventureId" element={<RoleSelectPage />} />
           <Route path="/rules" element={<RulesLayoutPage />}>
             <Route index element={<RulesIndexPage />} />
