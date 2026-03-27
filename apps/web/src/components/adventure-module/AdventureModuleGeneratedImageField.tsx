@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   GeneratedImageAsset,
+  GeneratedImageGroup,
   ImageModelSummary,
 } from "@mighty-decks/spec/imageGeneration";
 import { useImageGeneration } from "../../hooks/useImageGeneration";
@@ -67,6 +68,22 @@ const normalizePromptForMatch = (value: string): string =>
 
 const normalizeImageUrl = (value: string | null | undefined): string =>
   value?.trim() ?? "";
+
+// AIDEV-NOTE: Extracts the fileName from an image file URL like "/api/image/files/some-file.jpg"
+const extractFileNameFromUrl = (url: string): string | null => {
+  const prefix = "/api/image/files/";
+  const trimmed = url.trim();
+  const prefixIndex = trimmed.lastIndexOf(prefix);
+  if (prefixIndex < 0) {
+    return null;
+  }
+  const encoded = trimmed.slice(prefixIndex + prefix.length);
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    return encoded;
+  }
+};
 
 const isLikelyFastModel = (modelId: string): boolean => {
   const normalized = modelId.toLocaleLowerCase();
@@ -166,7 +183,12 @@ export const AdventureModuleGeneratedImageField = ({
   ]);
   const [preferredModelInitialized, setPreferredModelInitialized] =
     useState(false);
+  const [crossModelGroups, setCrossModelGroups] = useState<
+    GeneratedImageGroup[]
+  >([]);
+  const [loadingCrossModel, setLoadingCrossModel] = useState(false);
   const lastAutoSelectedImageUrlRef = useRef<string>("");
+  const autoLookupDoneRef = useRef(false);
   const {
     sortedModels,
     selectedModelId,
@@ -180,6 +202,9 @@ export const AdventureModuleGeneratedImageField = ({
     setSelectedModelId,
     setPrompt,
     lookupCurrentGroup,
+    lookupGroupByFileName,
+    lookupGroupsByPrompt,
+    listAllGroups,
     submitJob,
     selectActiveImage,
     clearError,
@@ -218,6 +243,8 @@ export const AdventureModuleGeneratedImageField = ({
     setContextTags([...defaultContextTags]);
     setPrompt("");
     clearError();
+    setCrossModelGroups([]);
+    autoLookupDoneRef.current = false;
     lastAutoSelectedImageUrlRef.current = normalizeImageUrl(value);
   }, [clearError, defaultContextTags, identityKey, setPrompt, value]);
 
@@ -249,21 +276,53 @@ export const AdventureModuleGeneratedImageField = ({
     sortedModels,
   ]);
 
+  // AIDEV-NOTE: Auto-lookup on mount when a persisted image URL exists but no group is loaded.
+  // Uses fileName-based lookup so it works even though the prompt field is empty after remount.
+  useEffect(() => {
+    if (autoLookupDoneRef.current || disabled || group) {
+      return;
+    }
+
+    const normalizedValue = normalizeImageUrl(value);
+    if (normalizedValue.length === 0) {
+      autoLookupDoneRef.current = true;
+      return;
+    }
+
+    const fileName = extractFileNameFromUrl(normalizedValue);
+    if (!fileName) {
+      autoLookupDoneRef.current = true;
+      return;
+    }
+
+    autoLookupDoneRef.current = true;
+    void lookupGroupByFileName(fileName);
+  }, [disabled, group, lookupGroupByFileName, value]);
+
   const matchingGroup = useMemo(() => {
     if (!group) {
       return null;
     }
+    // AIDEV-NOTE: Accept the group if it matches prompt+model (normal flow) OR if it
+    // contains the currently persisted image (auto-restore flow after tab navigation).
+    const promptAndModelMatch =
+      normalizePromptForMatch(group.prompt) ===
+        normalizePromptForMatch(composedPrompt) &&
+      group.model === selectedModelId;
+    if (promptAndModelMatch) {
+      return group;
+    }
+    const normalizedValue = normalizeImageUrl(value);
     if (
-      normalizePromptForMatch(group.prompt) !==
-      normalizePromptForMatch(composedPrompt)
+      normalizedValue.length > 0 &&
+      group.images.some(
+        (img) => normalizeImageUrl(img.fileUrl) === normalizedValue,
+      )
     ) {
-      return null;
+      return group;
     }
-    if (group.model !== selectedModelId) {
-      return null;
-    }
-    return group;
-  }, [composedPrompt, group, selectedModelId]);
+    return null;
+  }, [composedPrompt, group, selectedModelId, value]);
 
   const sortedImages = useMemo(
     () => (matchingGroup ? sortImages(matchingGroup.images) : []),
@@ -344,6 +403,61 @@ export const AdventureModuleGeneratedImageField = ({
     selectedModelId.trim().length > 0 &&
     hasPrompt &&
     !pending;
+  // AIDEV-NOTE: Lookup is always allowed (even with no prompt/URL) so the user can
+  // browse all previously generated images via the "list all groups" fallback.
+  const canLookup =
+    !disabled &&
+    !loadingModels &&
+    !pending;
+
+  // AIDEV-NOTE: Lookup handler that shows all available images.
+  // With a prompt: does prompt-specific lookup for the current model + cross-model search.
+  // Without a prompt (e.g. after tab navigation): loads ALL groups for the provider so
+  // the user can see every image they've generated, regardless of prompt or model.
+  const handleLookupWithCrossModel = useCallback(async () => {
+    const normalizedValue = normalizeImageUrl(value);
+    const userTypedPrompt = prompt.trim().length > 0;
+
+    if (userTypedPrompt) {
+      void lookupCurrentGroup(composedPrompt);
+      setLoadingCrossModel(true);
+      try {
+        const allGroups = await lookupGroupsByPrompt(composedPrompt);
+        setCrossModelGroups(
+          allGroups.filter((g) => g.model !== selectedModelId),
+        );
+      } finally {
+        setLoadingCrossModel(false);
+      }
+    } else {
+      // No prompt — load all groups so the user can browse everything.
+      // Show ALL groups in the cross-model section (don't filter any out),
+      // since the main gallery is empty when there's no prompt match.
+      if (normalizedValue.length > 0) {
+        const fileName = extractFileNameFromUrl(normalizedValue);
+        if (fileName) {
+          void lookupGroupByFileName(fileName);
+        }
+      }
+      setLoadingCrossModel(true);
+      try {
+        const allGroups = await listAllGroups();
+        setCrossModelGroups(allGroups);
+      } finally {
+        setLoadingCrossModel(false);
+      }
+    }
+  }, [composedPrompt, group, listAllGroups, lookupCurrentGroup, lookupGroupByFileName, lookupGroupsByPrompt, prompt, selectedModelId, value]);
+
+  const crossModelImages = useMemo(() => {
+    const images: (GeneratedImageAsset & { _groupModel: string })[] = [];
+    for (const g of crossModelGroups) {
+      for (const img of g.images) {
+        images.push({ ...img, _groupModel: g.model });
+      }
+    }
+    return images;
+  }, [crossModelGroups]);
   const displayImage = useMemo<ImageGeneration | null>(() => {
     const normalizedValue = normalizeImageUrl(value);
     if (normalizedValue.length > 0) {
@@ -467,11 +581,13 @@ export const AdventureModuleGeneratedImageField = ({
           variant="ghost"
           color="cloth"
           onClick={() => {
-            void lookupCurrentGroup(composedPrompt);
+            void handleLookupWithCrossModel();
           }}
-          disabled={!canRunActions || refreshingGroup}
+          disabled={!canLookup || refreshingGroup || loadingCrossModel}
         >
-          {refreshingGroup ? "Loading..." : "Lookup Existing"}
+          {refreshingGroup || loadingCrossModel
+            ? "Loading..."
+            : "Lookup Existing"}
         </Button>
         <Button
           color="gold"
@@ -557,6 +673,40 @@ export const AdventureModuleGeneratedImageField = ({
         emptyLabel={emptyLabel}
         implicitFailure={false}
       />
+
+      {crossModelImages.length > 0 ? (
+        <div className="stack gap-2">
+          <Text variant="note" color="iron" className="text-sm !opacity-100">
+            Previously generated images (click to select):
+          </Text>
+          <div className="flex flex-wrap gap-2">
+            {crossModelImages.map((image) => (
+              <button
+                key={image.imageId}
+                type="button"
+                className="relative cursor-pointer overflow-hidden rounded border-2 border-kac-iron hover:border-kac-gold-dark transition-colors"
+                style={{ width: 96, height: 96 }}
+                title={`${image._groupModel} — click to select`}
+                onClick={() => {
+                  lastAutoSelectedImageUrlRef.current = normalizeImageUrl(
+                    image.fileUrl,
+                  );
+                  onChange(image.fileUrl);
+                }}
+              >
+                <img
+                  src={image.fileUrl}
+                  alt={`${label} from ${image._groupModel}`}
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[10px] text-white truncate">
+                  {image._groupModel.split("/").pop()}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

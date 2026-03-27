@@ -210,6 +210,39 @@ export class ImageStore {
     return this.getGroup(toGroupKey(prompt, provider, model));
   }
 
+  public lookupGroupByFileName(fileName: string): GeneratedImageGroup | null {
+    for (const group of Object.values(this.index.groups)) {
+      if (group.images.some((image) => image.fileName === fileName)) {
+        return this.toPublicGroup(group);
+      }
+    }
+    return null;
+  }
+
+  public lookupGroupsByPrompt(
+    provider: ImageProvider,
+    prompt: string,
+  ): GeneratedImageGroup[] {
+    const targetPromptHash = toPromptHash(prompt);
+    const results: GeneratedImageGroup[] = [];
+    for (const group of Object.values(this.index.groups)) {
+      if (group.provider === provider && group.promptHash === targetPromptHash) {
+        results.push(this.toPublicGroup(group));
+      }
+    }
+    return results;
+  }
+
+  public listGroups(provider: ImageProvider): GeneratedImageGroup[] {
+    const results: GeneratedImageGroup[] = [];
+    for (const group of Object.values(this.index.groups)) {
+      if (group.provider === provider) {
+        results.push(this.toPublicGroup(group));
+      }
+    }
+    return results;
+  }
+
   public getCachedImages(input: {
     provider: ImageProvider;
     prompt: string;

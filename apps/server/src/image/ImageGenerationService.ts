@@ -5,6 +5,7 @@ import type {
   ImageJob,
   ImageJobItemProgress,
   ImageLookupGroupRequest,
+  ImageLookupGroupsByPromptRequest,
   ImageModelSummary,
   ImageProvider,
   ImageResolution,
@@ -13,6 +14,7 @@ import type {
 import {
   imageGenerateJobRequestSchema,
   imageLookupGroupRequestSchema,
+  imageLookupGroupsByPromptRequestSchema,
   imageSetActiveRequestSchema,
 } from "@mighty-decks/spec/imageGeneration";
 import {
@@ -109,6 +111,24 @@ export class ImageGenerationService {
       parsed.prompt,
       parsed.model,
     );
+  }
+
+  public lookupGroupByFileName(fileName: string): GeneratedImageGroup | null {
+    return this.options.imageStore.lookupGroupByFileName(fileName);
+  }
+
+  public lookupGroupsByPrompt(
+    input: ImageLookupGroupsByPromptRequest,
+  ): GeneratedImageGroup[] {
+    const parsed = imageLookupGroupsByPromptRequestSchema.parse(input);
+    return this.options.imageStore.lookupGroupsByPrompt(
+      parsed.provider,
+      parsed.prompt,
+    );
+  }
+
+  public listGroups(provider: ImageProvider): GeneratedImageGroup[] {
+    return this.options.imageStore.listGroups(provider);
   }
 
   public getGroup(groupKey: string): GeneratedImageGroup | null {

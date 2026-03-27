@@ -126,10 +126,23 @@ export const imageSetActiveRequestSchema = z.object({
 });
 export type ImageSetActiveRequest = z.infer<typeof imageSetActiveRequestSchema>;
 
+export const imageLookupGroupsByPromptRequestSchema = z.object({
+  provider: imageProviderSchema.default("fal"),
+  prompt: z.string().min(1).max(4000),
+});
+export type ImageLookupGroupsByPromptRequest = z.infer<
+  typeof imageLookupGroupsByPromptRequestSchema
+>;
+
 export const imageGroupResponseSchema = z.object({
   group: generatedImageGroupSchema.nullable(),
 });
 export type ImageGroupResponse = z.infer<typeof imageGroupResponseSchema>;
+
+export const imageGroupsResponseSchema = z.object({
+  groups: z.array(generatedImageGroupSchema),
+});
+export type ImageGroupsResponse = z.infer<typeof imageGroupsResponseSchema>;
 
 export const imageJobResponseSchema = z.object({
   job: imageJobSchema,

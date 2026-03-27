@@ -3,11 +3,13 @@ import type {
   ImageGenerateJobRequest,
   ImageJob,
   ImageLookupGroupRequest,
+  ImageLookupGroupsByPromptRequest,
   ImageModelSummary,
   ImageProvider,
 } from "@mighty-decks/spec/imageGeneration";
 import {
   imageGroupResponseSchema,
+  imageGroupsResponseSchema,
   imageJobResponseSchema,
   imageModelsResponseSchema,
 } from "@mighty-decks/spec/imageGeneration";
@@ -56,6 +58,42 @@ export const lookupImageGroup = async (
     body: JSON.stringify(request),
   });
   return imageGroupResponseSchema.parse(payload).group;
+};
+
+export const lookupImageGroupByFileName = async (
+  fileName: string,
+): Promise<GeneratedImageGroup | null> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/image/groups/by-file/${encodeURIComponent(fileName)}`,
+    ),
+  );
+  return imageGroupResponseSchema.parse(payload).group;
+};
+
+export const lookupImageGroupsByPrompt = async (
+  request: ImageLookupGroupsByPromptRequest,
+): Promise<GeneratedImageGroup[]> => {
+  const payload = await fetchJson(
+    buildApiUrl("/api/image/groups/lookup-by-prompt"),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  );
+  return imageGroupsResponseSchema.parse(payload).groups;
+};
+
+export const listImageGroups = async (
+  provider: ImageProvider,
+): Promise<GeneratedImageGroup[]> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/image/groups?provider=${encodeURIComponent(provider)}`),
+  );
+  return imageGroupsResponseSchema.parse(payload).groups;
 };
 
 export const fetchImageGroup = async (
