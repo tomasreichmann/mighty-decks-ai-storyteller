@@ -3,6 +3,7 @@ import { EncounterCard } from "../styleguide/EncounterCard";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { resolveServerUrl } from "../../lib/socket";
 import { cn } from "../../utils/cn";
+import { AUTHORED_SCENE_CARD_CLASS } from "./sceneCardSizing";
 
 interface EncounterCardViewProps {
   encounter: AdventureModuleResolvedEncounter;
@@ -51,7 +52,7 @@ export const EncounterCardView = ({
       imageAlt={encounter.title}
       title={encounter.title}
       description={getEncounterDescription(encounter)}
-      className={cn("aspect-[3/2] h-auto w-full max-w-[42rem]", className)}
+      className={cn(AUTHORED_SCENE_CARD_CLASS, className)}
     />
   );
 };

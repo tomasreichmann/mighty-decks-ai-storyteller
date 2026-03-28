@@ -288,6 +288,15 @@ export type AdventureModuleEncounterDetail = z.infer<
   typeof adventureModuleEncounterDetailSchema
 >;
 
+export const adventureModuleQuestDetailSchema = z.object({
+  fragmentId: identifierSchema,
+  questId: identifierSchema,
+  titleImageUrl: z.string().min(1).max(500).optional(),
+});
+export type AdventureModuleQuestDetail = z.infer<
+  typeof adventureModuleQuestDetailSchema
+>;
+
 export const adventureModuleCounterSchema = z
   .object({
     slug: slugSchema,
@@ -596,6 +605,7 @@ export const adventureModuleIndexSchema = z
     encounterFragmentIds: z.array(identifierSchema).min(1).max(60),
     encounterDetails: z.array(adventureModuleEncounterDetailSchema).max(60).default([]),
     questFragmentIds: z.array(identifierSchema).min(1).max(30),
+    questDetails: z.array(adventureModuleQuestDetailSchema).max(30).default([]),
     imagePromptFragmentIds: z.array(identifierSchema).max(40).default([]),
     fragments: z.array(adventureModuleFragmentRefSchema).min(1).max(300),
     questGraphs: z.array(adventureModuleQuestGraphSchema).min(1).max(30),
@@ -852,6 +862,63 @@ export const adventureModuleIndexSchema = z
     for (const questId of index.questFragmentIds) {
       ensureFragment(questId, "quest", ["questFragmentIds"]);
     }
+
+    const questDetailFragmentIds = index.questDetails.map(
+      (questDetail) => questDetail.fragmentId,
+    );
+    for (const duplicate of duplicateValues(questDetailFragmentIds)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate quest detail fragment id: ${duplicate}`,
+        path: ["questDetails"],
+      });
+    }
+
+    const questDetailQuestIds = index.questDetails.map(
+      (questDetail) => questDetail.questId,
+    );
+    for (const duplicate of duplicateValues(questDetailQuestIds)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `duplicate quest detail quest id: ${duplicate}`,
+        path: ["questDetails"],
+      });
+    }
+
+    const questIdSet = new Set(index.questFragmentIds);
+    const questGraphIdSet = new Set(index.questGraphs.map((quest) => quest.questId));
+    const questDetailByFragmentId = new Map(
+      index.questDetails.map((questDetail) => [questDetail.fragmentId, questDetail] as const),
+    );
+    const questDetailByQuestId = new Map(
+      index.questDetails.map((questDetail) => [questDetail.questId, questDetail] as const),
+    );
+
+    for (const questId of index.questFragmentIds) {
+      if (!questDetailByFragmentId.has(questId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `missing quest detail metadata for fragment id: ${questId}`,
+          path: ["questDetails"],
+        });
+      }
+    }
+    for (const questDetail of index.questDetails) {
+      if (!questIdSet.has(questDetail.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `quest detail metadata references unknown quest fragment id: ${questDetail.fragmentId}`,
+          path: ["questDetails"],
+        });
+      }
+      if (!questGraphIdSet.has(questDetail.questId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `quest detail metadata references unknown quest graph id: ${questDetail.questId}`,
+          path: ["questDetails"],
+        });
+      }
+    }
     for (const promptId of index.imagePromptFragmentIds) {
       ensureFragment(promptId, "image_prompt", ["imagePromptFragmentIds"]);
     }
@@ -873,6 +940,15 @@ export const adventureModuleIndexSchema = z
         message: `duplicate quest graph id: ${duplicate}`,
         path: ["questGraphs"],
       });
+    }
+    for (const questGraph of index.questGraphs) {
+      if (!questDetailByQuestId.has(questGraph.questId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `missing quest detail metadata for quest graph id: ${questGraph.questId}`,
+          path: ["questDetails"],
+        });
+      }
     }
 
     for (const opportunity of index.componentOpportunities) {

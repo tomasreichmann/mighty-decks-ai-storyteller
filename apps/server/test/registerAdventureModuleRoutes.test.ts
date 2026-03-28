@@ -615,6 +615,89 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
   });
   assert.equal(deleteEncounterResponse.statusCode, 200);
 
+  const createQuestResponse = await app.inject({
+    method: "POST",
+    url: `/api/adventure-modules/${moduleId}/quests`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Recover the Lantern",
+    },
+  });
+  assert.equal(createQuestResponse.statusCode, 201);
+  const createQuestPayload = createQuestResponse.json() as {
+    quests?: Array<{
+      questSlug: string;
+      questId: string;
+      title: string;
+    }>;
+  };
+  const createdQuest = createQuestPayload.quests?.find(
+    (quest) => quest.questSlug === "recover-the-lantern",
+  );
+  assert.ok(createdQuest);
+  assert.equal(createdQuest.questId, "quest-recover-the-lantern");
+
+  const updateQuestResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/quests/recover-the-lantern`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+    payload: {
+      title: "Recover the Lantern Shard",
+      summary: "Recover the shard before the floodwall seals shut.",
+      titleImageUrl: "https://example.com/quest-title.png",
+      content:
+        "# Recover the Lantern Shard\n\nFollow the stolen relic through the flood district.",
+    },
+  });
+  assert.equal(updateQuestResponse.statusCode, 200);
+  const updatedQuestPayload = updateQuestResponse.json() as {
+    quests?: Array<{
+      questSlug: string;
+      questId: string;
+      title: string;
+      summary?: string;
+      titleImageUrl?: string;
+    }>;
+  };
+  const updatedQuest = updatedQuestPayload.quests?.find(
+    (quest) => quest.questSlug === "recover-the-lantern-shard",
+  );
+  assert.ok(updatedQuest);
+  assert.equal(updatedQuest.questId, "quest-recover-the-lantern");
+  assert.equal(updatedQuest.title, "Recover the Lantern Shard");
+  assert.equal(
+    updatedQuest.summary,
+    "Recover the shard before the floodwall seals shut.",
+  );
+  assert.equal(updatedQuest.titleImageUrl, "https://example.com/quest-title.png");
+
+  const forbiddenQuestUpdateResponse = await app.inject({
+    method: "PUT",
+    url: `/api/adventure-modules/${moduleId}/quests/recover-the-lantern-shard`,
+    headers: {
+      [CREATOR_HEADER]: "creator-b",
+    },
+    payload: {
+      title: "Blocked Quest",
+      summary: "forbidden",
+      content: "forbidden",
+    },
+  });
+  assert.equal(forbiddenQuestUpdateResponse.statusCode, 403);
+
+  const deleteQuestResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}/quests/recover-the-lantern-shard`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(deleteQuestResponse.statusCode, 200);
+
   const forbiddenActorUpdateResponse = await app.inject({
     method: "PUT",
     url: `/api/adventure-modules/${moduleId}/actors/river-smuggler-nyra`,

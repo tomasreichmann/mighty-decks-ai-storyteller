@@ -223,14 +223,14 @@ Shared shell components:
 Tabs:
 
 - `base`: `ModuleBaseTabPanel` with `SmartInput` for premise transforms
-- `player-info`: `AdventureModulePlayerInfoTabPanel` with dual MDXEditor fields (`Player Summary`, `Player Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` embeds, and autosave
-- `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` embeds, and autosave
+- `player-info`: `AdventureModulePlayerInfoTabPanel` with dual MDXEditor fields (`Player Summary`, `Player Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` and `QuestCard` embeds, and autosave
+- `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` and `QuestCard` embeds, and autosave
 - `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, shortcode copy, and delete actions
 - `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, shortcode copy, and delete actions
 - `assets`: `AdventureModuleAssetsTabPanel` showing searchable custom `AssetCard` entries, legacy `Reauthor required` states, `Create Asset`, shortcode copy, and delete actions
 - `locations`: `AdventureModuleLocationsTabPanel` showing searchable location cards, title-image previews, `Create Location`, shortcode copy, and delete actions
 - `encounters`: `AdventureModuleEncountersTabPanel` showing searchable `EncounterCard` entries, `Create Encounter`, canonical embed copy, and delete actions
-- `quests`: placeholder
+- `quests`: `AdventureModuleQuestsTabPanel` showing searchable `QuestCard` entries, `Create Quest`, shortcode copy, and delete actions
 
 List-tab row actions:
 
@@ -250,7 +250,7 @@ List-tab primary actions:
 
 ### `/adventure-module/:slug/:tab/:entityId`
 
-Entity editor route. Actor, counter, asset, location, and encounter editing are implemented in this step; quest entity editors remain placeholders.
+Entity editor route. Actor, counter, asset, location, encounter, and quest fragment editing are implemented in this step.
 
 Components:
 
@@ -259,8 +259,8 @@ Components:
 - `AdventureModuleAssetEditor`
 - `AdventureModuleLocationEditor`
 - `AdventureModuleEncounterEditor`
+- `AdventureModuleQuestEditor`
 - `AdventureModuleLocationMapEditor`
-- `AdventureModuleTabPlaceholder` for remaining quest placeholder routes
 
 Actor editor baseline fields:
 
@@ -306,10 +306,17 @@ Location editor baseline fields:
 Encounter editor baseline fields:
 
 - name
-- short description
+- summary
 - prerequisites
 - title image URL plus generated-image picker
 - markdown script with inline `GameCard` and block `EncounterCard` embeds
+
+Quest editor baseline fields:
+
+- name
+- summary
+- title image URL plus generated-image picker
+- markdown brief with inline `GameCard` and block `QuestCard` embeds
 
 Behavior:
 
@@ -318,7 +325,7 @@ Behavior:
 - `/adventure-module/:slug/assets/:entityId` renders a live asset editor with autosave, custom asset fields, migration notice support for legacy layered assets, custom preview, and asset slug display that regenerates from the saved title.
 - `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image generation/paste controls, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, title-image generation/paste controls, and markdown script authoring.
-- Quest entity routes remain active placeholders while their typed editors are pending.
+- `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, title-image generation/paste controls, markdown brief authoring, and slug-driven route updates after saves.
 
 ---
 
@@ -356,15 +363,16 @@ Hidden internal route for component iteration and design comparison work.
 Components:
 
 - `StyleguideIndexPage`
-- `GameCard` (location and encounter variants, internal)
+- `GameCard` (location, encounter, and quest variants, internal)
 - `LocationCard` (styleguide-local image treatment)
 - `EncounterCard` (styleguide-local image treatment)
+- `QuestCard` (styleguide-local image treatment)
 
 Behavior:
 
 - direct-route accessible but intentionally unlinked from the public app flows
 - lists available component labs for contributor use
-- currently links to `/styleguide/location-card` and `/styleguide/encounter-card`
+- currently links to `/styleguide/location-card`, `/styleguide/encounter-card`, and `/styleguide/quest-card`
 
 ---
 
@@ -402,6 +410,25 @@ Behavior:
 - single-card design preview
 - title, `Encounter` badge, and full-width scene-description strip are owned by `EncounterCard`
 - prerequisites remain in the editor/detail surface rather than on the compact card
+- intended for visual iteration before wider authoring/runtime adoption
+
+---
+
+### `/styleguide/quest-card`
+
+Hidden internal gallery for quest-focused card exploration.
+
+Components:
+
+- `GameCard` with `type="quest"`
+- one image-first quest card direction rendered from sample data
+- local `QuestCard` composition sharing the scene frame with `LocationCard` and `EncounterCard`
+
+Behavior:
+
+- single-card design preview
+- title, `Quest` framing, and full-width summary strip are owned by `QuestCard`
+- quest graph details remain in authoring/detail surfaces rather than on the compact card
 - intended for visual iteration before wider authoring/runtime adoption
 
 ---

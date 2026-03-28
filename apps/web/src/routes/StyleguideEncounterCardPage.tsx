@@ -41,8 +41,9 @@ export const StyleguideEncounterCardPage = (): JSX.Element => {
           Encounter Card
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          EncounterCard direction with the shared 3:2 scene frame, a gold title
-          label, a fire Encounter badge, and a full-width summary strip.
+          EncounterCard direction with the shared smaller 3:2 scene frame, a
+          fire title chip, a warning icon medallion, and a lighter full-width
+          summary strip.
         </Text>
       </div>
 
@@ -65,12 +66,13 @@ export const StyleguideEncounterCardPage = (): JSX.Element => {
             EncounterCard direction
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Encounter badge uses the fire label tone so the card reads as a
-            playable scene beat rather than a place.
+            The warning medallion reads faster at card size, while the fire
+            title chip keeps the encounter classification color on the
+            headline.
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Encounter badge sits opposite the title, while the summary fills the
-            full-width strip across the bottom edge.
+            The icon medallion sits opposite the title, while the summary fills
+            the lighter strip across the bottom edge.
           </Text>
         </div>
 

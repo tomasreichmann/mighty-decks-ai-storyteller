@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 
 import {
   adventureModuleDetailSchema,
+  adventureModuleUpdateQuestRequestSchema,
   adventureModuleUpdateAssetRequestSchema,
+  adventureModuleCreateQuestRequestSchema,
 } from "./adventureModuleAuthoring";
 
 const createValidModuleDetailCandidate = () => ({
@@ -85,6 +87,13 @@ const createValidModuleDetailCandidate = () => ({
       },
     ],
     questFragmentIds: ["frag-quest-main"],
+    questDetails: [
+      {
+        fragmentId: "frag-quest-main",
+        questId: "quest-main",
+        titleImageUrl: "https://example.com/quest-title.png",
+      },
+    ],
     imagePromptFragmentIds: [],
     fragments: [
       {
@@ -437,6 +446,17 @@ const createValidModuleDetailCandidate = () => ({
       content: "# Primary Encounter",
     },
   ],
+  quests: [
+    {
+      fragmentId: "frag-quest-main",
+      questId: "quest-main",
+      questSlug: "primary-quest",
+      title: "Primary Quest",
+      summary: "Quiet the bell and escape the drowning district.",
+      titleImageUrl: "https://example.com/quest-title.png",
+      content: "# Primary Quest",
+    },
+  ],
   ownedByRequester: true,
 });
 
@@ -521,6 +541,31 @@ test("adventureModuleDetailSchema rejects resolved encounters that do not match 
   );
 });
 
+test("adventureModuleDetailSchema accepts resolved quests joined from quest metadata", () => {
+  const parsed = adventureModuleDetailSchema.parse(createValidModuleDetailCandidate());
+
+  assert.equal(parsed.quests.length, 1);
+  assert.equal(parsed.quests[0]?.questSlug, "primary-quest");
+  assert.equal(parsed.quests[0]?.questId, "quest-main");
+  assert.equal(
+    parsed.quests[0]?.titleImageUrl,
+    "https://example.com/quest-title.png",
+  );
+});
+
+test("adventureModuleDetailSchema rejects resolved quests that do not match quest metadata", () => {
+  const candidate = createValidModuleDetailCandidate();
+  candidate.quests[0] = {
+    ...candidate.quests[0],
+    titleImageUrl: "https://example.com/unexpected-quest-image.png",
+  };
+
+  assert.throws(
+    () => adventureModuleDetailSchema.parse(candidate),
+    /resolved quest .* does not match quest metadata/i,
+  );
+});
+
 test("adventureModuleUpdateAssetRequestSchema accepts custom asset fields", () => {
   const parsed = adventureModuleUpdateAssetRequestSchema.parse({
     title: "Storm Lantern",
@@ -569,5 +614,24 @@ test("adventureModule encounter request schemas accept encounter authoring field
   assert.equal(
     updateParsed.prerequisites,
     "Already escaped the prison cells.",
+  );
+});
+
+test("adventureModule quest request schemas accept quest authoring fields", () => {
+  const createParsed = adventureModuleCreateQuestRequestSchema.parse({
+    title: "Recover the Lantern",
+  });
+  const updateParsed = adventureModuleUpdateQuestRequestSchema.parse({
+    title: "Recover the Lantern",
+    summary: "Steal back the lantern before the floodgate seals the district.",
+    titleImageUrl: "https://example.com/recover-the-lantern.png",
+    content:
+      "# Recover the Lantern\n\nTrack the relic across the flood district and bring it home.",
+  });
+
+  assert.equal(createParsed.title, "Recover the Lantern");
+  assert.equal(
+    updateParsed.titleImageUrl,
+    "https://example.com/recover-the-lantern.png",
   );
 });

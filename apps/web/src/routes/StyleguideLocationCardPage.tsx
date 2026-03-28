@@ -46,8 +46,9 @@ export const StyleguideLocationCardPage = (): JSX.Element => {
           Location Card
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          LocationCard direction with a 3:2 scene image, a gold title label, a
-          cloth Location badge, and a full-width summary strip.
+          LocationCard direction with a smaller 3:2 scene frame, a cloth title
+          chip, a pinned icon medallion, and a lighter full-width summary
+          strip.
         </Text>
       </div>
 
@@ -66,12 +67,13 @@ export const StyleguideLocationCardPage = (): JSX.Element => {
             LocationCard direction
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            The Location badge keeps this clearly distinct from the encounter
-            card while preserving the same shared scene-card frame.
+            The pinned icon medallion keeps this clearly distinct from the
+            encounter card while preserving the same shared scene-card frame.
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Location badge uses the cloth label tone, and the summary sits in a
-            full-width bone strip instead of a floating callout.
+            The cloth title chip now carries the scene-type color while the
+            summary sits in a lighter full-width strip instead of a floating
+            callout.
           </Text>
         </div>
 

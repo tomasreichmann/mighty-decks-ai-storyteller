@@ -7,6 +7,7 @@ import {
   adventureModuleCreateCounterRequestSchema,
   adventureModuleCreateEncounterRequestSchema,
   adventureModuleCreateLocationRequestSchema,
+  adventureModuleCreateQuestRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
@@ -28,6 +29,8 @@ import {
   adventureModuleUpdateEncounterResponseSchema,
   adventureModuleUpdateLocationRequestSchema,
   adventureModuleUpdateLocationResponseSchema,
+  adventureModuleUpdateQuestRequestSchema,
+  adventureModuleUpdateQuestResponseSchema,
   adventureModuleUpdateCoverImageRequestSchema,
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateResponseSchema,
@@ -63,6 +66,9 @@ const locationSlugParamsSchema = z.object({
 });
 const encounterSlugParamsSchema = z.object({
   encounterSlug: entitySlugSchema,
+});
+const questSlugParamsSchema = z.object({
+  questSlug: entitySlugSchema,
 });
 
 const parseCreatorToken = (request: FastifyRequest): string | undefined => {
@@ -346,6 +352,72 @@ export const registerAdventureModuleRoutes = (
         const next = await options.store.deleteEncounter({
           moduleId,
           encounterSlug: params.encounterSlug,
+          creatorToken,
+        });
+        return reply.send(adventureModuleUpdateResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.post("/api/adventure-modules/:moduleId/quests", async (request, reply) => {
+    const creatorToken = parseCreatorToken(request);
+    const { moduleId = "" } = request.params as { moduleId?: string };
+    try {
+      const payload = adventureModuleCreateQuestRequestSchema.parse(request.body);
+      const next = await options.store.createQuest({
+        moduleId,
+        creatorToken,
+        title: payload.title,
+      });
+      return reply.code(201).send(adventureModuleCreateResponseSchema.parse(next));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.put(
+    "/api/adventure-modules/:moduleId/quests/:questSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", questSlug = "" } = request.params as {
+        moduleId?: string;
+        questSlug?: string;
+      };
+      try {
+        const params = questSlugParamsSchema.parse({ questSlug });
+        const payload = adventureModuleUpdateQuestRequestSchema.parse(request.body);
+        const next = await options.store.updateQuest({
+          moduleId,
+          questSlug: params.questSlug,
+          creatorToken,
+          title: payload.title,
+          summary: payload.summary,
+          titleImageUrl:
+            payload.titleImageUrl === null ? undefined : payload.titleImageUrl,
+          content: payload.content,
+        });
+        return reply.send(adventureModuleUpdateQuestResponseSchema.parse(next));
+      } catch (error) {
+        return sendKnownError(reply, error);
+      }
+    },
+  );
+
+  app.delete(
+    "/api/adventure-modules/:moduleId/quests/:questSlug",
+    async (request, reply) => {
+      const creatorToken = parseCreatorToken(request);
+      const { moduleId = "", questSlug = "" } = request.params as {
+        moduleId?: string;
+        questSlug?: string;
+      };
+      try {
+        const params = questSlugParamsSchema.parse({ questSlug });
+        const next = await options.store.deleteQuest({
+          moduleId,
+          questSlug: params.questSlug,
           creatorToken,
         });
         return reply.send(adventureModuleUpdateResponseSchema.parse(next));

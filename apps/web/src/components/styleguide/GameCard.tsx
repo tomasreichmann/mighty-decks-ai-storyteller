@@ -2,6 +2,7 @@ import React from "react";
 import type {
   AdventureModuleResolvedEncounter,
   AdventureModuleResolvedLocation,
+  AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Link } from "react-router-dom";
 import { Text } from "../common/Text";
@@ -9,6 +10,7 @@ import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { cn } from "../../utils/cn";
 import { EncounterCard } from "./EncounterCard";
 import { LocationCard } from "./LocationCard";
+import { QuestCard } from "./QuestCard";
 
 void React;
 
@@ -24,7 +26,16 @@ interface EncounterGameCardProps {
   className?: string;
 }
 
-export type GameCardProps = LocationGameCardProps | EncounterGameCardProps;
+interface QuestGameCardProps {
+  type: "quest";
+  quest: AdventureModuleResolvedQuest;
+  className?: string;
+}
+
+export type GameCardProps =
+  | LocationGameCardProps
+  | EncounterGameCardProps
+  | QuestGameCardProps;
 
 const toPlainText = (value: string | undefined, maxLength: number): string =>
   value ? toMarkdownPlainTextSnippet(value, maxLength).trim() : "";
@@ -49,6 +60,12 @@ const getEncounterSceneDescription = (
 ): string =>
   toPlainText(encounter.summary, 140) || toPlainText(encounter.content, 140);
 
+const getQuestTitleImage = (quest: AdventureModuleResolvedQuest): string =>
+  quest.titleImageUrl?.trim() || "/sample-scene-image.png";
+
+const getQuestSceneDescription = (quest: AdventureModuleResolvedQuest): string =>
+  toPlainText(quest.summary, 140) || toPlainText(quest.content, 140);
+
 const LocationGameCard = ({
   location,
   className,
@@ -60,10 +77,11 @@ const LocationGameCard = ({
         imageAlt={location.title}
         title={location.title}
         description={getLocationSceneDescription(location)}
-        className="aspect-[3/2] h-auto w-full max-w-[42rem]"
+        className="aspect-[3/2] h-auto w-full max-w-[30rem]"
       />
       <Text variant="note" color="iron-light" className="text-[11px] !opacity-100">
-        LocationCard direction with a Location badge and a full-width summary strip.
+        LocationCard direction with a cloth title chip, a pinned icon medallion,
+        and a lighter full-width summary strip.
       </Text>
     </article>
   );
@@ -80,10 +98,32 @@ const EncounterGameCard = ({
         imageAlt={encounter.title}
         title={encounter.title}
         description={getEncounterSceneDescription(encounter)}
-        className="aspect-[3/2] h-auto w-full max-w-[42rem]"
+        className="aspect-[3/2] h-auto w-full max-w-[30rem]"
       />
       <Text variant="note" color="iron-light" className="text-[11px] !opacity-100">
-        EncounterCard direction with a fire badge and a full-width summary strip.
+        EncounterCard direction with a fire title chip, a warning icon
+        medallion, and a lighter full-width summary strip.
+      </Text>
+    </article>
+  );
+};
+
+const QuestGameCard = ({
+  quest,
+  className,
+}: Omit<QuestGameCardProps, "type">): JSX.Element => {
+  return (
+    <article className={cn("stack gap-3", className)}>
+      <QuestCard
+        imageUrl={getQuestTitleImage(quest)}
+        imageAlt={quest.title}
+        title={quest.title}
+        description={getQuestSceneDescription(quest)}
+        className="aspect-[3/2] h-auto w-full max-w-[30rem]"
+      />
+      <Text variant="note" color="iron-light" className="text-[11px] !opacity-100">
+        QuestCard direction with a gold title chip, a scroll icon medallion,
+        and a lighter full-width summary strip.
       </Text>
     </article>
   );
@@ -95,6 +135,8 @@ export const GameCard = (props: GameCardProps): JSX.Element => {
       return <LocationGameCard {...props} />;
     case "encounter":
       return <EncounterGameCard {...props} />;
+    case "quest":
+      return <QuestGameCard {...props} />;
     default:
       return (
         <article className="rounded-sm border-2 border-kac-iron bg-kac-fire-lightest p-4 shadow-[4px_4px_0_0_#121b23]">

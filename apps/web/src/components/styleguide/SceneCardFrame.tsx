@@ -1,6 +1,5 @@
 import React from "react";
 import type { ReactNode } from "react";
-import type { LabelVariant } from "../common/Label";
 import { Label } from "../common/Label";
 import { cn } from "../../utils/cn";
 
@@ -10,8 +9,8 @@ interface SceneCardFrameProps {
   imageUrl: string;
   imageAlt?: string;
   title: ReactNode;
-  typeLabel: ReactNode;
-  typeVariant: LabelVariant;
+  titleVariant?: "gold" | "fire" | "cloth";
+  typeIcon: ReactNode;
   description: ReactNode;
   className?: string;
 }
@@ -20,15 +19,15 @@ export const SceneCardFrame = ({
   imageUrl,
   imageAlt = "",
   title,
-  typeLabel,
-  typeVariant,
+  titleVariant = "gold",
+  typeIcon,
   description,
   className = "",
 }: SceneCardFrameProps): JSX.Element => {
   return (
     <div
       className={cn(
-        "relative h-[200px] w-[300px] max-w-full overflow-hidden rounded-sm border-2 border-kac-iron bg-kac-iron-dark shadow-[4px_4px_0_0_#121b23]",
+        "relative h-[168px] w-[252px] max-w-full overflow-hidden rounded-sm border-2 border-kac-iron bg-kac-iron-dark shadow-[4px_4px_0_0_#121b23]",
         className,
       )}
     >
@@ -43,34 +42,26 @@ export const SceneCardFrame = ({
 
       <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[72%]">
         <Label
-          variant="gold"
-          size="lg"
-          className="whitespace-normal break-words text-left leading-tight normal-case tracking-normal"
+          variant={titleVariant}
+          size="md"
+          className="whitespace-normal break-words px-2.5 py-1.5 text-left leading-tight normal-case tracking-normal shadow-[2px_2px_0_0_#121b23]"
         >
           {title}
         </Label>
       </div>
 
       <div className="pointer-events-none absolute right-3 top-3 z-10">
-        <Label
-          variant={typeVariant}
-          size="sm"
-          rotate={false}
-          className="normal-case tracking-normal"
-        >
-          {typeLabel}
-        </Label>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-kac-iron bg-kac-bone-light/95 text-xl shadow-[2px_2px_0_0_#121b23]">
+          <span aria-hidden="true">{typeIcon}</span>
+        </span>
       </div>
 
       <div className="pointer-events-none absolute bottom-0 left-0 z-10 w-full">
-        <Label
-          variant="bone"
-          size="md"
-          rotate={false}
-          className="w-full justify-start whitespace-normal break-words rounded-none border-x-0 border-b-0 px-3 py-2 text-left leading-snug normal-case tracking-normal shadow-none"
-        >
-          {description}
-        </Label>
+        <div className="w-full border-t-2 border-kac-iron bg-[#f7f3eb] px-3 py-2 text-left shadow-none">
+          <p className="font-heading text-sm/[1.02] font-bold normal-case tracking-normal text-kac-iron-dark">
+            {description}
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -124,7 +124,7 @@ Shell behavior:
 - `Assets` is editable in this step.
 - `Locations` is editable in this step.
 - `Encounters` is editable in this step.
-- `Quests` remains an explicit placeholder in this step.
+- `Quests` is editable in this step for fragment authoring.
 
 Tab state behavior:
 
@@ -175,7 +175,8 @@ Behavior:
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
-- The markdown toolbar also inserts module-authored encounters as canonical `<EncounterCard slug="..." />` blocks.
+- The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
+- Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Player text must remain spoiler-safe at publish validation.
 
 ### 5.3 Storyteller Info Tab (`/storyteller-info`)
@@ -192,7 +193,8 @@ Behavior:
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
-- The markdown toolbar also inserts module-authored encounters as canonical `<EncounterCard slug="..." />` blocks.
+- The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
+- Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Storyteller text can include spoilers.
 
 ### 5.4 Actors Tab (`/actors`)
@@ -244,7 +246,7 @@ Primary action:
 List behavior:
 
 - The tab renders a searchable grid of location entries resolved from module location fragments plus `locationDetails` metadata.
-- Each location card shows title, summary, title-image preview when present, and stable shortcode text.
+- Each location card uses the shared horizontal `LocationCard` frame, with the location summary shown once in the card footer and a stable shortcode shown below the card.
 - `Copy Shortcode` copies `@location/<location-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the location immediately after confirmation.
 - Clicking a card navigates to `/adventure-module/:slug/locations/:entityId`.
@@ -263,8 +265,8 @@ Primary action:
 List behavior:
 
 - The tab renders a searchable grid of encounter entries resolved from module encounter fragments plus `encounterDetails` metadata.
-- Each encounter card shows title, short description, the shared 3:2 encounter-card frame, and canonical embed source.
-- `Copy Embed` copies `<EncounterCard slug="<encounter-slug>" />` for markdown source mode.
+- Each encounter card uses the shared horizontal `EncounterCard` frame, with the encounter summary shown once in the card footer, a shortcode shown below the card, and prerequisites shown as supporting metadata.
+- `Copy Shortcode` copies `@encounter/<encounter-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the encounter immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-embed rendering.
 - Clicking a card navigates to `/adventure-module/:slug/encounters/:entityId`.
 
@@ -275,17 +277,22 @@ Create/edit navigation:
 
 ### 5.8 Quests Tab (`/quests`)
 
-Status in this step: placeholder only.
-
-Per-row actions:
-
-- `Edit`
-- `Clone`
-- `Delete`
-
 Primary action:
 
 - `Create a Quest`
+
+List behavior:
+
+- The tab renders a searchable grid of quest entries resolved from module quest fragments plus `questDetails` metadata.
+- Each quest card uses the shared horizontal `QuestCard` frame with a gold title chip, scroll icon medallion, summary footer, and shortcode shown below the card.
+- `Copy Shortcode` copies `@quest/<quest-slug>` for manual insertion in markdown source mode.
+- `Delete` removes the quest immediately after confirmation, rejects deleting the last quest, and leaves existing markdown embeds untouched so they fall back to invalid-embed rendering.
+- Clicking a card navigates to `/adventure-module/:slug/quests/:entityId`.
+
+Create/edit navigation:
+
+- Create calls `POST /api/adventure-modules/:moduleId/quests`, then redirects to `/adventure-module/:slug/quests/:entityId` using the generated quest slug.
+- Edit redirects to `/adventure-module/:slug/quests/:entityId`.
 
 ### 5.9 Assets Tab (`/assets`)
 
@@ -320,7 +327,7 @@ Status in this step:
 - `counters` entity routes are implemented
 - `assets` entity routes are implemented
 - `encounters` entity routes are implemented
-- `quests` entity routes remain placeholders
+- `quests` entity routes are implemented for fragment authoring
 
 Future target semantics for entity editors:
 
@@ -401,7 +408,7 @@ Location editor behavior:
 Encounter edit example fields:
 
 - Encounter name.
-- Short description.
+- Summary.
 - Prerequisites.
 - Title image URL with generated-image picker.
 - Encounter markdown script with inline `GameCard` rendering and block `EncounterCard` embeds.
@@ -413,7 +420,20 @@ Encounter editor behavior:
 - Encounter slug is generated from the saved title and updates when the encounter name changes.
 - The editor supports title-image generation/paste flows and markdown script authoring.
 
-Equivalent typed editor for quest remains future work.
+Quest edit example fields:
+
+- Quest name.
+- Summary.
+- Title image URL with generated-image picker.
+- Quest markdown brief with inline `GameCard` rendering and block `QuestCard` embeds.
+
+Quest editor behavior:
+
+- Updates persist through `PUT /api/adventure-modules/:moduleId/quests/:questSlug`.
+- Deletes persist through `DELETE /api/adventure-modules/:moduleId/quests/:questSlug`.
+- Quest slug is generated from the saved title and updates when the quest name changes.
+- The editor supports title-image generation/paste flows and markdown brief authoring.
+- Quest graph editing remains out of scope for this step; create/delete operations still maintain valid underlying quest graph records automatically.
 
 ---
 
@@ -459,8 +479,9 @@ These are the current contracts for actor, counter, asset, location, and encount
 - Encounter create: `POST /api/adventure-modules/:moduleId/encounters`.
 - Encounter update: `PUT /api/adventure-modules/:moduleId/encounters/:entityId`.
 - Encounter delete: `DELETE /api/adventure-modules/:moduleId/encounters/:entityId`.
-- Remaining entity create: `POST /api/adventure-modules/:moduleId/:entityType`.
-- Remaining entity update: `PUT /api/adventure-modules/:moduleId/:entityType/:entityId`.
+- Quest create: `POST /api/adventure-modules/:moduleId/quests`.
+- Quest update: `PUT /api/adventure-modules/:moduleId/quests/:entityId`.
+- Quest delete: `DELETE /api/adventure-modules/:moduleId/quests/:entityId`.
 - Entity clone: `POST /api/adventure-modules/:moduleId/:entityType/:entityId/clone`.
 
 Supported `entityType` values in this flow:
@@ -493,7 +514,9 @@ UX behavior checks:
 - Actor cards open the actor editor, location cards open the location editor, encounter cards open the encounter editor, counter cards open the counter editor, asset cards open the asset editor, and actor/counter/asset shortcodes normalize to canonical `<GameCard />` source without mutating inline or fenced code blocks.
 - Location editor persists introduction/description markdown, title and map image fields, and interactive map pins without breaking route navigation after slug changes.
 - Encounter editor persists prerequisites, title image, and markdown script without breaking route navigation after slug changes.
+- Quest editor persists summary, title image, and markdown brief without breaking route navigation after slug changes.
 - Actor, counter, asset, location, and encounter deletes do not rewrite stored markdown; stale references rely on invalid-card fallback rendering.
+- Quest deletes do not rewrite stored markdown; stale quest references rely on invalid-card fallback rendering.
 - Publish exposes module to non-author list views.
 - Archive hides module from non-author list while preserving author access.
 

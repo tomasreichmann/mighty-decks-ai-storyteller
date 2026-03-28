@@ -7,6 +7,7 @@ import type {
   AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
+import { createQuestCardJsx } from "../../lib/gameCardMarkdown";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 import { Panel } from "../common/Panel";
@@ -16,8 +17,8 @@ import { TextField } from "../common/TextField";
 import { AdventureModuleGeneratedImageField } from "./AdventureModuleGeneratedImageField";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 
-interface AdventureModuleEncounterEditorProps {
-  encounter: AdventureModuleResolvedEncounter;
+interface AdventureModuleQuestEditorProps {
+  quest: AdventureModuleResolvedQuest;
   actors: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
@@ -28,7 +29,6 @@ interface AdventureModuleEncounterEditorProps {
   validationMessage?: string | null;
   onTitleChange: (nextValue: string) => void;
   onSummaryChange: (nextValue: string) => void;
-  onPrerequisitesChange: (nextValue: string) => void;
   onTitleImageUrlChange: (nextValue: string) => void;
   onContentChange: (nextValue: string) => void;
   onFieldBlur: () => void;
@@ -40,7 +40,7 @@ interface AdventureModuleEncounterEditorProps {
   onDelete?: () => void;
 }
 
-interface EncounterImageFieldProps {
+interface QuestImageFieldProps {
   value?: string;
   editable: boolean;
   identityKey: string;
@@ -50,19 +50,18 @@ interface EncounterImageFieldProps {
 }
 
 const MAX_MARKDOWN_LENGTH = 200_000;
-const ENCOUNTER_IMAGE_CONTEXT_TAG_OPTIONS = [
-  "Encounter Name",
-  "Encounter Summary",
-  "Prerequisites",
+const QUEST_IMAGE_CONTEXT_TAG_OPTIONS = [
+  "Quest Name",
+  "Quest Summary",
   "Script",
   "Module Title",
   "Premise",
   "Player Summary",
   "Storyteller Summary",
 ] as const;
-const DEFAULT_ENCOUNTER_IMAGE_CONTEXT_TAGS = [
-  "Encounter Name",
-  "Encounter Summary",
+const DEFAULT_QUEST_IMAGE_CONTEXT_TAGS = [
+  "Quest Name",
+  "Quest Summary",
   "Script",
   "Module Title",
   "Premise",
@@ -74,40 +73,33 @@ const deleteButtonClassName =
 const toSnippet = (value: string, maxLength: number): string =>
   toMarkdownPlainTextSnippet(value, maxLength).trim();
 
-const buildEncounterImageContextLines = (
+const buildQuestImageContextLines = (
   selectedContextTags: string[],
-  encounter: AdventureModuleResolvedEncounter,
+  quest: AdventureModuleResolvedQuest,
   smartContextDocument: SmartInputDocumentContext,
 ): string[] => {
   const lines: string[] = [];
 
   for (const selectedTag of selectedContextTags) {
     switch (selectedTag) {
-      case "Encounter Name": {
-        const snippet = toSnippet(encounter.title, 120);
+      case "Quest Name": {
+        const snippet = toSnippet(quest.title, 120);
         if (snippet.length > 0) {
-          lines.push(`Encounter name: ${snippet}`);
+          lines.push(`Quest name: ${snippet}`);
         }
         break;
       }
-      case "Encounter Summary": {
-        const snippet = toSnippet(encounter.summary ?? "", 320);
+      case "Quest Summary": {
+        const snippet = toSnippet(quest.summary ?? "", 320);
         if (snippet.length > 0) {
-          lines.push(`Encounter summary: ${snippet}`);
-        }
-        break;
-      }
-      case "Prerequisites": {
-        const snippet = toSnippet(encounter.prerequisites, 220);
-        if (snippet.length > 0) {
-          lines.push(`Prerequisites: ${snippet}`);
+          lines.push(`Quest summary: ${snippet}`);
         }
         break;
       }
       case "Script": {
-        const snippet = toSnippet(encounter.content, 650);
+        const snippet = toSnippet(quest.content, 650);
         if (snippet.length > 0) {
-          lines.push(`Encounter script: ${snippet}`);
+          lines.push(`Quest brief: ${snippet}`);
         }
         break;
       }
@@ -147,14 +139,14 @@ const buildEncounterImageContextLines = (
   return lines;
 };
 
-const EncounterImageField = ({
+const QuestImageField = ({
   value,
   editable,
   identityKey,
   resolveContextLines,
   onChange,
   onFieldBlur,
-}: EncounterImageFieldProps): JSX.Element => {
+}: QuestImageFieldProps): JSX.Element => {
   return (
     <Panel contentClassName="stack gap-4">
       <div className="stack gap-1">
@@ -162,19 +154,20 @@ const EncounterImageField = ({
           Title Image
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Paste a final image URL or generate encounter key art and pick one.
+          Paste a final image URL or generate key art that frames the whole
+          quest.
         </Text>
       </div>
 
       <AdventureModuleGeneratedImageField
         label="Title Image"
         promptLabel="Title Image Prompt"
-        promptDescription="Generate a visual key art image for this encounter."
+        promptDescription="Generate a visual key art image for this quest."
         contextLabel="Title Image Context"
         contextDescription="Edit the base prompt text. Selected context tags are appended for generation and lookup, but are not shown in the prompt field."
-        workflowContextIntro="Title image prompt for adventure module encounter art. Refine wording while preserving a clear playable scene and strong visual focus."
-        contextTagOptions={ENCOUNTER_IMAGE_CONTEXT_TAG_OPTIONS}
-        defaultContextTags={DEFAULT_ENCOUNTER_IMAGE_CONTEXT_TAGS}
+        workflowContextIntro="Title image prompt for adventure module quest art. Refine wording while preserving a clear objective, escalation, and visual focal point."
+        contextTagOptions={QUEST_IMAGE_CONTEXT_TAG_OPTIONS}
+        defaultContextTags={DEFAULT_QUEST_IMAGE_CONTEXT_TAGS}
         resolveContextLines={resolveContextLines}
         emptyLabel="No title image selected yet."
         pendingLabel="Generating title image..."
@@ -190,8 +183,8 @@ const EncounterImageField = ({
   );
 };
 
-export const AdventureModuleEncounterEditor = ({
-  encounter,
+export const AdventureModuleQuestEditor = ({
+  quest,
   actors,
   counters = [],
   assets = [],
@@ -202,21 +195,16 @@ export const AdventureModuleEncounterEditor = ({
   validationMessage,
   onTitleChange,
   onSummaryChange,
-  onPrerequisitesChange,
   onTitleImageUrlChange,
   onContentChange,
   onFieldBlur,
   onAdjustCounterValue,
   onDelete,
-}: AdventureModuleEncounterEditorProps): JSX.Element => {
+}: AdventureModuleQuestEditorProps): JSX.Element => {
   const resolveImageContextLines = useCallback(
     (selectedContextTags: string[]) =>
-      buildEncounterImageContextLines(
-        selectedContextTags,
-        encounter,
-        smartContextDocument,
-      ),
-    [encounter, smartContextDocument],
+      buildQuestImageContextLines(selectedContextTags, quest, smartContextDocument),
+    [quest, smartContextDocument],
   );
 
   return (
@@ -226,11 +214,11 @@ export const AdventureModuleEncounterEditor = ({
           <div className="flex items-start justify-between gap-3">
             <div className="stack gap-1">
               <Text variant="h3" color="iron">
-                Encounter
+                Quest
               </Text>
               <Text variant="body" color="iron-light" className="text-sm">
-                Define the encounter title, summary, prerequisites,
-                and slug-driven route.
+                Define the quest title, summary, title image, and slug-driven
+                route.
               </Text>
             </div>
             {onDelete ? (
@@ -240,15 +228,15 @@ export const AdventureModuleEncounterEditor = ({
                 disabled={!editable}
                 className={deleteButtonClassName}
               >
-                Delete Encounter
+                Delete Quest
               </button>
             ) : null}
           </div>
 
           <TextField
-            label="Encounter Name"
+            label="Quest Name"
             maxLength={120}
-            value={encounter.title}
+            value={quest.title}
             onChange={(event) => onTitleChange(event.target.value)}
             onBlur={onFieldBlur}
             disabled={!editable}
@@ -258,27 +246,21 @@ export const AdventureModuleEncounterEditor = ({
             label="Summary"
             maxLength={500}
             rows={4}
-            value={encounter.summary ?? ""}
+            value={quest.summary ?? ""}
             onChange={(event) => onSummaryChange(event.target.value)}
             onBlur={onFieldBlur}
             disabled={!editable}
-            description="Used on encounter cards in authoring lists and markdown embeds."
-          />
-
-          <TextArea
-            label="Prerequisites"
-            maxLength={240}
-            rows={3}
-            value={encounter.prerequisites}
-            onChange={(event) => onPrerequisitesChange(event.target.value)}
-            onBlur={onFieldBlur}
-            disabled={!editable}
-            description="Short guidance like minimum level, required clue, or active quest."
+            description="Used on quest cards in authoring lists and markdown embeds."
           />
 
           <Text variant="note" color="iron-light" className="text-sm !opacity-100">
-            Encounter slug: <code>{encounter.encounterSlug}</code>. It is
-            regenerated from the encounter name when you save.
+            Quest slug: <code>{quest.questSlug}</code>. It is regenerated from
+            the quest name when you save.
+          </Text>
+
+          <Text variant="note" color="iron-light" className="text-sm !opacity-100">
+            Embed with <code>{createQuestCardJsx(quest.questSlug)}</code> or the
+            shortcode <code>@quest/{quest.questSlug}</code>.
           </Text>
 
           {validationMessage ? (
@@ -288,10 +270,10 @@ export const AdventureModuleEncounterEditor = ({
           ) : null}
         </Panel>
 
-        <EncounterImageField
-          value={encounter.titleImageUrl}
+        <QuestImageField
+          value={quest.titleImageUrl}
           editable={editable}
-          identityKey={`${encounter.fragmentId}-title-image`}
+          identityKey={`${quest.fragmentId}-title-image`}
           resolveContextLines={resolveImageContextLines}
           onChange={onTitleImageUrlChange}
           onFieldBlur={onFieldBlur}
@@ -299,8 +281,8 @@ export const AdventureModuleEncounterEditor = ({
       </div>
 
       <AdventureModuleMarkdownField
-        label="Encounter Script"
-        description="Author the encounter beat, player goal, pressure, consequences, and reusable GM guidance. EncounterCard embeds render inline in Rich Text."
+        label="Quest Script"
+        description="Author the quest hook, escalation, consequences, and reusable GM guidance. QuestCard embeds render inline in Rich Text."
         selfContextTag="Storyteller Info"
         smartContextDocument={smartContextDocument}
         actors={actors}
@@ -308,7 +290,7 @@ export const AdventureModuleEncounterEditor = ({
         assets={assets}
         encounters={encounters}
         quests={quests}
-        value={encounter.content}
+        value={quest.content}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
         onChange={onContentChange}

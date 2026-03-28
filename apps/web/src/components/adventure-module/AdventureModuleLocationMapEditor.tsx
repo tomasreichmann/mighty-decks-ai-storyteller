@@ -91,7 +91,9 @@ const renderPinTargetPreview = (
   }
 
   if (
-    (target.kind === "location" || target.kind === "encounter") &&
+    (target.kind === "location" ||
+      target.kind === "encounter" ||
+      target.kind === "quest") &&
     target.titleImageUrl
   ) {
     const kindLabel =

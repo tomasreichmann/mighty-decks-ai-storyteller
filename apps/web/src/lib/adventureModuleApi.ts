@@ -4,6 +4,7 @@ import {
   adventureModuleCreateCounterRequestSchema,
   adventureModuleCreateEncounterRequestSchema,
   adventureModuleCreateLocationRequestSchema,
+  adventureModuleCreateQuestRequestSchema,
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
@@ -16,6 +17,8 @@ import {
   adventureModuleUpdateEncounterResponseSchema,
   adventureModuleUpdateLocationRequestSchema,
   adventureModuleUpdateLocationResponseSchema,
+  adventureModuleUpdateQuestRequestSchema,
+  adventureModuleUpdateQuestResponseSchema,
   adventureModuleUpdateActorResponseSchema,
   adventureModuleUpdateAssetRequestSchema,
   adventureModuleUpdateAssetResponseSchema,
@@ -30,6 +33,7 @@ import {
   type AdventureModuleCreateCounterRequest,
   type AdventureModuleCreateEncounterRequest,
   type AdventureModuleCreateLocationRequest,
+  type AdventureModuleCreateQuestRequest,
   type AdventureModuleUpdateCoverImageRequest,
   type AdventureModuleCloneRequest,
   type AdventureModuleCreateRequest,
@@ -40,6 +44,7 @@ import {
   type AdventureModuleSlugAvailabilityResponse,
   type AdventureModuleUpdateLocationRequest,
   type AdventureModuleUpdateEncounterRequest,
+  type AdventureModuleUpdateQuestRequest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
 import { resolveServerUrl } from "./socket";
@@ -259,6 +264,22 @@ export const createAdventureModuleEncounter = async (
   return adventureModuleCreateResponseSchema.parse(payload);
 };
 
+export const createAdventureModuleQuest = async (
+  moduleId: string,
+  request: AdventureModuleCreateQuestRequest,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}/quests`),
+    {
+      method: "POST",
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
+      body: JSON.stringify(adventureModuleCreateQuestRequestSchema.parse(request)),
+    },
+  );
+  return adventureModuleCreateResponseSchema.parse(payload);
+};
+
 export const updateAdventureModuleLocation = async (
   moduleId: string,
   locationSlug: string,
@@ -301,6 +322,25 @@ export const updateAdventureModuleEncounter = async (
   return adventureModuleUpdateEncounterResponseSchema.parse(payload);
 };
 
+export const updateAdventureModuleQuest = async (
+  moduleId: string,
+  questSlug: string,
+  request: AdventureModuleUpdateQuestRequest,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/quests/${encodeURIComponent(questSlug)}`,
+    ),
+    {
+      method: "PUT",
+      headers: buildHeaders(creatorToken, { jsonContentType: true }),
+      body: JSON.stringify(adventureModuleUpdateQuestRequestSchema.parse(request)),
+    },
+  );
+  return adventureModuleUpdateQuestResponseSchema.parse(payload);
+};
+
 export const deleteAdventureModuleLocation = async (
   moduleId: string,
   locationSlug: string,
@@ -326,6 +366,23 @@ export const deleteAdventureModuleEncounter = async (
   const payload = await fetchJson(
     buildApiUrl(
       `/api/adventure-modules/${encodeURIComponent(moduleId)}/encounters/${encodeURIComponent(encounterSlug)}`,
+    ),
+    {
+      method: "DELETE",
+      headers: buildHeaders(creatorToken),
+    },
+  );
+  return adventureModuleUpdateResponseSchema.parse(payload);
+};
+
+export const deleteAdventureModuleQuest = async (
+  moduleId: string,
+  questSlug: string,
+  creatorToken?: string,
+): Promise<AdventureModuleDetail> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/adventure-modules/${encodeURIComponent(moduleId)}/quests/${encodeURIComponent(questSlug)}`,
     ),
     {
       method: "DELETE",

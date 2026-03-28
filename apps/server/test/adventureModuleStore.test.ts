@@ -1650,3 +1650,348 @@ test("backfills missing encounter metadata from legacy index on read and persist
     "https://example.com/legacy-encounter.png",
   );
 });
+
+test("creates, updates, renames, and deletes quests while cleaning structured references", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const module = await store.createModule({
+    creatorToken: "token-quest",
+    title: "Quest Module",
+  });
+
+  const questStore = store as unknown as {
+    createQuest: (input: {
+      moduleId: string;
+      creatorToken?: string;
+      title: string;
+    }) => Promise<{
+      quests: Array<{
+        fragmentId: string;
+        questId: string;
+        questSlug: string;
+        title: string;
+        titleImageUrl?: string;
+        content: string;
+      }>;
+      index: {
+        questDetails: Array<{
+          fragmentId: string;
+          questId: string;
+          titleImageUrl?: string;
+        }>;
+        questGraphs: Array<{
+          questId: string;
+          hooks: Array<{ hookId: string }>;
+          nodes: Array<{ nodeId: string }>;
+          edges: Array<{ edgeId: string }>;
+          conclusions: Array<{ conclusionId: string }>;
+        }>;
+      };
+    }>;
+    updateQuest: (input: {
+      moduleId: string;
+      questSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      titleImageUrl?: string;
+      content: string;
+    }) => Promise<{
+      quests: Array<{
+        fragmentId: string;
+        questId: string;
+        questSlug: string;
+        title: string;
+        summary?: string;
+        titleImageUrl?: string;
+        content: string;
+      }>;
+      index: {
+        questDetails: Array<{
+          fragmentId: string;
+          questId: string;
+          titleImageUrl?: string;
+        }>;
+        questGraphs: Array<{
+          questId: string;
+          nodes: Array<{ nodeId: string }>;
+        }>;
+      };
+    }>;
+    deleteQuest: (input: {
+      moduleId: string;
+      questSlug: string;
+      creatorToken?: string;
+    }) => Promise<{
+      quests: Array<{ questSlug: string }>;
+      index: {
+        locationDetails: Array<{
+          mapPins: Array<{ targetFragmentId: string }>;
+        }>;
+        componentOpportunities: Array<{
+          fragmentId?: string;
+          questId?: string;
+          nodeId?: string;
+        }>;
+        questGraphs: Array<{
+          questId: string;
+        }>;
+      };
+    }>;
+  };
+
+  const created = await questStore.createQuest({
+    moduleId: module.index.moduleId,
+    creatorToken: "token-quest",
+    title: "Recover the Lantern",
+  });
+  const createdQuest = created.quests.find(
+    (quest) => quest.questSlug === "recover-the-lantern",
+  );
+  assert.ok(createdQuest);
+  assert.equal(createdQuest.title, "Recover the Lantern");
+  assert.equal(createdQuest.questId, "quest-recover-the-lantern");
+  assert.equal(createdQuest.titleImageUrl, undefined);
+  assert.equal(typeof createdQuest.content, "string");
+  const createdQuestDetail = created.index.questDetails.find(
+    (questDetail) => questDetail.fragmentId === createdQuest.fragmentId,
+  );
+  assert.ok(createdQuestDetail);
+  assert.equal(createdQuestDetail.questId, createdQuest.questId);
+  const createdQuestGraph = created.index.questGraphs.find(
+    (questGraph) => questGraph.questId === createdQuest.questId,
+  );
+  assert.ok(createdQuestGraph);
+  assert.equal(createdQuestGraph.hooks.length, 1);
+  assert.equal(createdQuestGraph.nodes.length, 2);
+  assert.equal(createdQuestGraph.edges.length, 1);
+  assert.equal(createdQuestGraph.conclusions.length, 1);
+
+  const updated = await questStore.updateQuest({
+    moduleId: module.index.moduleId,
+    questSlug: "recover-the-lantern",
+    creatorToken: "token-quest",
+    title: "Recover the Lantern Shard",
+    summary: "Recover the shard before the floodwall seals shut.",
+    titleImageUrl: "https://example.com/quest-title.png",
+    content:
+      "# Recover the Lantern Shard\n\nFollow the stolen relic through the flood district.",
+  });
+  const updatedQuest = updated.quests.find(
+    (quest) => quest.questSlug === "recover-the-lantern-shard",
+  );
+  assert.ok(updatedQuest);
+  assert.equal(updatedQuest.title, "Recover the Lantern Shard");
+  assert.equal(
+    updatedQuest.summary,
+    "Recover the shard before the floodwall seals shut.",
+  );
+  assert.equal(updatedQuest.questId, "quest-recover-the-lantern");
+  assert.equal(updatedQuest.titleImageUrl, "https://example.com/quest-title.png");
+  assert.equal(
+    updatedQuest.content,
+    "# Recover the Lantern Shard\n\nFollow the stolen relic through the flood district.",
+  );
+
+  const indexPath = join(rootDir, module.index.moduleId, "index.json");
+  const storedIndex = JSON.parse(await readFile(indexPath, "utf8")) as {
+    locationDetails: Array<{
+      mapPins: Array<{
+        pinId: string;
+        x: number;
+        y: number;
+        targetFragmentId: string;
+      }>;
+    }>;
+    componentOpportunities: Array<{
+      opportunityId: string;
+      componentType: string;
+      strength: string;
+      timing: string;
+      fragmentId?: string;
+      fragmentKind?: string;
+      questId?: string;
+      nodeId?: string;
+      placementLabel: string;
+      trigger: string;
+      rationale: string;
+    }>;
+    questGraphs: Array<{
+      questId: string;
+      nodes: Array<{
+        nodeId: string;
+      }>;
+    }>;
+  };
+  const seededQuestGraph = storedIndex.questGraphs.find(
+    (questGraph) => questGraph.questId === updatedQuest.questId,
+  );
+  assert.ok(seededQuestGraph);
+  const seededNodeId = seededQuestGraph.nodes[0]?.nodeId;
+  assert.ok(seededNodeId);
+  storedIndex.locationDetails[0]?.mapPins.push({
+    pinId: "pin-created-quest",
+    x: 41,
+    y: 17,
+    targetFragmentId: updatedQuest.fragmentId,
+  });
+  storedIndex.componentOpportunities.push({
+    opportunityId: "opp-created-quest",
+    componentType: "counter",
+    strength: "recommended",
+    timing: "scene_start",
+    fragmentId: updatedQuest.fragmentId,
+    fragmentKind: "quest",
+    questId: updatedQuest.questId,
+    nodeId: seededNodeId,
+    placementLabel: "Quest Pressure",
+    trigger: "When the relic changes hands.",
+    rationale: "Tracks momentum across quest beats.",
+  });
+  await writeFile(indexPath, JSON.stringify(storedIndex, null, 2), "utf8");
+
+  const storedIndexRaw = await readFile(indexPath, "utf8");
+  assert.match(storedIndexRaw, /quests\/recover-the-lantern-shard\.mdx/);
+  await assert.rejects(
+    () =>
+      readFile(
+        join(rootDir, module.index.moduleId, "quests", "recover-the-lantern.mdx"),
+        "utf8",
+      ),
+    { code: "ENOENT" },
+  );
+  const renamedQuestFile = await readFile(
+    join(
+      rootDir,
+      module.index.moduleId,
+      "quests",
+      "recover-the-lantern-shard.mdx",
+    ),
+    "utf8",
+  );
+  assert.match(renamedQuestFile, /Follow the stolen relic/);
+
+  const afterDelete = await questStore.deleteQuest({
+    moduleId: module.index.moduleId,
+    questSlug: "recover-the-lantern-shard",
+    creatorToken: "token-quest",
+  });
+  assert.equal(
+    afterDelete.quests.some(
+      (quest) => quest.questSlug === "recover-the-lantern-shard",
+    ),
+    false,
+  );
+  assert.equal(
+    afterDelete.index.locationDetails[0]?.mapPins.some(
+      (pin) => pin.targetFragmentId === updatedQuest.fragmentId,
+    ),
+    false,
+  );
+  assert.equal(
+    afterDelete.index.componentOpportunities.some(
+      (opportunity) =>
+        opportunity.fragmentId === updatedQuest.fragmentId ||
+        opportunity.questId === updatedQuest.questId ||
+        opportunity.nodeId === seededNodeId,
+    ),
+    false,
+  );
+  assert.equal(
+    afterDelete.index.questGraphs.some(
+      (questGraph) => questGraph.questId === updatedQuest.questId,
+    ),
+    false,
+  );
+  await assert.rejects(
+    () =>
+      readFile(
+        join(
+          rootDir,
+          module.index.moduleId,
+          "quests",
+          "recover-the-lantern-shard.mdx",
+        ),
+        "utf8",
+      ),
+    { code: "ENOENT" },
+  );
+
+  await assert.rejects(
+    () =>
+      questStore.deleteQuest({
+        moduleId: module.index.moduleId,
+        questSlug: "primary-quest",
+        creatorToken: "token-quest",
+      }),
+    AdventureModuleValidationError,
+  );
+});
+
+test("backfills missing quest metadata from legacy index on read and persists it on write", async () => {
+  const { store, rootDir } = await createStoreWithRoot();
+  const created = await store.createModule({
+    creatorToken: "token-legacy-quest",
+    title: "Legacy Quest Module",
+  });
+
+  const indexPath = join(rootDir, created.index.moduleId, "index.json");
+  const legacyIndex = JSON.parse(await readFile(indexPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  delete legacyIndex.questDetails;
+  await writeFile(indexPath, JSON.stringify(legacyIndex, null, 2), "utf8");
+
+  const loaded = (await store.getModule(
+    created.index.moduleId,
+    "token-legacy-quest",
+  )) as unknown as {
+    quests?: Array<{
+      questSlug: string;
+      questId: string;
+      titleImageUrl?: string;
+      content: string;
+    }>;
+  } | null;
+  assert.ok(loaded);
+  assert.equal(loaded?.quests?.[0]?.questSlug, "primary-quest");
+  assert.equal(loaded?.quests?.[0]?.questId, "quest-main");
+  assert.equal(loaded?.quests?.[0]?.titleImageUrl, undefined);
+
+  const questStore = store as unknown as {
+    updateQuest: (input: {
+      moduleId: string;
+      questSlug: string;
+      creatorToken?: string;
+      title: string;
+      summary: string;
+      titleImageUrl?: string;
+      content: string;
+    }) => Promise<unknown>;
+  };
+
+  await questStore.updateQuest({
+    moduleId: created.index.moduleId,
+    questSlug: "primary-quest",
+    creatorToken: "token-legacy-quest",
+    title: "Primary Quest",
+    summary: "Backfilled from legacy quest metadata.",
+    titleImageUrl: "https://example.com/legacy-quest.png",
+    content: loaded?.quests?.[0]?.content ?? "# Primary Quest\n\nLegacy quest detail.",
+  });
+
+  const persistedIndex = JSON.parse(await readFile(indexPath, "utf8")) as {
+    questDetails?: Array<{
+      fragmentId: string;
+      questId: string;
+      titleImageUrl?: string;
+    }>;
+  };
+  assert.equal(Array.isArray(persistedIndex.questDetails), true);
+  assert.equal(persistedIndex.questDetails?.length, 1);
+  assert.equal(persistedIndex.questDetails?.[0]?.questId, "quest-main");
+  assert.equal(
+    persistedIndex.questDetails?.[0]?.titleImageUrl,
+    "https://example.com/legacy-quest.png",
+  );
+});

@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AdventureModuleResolvedEncounter } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type { AdventureModuleResolvedQuest } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
-import { EncounterCardView } from "./EncounterCardView";
+import { QuestCardView } from "./QuestCardView";
 
-interface AdventureModuleEncountersTabPanelProps {
-  encounters: AdventureModuleResolvedEncounter[];
+interface AdventureModuleQuestsTabPanelProps {
+  quests: AdventureModuleResolvedQuest[];
   editable: boolean;
   creating?: boolean;
   createError?: string | null;
   onCreate: () => void;
-  onOpenEncounter: (encounterSlug: string) => void;
-  onDeleteEncounter?: (encounterSlug: string, title: string) => void;
+  onOpenQuest: (questSlug: string) => void;
+  onDeleteQuest?: (questSlug: string, title: string) => void;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -37,63 +37,61 @@ const copyToClipboard = async (value: string): Promise<void> => {
   }
 };
 
-export const AdventureModuleEncountersTabPanel = ({
-  encounters,
+export const AdventureModuleQuestsTabPanel = ({
+  quests,
   editable,
   creating = false,
   createError,
   onCreate,
-  onOpenEncounter,
-  onDeleteEncounter,
-}: AdventureModuleEncountersTabPanelProps): JSX.Element => {
+  onOpenQuest,
+  onDeleteQuest,
+}: AdventureModuleQuestsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedEncounterSlug, setCopiedEncounterSlug] = useState<string | null>(
-    null,
-  );
+  const [copiedQuestSlug, setCopiedQuestSlug] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
 
-  const filteredEncounters = useMemo(() => {
+  const filteredQuests = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
     if (!normalizedSearch) {
-      return encounters;
+      return quests;
     }
-    return encounters.filter((encounter) => {
+    return quests.filter((quest) => {
       const haystack =
-        `${encounter.title} ${encounter.summary ?? ""} ${encounter.prerequisites} ${encounter.encounterSlug}`.toLocaleLowerCase();
+        `${quest.title} ${quest.summary ?? ""} ${quest.questSlug}`.toLocaleLowerCase();
       return haystack.includes(normalizedSearch);
     });
-  }, [encounters, searchTerm]);
+  }, [quests, searchTerm]);
 
   useEffect(() => {
-    if (!copiedEncounterSlug) {
+    if (!copiedQuestSlug) {
       return;
     }
     const timer = window.setTimeout(() => {
-      setCopiedEncounterSlug(null);
+      setCopiedQuestSlug(null);
     }, 1600);
     return () => {
       window.clearTimeout(timer);
     };
-  }, [copiedEncounterSlug]);
+  }, [copiedQuestSlug]);
 
-  const handleCopyEmbed = useCallback(async (encounterSlug: string) => {
+  const handleCopyEmbed = useCallback(async (questSlug: string) => {
     try {
-      await copyToClipboard(`@encounter/${encounterSlug}`);
-      setCopiedEncounterSlug(encounterSlug);
+      await copyToClipboard(`@quest/${questSlug}`);
+      setCopiedQuestSlug(questSlug);
       setCopyError(null);
     } catch {
-      setCopyError(`Could not copy @encounter/${encounterSlug}.`);
+      setCopyError(`Could not copy @quest/${questSlug}.`);
     }
   }, []);
 
   const handleDelete = useCallback(
-    (encounterSlug: string, title: string): void => {
-      if (!onDeleteEncounter || !editable) {
+    (questSlug: string, title: string): void => {
+      if (!onDeleteQuest || !editable) {
         return;
       }
-      onDeleteEncounter(encounterSlug, title);
+      onDeleteQuest(questSlug, title);
     },
-    [editable, onDeleteEncounter],
+    [editable, onDeleteQuest],
   );
 
   return (
@@ -101,11 +99,11 @@ export const AdventureModuleEncountersTabPanel = ({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Text variant="h3" color="iron">
-            Encounters
+            Quests
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Open an encounter to edit its playable setup, prerequisites, title
-            art, and markdown script.
+            Open a quest to edit its title, summary, title art, and markdown
+            brief.
           </Text>
         </div>
         <Button
@@ -113,15 +111,15 @@ export const AdventureModuleEncountersTabPanel = ({
           onClick={onCreate}
           disabled={!editable || creating}
         >
-          {creating ? "Creating..." : "Create Encounter"}
+          {creating ? "Creating..." : "Create Quest"}
         </Button>
       </div>
 
       <TextField
-        label="Search Encounters"
+        label="Search Quests"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
-        placeholder="Search encounters by title, description, prerequisite, or slug..."
+        placeholder="Search quests by title, description, or slug..."
       />
 
       {createError ? (
@@ -135,36 +133,36 @@ export const AdventureModuleEncountersTabPanel = ({
         </Message>
       ) : null}
 
-      {filteredEncounters.length === 0 ? (
+      {filteredQuests.length === 0 ? (
         <Panel>
           <Text variant="body" color="iron-light">
-            {encounters.length === 0
-              ? "No encounters have been created yet."
-              : "No encounters match your search."}
+            {quests.length === 0
+              ? "No quests have been created yet."
+              : "No quests match your search."}
           </Text>
         </Panel>
       ) : (
         <div className="flex flex-row flex-wrap items-start gap-4">
-          {filteredEncounters.map((encounter) => (
+          {filteredQuests.map((quest) => (
             <Panel
-              key={encounter.fragmentId}
+              key={quest.fragmentId}
               className="self-start"
               contentClassName="stack gap-3"
             >
               <button
                 type="button"
                 className="stack gap-3 text-left"
-                onClick={() => onOpenEncounter(encounter.encounterSlug)}
+                onClick={() => onOpenQuest(quest.questSlug)}
               >
-                <EncounterCardView encounter={encounter} />
+                <QuestCardView quest={quest} />
                 <div className="stack gap-1">
                   <Text variant="note" color="steel-dark">
-                    {`@encounter/${encounter.encounterSlug}`}
+                    {`@quest/${quest.questSlug}`}
                   </Text>
                   <Text variant="body" color="iron-light" className="text-sm">
-                    {encounter.prerequisites.trim().length > 0
-                      ? `Prerequisites: ${encounter.prerequisites}`
-                      : "No prerequisites yet."}
+                    {quest.summary?.trim().length
+                      ? quest.summary
+                      : "No summary yet."}
                   </Text>
                 </div>
               </button>
@@ -175,21 +173,21 @@ export const AdventureModuleEncountersTabPanel = ({
                     color="cloth"
                     size="sm"
                     onClick={() => {
-                      void handleCopyEmbed(encounter.encounterSlug);
+                      void handleCopyEmbed(quest.questSlug);
                     }}
                   >
                     Copy Shortcode
                   </Button>
-                  {onDeleteEncounter ? (
+                  {onDeleteQuest ? (
                     <Button
                       variant="circle"
                       color="blood"
                       size="sm"
-                      aria-label={`Delete ${encounter.title}`}
-                      title={`Delete ${encounter.title}`}
+                      aria-label={`Delete ${quest.title}`}
+                      title={`Delete ${quest.title}`}
                       disabled={!editable}
                       onClick={() => {
-                        handleDelete(encounter.encounterSlug, encounter.title);
+                        handleDelete(quest.questSlug, quest.title);
                       }}
                     >
                       <svg
@@ -213,7 +211,7 @@ export const AdventureModuleEncountersTabPanel = ({
                   variant="note"
                   color="monster"
                   className={
-                    copiedEncounterSlug === encounter.encounterSlug
+                    copiedQuestSlug === quest.questSlug
                       ? "opacity-100"
                       : "opacity-0"
                   }

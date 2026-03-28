@@ -8,7 +8,9 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /StyleguideIndexPage/);
   assert.match(source, /StyleguideLocationCardPage/);
   assert.match(source, /StyleguideEncounterCardPage/);
+  assert.match(source, /StyleguideQuestCardPage/);
   assert.match(source, /path="\/styleguide"/);
   assert.match(source, /path="location-card"|path="\/styleguide\/location-card"/);
   assert.match(source, /path="encounter-card"|path="\/styleguide\/encounter-card"/);
+  assert.match(source, /path="quest-card"|path="\/styleguide\/quest-card"/);
 });

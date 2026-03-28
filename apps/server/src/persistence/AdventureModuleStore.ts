@@ -47,6 +47,7 @@ const moduleSystemMetadataSchema: z.ZodType<ModuleSystemMetadata> = z.object({
 });
 
 const HEADERLESS_TOKEN_VALUE = "anonymous";
+const MAX_IDENTIFIER_LENGTH = 120;
 
 const hashCreatorToken = (token: string | undefined): string =>
   createHash("sha256")
@@ -68,6 +69,16 @@ const toSlug = (value: string): string => {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return normalized.length > 0 ? normalized.slice(0, 120) : makeId("module");
+};
+
+const makePrefixedIdentifier = (prefix: string, value: string): string => {
+  const normalizedPrefix = toSlug(prefix);
+  const normalizedValue = toSlug(value);
+  const maxValueLength = Math.max(
+    1,
+    MAX_IDENTIFIER_LENGTH - normalizedPrefix.length - 1,
+  );
+  return `${normalizedPrefix}-${normalizedValue.slice(0, maxValueLength)}`;
 };
 
 const defaultLocationIntroductionMarkdown =
@@ -146,6 +157,11 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
         (value): value is string => typeof value === "string" && value.trim().length > 0,
       )
     : [];
+  const questFragmentIds = Array.isArray(normalized.questFragmentIds)
+    ? normalized.questFragmentIds.filter(
+        (value): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
   const rawLocationDetails = Array.isArray(normalized.locationDetails)
     ? normalized.locationDetails
     : [];
@@ -176,6 +192,22 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
     }
     encounterDetailsByFragmentId.set(fragmentId, encounterDetailRecord);
   }
+  const rawQuestDetails = Array.isArray(normalized.questDetails)
+    ? normalized.questDetails
+    : [];
+  const questDetailsByFragmentId = new Map<string, Record<string, unknown>>();
+  for (const questDetail of rawQuestDetails) {
+    if (!questDetail || typeof questDetail !== "object" || Array.isArray(questDetail)) {
+      continue;
+    }
+    const questDetailRecord = questDetail as Record<string, unknown>;
+    const fragmentId = questDetailRecord.fragmentId;
+    if (typeof fragmentId !== "string" || fragmentId.trim().length === 0) {
+      continue;
+    }
+    questDetailsByFragmentId.set(fragmentId, questDetailRecord);
+  }
+  const rawQuestGraphs = Array.isArray(normalized.questGraphs) ? normalized.questGraphs : [];
   const rawAssetCards = Array.isArray(normalized.assetCards) ? normalized.assetCards : [];
   const assetCardsByFragmentId = new Map<string, Record<string, unknown>>();
   for (const assetCard of rawAssetCards) {
@@ -223,6 +255,25 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
           typeof existing?.prerequisites === "string"
             ? existing.prerequisites
             : "",
+        ...(typeof existing?.titleImageUrl === "string" &&
+        existing.titleImageUrl.trim().length > 0
+          ? { titleImageUrl: existing.titleImageUrl.trim() }
+          : {}),
+      };
+    }),
+    questDetails: questFragmentIds.map((fragmentId, index) => {
+      const existing = questDetailsByFragmentId.get(fragmentId);
+      const matchingGraph = rawQuestGraphs[index] as Record<string, unknown> | undefined;
+      const existingQuestId = existing?.questId;
+      const graphQuestId = matchingGraph?.questId;
+      return {
+        fragmentId,
+        questId:
+          typeof existingQuestId === "string" && existingQuestId.trim().length > 0
+            ? existingQuestId.trim()
+            : typeof graphQuestId === "string" && graphQuestId.trim().length > 0
+              ? graphQuestId.trim()
+              : makePrefixedIdentifier("quest", fragmentId),
         ...(typeof existing?.titleImageUrl === "string" &&
         existing.titleImageUrl.trim().length > 0
           ? { titleImageUrl: existing.titleImageUrl.trim() }
@@ -310,6 +361,9 @@ const deriveLocationSlugFromPath = (fragmentPath: string): string =>
   toSlug(basename(fragmentPath, extname(fragmentPath)));
 
 const deriveEncounterSlugFromPath = (fragmentPath: string): string =>
+  toSlug(basename(fragmentPath, extname(fragmentPath)));
+
+const deriveQuestSlugFromPath = (fragmentPath: string): string =>
   toSlug(basename(fragmentPath, extname(fragmentPath)));
 
 const deriveAssetSlugFromPath = (fragmentPath: string): string =>
@@ -497,6 +551,7 @@ export class AdventureModuleStore {
     const ownedByRequester = loaded.system.creatorTokenHash === hashCreatorToken(creatorToken);
     const locations = this.resolveLocations(loaded.index, fragments);
     const encounters = this.resolveEncounters(loaded.index, fragments);
+    const quests = this.resolveQuests(loaded.index, fragments);
     const actors = this.resolveActors(loaded.index, fragments);
     const counters = this.resolveCounters(loaded.index);
     const assets = this.resolveAssets(loaded.index, fragments);
@@ -505,6 +560,7 @@ export class AdventureModuleStore {
       fragments,
       locations,
       encounters,
+      quests,
       actors,
       counters,
       assets,
@@ -556,6 +612,7 @@ export class AdventureModuleStore {
         encounterFragmentIds: loaded.index.encounterFragmentIds,
         encounterDetails: loaded.index.encounterDetails,
         questFragmentIds: loaded.index.questFragmentIds,
+        questDetails: loaded.index.questDetails,
         imagePromptFragmentIds: loaded.index.imagePromptFragmentIds,
         fragments: loaded.index.fragments,
         questGraphs: loaded.index.questGraphs,
@@ -1203,6 +1260,300 @@ export class AdventureModuleStore {
       const next = await this.getModule(moduleId, options.creatorToken);
       if (!next) {
         throw new AdventureModuleValidationError("Deleted encounter could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async createQuest(options: {
+    moduleId: string;
+    creatorToken?: string;
+    title: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0 ? options.title.trim() : "New Quest";
+      const questSlug = this.makeUniqueQuestSlug(normalizedTitle, loaded.index);
+      const questId = makePrefixedIdentifier("quest", questSlug);
+      const fragmentId = makeId("frag-quest");
+      const fragmentRef: AdventureModuleFragmentRef = {
+        fragmentId,
+        kind: "quest",
+        title: normalizedTitle,
+        path: `quests/${questSlug}.mdx`,
+        summary: "Describe the hook, rising complications, and likely conclusions.",
+        tags: ["quest", "arc"],
+        containsSpoilers: false,
+        intendedAudience: "shared",
+      };
+      const questDetail: AdventureModuleIndex["questDetails"][number] = {
+        fragmentId,
+        questId,
+      };
+      const questGraph = this.createStarterQuestGraph({
+        index: loaded.index,
+        questId,
+        questSlug,
+        title: normalizedTitle,
+        summary: fragmentRef.summary,
+      });
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        questFragmentIds: [...loaded.index.questFragmentIds, fragmentId],
+        questDetails: [...loaded.index.questDetails, questDetail],
+        fragments: [...loaded.index.fragments, fragmentRef],
+        questGraphs: [...loaded.index.questGraphs, questGraph],
+        artifacts: [
+          ...loaded.index.artifacts,
+          {
+            artifactId: `artifact-${fragmentId}`,
+            kind: "mdx",
+            path: fragmentRef.path,
+            title: fragmentRef.title,
+            sourceFragmentId: fragmentId,
+            contentType: "text/markdown",
+            generatedBy: "author",
+            createdAtIso: nowIso,
+          },
+        ],
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(loaded.moduleDir, fragmentRef.path);
+      await mkdir(dirname(absolutePath), { recursive: true });
+      await atomicWriteTextFile(
+        absolutePath,
+        this.createQuestFragmentContent(normalizedTitle),
+      );
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+      } catch (error) {
+        await this.rollbackQuestCreate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Created quest could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async updateQuest(options: {
+    moduleId: string;
+    questSlug: string;
+    creatorToken?: string;
+    title: string;
+    summary: string;
+    titleImageUrl?: string;
+    content: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      const questRecord = this.findQuestRecord(loaded.index, options.questSlug);
+      if (!questRecord) {
+        throw new AdventureModuleValidationError("Quest slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const normalizedTitle =
+        options.title.trim().length > 0 ? options.title.trim() : questRecord.fragment.title;
+      const nextQuestSlug = this.makeUniqueQuestSlug(
+        normalizedTitle,
+        loaded.index,
+        questRecord.fragment.fragmentId,
+      );
+      const nextQuestPath = `quests/${nextQuestSlug}.mdx`;
+      const nextFragments = loaded.index.fragments.map((fragment) => {
+        if (fragment.fragmentId !== questRecord.fragment.fragmentId) {
+          return fragment;
+        }
+        return {
+          ...fragment,
+          title: normalizedTitle,
+          path: nextQuestPath,
+          summary:
+            options.summary.trim().length > 0 ? options.summary.trim() : undefined,
+        };
+      });
+
+      const normalizedTitleImageUrl =
+        typeof options.titleImageUrl === "string" &&
+        options.titleImageUrl.trim().length > 0
+          ? options.titleImageUrl.trim()
+          : undefined;
+      const nextQuestDetails = loaded.index.questDetails.map((questDetail) => {
+        if (questDetail.fragmentId !== questRecord.fragment.fragmentId) {
+          return questDetail;
+        }
+        return {
+          fragmentId: questDetail.fragmentId,
+          questId: questDetail.questId,
+          ...(normalizedTitleImageUrl
+            ? { titleImageUrl: normalizedTitleImageUrl }
+            : {}),
+        };
+      });
+      const nextArtifacts = loaded.index.artifacts.map((artifact) => {
+        if (artifact.sourceFragmentId !== questRecord.fragment.fragmentId) {
+          return artifact;
+        }
+        return {
+          ...artifact,
+          path: nextQuestPath,
+          title: normalizedTitle,
+        };
+      });
+
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        fragments: nextFragments,
+        questDetails: nextQuestDetails,
+        artifacts: nextArtifacts,
+        updatedAtIso: nowIso,
+      });
+
+      const previousAbsolutePath = this.resolveSafePath(
+        loaded.moduleDir,
+        questRecord.fragment.path,
+      );
+      const nextAbsolutePath = this.resolveSafePath(loaded.moduleDir, nextQuestPath);
+      const previousContent = await this.readExistingTextFile(previousAbsolutePath);
+      await mkdir(dirname(nextAbsolutePath), { recursive: true });
+      await atomicWriteTextFile(nextAbsolutePath, options.content);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        if (nextAbsolutePath !== previousAbsolutePath) {
+          await rm(previousAbsolutePath, { recursive: true, force: true });
+        }
+      } catch (error) {
+        await this.rollbackQuestUpdate(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          previousAbsolutePath,
+          nextAbsolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Updated quest could not be loaded.");
+      }
+      return next;
+    });
+  }
+
+  public async deleteQuest(options: {
+    moduleId: string;
+    questSlug: string;
+    creatorToken?: string;
+  }): Promise<AdventureModuleDetail> {
+    const moduleId = options.moduleId;
+    return this.withModuleWriteLock(moduleId, async () => {
+      const loaded = await this.requireStoredModule(moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+
+      if (loaded.index.questFragmentIds.length <= 1) {
+        throw new AdventureModuleValidationError(
+          "At least one quest must remain in the module.",
+        );
+      }
+
+      const questRecord = this.findQuestRecord(loaded.index, options.questSlug);
+      if (!questRecord) {
+        throw new AdventureModuleValidationError("Quest slug not found in module.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const fragmentId = questRecord.fragment.fragmentId;
+      const questId = questRecord.detail.questId;
+      const deletedNodeIds = new Set(
+        (questRecord.graph?.nodes ?? []).map((node) => node.nodeId),
+      );
+      const nextIndex = adventureModuleIndexSchema.parse({
+        ...loaded.index,
+        locationDetails: loaded.index.locationDetails.map((locationDetail) => ({
+          ...locationDetail,
+          mapPins: locationDetail.mapPins.filter(
+            (mapPin) => mapPin.targetFragmentId !== fragmentId,
+          ),
+        })),
+        questFragmentIds: loaded.index.questFragmentIds.filter(
+          (entry) => entry !== fragmentId,
+        ),
+        questDetails: loaded.index.questDetails.filter(
+          (questDetail) => questDetail.fragmentId !== fragmentId,
+        ),
+        fragments: loaded.index.fragments.filter(
+          (fragment) => fragment.fragmentId !== fragmentId,
+        ),
+        questGraphs: loaded.index.questGraphs.filter(
+          (questGraph) => questGraph.questId !== questId,
+        ),
+        componentOpportunities: loaded.index.componentOpportunities.filter(
+          (opportunity) =>
+            opportunity.fragmentId !== fragmentId &&
+            opportunity.questId !== questId &&
+            !deletedNodeIds.has(opportunity.nodeId ?? ""),
+        ),
+        artifacts: loaded.index.artifacts.filter(
+          (artifact) => artifact.sourceFragmentId !== fragmentId,
+        ),
+        updatedAtIso: nowIso,
+      });
+
+      const absolutePath = this.resolveSafePath(loaded.moduleDir, questRecord.fragment.path);
+      const previousContent = await this.readExistingTextFile(absolutePath);
+
+      try {
+        await this.writeModuleIndex(loaded.moduleDir, nextIndex);
+        await this.writeModuleSystem(loaded.moduleDir, {
+          ...loaded.system,
+          updatedAtIso: nowIso,
+        });
+        await rm(absolutePath, { recursive: true, force: true });
+      } catch (error) {
+        await this.rollbackQuestDelete(
+          loaded.moduleDir,
+          loaded.index,
+          loaded.system,
+          absolutePath,
+          previousContent,
+        );
+        throw error;
+      }
+
+      const next = await this.getModule(moduleId, options.creatorToken);
+      if (!next) {
+        throw new AdventureModuleValidationError("Deleted quest could not be loaded.");
       }
       return next;
     });
@@ -2148,6 +2499,114 @@ export class AdventureModuleStore {
     return `# ${title}\n\n## Goal\n\nDescribe what the players are trying to accomplish in this encounter.\n\n## Pressure\n\n- Add what makes this encounter urgent.\n- Add how the situation escalates if the players stall.\n\n## Resolution\n\n- Add likely success, cost, and fail-forward outcomes.\n`;
   }
 
+  private createQuestFragmentContent(title: string): string {
+    return `# ${title}\n\n## Hook\n\nDescribe why the players should care about this quest right now.\n\n## Rising Trouble\n\n- Add the first complication or revelation.\n- Add how pressure escalates if the players hesitate.\n\n## Likely Conclusions\n\n- Add the clean win, costly win, or dangerous fallout.\n`;
+  }
+
+  private createStarterQuestGraph(input: {
+    index: AdventureModuleIndex;
+    questId: string;
+    questSlug: string;
+    title: string;
+    summary?: string;
+  }): AdventureModuleIndex["questGraphs"][number] {
+    const hookId = makePrefixedIdentifier("hook", input.questSlug);
+    const entryNodeId = makePrefixedIdentifier("node-entry", input.questSlug);
+    const conclusionNodeId = makePrefixedIdentifier(
+      "node-conclusion",
+      input.questSlug,
+    );
+    const edgeId = makePrefixedIdentifier(
+      "edge-entry-to-conclusion",
+      input.questSlug,
+    );
+    const conclusionId = makePrefixedIdentifier("conclusion", input.questSlug);
+    const locationFragmentId = input.index.locationFragmentIds[0];
+    const encounterFragmentIds = input.index.encounterFragmentIds[0]
+      ? [input.index.encounterFragmentIds[0]]
+      : [];
+    const actorFragmentIds = input.index.actorFragmentIds[0]
+      ? [input.index.actorFragmentIds[0]]
+      : [];
+    const assetFragmentIds = input.index.assetFragmentIds[0]
+      ? [input.index.assetFragmentIds[0]]
+      : [];
+
+    return {
+      questId: input.questId,
+      title: input.title,
+      ...(input.summary ? { summary: input.summary } : {}),
+      hooks: [
+        {
+          hookId,
+          title: "Opening Hook",
+          prompt: "Introduce the quest, the immediate pressure, and why acting now matters.",
+          entryNodeIds: [entryNodeId],
+          clueExamples: [
+            "A witness offers a lead with a price.",
+            "A visible consequence makes delay costly.",
+          ],
+        },
+      ],
+      nodes: [
+        {
+          nodeId: entryNodeId,
+          nodeType: "scene",
+          title: "Opening Lead",
+          summary: "Establish the quest goal, the first complication, and a clear next move.",
+          ...(locationFragmentId ? { locationFragmentId } : {}),
+          encounterFragmentIds,
+          actorFragmentIds,
+          assetFragmentIds,
+          itemFragmentIds: [],
+          pressureCounterHint: "Escalate when the players hesitate or attract attention.",
+          exitNotes: [
+            "Press forward before the pressure peaks.",
+            "Secure leverage that will matter in the finale.",
+          ],
+        },
+        {
+          nodeId: conclusionNodeId,
+          nodeType: "conclusion",
+          title: "Immediate Resolution",
+          summary: "Resolve the core pressure and show the fallout that follows the quest.",
+          ...(locationFragmentId ? { locationFragmentId } : {}),
+          encounterFragmentIds,
+          actorFragmentIds,
+          assetFragmentIds,
+          itemFragmentIds: [],
+          exitNotes: [
+            "Show the cost of victory or the next threat it reveals.",
+          ],
+        },
+      ],
+      edges: [
+        {
+          edgeId,
+          fromNodeId: entryNodeId,
+          toNodeId: conclusionNodeId,
+          label: "Escalate",
+          clueHint: "A strong lead or consequence pushes the story into its conclusion.",
+        },
+      ],
+      entryNodeIds: [entryNodeId],
+      conclusionNodeIds: [conclusionNodeId],
+      conclusions: [
+        {
+          conclusionId,
+          title: "Primary Outcome",
+          summary: "The quest ends with a visible change, a cost, and a hook for what comes next.",
+          sampleOutcomes: [
+            "The players succeed, but someone important pays the price.",
+          ],
+          forwardHooks: [
+            "A rival claims the fallout before the players can stabilize it.",
+          ],
+        },
+      ],
+    };
+  }
+
   private composeLocationFragmentContent(
     title: string,
     introductionMarkdown: string,
@@ -2224,6 +2683,19 @@ export class AdventureModuleStore {
   }
 
   private async rollbackEncounterCreate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      rm(fragmentPath, { recursive: true, force: true }),
+    ]);
+  }
+
+  private async rollbackQuestCreate(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
     previousSystem: ModuleSystemMetadata,
@@ -2344,6 +2816,33 @@ export class AdventureModuleStore {
     await Promise.allSettled(rollbackTasks);
   }
 
+  private async rollbackQuestUpdate(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    previousFragmentPath: string,
+    nextFragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    const rollbackTasks: Array<Promise<unknown>> = [
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+    ];
+
+    if (previousFragmentPath === nextFragmentPath) {
+      rollbackTasks.push(atomicWriteTextFile(previousFragmentPath, previousContent));
+    } else {
+      rollbackTasks.push(
+        mkdir(dirname(previousFragmentPath), { recursive: true }).then(() =>
+          atomicWriteTextFile(previousFragmentPath, previousContent),
+        ),
+      );
+      rollbackTasks.push(rm(nextFragmentPath, { recursive: true, force: true }));
+    }
+
+    await Promise.allSettled(rollbackTasks);
+  }
+
   private async rollbackActorDelete(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
@@ -2393,6 +2892,22 @@ export class AdventureModuleStore {
   }
 
   private async rollbackEncounterDelete(
+    moduleDir: string,
+    previousIndex: AdventureModuleIndex,
+    previousSystem: ModuleSystemMetadata,
+    fragmentPath: string,
+    previousContent: string,
+  ): Promise<void> {
+    await Promise.allSettled([
+      this.writeModuleIndex(moduleDir, previousIndex),
+      this.writeModuleSystem(moduleDir, previousSystem),
+      mkdir(dirname(fragmentPath), { recursive: true }).then(() =>
+        atomicWriteTextFile(fragmentPath, previousContent),
+      ),
+    ]);
+  }
+
+  private async rollbackQuestDelete(
     moduleDir: string,
     previousIndex: AdventureModuleIndex,
     previousSystem: ModuleSystemMetadata,
@@ -2470,6 +2985,38 @@ export class AdventureModuleStore {
     }
 
     throw new AdventureModuleValidationError("Could not allocate a unique encounter slug.");
+  }
+
+  private makeUniqueQuestSlug(
+    title: string,
+    index: AdventureModuleIndex,
+    excludeFragmentId?: string,
+  ): string {
+    const baseSlug = toSlug(title);
+    const existingQuestSlugs = new Set(
+      index.questFragmentIds
+        .filter((fragmentId) => fragmentId !== excludeFragmentId)
+        .map((fragmentId) => index.fragments.find((fragment) => fragment.fragmentId === fragmentId))
+        .filter(
+          (
+            fragment,
+          ): fragment is AdventureModuleFragmentRef => Boolean(fragment?.path),
+        )
+        .map((fragment) => deriveQuestSlugFromPath(fragment.path)),
+    );
+
+    if (!existingQuestSlugs.has(baseSlug)) {
+      return baseSlug;
+    }
+
+    for (let suffix = 2; suffix < 10_000; suffix += 1) {
+      const candidate = toSlug(`${baseSlug}-${suffix}`);
+      if (!existingQuestSlugs.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    throw new AdventureModuleValidationError("Could not allocate a unique quest slug.");
   }
 
   private makeUniqueActorSlug(
@@ -2616,6 +3163,35 @@ export class AdventureModuleStore {
     return null;
   }
 
+  private findQuestRecord(
+    index: AdventureModuleIndex,
+    questSlug: string,
+  ): {
+    fragment: AdventureModuleFragmentRef;
+    detail: AdventureModuleIndex["questDetails"][number];
+    graph: AdventureModuleIndex["questGraphs"][number] | null;
+  } | null {
+    const questDetailByFragmentId = new Map(
+      index.questDetails.map((questDetail) => [questDetail.fragmentId, questDetail] as const),
+    );
+
+    for (const questFragmentId of index.questFragmentIds) {
+      const fragment = index.fragments.find((entry) => entry.fragmentId === questFragmentId);
+      if (!fragment || deriveQuestSlugFromPath(fragment.path) !== questSlug) {
+        continue;
+      }
+      const detail = questDetailByFragmentId.get(fragment.fragmentId);
+      if (!detail) {
+        return null;
+      }
+      const graph =
+        index.questGraphs.find((questGraph) => questGraph.questId === detail.questId) ??
+        null;
+      return { fragment, detail, graph };
+    }
+    return null;
+  }
+
   private findAssetRecord(
     index: AdventureModuleIndex,
     assetSlug: string,
@@ -2730,6 +3306,38 @@ export class AdventureModuleStore {
           summary: fragmentRef.summary,
           prerequisites: encounterDetail.prerequisites,
           titleImageUrl: encounterDetail.titleImageUrl,
+          content: fragmentContentById.get(fragmentId) ?? "",
+        },
+      ];
+    });
+  }
+
+  private resolveQuests(
+    index: AdventureModuleIndex,
+    fragments: AdventureModuleDetail["fragments"],
+  ): AdventureModuleDetail["quests"] {
+    const fragmentContentById = new Map(
+      fragments.map((fragment) => [fragment.fragment.fragmentId, fragment.content] as const),
+    );
+    const questDetailByFragmentId = new Map(
+      index.questDetails.map((questDetail) => [questDetail.fragmentId, questDetail] as const),
+    );
+
+    return index.questFragmentIds.flatMap((fragmentId) => {
+      const fragmentRef = index.fragments.find((fragment) => fragment.fragmentId === fragmentId);
+      const questDetail = questDetailByFragmentId.get(fragmentId);
+      if (!fragmentRef || !questDetail) {
+        return [];
+      }
+
+      return [
+        {
+          fragmentId,
+          questId: questDetail.questId,
+          questSlug: deriveQuestSlugFromPath(fragmentRef.path),
+          title: fragmentRef.title,
+          summary: fragmentRef.summary,
+          titleImageUrl: questDetail.titleImageUrl,
           content: fragmentContentById.get(fragmentId) ?? "",
         },
       ];
@@ -3130,6 +3738,12 @@ export class AdventureModuleStore {
         },
       ],
       questFragmentIds: ["frag-quest-main"],
+      questDetails: [
+        {
+          fragmentId: "frag-quest-main",
+          questId: "quest-main",
+        },
+      ],
       imagePromptFragmentIds: [],
       fragments,
       questGraphs: [

@@ -211,6 +211,19 @@ export type AdventureModuleResolvedEncounter = z.infer<
   typeof adventureModuleResolvedEncounterSchema
 >;
 
+export const adventureModuleResolvedQuestSchema = z.object({
+  fragmentId: identifierSchema,
+  questId: identifierSchema,
+  questSlug: slugSchema,
+  title: shortTextSchema,
+  summary: mediumTextSchema.optional(),
+  titleImageUrl: z.string().min(1).max(500).optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleResolvedQuest = z.infer<
+  typeof adventureModuleResolvedQuestSchema
+>;
+
 export const adventureModuleAuthoringFragmentSchema = z.object({
   fragment: adventureModuleFragmentRefSchema,
   content: z.string().max(200_000).default(""),
@@ -225,6 +238,7 @@ export const adventureModuleDetailSchema = z
     fragments: z.array(adventureModuleAuthoringFragmentSchema).max(400),
     locations: z.array(adventureModuleResolvedLocationSchema).max(80).default([]),
     encounters: z.array(adventureModuleResolvedEncounterSchema).max(80).default([]),
+    quests: z.array(adventureModuleResolvedQuestSchema).max(80).default([]),
     actors: z.array(adventureModuleResolvedActorSchema).max(80).default([]),
     counters: z.array(adventureModuleResolvedCounterSchema).max(80).default([]),
     assets: z.array(adventureModuleResolvedAssetSchema).max(80).default([]),
@@ -368,6 +382,40 @@ export const adventureModuleDetailSchema = z
       }
     }
 
+    const questIds = new Set(module.index.questFragmentIds);
+    const questDetailByFragmentId = new Map(
+      module.index.questDetails.map((questDetail) => [questDetail.fragmentId, questDetail] as const),
+    );
+
+    for (const quest of module.quests) {
+      if (!questIds.has(quest.fragmentId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved quest references unknown fragment ${quest.fragmentId}`,
+          path: ["quests"],
+        });
+      }
+      const questDetail = questDetailByFragmentId.get(quest.fragmentId);
+      if (!questDetail) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved quest missing quest metadata for ${quest.fragmentId}`,
+          path: ["quests"],
+        });
+        continue;
+      }
+      if (
+        quest.questId !== questDetail.questId ||
+        quest.titleImageUrl !== questDetail.titleImageUrl
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `resolved quest ${quest.fragmentId} does not match quest metadata`,
+          path: ["quests"],
+        });
+      }
+    }
+
     const countersBySlug = new Map(
       module.index.counters.map((counter) => [counter.slug, counter] as const),
     );
@@ -504,6 +552,13 @@ export type AdventureModuleCreateEncounterRequest = z.infer<
   typeof adventureModuleCreateEncounterRequestSchema
 >;
 
+export const adventureModuleCreateQuestRequestSchema = z.object({
+  title: shortTextSchema.default("New Quest"),
+});
+export type AdventureModuleCreateQuestRequest = z.infer<
+  typeof adventureModuleCreateQuestRequestSchema
+>;
+
 export const adventureModuleUpdateLocationRequestSchema = z.object({
   title: shortTextSchema,
   summary: z.string().max(500).default(""),
@@ -538,6 +593,22 @@ export const adventureModuleUpdateEncounterResponseSchema =
   adventureModuleDetailSchema;
 export type AdventureModuleUpdateEncounterResponse = z.infer<
   typeof adventureModuleUpdateEncounterResponseSchema
+>;
+
+export const adventureModuleUpdateQuestRequestSchema = z.object({
+  title: shortTextSchema,
+  summary: z.string().max(500).default(""),
+  titleImageUrl: z.union([z.string().min(1).max(500), z.null()]).optional(),
+  content: z.string().max(200_000).default(""),
+});
+export type AdventureModuleUpdateQuestRequest = z.infer<
+  typeof adventureModuleUpdateQuestRequestSchema
+>;
+
+export const adventureModuleUpdateQuestResponseSchema =
+  adventureModuleDetailSchema;
+export type AdventureModuleUpdateQuestResponse = z.infer<
+  typeof adventureModuleUpdateQuestResponseSchema
 >;
 
 export const adventureModuleUpdateActorRequestSchema = z.object({

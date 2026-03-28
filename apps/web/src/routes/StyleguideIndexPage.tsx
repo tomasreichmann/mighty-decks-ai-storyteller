@@ -64,6 +64,26 @@ export const StyleguideIndexPage = (): JSX.Element => {
           </Link>
         </div>
       </Panel>
+
+      <Panel as="section" tone="bone" contentClassName="stack gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="stack gap-1">
+            <Text variant="h3" color="iron">
+              Quest Card
+            </Text>
+            <Text variant="body" color="iron-light" className="text-sm">
+              Shared scene-card direction adapted for quest embeds and authoring
+              previews.
+            </Text>
+          </div>
+          <Link
+            to="/styleguide/quest-card"
+            className="inline-flex items-center rounded-sm border-2 border-kac-iron bg-gradient-to-b from-kac-gold to-kac-gold-dark px-4 py-2 font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron shadow-[3px_3px_0_0_#121b23] transition duration-100 hover:brightness-[1.03] active:translate-y-[2px] active:shadow-[1px_1px_0_0_#121b23]"
+          >
+            Open Gallery
+          </Link>
+        </div>
+      </Panel>
     </div>
   );
 };

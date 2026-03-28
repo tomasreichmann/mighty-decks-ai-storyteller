@@ -96,6 +96,13 @@ const createValidIndexCandidate = () => ({
     },
   ],
   questFragmentIds: ["frag-quest-main"],
+  questDetails: [
+    {
+      fragmentId: "frag-quest-main",
+      questId: "quest-main",
+      titleImageUrl: "https://example.com/quest-title.png",
+    },
+  ],
   imagePromptFragmentIds: [],
   fragments: [
     {
@@ -364,6 +371,43 @@ test("adventureModuleIndexSchema rejects missing encounter detail metadata", () 
         encounterDetails: [],
       }),
     /missing encounter detail metadata/i,
+  );
+});
+
+test("adventureModuleIndexSchema accepts quest detail metadata joined to quest graphs", () => {
+  const parsed = adventureModuleIndexSchema.parse(createValidIndexCandidate());
+
+  assert.equal(parsed.questDetails[0]?.questId, "quest-main");
+  assert.equal(
+    parsed.questDetails[0]?.titleImageUrl,
+    "https://example.com/quest-title.png",
+  );
+});
+
+test("adventureModuleIndexSchema rejects missing quest detail metadata", () => {
+  assert.throws(
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        questDetails: [],
+      }),
+    /missing quest detail metadata/i,
+  );
+});
+
+test("adventureModuleIndexSchema rejects quest detail metadata that references an unknown quest graph", () => {
+  assert.throws(
+    () =>
+      adventureModuleIndexSchema.parse({
+        ...createValidIndexCandidate(),
+        questDetails: [
+          {
+            fragmentId: "frag-quest-main",
+            questId: "quest-missing",
+          },
+        ],
+      }),
+    /quest detail metadata references unknown quest graph id/i,
   );
 });
 

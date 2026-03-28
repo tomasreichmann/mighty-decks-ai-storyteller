@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 test("AdventureModuleMarkdownField exposes separate Generic Asset and Custom Asset insert controls", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleMarkdownField.tsx",
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
     "utf8",
   );
 
@@ -18,11 +18,22 @@ test("AdventureModuleMarkdownField exposes separate Generic Asset and Custom Ass
 
 test("AdventureModuleMarkdownField exposes Encounter insertion with canonical EncounterCard JSX", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleMarkdownField.tsx",
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
     "utf8",
   );
 
   assert.match(source, /<option value="EncounterCard">Encounter<\/option>/);
   assert.match(source, /name: "EncounterCard"/);
   assert.match(source, /createEncounterCardJsx/);
+});
+
+test("AdventureModuleMarkdownField exposes Quest insertion with canonical QuestCard JSX", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /<option value="QuestCard">Quest<\/option>/);
+  assert.match(source, /name: "QuestCard"/);
+  assert.match(source, /createQuestCardJsx/);
 });

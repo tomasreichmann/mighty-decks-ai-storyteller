@@ -3,6 +3,7 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
+  AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 import { AssetCard } from "../cards/AssetCard";
@@ -32,6 +33,7 @@ interface AdventureModuleAssetEditorProps {
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   encounters?: AdventureModuleResolvedEncounter[];
+  quests?: AdventureModuleResolvedQuest[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
   reauthorRequired?: boolean;
@@ -57,6 +59,7 @@ export const AdventureModuleAssetEditor = ({
   counters = [],
   assets = [],
   encounters = [],
+  quests = [],
   smartContextDocument,
   editable,
   reauthorRequired = false,
@@ -202,10 +205,11 @@ export const AdventureModuleAssetEditor = ({
           selfContextTag="Storyteller Info"
           smartContextDocument={smartContextDocument}
           actors={actors}
-          counters={counters}
-          assets={assets}
-          encounters={encounters}
-          value={asset.content}
+        counters={counters}
+        assets={assets}
+        encounters={encounters}
+        quests={quests}
+        value={asset.content}
           editable={editable}
           maxLength={MAX_MARKDOWN_LENGTH}
           onChange={onContentChange}

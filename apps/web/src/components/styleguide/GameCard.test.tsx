@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type {
   AdventureModuleResolvedEncounter,
   AdventureModuleResolvedLocation,
+  AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 
 import { GameCard } from "./GameCard";
@@ -39,7 +40,18 @@ const sampleEncounter: AdventureModuleResolvedEncounter = {
     "## Goal\n\nGet past the bridge before the tax captain closes the gates.",
 };
 
-test("GameCard renders a location card with a visible Location badge and full-width summary strip", () => {
+const sampleQuest: AdventureModuleResolvedQuest = {
+  fragmentId: "frag-quest-recover-shard",
+  questId: "quest-recover-the-shard",
+  questSlug: "recover-the-shard",
+  title: "Recover the Shard",
+  summary: "Retrieve a stolen lantern shard before rival factions claim it.",
+  titleImageUrl: "/scenes/defending-an-underground-village.jpg",
+  content:
+    "## Hook\n\nRecover the shard before the floodwall seals the district.",
+};
+
+test("GameCard renders a location card with a pinned icon medallion and lighter summary strip", () => {
   const markup = renderToStaticMarkup(
     React.createElement(GameCard, {
       type: "location",
@@ -48,26 +60,28 @@ test("GameCard renders a location card with a visible Location badge and full-wi
   );
 
   assert.match(markup, /The Drowned Gate District/);
-  assert.match(markup, /Location/);
+  assert.match(markup, /📌/);
   assert.match(
     markup,
     /Catwalks groan over dark water channels while the pumps thrum beneath the district\./,
   );
   assert.match(markup, /aspect-\[3\/2\]/);
+  assert.match(markup, /max-w-\[30rem\]/);
   assert.match(markup, /left-3 top-3/);
   assert.match(markup, /right-3 top-3/);
   assert.match(markup, /bottom-0/);
   assert.match(markup, /w-full/);
-  assert.match(markup, /text-lg\/\[0\.8\]/);
+  assert.match(markup, /rounded-full/);
+  assert.match(markup, /bg-\[#f7f3eb\]/);
   assert.match(markup, /text-md\/\[0\.8\]/);
-  assert.match(markup, /rotate=\{false\}|-rotate-\[1\.5deg\]/);
+  assert.match(markup, /cloth title chip/);
   assert.match(markup, /whitespace-normal/);
   assert.doesNotMatch(markup, /ImageCard-driven direction/);
   assert.doesNotMatch(markup, /drowned-gate-district/);
   assert.doesNotMatch(markup, /map pins/i);
 });
 
-test("GameCard renders an encounter card with a visible Encounter badge and encounter summary strip", () => {
+test("GameCard renders an encounter card with a warning medallion and lighter summary strip", () => {
   const markup = renderToStaticMarkup(
     React.createElement(GameCard, {
       type: "encounter",
@@ -76,12 +90,43 @@ test("GameCard renders an encounter card with a visible Encounter badge and enco
   );
 
   assert.match(markup, /Bridge Tribute Checkpoint/);
-  assert.match(markup, /Encounter/);
+  assert.match(markup, /⚠️/);
   assert.match(markup, /Pay, bluff, or break through an armored toll blockade\./);
   assert.match(markup, /aspect-\[3\/2\]/);
+  assert.match(markup, /max-w-\[30rem\]/);
   assert.match(markup, /left-3 top-3/);
   assert.match(markup, /right-3 top-3/);
   assert.match(markup, /bottom-0/);
   assert.match(markup, /w-full/);
+  assert.match(markup, /rounded-full/);
+  assert.match(markup, /bg-\[#f7f3eb\]/);
+  assert.match(markup, /fire title chip/);
   assert.doesNotMatch(markup, /Suggested for level 3\+/);
+});
+
+test("GameCard renders a quest card with a scroll medallion and lighter summary strip", () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GameCard, {
+      type: "quest",
+      quest: sampleQuest,
+    }),
+  );
+
+  assert.match(markup, /Recover the Shard/);
+  assert.match(
+    markup,
+    /Retrieve a stolen lantern shard before rival factions claim it\./,
+  );
+  assert.match(markup, /📜/u);
+  assert.match(markup, /aspect-\[3\/2\]/);
+  assert.match(markup, /max-w-\[30rem\]/);
+  assert.match(markup, /left-3 top-3/);
+  assert.match(markup, /right-3 top-3/);
+  assert.match(markup, /bottom-0/);
+  assert.match(markup, /w-full/);
+  assert.match(markup, /rounded-full/);
+  assert.match(markup, /bg-\[#f7f3eb\]/);
+  assert.match(markup, /gold title chip/);
+  assert.match(markup, /scroll icon medallion/);
+  assert.doesNotMatch(markup, /recover-the-shard/);
 });

@@ -16,7 +16,7 @@ Boundary rules for this milestone:
 - No change to current live-session state machine (`lobby -> vote -> play -> ending`)
 - No change to current Socket.IO event contracts
 - No database implementation in this milestone
-- Runtime authoring support is currently limited to Adventure Module create/edit flows plus typed actor, counter, asset, and location authoring
+- Runtime authoring support is currently limited to Adventure Module create/edit flows plus typed actor, counter, asset, location, encounter, and quest fragment authoring
 - Deliverable includes shared schema, local file persistence, REST authoring endpoints, and matching web authoring UI
 
 ---
@@ -110,7 +110,7 @@ Authoring entity catalog:
 | Asset | Reusable object, resource, clue, or leverage source | `asset` fragment plus `assetCards` metadata | Implemented |
 | Location | Place, travel node, map area, or reusable environment setup | `location` fragment plus `locationDetails` metadata | Implemented |
 | Encounter | Self-contained playable beat with a concrete player goal | `encounter` fragment plus `encounterDetails` metadata | Implemented |
-| Quest | Cohesive story arc that links encounters, events, and locations | `quest` fragment plus quest graph metadata | Documentation and data model implemented; dedicated quest editor remains future work |
+| Quest | Cohesive story arc that links encounters, events, and locations | `quest` fragment plus `questDetails` metadata and quest graph metadata | Fragment authoring implemented; dedicated quest graph editor remains future work |
 
 Notes:
 
@@ -168,8 +168,12 @@ Encounter-specific requirements:
 Quest-specific requirements:
 
 - Quest fragments remain normal markdown-backed `quest` fragments.
+- Module index authoring metadata includes a `questDetails` collection keyed by quest `fragmentId`.
+- Each quest-detail metadata entry stores a stable `questId` plus optional `titleImageUrl`.
+- Every `questFragmentId` must have exactly one matching `questDetails` metadata entry and one matching quest graph.
 - Quest sequencing and dependency structure continue to live in quest graph metadata rather than in the quest fragment body alone.
-- Quest authoring UI remains a future step, but quest fragments already participate in map-pin linking and module validation.
+- Resolved authoring reads join fragment metadata and quest-detail metadata into a `quests` array for the web client.
+- Legacy modules missing `questDetails` metadata backfill by pairing `questFragmentIds` and `questGraphs` in index order until the next successful write.
 
 ---
 
@@ -244,7 +248,8 @@ Authoring embed rules:
 - Canonical custom asset embeds use `<GameCard type="AssetCard" slug="<asset-slug>" />`.
 - Canonical generic built-in asset embeds use `<GameCard type="AssetCard" slug="<base-asset-slug>" modifierSlug="<modifier-slug>" />`, omitting `modifierSlug` when no modifier is selected.
 - Canonical encounter embeds use `<EncounterCard slug="<encounter-slug>" />`.
-- Legacy `@actor/<actor-slug>`, `@counter/<counter-slug>`, `@asset/<asset-slug>`, and `@asset/<asset-slug>/<modifier-slug>` shortcodes remain accepted and normalize to canonical `GameCard` source outside inline and fenced code spans.
+- Canonical quest embeds use `<QuestCard slug="<quest-slug>" />`.
+- Legacy `@actor/<actor-slug>`, `@counter/<counter-slug>`, `@asset/<asset-slug>`, `@asset/<asset-slug>/<modifier-slug>`, `@encounter/<encounter-slug>`, and `@quest/<quest-slug>` shortcodes remain accepted and normalize to canonical card source outside inline and fenced code spans.
 
 ---
 
@@ -351,7 +356,7 @@ if (!result.success) {
 
 ## 11. Current Implemented Authoring Contracts
 
-The current implementation adds typed actor, counter, asset, and location authoring APIs on top of the shared spec:
+The current implementation adds typed actor, counter, asset, location, encounter, and quest-fragment authoring APIs on top of the shared spec:
 
 - `POST /api/adventure-modules/:moduleId/actors`
 - `PUT /api/adventure-modules/:moduleId/actors/:actorSlug`
@@ -365,6 +370,12 @@ The current implementation adds typed actor, counter, asset, and location author
 - `POST /api/adventure-modules/:moduleId/assets`
 - `PUT /api/adventure-modules/:moduleId/assets/:assetSlug`
 - `DELETE /api/adventure-modules/:moduleId/assets/:assetSlug`
+- `POST /api/adventure-modules/:moduleId/encounters`
+- `PUT /api/adventure-modules/:moduleId/encounters/:encounterSlug`
+- `DELETE /api/adventure-modules/:moduleId/encounters/:encounterSlug`
+- `POST /api/adventure-modules/:moduleId/quests`
+- `PUT /api/adventure-modules/:moduleId/quests/:questSlug`
+- `DELETE /api/adventure-modules/:moduleId/quests/:questSlug`
 
 These endpoints:
 
@@ -375,13 +386,18 @@ These endpoints:
 - persist typed counter records directly on the module index with slugs derived from the saved counter title
 - create asset fragments with module-scoped slugs derived from the saved asset title
 - persist typed custom asset-card metadata alongside asset fragment references
-- return resolved `AdventureModuleDetail` payloads including joined `locations`, `actors`, `counters`, and `assets`
+- create encounter fragments with module-scoped slugs derived from the saved encounter title and persist typed encounter metadata alongside fragment references
+- create quest fragments with module-scoped slugs derived from the saved quest title, persist typed quest metadata alongside fragment references, and seed a minimal valid quest graph automatically
+- reject deleting the last quest and clean up linked map pins and component opportunities when a quest is deleted
+- return resolved `AdventureModuleDetail` payloads including joined `locations`, `encounters`, `quests`, `actors`, `counters`, and `assets`
 
 Legacy module compatibility:
 
 - Modules missing `locationDetails` metadata are backfilled with safe defaults on read, seeding `descriptionMarkdown` from the legacy raw fragment content.
 - Modules missing `actorCards` metadata are backfilled with safe defaults on read.
 - Modules missing `assetCards` metadata are backfilled into `legacy_layered` asset records on read.
+- Modules missing `encounterDetails` metadata are backfilled with safe defaults on read.
+- Modules missing `questDetails` metadata are backfilled from the stored quest graph order on read.
 - Legacy layered asset records remain unsupported in normal markdown rendering until the asset is manually reauthored and saved as `custom`.
 - The normalized shape is persisted on the next successful write.
 
@@ -392,4 +408,4 @@ Legacy module compatibility:
 - Session orchestration changes
 - Cloud publishing pipeline
 - Minis/map rendering features
-- Dedicated quest typed entity editor
+- Dedicated quest graph editor

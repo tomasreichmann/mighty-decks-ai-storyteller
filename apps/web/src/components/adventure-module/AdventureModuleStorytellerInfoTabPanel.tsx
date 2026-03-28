@@ -4,6 +4,7 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
+  AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { Text } from "../common/Text";
@@ -18,6 +19,7 @@ interface AdventureModuleStorytellerInfoTabPanelProps {
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   encounters?: AdventureModuleResolvedEncounter[];
+  quests?: AdventureModuleResolvedQuest[];
   editable: boolean;
   validationMessage?: string | null;
   onSummaryChange: (nextValue: string) => void;
@@ -40,6 +42,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
   counters = [],
   assets = [],
   encounters = [],
+  quests = [],
   editable,
   validationMessage,
   onSummaryChange,
@@ -58,6 +61,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
         counters={counters}
         assets={assets}
         encounters={encounters}
+        quests={quests}
         value={summary}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
@@ -76,6 +80,7 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
         counters={counters}
         assets={assets}
         encounters={encounters}
+        quests={quests}
         value={infoText}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}

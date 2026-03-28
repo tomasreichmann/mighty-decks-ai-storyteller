@@ -24,8 +24,8 @@ export const LocationCard = ({
       imageUrl={imageUrl}
       imageAlt={imageAlt}
       title={title}
-      typeLabel="Location"
-      typeVariant="cloth"
+      titleVariant="cloth"
+      typeIcon="📌"
       description={description}
       className={className}
     />

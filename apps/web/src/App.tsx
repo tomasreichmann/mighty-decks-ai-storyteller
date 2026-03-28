@@ -57,6 +57,10 @@ const StyleguideEncounterCardPage = lazy(async () => ({
   default: (await import("./routes/StyleguideEncounterCardPage"))
     .StyleguideEncounterCardPage,
 }));
+const StyleguideQuestCardPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideQuestCardPage"))
+    .StyleguideQuestCardPage,
+}));
 const WorkflowLabPage = lazy(async () => ({
   default: (await import("./routes/WorkflowLabPage")).WorkflowLabPage,
 }));
@@ -115,6 +119,10 @@ export const App = (): JSX.Element => {
           <Route
             path="/styleguide/encounter-card"
             element={<StyleguideEncounterCardPage />}
+          />
+          <Route
+            path="/styleguide/quest-card"
+            element={<StyleguideQuestCardPage />}
           />
           <Route path="/adventure/:adventureId" element={<RoleSelectPage />} />
           <Route path="/rules" element={<RulesLayoutPage />}>

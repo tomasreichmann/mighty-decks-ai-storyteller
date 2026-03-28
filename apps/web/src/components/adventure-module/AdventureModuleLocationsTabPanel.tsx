@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AdventureModuleResolvedLocation } from "@mighty-decks/spec/adventureModuleAuthoring";
-import { resolveServerUrl } from "../../lib/socket";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
+import { LocationCardView } from "./LocationCardView";
 
 interface AdventureModuleLocationsTabPanelProps {
   locations: AdventureModuleResolvedLocation[];
@@ -35,18 +35,6 @@ const copyToClipboard = async (value: string): Promise<void> => {
   if (!copied) {
     throw new Error("Clipboard copy failed.");
   }
-};
-
-const toImageSrc = (imageUrl: string): string => {
-  if (
-    imageUrl.startsWith("http://") ||
-    imageUrl.startsWith("https://") ||
-    imageUrl.startsWith("data:")
-  ) {
-    return imageUrl;
-  }
-
-  return new URL(imageUrl, resolveServerUrl()).toString();
 };
 
 export const AdventureModuleLocationsTabPanel = ({
@@ -156,46 +144,26 @@ export const AdventureModuleLocationsTabPanel = ({
           </Text>
         </Panel>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="flex flex-row flex-wrap items-start gap-4">
           {filteredLocations.map((location) => (
             <Panel
               key={location.fragmentId}
-              className="h-full"
-              contentClassName="stack h-full gap-3"
+              className="self-start"
+              contentClassName="stack gap-3"
             >
               <button
                 type="button"
-                className="stack h-full gap-3 text-left"
+                className="stack gap-3 text-left"
                 onClick={() => onOpenLocation(location.locationSlug)}
               >
-                {location.titleImageUrl ? (
-                  <div className="relative overflow-hidden rounded-sm border-2 border-kac-iron bg-kac-iron-dark shadow-[2px_2px_0_0_#121b23]">
-                    <img
-                      src={toImageSrc(location.titleImageUrl)}
-                      alt={location.title}
-                      className="h-40 w-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex h-40 items-center justify-center rounded-sm border-2 border-dashed border-kac-steel-dark/60 bg-kac-bone-light/70 px-4 text-center">
-                    <Text variant="note" color="iron-light" className="text-sm">
-                      No title image yet.
-                    </Text>
-                  </div>
-                )}
+                <LocationCardView location={location} />
                 <div className="stack gap-1">
-                  <Text variant="emphasised" color="iron">
-                    {location.title}
-                  </Text>
-                  <Text variant="body" color="iron-light" className="text-sm">
-                    {location.summary ?? "No summary yet."}
-                  </Text>
                   <Text variant="note" color="steel-dark">
                     {`@location/${location.locationSlug}`}
                   </Text>
                 </div>
               </button>
-              <div className="mt-auto flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"

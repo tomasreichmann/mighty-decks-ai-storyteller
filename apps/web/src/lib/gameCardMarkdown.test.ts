@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   createEncounterCardJsx,
   createGameCardJsx,
+  createQuestCardJsx,
   normalizeLegacyGameCardMarkdown,
 } from "./gameCardMarkdown";
 
@@ -40,6 +41,13 @@ test("createEncounterCardJsx emits canonical EncounterCard source", () => {
   assert.equal(
     createEncounterCardJsx("bridge-tribute-checkpoint"),
     '<EncounterCard slug="bridge-tribute-checkpoint" />',
+  );
+});
+
+test("createQuestCardJsx emits canonical QuestCard source", () => {
+  assert.equal(
+    createQuestCardJsx("recover-the-shard"),
+    '<QuestCard slug="recover-the-shard" />',
   );
 });
 
@@ -173,6 +181,48 @@ test("normalizeLegacyGameCardMarkdown upgrades asset shortcodes with modifier sl
   );
 });
 
+test("normalizeLegacyGameCardMarkdown upgrades encounter shortcodes to canonical EncounterCard JSX", () => {
+  const markdown = [
+    "Stage the toll confrontation.",
+    "",
+    "@encounter/bridge-tribute-checkpoint",
+    "",
+    "Keep @encounter/roofline-pursuit ready for the aftermath.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Stage the toll confrontation.",
+      "",
+      '<EncounterCard slug="bridge-tribute-checkpoint" />',
+      "",
+      'Keep <EncounterCard slug="roofline-pursuit" /> ready for the aftermath.',
+    ].join("\n"),
+  );
+});
+
+test("normalizeLegacyGameCardMarkdown upgrades quest shortcodes to canonical QuestCard JSX", () => {
+  const markdown = [
+    "Stage the recovery arc.",
+    "",
+    "@quest/recover-the-shard",
+    "",
+    "Keep @quest/quiet-the-iron-bell ready for the fallout.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Stage the recovery arc.",
+      "",
+      '<QuestCard slug="recover-the-shard" />',
+      "",
+      'Keep <QuestCard slug="quiet-the-iron-bell" /> ready for the fallout.',
+    ].join("\n"),
+  );
+});
+
 test("normalizeLegacyGameCardMarkdown leaves inline code, fenced code, and unknown tokens untouched", () => {
   const markdown = [
     "`@outcome/success`",
@@ -182,6 +232,8 @@ test("normalizeLegacyGameCardMarkdown leaves inline code, fenced code, and unkno
     "```",
     "",
     "@mystery/unknown",
+    "",
+    "`@encounter/bridge-tribute-checkpoint`",
     "",
     '<GameCard type="OutcomeCard" slug="success" />',
   ].join("\n");

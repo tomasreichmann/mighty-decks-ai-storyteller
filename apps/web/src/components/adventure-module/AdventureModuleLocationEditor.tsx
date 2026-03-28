@@ -5,6 +5,7 @@ import type {
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
   AdventureModuleResolvedLocation,
+  AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
@@ -26,6 +27,7 @@ interface AdventureModuleLocationEditorProps {
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   encounters?: AdventureModuleResolvedEncounter[];
+  quests?: AdventureModuleResolvedQuest[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
   validationMessage?: string | null;
@@ -217,6 +219,7 @@ export const AdventureModuleLocationEditor = ({
   counters = [],
   assets = [],
   encounters = [],
+  quests = [],
   smartContextDocument,
   editable,
   validationMessage,
@@ -323,6 +326,7 @@ export const AdventureModuleLocationEditor = ({
         counters={counters}
         assets={assets}
         encounters={encounters}
+        quests={quests}
         value={location.introductionMarkdown}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
@@ -341,6 +345,7 @@ export const AdventureModuleLocationEditor = ({
         counters={counters}
         assets={assets}
         encounters={encounters}
+        quests={quests}
         value={location.descriptionMarkdown}
         editable={editable}
         maxLength={MAX_MARKDOWN_LENGTH}
