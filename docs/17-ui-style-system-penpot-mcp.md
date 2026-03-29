@@ -191,6 +191,11 @@ Canonical patterns:
 6. `narrative-stack`
 7. `phase-shell`
 
+Current route chrome note:
+
+- The top navigation in `Page.tsx` and `Page.module.css` now uses explicit per-link comic panel background assets (`grey`, `curse`, `cloth`, `gold`, `monster`) instead of hue-rotating a shared image.
+- When adding or revising top-level nav items, assign a specific background asset in the nav item config rather than recoloring a single shared background in CSS.
+
 Each pattern in payload includes:
 
 - `useWhen`
@@ -214,6 +219,7 @@ Tracked implementation drifts:
 5. Dynamic class composition risk in `Label`.
 6. `Panel` disabled pseudo behavior mismatch.
 7. `Text` h1 transform class syntax risk.
+8. Penpot token payload does not yet encode the Page nav's per-route background art assignments.
 
 Canonical decision policy:
 

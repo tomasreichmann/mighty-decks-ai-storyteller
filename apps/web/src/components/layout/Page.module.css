@@ -28,7 +28,7 @@
 }
 
 .comicNavLink {
-  --button-hue: 0deg;
+  --button-background-image: url("/button-background-grey.png");
   --button-skew: -12deg;
   position: relative;
   isolation: isolate;
@@ -65,12 +65,11 @@
   position: absolute;
   inset: 0;
   z-index: -2;
-  background-image: url("/button-background.png");
+  background-image: var(--button-background-image);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  filter: hue-rotate(var(--button-hue)) saturate(0.84) brightness(0.95)
-    contrast(0.94);
+  filter: saturate(0.84) brightness(0.95) contrast(0.94);
   pointer-events: none;
 }
 

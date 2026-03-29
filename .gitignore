@@ -8,6 +8,7 @@ dist
 *.tsbuildinfo
 apps/server/logs
 .playwright-cli
+.superpowers/
 
 # Runtime/generated artifacts
 apps/server/output/

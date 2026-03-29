@@ -13,41 +13,46 @@ interface NavItem {
   to: string;
   label: string;
   end?: boolean;
-  hueDegrees: number;
+  buttonBackgroundImage: string;
   hideInProduction?: boolean;
 }
 
 interface ComicNavStyle extends CSSProperties {
-  "--button-hue": string;
+  "--button-background-image": string;
 }
 
 const navItems: NavItem[] = [
-  { to: "/", label: "Home", end: true, hueDegrees: 0 },
+  {
+    to: "/",
+    label: "Home",
+    end: true,
+    buttonBackgroundImage: "/button-background-grey.png",
+  },
   {
     to: "/adventure-module/list",
     label: "Modules",
-    hueDegrees: 292,
+    buttonBackgroundImage: "/button-background-curse.png",
   },
   {
     to: "/campaign/list",
     label: "Campaigns",
-    hueDegrees: 214,
+    buttonBackgroundImage: "/button-background-cloth.png",
   },
   {
     to: "/rules",
     label: "Rules",
-    hueDegrees: 28,
+    buttonBackgroundImage: "/button-background-gold.png",
   },
   {
     to: "/image",
     label: "Image Lab",
-    hueDegrees: 175,
+    buttonBackgroundImage: "/button-background-gold.png",
     hideInProduction: true,
   },
   {
     to: "/workflow-lab",
     label: "Workflow",
-    hueDegrees: 98,
+    buttonBackgroundImage: "/button-background-monster.png",
     hideInProduction: true,
   },
 ].filter((item) => !(import.meta.env.PROD && item.hideInProduction));
@@ -98,7 +103,7 @@ export const Page = ({
           <nav className={styles.comicNav} aria-label="Primary">
             {navItems.map((item) => {
               const style: ComicNavStyle = {
-                "--button-hue": `${item.hueDegrees}deg`,
+                "--button-background-image": `url("${item.buttonBackgroundImage}")`,
               };
 
               return (

@@ -29,6 +29,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Switch the zero-config local server default from port `8080` to `8081` and align the web client's split-dev fallback with the same port.
 - Build the shared `spec/` workspace to JavaScript plus declaration files, update package exports to built output, and start the server from compiled JS instead of `tsx` in production.
 - Narrow Render installs to the deploy-relevant workspaces and remove the accidental root `playwright` dependency from the deploy path.
+- Replace the primary nav's hue-rotated shared button background with explicit comic panel background assets per route, covering the new grey, curse, cloth, gold, and monster button variants.
 - Extend Adventure Module actor authoring with a `Player Character` flag so authored actors can seed campaign-time claimable PCs.
 - Derive web asset card titles from the shared `spec` asset catalog so built-in asset names have one source of truth across shared contracts and the UI.
 - Lazy-load top-level web routes and scope the MDX editor stylesheet to the authoring flow to reduce the initial client bundle.
