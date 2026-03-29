@@ -373,3 +373,55 @@ The event and state model is designed to be:
 
 By centralizing authority and strictly gating events by phase, the MVP minimizes the two biggest risks:
 **continuity breakage** and **flow confusion**.
+
+---
+
+## Post-MVP Extension: Campaigns and Human Sessions
+
+The repo now also includes a separate campaign/session contract alongside the original adventure runtime.
+
+### Additional conceptual state
+
+- `Campaign` - a persisted deep-copy fork of an Adventure Module
+- `CampaignSession` - a live or archived play instance of a Campaign
+- `CampaignSessionParticipant` - a player or storyteller, optionally marked `isMock`
+- `CampaignCharacterClaim` - maps a participant to a player-character actor for one session
+
+Exact shapes live in:
+
+- `/spec/campaign.ts`
+- `/spec/campaignEvents.ts`
+
+### Campaign transport split
+
+Campaigns use a split transport model:
+
+- REST for campaign CRUD, campaign detail reads, and session create/list/read
+- Socket.IO for session presence, role join, mock participants, claim/create PC, group chat, close-session actions, and live refresh broadcasts
+
+### Additional client -> server campaign events
+
+- `watch_campaign`
+- `unwatch_campaign`
+- `join_campaign_session`
+- `leave_campaign_session`
+- `join_campaign_session_role`
+- `add_campaign_session_mock`
+- `claim_campaign_session_character`
+- `create_campaign_session_character`
+- `send_campaign_session_message`
+- `close_campaign_session`
+
+### Additional server -> client campaign events
+
+- `campaign_updated`
+- `campaign_session_state`
+- `campaign_session_error`
+
+### Campaign refresh guarantee
+
+- campaign detail and storyteller session routes may be open in parallel on different clients
+- when one client saves campaign data, the server emits `campaign_updated`
+- subscribed clients refetch the latest campaign detail at route level
+
+This keeps the current implementation simple and avoids pretending the editor is fully collaborative in real time.

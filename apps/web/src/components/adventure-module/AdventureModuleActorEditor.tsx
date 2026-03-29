@@ -17,6 +17,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
+import { Toggle } from "../common/Toggle";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 
 interface AdventureModuleActorEditorProps {
@@ -38,6 +39,7 @@ interface AdventureModuleActorEditorProps {
   onTacticalSpecialChange: (
     nextValue: AdventureModuleResolvedActor["tacticalSpecialSlug"],
   ) => void;
+  onIsPlayerCharacterChange: (nextValue: boolean) => void;
   onContentChange: (nextValue: string) => void;
   onFieldBlur: () => void;
   onAdjustCounterValue?: (
@@ -67,6 +69,7 @@ export const AdventureModuleActorEditor = ({
   onBaseLayerChange,
   onTacticalRoleChange,
   onTacticalSpecialChange,
+  onIsPlayerCharacterChange,
   onContentChange,
   onFieldBlur,
   onAdjustCounterValue,
@@ -121,6 +124,14 @@ export const AdventureModuleActorEditor = ({
           onBlur={onFieldBlur}
           disabled={!editable}
           description="Used in the Actors tab list and quick references."
+        />
+
+        <Toggle
+          checked={actor.isPlayerCharacter}
+          onCheckedChange={onIsPlayerCharacterChange}
+          label="Player Character"
+          description="Player characters can be claimed or created during campaign sessions."
+          disabled={!editable}
         />
 
         <label className="grid gap-1">

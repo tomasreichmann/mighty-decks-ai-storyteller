@@ -25,6 +25,14 @@
       "types": "./dist/assetCards.d.ts",
       "import": "./dist/assetCards.js"
     },
+    "./campaign": {
+      "types": "./dist/campaign.d.ts",
+      "import": "./dist/campaign.js"
+    },
+    "./campaignEvents": {
+      "types": "./dist/campaignEvents.d.ts",
+      "import": "./dist/campaignEvents.js"
+    },
     "./counterCards": {
       "types": "./dist/counterCards.d.ts",
       "import": "./dist/counterCards.js"

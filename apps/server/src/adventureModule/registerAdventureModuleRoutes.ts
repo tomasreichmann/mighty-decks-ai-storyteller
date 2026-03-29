@@ -436,6 +436,7 @@ export const registerAdventureModuleRoutes = (
         moduleId,
         creatorToken,
         title: payload.title,
+        isPlayerCharacter: payload.isPlayerCharacter,
       });
       return reply.code(201).send(adventureModuleCreateResponseSchema.parse(next));
     } catch (error) {
@@ -466,6 +467,7 @@ export const registerAdventureModuleRoutes = (
             payload.tacticalSpecialSlug === null
               ? undefined
               : payload.tacticalSpecialSlug,
+          isPlayerCharacter: payload.isPlayerCharacter,
           content: payload.content,
         });
         return reply.send(adventureModuleUpdateActorResponseSchema.parse(next));

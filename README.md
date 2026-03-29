@@ -6,15 +6,18 @@ The repo started around a GM-less, text-first AI storyteller MVP and now also in
 
 ## Overview
 
-- `apps/web` is the single Vite React PWA for the landing page, adventure runtime, Adventure Module authoring, workflow lab, image tooling, and rules reference pages.
-- `apps/server` is the Node.js TypeScript orchestrator using Fastify and Socket.IO for adventure state, AI orchestration, image generation, workflow lab routes, and Adventure Module routes.
-- `spec/` contains shared TypeScript contracts for adventure state, events, workflow lab, image generation, and Adventure Module data.
-- `docs/` contains the product brief, MVP scope, architecture, event/state docs, deployment guides, and Adventure Module design docs.
+- `apps/web` is the single Vite React PWA for the landing page, adventure runtime, Adventure Module authoring, campaign play, workflow lab, image tooling, and rules reference pages.
+- `apps/server` is the Node.js TypeScript orchestrator using Fastify and Socket.IO for adventure state, AI orchestration, Adventure Module persistence, campaign/session routes, and image/workflow services.
+- `spec/` contains shared TypeScript contracts for adventure state, events, workflow lab, image generation, Adventure Module data, and campaign/session data.
+- `docs/` contains the product brief, MVP scope, architecture, event/state docs, deployment guides, and authoring/campaign design docs.
 
 Current route families:
 
 - `/adventure/:adventureId`, `/adventure/:adventureId/player`, `/adventure/:adventureId/screen`
 - `/adventure-module/list`, `/adventure-module/new`, `/adventure-module/:slug/:tab`, `/adventure-module/:slug/:tab/:entityId`
+- `/campaign/list`, `/campaign/:slug/:tab`, `/campaign/:slug/:tab/:entityId`
+- `/campaign/:campaignSlug/session/:sessionId`, `/campaign/:campaignSlug/session/:sessionId/player`
+- `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab`, `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId`
 - `/workflow-lab`, `/workflow-lab/:workflowId`
 - `/rules`, `/rules/outcomes`, `/rules/effects`, `/rules/stunts`, `/rules/assets`
 - `/styleguide`, `/styleguide/location-card`, `/styleguide/encounter-card` (hidden internal component lab)
@@ -25,10 +28,10 @@ Current route families:
 | Use case | What it covers | Status | Notes |
 | --- | --- | --- | --- |
 | AI Storyteller ad hoc sessions | Local multiplayer runtime with lobby, ready gate, pitch vote, narrated scenes, transcripts, async images, and ending flow | Partially implemented | Playable storyteller loop exists, but this is not a complete Mighty Decks runtime and only partial outcome-card related tooling is present |
-| Adventure Module authoring | Module list/create flows, base tab, player info, storyteller info, actors, counters, assets, locations, encounters, markdown embeds, and supporting docs | Partially implemented | Core authoring for the current module entity types exists, but quest authoring UI and full publish-to-runtime flows are still incomplete |
-| Run an Adventure Module with a human or AI storyteller | Launching or facilitating a session directly from a module | Planned | Use cases and design docs exist, but no end-to-end runtime launch flow is implemented yet |
+| Adventure Module authoring | Module list/create flows, base tab, player info, storyteller info, actors, counters, assets, locations, encounters, quests, markdown embeds, and supporting docs | Partially implemented | Core authoring for the current module entity types exists, including quest fragment editing, but publish/archive and full runtime handoff remain incomplete |
+| Campaigns and human storyteller sessions | Campaign list/detail, module-to-campaign creation, session lobby, player claim/create flow, storyteller campaign shell with chat, and session transcripts | Partially implemented | Group chat, role join, mock participants, and campaign live refresh are implemented; private messaging, card-transfer flows, and AI-coupled campaign runtime are still out of scope |
 
-The repo should not currently be read as a full implementation of Mighty Decks rules, components, or campaign systems.
+The repo should not currently be read as a full implementation of Mighty Decks rules, components, or every planned campaign feature.
 
 ## Requirements
 
@@ -204,3 +207,4 @@ pnpm -C apps/web dev --host
 - [docs/10-render-single-service.md](docs/10-render-single-service.md)
 - [docs/15-adventure-use-cases-and-intents.md](docs/15-adventure-use-cases-and-intents.md)
 - [docs/18-adventure-module-authoring-flow.md](docs/18-adventure-module-authoring-flow.md)
+- [docs/20-campaign-and-human-storyteller-sessions.md](docs/20-campaign-and-human-storyteller-sessions.md)

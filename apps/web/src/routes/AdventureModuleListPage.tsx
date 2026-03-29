@@ -9,6 +9,7 @@ import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { listAdventureModules } from "../lib/adventureModuleApi";
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
+import { createCampaign } from "../lib/campaignApi";
 
 const PAGE_SIZE = 20;
 const FALLBACK_IMAGE_URL = "/sample-scene-image.png";
@@ -49,6 +50,10 @@ export const AdventureModuleListPage = (): JSX.Element => {
   const [modules, setModules] = useState<AdventureModuleListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [campaignError, setCampaignError] = useState<string | null>(null);
+  const [creatingCampaignModuleId, setCreatingCampaignModuleId] = useState<
+    string | null
+  >(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -110,6 +115,30 @@ export const AdventureModuleListPage = (): JSX.Element => {
   const pageStart = (effectivePage - 1) * PAGE_SIZE;
   const visibleModules = sortedAndFilteredModules.slice(pageStart, pageStart + PAGE_SIZE);
 
+  const handleCreateCampaign = async (
+    module: AdventureModuleListItem,
+  ): Promise<void> => {
+    setCampaignError(null);
+    setCreatingCampaignModuleId(module.moduleId);
+
+    try {
+      const campaign = await createCampaign({
+        sourceModuleId: module.moduleId,
+        title: module.title,
+        slug: module.slug,
+      });
+      navigate(`/campaign/${encodeURIComponent(campaign.index.slug)}/base`);
+    } catch (createError) {
+      setCampaignError(
+        createError instanceof Error
+          ? createError.message
+          : "Could not create campaign.",
+      );
+    } finally {
+      setCreatingCampaignModuleId(null);
+    }
+  };
+
   return (
     <div className="app-shell stack py-8 gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -140,6 +169,11 @@ export const AdventureModuleListPage = (): JSX.Element => {
           {error}
         </Message>
       ) : null}
+      {campaignError ? (
+        <Message label="Campaign Error" color="blood">
+          {campaignError}
+        </Message>
+      ) : null}
 
       {loading ? (
         <Panel>
@@ -151,20 +185,33 @@ export const AdventureModuleListPage = (): JSX.Element => {
         <>
           <div className="flex flex-wrap gap-4">
             {visibleModules.map((module) => (
-              <Link
-                key={module.moduleId}
-                to={`/adventure-module/${encodeURIComponent(module.slug)}/player-info`}
-                className="block rounded-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/60"
-              >
-                <AdventureModuleCard
-                  moduleId={module.moduleId}
-                  name={module.title}
-                  imageUrl={module.coverImageUrl ?? FALLBACK_IMAGE_URL}
-                  author={module.authorLabel}
-                  createdAtIso={module.createdAtIso}
-                  tags={module.tags}
-                />
-              </Link>
+              <div key={module.moduleId} className="stack gap-2">
+                <Link
+                  to={`/adventure-module/${encodeURIComponent(module.slug)}/player-info`}
+                  className="block rounded-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/60"
+                >
+                  <AdventureModuleCard
+                    moduleId={module.moduleId}
+                    name={module.title}
+                    imageUrl={module.coverImageUrl ?? FALLBACK_IMAGE_URL}
+                    author={module.authorLabel}
+                    createdAtIso={module.createdAtIso}
+                    tags={module.tags}
+                  />
+                </Link>
+                <Button
+                  variant="ghost"
+                  color="gold"
+                  disabled={creatingCampaignModuleId === module.moduleId}
+                  onClick={() => {
+                    void handleCreateCampaign(module);
+                  }}
+                >
+                  {creatingCampaignModuleId === module.moduleId
+                    ? "Creating Campaign..."
+                    : "Create Campaign"}
+                </Button>
+              </div>
             ))}
           </div>
 

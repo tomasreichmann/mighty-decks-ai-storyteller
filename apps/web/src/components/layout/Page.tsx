@@ -29,6 +29,11 @@ const navItems: NavItem[] = [
     hueDegrees: 292,
   },
   {
+    to: "/campaign/list",
+    label: "Campaigns",
+    hueDegrees: 214,
+  },
+  {
     to: "/rules",
     label: "Rules",
     hueDegrees: 28,

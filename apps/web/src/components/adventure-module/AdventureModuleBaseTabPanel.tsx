@@ -23,6 +23,7 @@ interface AdventureModuleBaseTabPanelProps {
   storytellerInfo: string;
   editable: boolean;
   validationMessage?: string | null;
+  persistCoverImage?: (coverImageUrl: string | null) => Promise<void>;
   onPremiseChange: (nextValue: string) => void;
   onHaveChange: (nextValue: string[]) => void;
   onAvoidChange: (nextValue: string[]) => void;
@@ -45,6 +46,7 @@ export const AdventureModuleBaseTabPanel = ({
   storytellerInfo,
   editable,
   validationMessage,
+  persistCoverImage,
   onPremiseChange,
   onHaveChange,
   onAvoidChange,
@@ -96,6 +98,7 @@ export const AdventureModuleBaseTabPanel = ({
         storytellerSummary={storytellerSummary}
         storytellerInfo={storytellerInfo}
         disabled={!editable}
+        persistCoverImage={persistCoverImage}
       />
 
       <Text variant="note" color="iron-light" className="text-sm !opacity-100">

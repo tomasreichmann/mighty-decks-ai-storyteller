@@ -276,3 +276,29 @@ The MVP architecture prioritizes:
 
 This foundation is intentionally minimal but leaves clear extension points for:
 audio, rules, persistence, and cloud scaling in later phases.
+
+---
+
+## Current implemented extension: Campaigns and human sessions
+
+Beyond the original MVP runtime, the repo now also includes a persisted authoring and campaign layer:
+
+- Adventure Modules are stored on disk and edited through REST-backed authoring routes.
+- Campaigns are deep-copy forks of Adventure Modules.
+- Campaign sessions persist participants, character claims, and transcripts.
+
+Current route families added on top of the MVP runtime:
+
+- `/adventure-module/...` for authored module editing
+- `/campaign/...` for campaign detail, campaign sessions, and human-storyteller play
+
+Current transport split:
+
+- REST handles module/campaign CRUD and detail reads
+- Socket.IO handles live adventure runtime plus campaign-session presence, chat, and campaign refresh broadcasts
+
+Current collaboration model:
+
+- campaign editing remains autosave-based and last-write-wins
+- open campaign detail and storyteller session routes subscribe to `campaign_updated` and refetch after saves
+- this is refresh-based collaboration, not CRDT/live-typing collaboration

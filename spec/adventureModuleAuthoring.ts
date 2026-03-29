@@ -140,6 +140,7 @@ export const adventureModuleResolvedActorSchema = z.object({
   baseLayerSlug: actorBaseLayerSlugSchema,
   tacticalRoleSlug: actorTacticalRoleSlugSchema,
   tacticalSpecialSlug: actorTacticalSpecialSlugSchema.optional(),
+  isPlayerCharacter: z.boolean().default(false),
   content: z.string().max(200_000).default(""),
 });
 export type AdventureModuleResolvedActor = z.infer<
@@ -282,7 +283,8 @@ export const adventureModuleDetailSchema = z
       if (
         actor.baseLayerSlug !== actorCard.baseLayerSlug ||
         actor.tacticalRoleSlug !== actorCard.tacticalRoleSlug ||
-        actor.tacticalSpecialSlug !== actorCard.tacticalSpecialSlug
+        actor.tacticalSpecialSlug !== actorCard.tacticalSpecialSlug ||
+        actor.isPlayerCharacter !== actorCard.isPlayerCharacter
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -533,6 +535,7 @@ export type AdventureModuleUpdateResponse = z.infer<
 
 export const adventureModuleCreateActorRequestSchema = z.object({
   title: shortTextSchema.default("New Actor"),
+  isPlayerCharacter: z.boolean().default(false),
 });
 export type AdventureModuleCreateActorRequest = z.infer<
   typeof adventureModuleCreateActorRequestSchema
@@ -619,6 +622,7 @@ export const adventureModuleUpdateActorRequestSchema = z.object({
   tacticalSpecialSlug: z
     .union([actorTacticalSpecialSlugSchema, z.null()])
     .optional(),
+  isPlayerCharacter: z.boolean().default(false),
   content: z.string().max(200_000).default(""),
 });
 export type AdventureModuleUpdateActorRequest = z.infer<

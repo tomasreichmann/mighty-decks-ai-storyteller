@@ -106,6 +106,7 @@ const envSchema = z.object({
     .string()
     .min(1)
     .default("output/adventure-modules"),
+  CAMPAIGN_DIR: z.string().min(1).default("output/campaigns"),
   IMAGE_OUTPUT_DIR: z.string().min(1).default("output/generated-images"),
   IMAGE_MAX_ACTIVE_JOBS: z.coerce.number().int().min(1).default(4),
   IMAGE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(10),
@@ -209,6 +210,9 @@ export const env = {
   },
   adventureModules: {
     outputDir: parsed.ADVENTURE_MODULE_DIR,
+  },
+  campaigns: {
+    outputDir: parsed.CAMPAIGN_DIR,
   },
   costControls: {
     disableImageGeneration: parsed.DISABLE_IMAGE_GENERATION ?? false,

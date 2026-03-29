@@ -50,6 +50,7 @@ test("creates, reads, updates, and previews adventure modules", async () => {
       title: string;
       baseLayerSlug: string;
       tacticalRoleSlug: string;
+      isPlayerCharacter: boolean;
       content: string;
     }>;
     index: {
@@ -57,6 +58,7 @@ test("creates, reads, updates, and previews adventure modules", async () => {
         fragmentId: string;
         baseLayerSlug: string;
         tacticalRoleSlug: string;
+        isPlayerCharacter: boolean;
       }>;
     };
   };
@@ -65,6 +67,7 @@ test("creates, reads, updates, and previews adventure modules", async () => {
   assert.equal(Array.isArray(createdActorState.actors), true);
   assert.equal(createdActorState.actors?.length, 1);
   assert.equal(createdActorState.actors?.[0]?.actorSlug, "primary-actor");
+  assert.equal(createdActorState.actors?.[0]?.isPlayerCharacter, false);
   assert.equal(typeof createdActorState.actors?.[0]?.content, "string");
 
   const fetchedByOwner = await store.getModule(created.index.moduleId, "token-a");
@@ -153,6 +156,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
       moduleId: string;
       creatorToken?: string;
       title: string;
+      isPlayerCharacter?: boolean;
     }) => Promise<unknown>;
     updateActor: (input: {
       moduleId: string;
@@ -163,6 +167,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       tacticalSpecialSlug?: string;
+      isPlayerCharacter: boolean;
       content: string;
     }) => Promise<unknown>;
   };
@@ -171,6 +176,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
     moduleId: module.index.moduleId,
     creatorToken: "token-actor",
     title: "River Smuggler Nyra",
+    isPlayerCharacter: true,
   })) as {
     actors?: Array<{
       actorSlug: string;
@@ -179,6 +185,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       tacticalSpecialSlug?: string;
+      isPlayerCharacter: boolean;
       content: string;
     }>;
   };
@@ -188,6 +195,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
   );
   assert.ok(createdActor);
   assert.equal(createdActor.title, "River Smuggler Nyra");
+  assert.equal(createdActor.isPlayerCharacter, true);
   assert.equal(typeof createdActor.content, "string");
 
   const updated = (await actorStore.updateActor({
@@ -199,6 +207,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
     baseLayerSlug: "merchant",
     tacticalRoleSlug: "ranger",
     tacticalSpecialSlug: "fast",
+    isPlayerCharacter: false,
     content: "# River Smuggler Nyra\n\nControls the hidden canal routes.",
   })) as {
     actors?: Array<{
@@ -208,6 +217,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       tacticalSpecialSlug?: string;
+      isPlayerCharacter: boolean;
       content: string;
     }>;
   };
@@ -222,6 +232,7 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
   assert.equal(updatedActor.baseLayerSlug, "merchant");
   assert.equal(updatedActor.tacticalRoleSlug, "ranger");
   assert.equal(updatedActor.tacticalSpecialSlug, "fast");
+  assert.equal(updatedActor.isPlayerCharacter, false);
   assert.equal(
     updatedActor.content,
     "# River Smuggler Nyra\n\nControls the hidden canal routes.",
@@ -713,6 +724,7 @@ test("actor create and update leave module state unchanged when fragment writes 
       moduleId: string;
       creatorToken?: string;
       title: string;
+      isPlayerCharacter?: boolean;
     }) => Promise<unknown>;
     updateActor: (input: {
       moduleId: string;
@@ -723,6 +735,7 @@ test("actor create and update leave module state unchanged when fragment writes 
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       tacticalSpecialSlug?: string;
+      isPlayerCharacter: boolean;
       content: string;
     }) => Promise<unknown>;
   };
@@ -741,6 +754,7 @@ test("actor create and update leave module state unchanged when fragment writes 
         moduleId: module.index.moduleId,
         creatorToken: "token-actor-write-fail",
         title: "Blocked Actor",
+        isPlayerCharacter: false,
       }),
   );
 
@@ -774,6 +788,7 @@ test("actor create and update leave module state unchanged when fragment writes 
         baseLayerSlug: "merchant",
         tacticalRoleSlug: "ranger",
         tacticalSpecialSlug: "fast",
+        isPlayerCharacter: false,
         content: "# Broken Update\n\nThis should not persist.",
       }),
   );
@@ -945,12 +960,14 @@ test("backfills missing actor card metadata for legacy modules", async () => {
       actorSlug: string;
       baseLayerSlug: string;
       tacticalRoleSlug: string;
+      isPlayerCharacter: boolean;
     }>;
   } | null;
   assert.ok(loaded);
   assert.equal(loaded?.actors?.length, 1);
   assert.equal(typeof loaded?.actors?.[0]?.baseLayerSlug, "string");
   assert.equal(typeof loaded?.actors?.[0]?.tacticalRoleSlug, "string");
+  assert.equal(loaded?.actors?.[0]?.isPlayerCharacter, false);
 
   const actorStore = store as unknown as {
     updateActor: (input: {
@@ -962,6 +979,7 @@ test("backfills missing actor card metadata for legacy modules", async () => {
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       tacticalSpecialSlug?: string;
+      isPlayerCharacter: boolean;
       content: string;
     }) => Promise<unknown>;
   };
@@ -974,6 +992,7 @@ test("backfills missing actor card metadata for legacy modules", async () => {
     summary: "Backfilled actor metadata should persist on write.",
     baseLayerSlug: "civilian",
     tacticalRoleSlug: "pawn",
+    isPlayerCharacter: false,
     content: "# Primary Actor\n\nLegacy actor updated.",
   });
 
@@ -982,10 +1001,12 @@ test("backfills missing actor card metadata for legacy modules", async () => {
       fragmentId: string;
       baseLayerSlug: string;
       tacticalRoleSlug: string;
+      isPlayerCharacter: boolean;
     }>;
   };
   assert.equal(Array.isArray(persistedIndex.actorCards), true);
   assert.equal(persistedIndex.actorCards?.length, 1);
+  assert.equal(persistedIndex.actorCards?.[0]?.isPlayerCharacter, false);
 });
 
 test("loads legacy layered assets and converts them to custom assets on save", async () => {

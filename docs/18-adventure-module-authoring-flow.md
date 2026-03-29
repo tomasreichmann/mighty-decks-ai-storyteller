@@ -83,6 +83,7 @@ From this page:
 
 - Module cards are clickable and open `/adventure-module/:slug/player-info`.
 - `Edit` actions redirect to `/adventure-module/:slug/player-info`.
+- `Create Campaign` creates a campaign fork from that module and redirects to `/campaign/:slug/base`.
 - `Delete` opens archive confirmation and transitions status to `archived`.
 - `Create a new Adventure Module` redirects to `/adventure-module/new`.
 
@@ -115,6 +116,7 @@ Route: `/adventure-module/:slug/:tab`
 Shell behavior:
 
 - Top area shows module name, slug, ownership state, and autosave status.
+- Header also exposes `Create Campaign` so authors can fork the current module into a campaign without leaving the page.
 - Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
 - `Player Info` is editable in this step (`player summary` + `player info text`).
@@ -342,6 +344,7 @@ Actor edit example fields:
 - Base layer.
 - Tactical role.
 - Optional tactical special.
+- `Player Character` toggle.
 - Markdown body with inline actor `GameCard` rendering.
 
 Actor editor behavior:
@@ -349,6 +352,7 @@ Actor editor behavior:
 - Updates persist through `PUT /api/adventure-modules/:moduleId/actors/:actorSlug`.
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/actors/:actorSlug`.
 - Actor slug is generated from the saved title and updates when the actor name changes.
+- Actors marked `Player Character` seed the campaign's claimable character pool when a campaign is created from the module.
 - The editor shows a live layered preview assembled from base art, tactical role metadata, and optional tactical special overlay.
 
 Counter edit example fields:

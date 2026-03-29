@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { AdventureModuleDetail } from "@mighty-decks/spec/adventureModuleAuthoring";
+import type { CampaignDetail } from "@mighty-decks/spec/campaign";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { Button } from "../components/common/Button";
+import { TextArea } from "../components/common/TextArea";
 import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
 import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
 import { AdventureModuleAssetEditor } from "../components/adventure-module/AdventureModuleAssetEditor";
@@ -37,33 +38,37 @@ import {
 } from "../components/adventure-module/EntityList";
 import type { AdventureModuleLocationPinTarget } from "../components/adventure-module/AdventureModuleLocationMapEditor";
 import {
-  createAdventureModuleActor,
-  createAdventureModuleAsset,
-  createAdventureModuleCounter,
-  createAdventureModuleEncounter,
-  createAdventureModuleLocation,
-  createAdventureModuleQuest,
-  deleteAdventureModuleActor,
-  deleteAdventureModuleAsset,
-  deleteAdventureModuleCounter,
-  deleteAdventureModuleEncounter,
-  deleteAdventureModuleLocation,
-  deleteAdventureModuleQuest,
-  getAdventureModuleBySlug,
-  updateAdventureModuleAsset,
-  updateAdventureModuleCounter,
-  updateAdventureModuleEncounter,
-  updateAdventureModuleActor,
-  updateAdventureModuleLocation,
-  updateAdventureModuleQuest,
-  updateAdventureModuleFragment,
-  updateAdventureModuleIndex,
-} from "../lib/adventureModuleApi";
+  createCampaignActor,
+  createCampaignAsset,
+  createCampaignCounter,
+  createCampaignEncounter,
+  createCampaignLocation,
+  createCampaignQuest,
+  createCampaignSession,
+  deleteCampaignActor,
+  deleteCampaignAsset,
+  deleteCampaignCounter,
+  deleteCampaignEncounter,
+  deleteCampaignLocation,
+  deleteCampaignQuest,
+  getCampaignBySlug,
+  updateCampaignAsset,
+  updateCampaignCounter,
+  updateCampaignEncounter,
+  updateCampaignActor,
+  updateCampaignLocation,
+  updateCampaignQuest,
+  updateCampaignCoverImage,
+  updateCampaignFragment,
+  updateCampaignIndex,
+} from "../lib/campaignApi";
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
-import { createCampaign } from "../lib/campaignApi";
+import { getCampaignSessionIdentity } from "../lib/campaignSessionIdentity";
 import { normalizeLegacyGameCardMarkdown } from "../lib/gameCardMarkdown";
 import { toMarkdownPlainTextSnippet } from "../lib/markdownSnippet";
 import type { SmartInputDocumentContext } from "../lib/smartInputContext";
+import { useCampaignSession } from "../hooks/useCampaignSession";
+import { useCampaignWatch } from "../hooks/useCampaignWatch";
 
 const AUTHORING_TABS = [
   "base",
@@ -77,9 +82,15 @@ const AUTHORING_TABS = [
   "quests",
 ] as const;
 
-type AuthoringTab = (typeof AUTHORING_TABS)[number];
+const CAMPAIGN_DETAIL_TABS = [...AUTHORING_TABS, "sessions"] as const;
+const STORYTELLER_SESSION_TABS = [...AUTHORING_TABS, "chat"] as const;
 
-const TAB_LABELS: Record<AuthoringTab, string> = {
+type AuthoringTab = (typeof AUTHORING_TABS)[number];
+type CampaignDetailTab = (typeof CAMPAIGN_DETAIL_TABS)[number];
+type StorytellerSessionTab = (typeof STORYTELLER_SESSION_TABS)[number];
+type CampaignTab = CampaignDetailTab | StorytellerSessionTab;
+
+const TAB_LABELS: Record<CampaignTab, string> = {
   base: "Base",
   "player-info": "Player Info",
   "storyteller-info": "Storyteller Info",
@@ -89,15 +100,22 @@ const TAB_LABELS: Record<AuthoringTab, string> = {
   encounters: "Encounters",
   quests: "Quests",
   assets: "Assets",
+  sessions: "Sessions",
+  chat: "Chat",
 };
 
-const TAB_ITEMS: AdventureModuleTabItem[] = AUTHORING_TABS.map((tab) => ({
-  id: tab,
-  label: TAB_LABELS[tab],
-}));
+const isCampaignDetailTab = (
+  value: string | undefined,
+): value is CampaignDetailTab =>
+  Boolean(value && CAMPAIGN_DETAIL_TABS.includes(value as CampaignDetailTab));
 
-const isAuthoringTab = (value: string | undefined): value is AuthoringTab =>
-  Boolean(value && AUTHORING_TABS.includes(value as AuthoringTab));
+const isStorytellerSessionTab = (
+  value: string | undefined,
+): value is StorytellerSessionTab =>
+  Boolean(
+    value &&
+      STORYTELLER_SESSION_TABS.includes(value as StorytellerSessionTab),
+  );
 
 const ENTITY_LIST_TABS: EntityListTab[] = [
   "actors",
@@ -106,7 +124,9 @@ const ENTITY_LIST_TABS: EntityListTab[] = [
   "quests",
 ];
 
-const isEntityListTab = (value: AuthoringTab): value is EntityListTab =>
+const isEntityListTab = (
+  value: CampaignTab | AuthoringTab,
+): value is EntityListTab =>
   ENTITY_LIST_TABS.includes(value as EntityListTab);
 
 type EntitySeed = Omit<EntityListItem, "imageUrl">;
@@ -361,9 +381,9 @@ interface ActorFormState {
   actorSlug: string;
   title: string;
   summary: string;
-  baseLayerSlug: AdventureModuleDetail["actors"][number]["baseLayerSlug"];
-  tacticalRoleSlug: AdventureModuleDetail["actors"][number]["tacticalRoleSlug"];
-  tacticalSpecialSlug?: AdventureModuleDetail["actors"][number]["tacticalSpecialSlug"];
+  baseLayerSlug: CampaignDetail["actors"][number]["baseLayerSlug"];
+  tacticalRoleSlug: CampaignDetail["actors"][number]["tacticalRoleSlug"];
+  tacticalSpecialSlug?: CampaignDetail["actors"][number]["tacticalSpecialSlug"];
   isPlayerCharacter: boolean;
   content: string;
 }
@@ -371,7 +391,7 @@ interface ActorFormState {
 interface CounterFormState {
   slug: string;
   title: string;
-  iconSlug: AdventureModuleDetail["counters"][number]["iconSlug"];
+  iconSlug: CampaignDetail["counters"][number]["iconSlug"];
   currentValue: number;
   maxValue?: number;
   description: string;
@@ -401,7 +421,7 @@ interface LocationFormState {
   introductionMarkdown: string;
   descriptionMarkdown: string;
   mapImageUrl: string;
-  mapPins: AdventureModuleDetail["locations"][number]["mapPins"];
+  mapPins: CampaignDetail["locations"][number]["mapPins"];
 }
 
 interface EncounterFormState {
@@ -431,7 +451,7 @@ const toBaseFormState = (index: AdventureModuleIndex): BaseFormState => ({
 });
 
 const resolvePlayerSummaryState = (
-  detail: AdventureModuleDetail,
+  detail: CampaignDetail,
 ): {
   summaryMarkdown: string;
   summaryPreview: string;
@@ -461,7 +481,7 @@ const resolvePlayerSummaryState = (
 };
 
 const toPlayerInfoFormState = (
-  detail: AdventureModuleDetail,
+  detail: CampaignDetail,
 ): PlayerInfoFormState => {
   const summaryState = resolvePlayerSummaryState(detail);
   if (!summaryState) {
@@ -477,7 +497,7 @@ const toPlayerInfoFormState = (
 };
 
 const resolveStorytellerSummaryState = (
-  detail: AdventureModuleDetail,
+  detail: CampaignDetail,
 ): {
   summaryMarkdown: string;
   summaryPreview: string;
@@ -507,7 +527,7 @@ const resolveStorytellerSummaryState = (
 };
 
 const toStorytellerInfoFormState = (
-  detail: AdventureModuleDetail,
+  detail: CampaignDetail,
 ): StorytellerInfoFormState => {
   const summaryState = resolveStorytellerSummaryState(detail);
   if (!summaryState) {
@@ -523,7 +543,7 @@ const toStorytellerInfoFormState = (
 };
 
 const toActorFormState = (
-  actor: AdventureModuleDetail["actors"][number],
+  actor: CampaignDetail["actors"][number],
 ): ActorFormState => ({
   fragmentId: actor.fragmentId,
   actorSlug: actor.actorSlug,
@@ -537,7 +557,7 @@ const toActorFormState = (
 });
 
 const toCounterFormState = (
-  counter: AdventureModuleDetail["counters"][number],
+  counter: CampaignDetail["counters"][number],
 ): CounterFormState => ({
   slug: counter.slug,
   title: counter.title,
@@ -548,7 +568,7 @@ const toCounterFormState = (
 });
 
 const toAssetFormState = (
-  asset: AdventureModuleDetail["assets"][number],
+  asset: CampaignDetail["assets"][number],
 ): AssetFormState => ({
   fragmentId: asset.fragmentId,
   assetSlug: asset.assetSlug,
@@ -566,7 +586,7 @@ const toAssetFormState = (
 });
 
 const toLocationFormState = (
-  location: AdventureModuleDetail["locations"][number],
+  location: CampaignDetail["locations"][number],
 ): LocationFormState => ({
   fragmentId: location.fragmentId,
   locationSlug: location.locationSlug,
@@ -584,7 +604,7 @@ const toLocationFormState = (
 });
 
 const toEncounterFormState = (
-  encounter: AdventureModuleDetail["encounters"][number],
+  encounter: CampaignDetail["encounters"][number],
 ): EncounterFormState => ({
   fragmentId: encounter.fragmentId,
   encounterSlug: encounter.encounterSlug,
@@ -596,7 +616,7 @@ const toEncounterFormState = (
 });
 
 const toQuestFormState = (
-  quest: AdventureModuleDetail["quests"][number],
+  quest: CampaignDetail["quests"][number],
 ): QuestFormState => ({
   fragmentId: quest.fragmentId,
   questSlug: quest.questSlug,
@@ -627,7 +647,7 @@ const toEntitySlug = (value: string): string => {
 
 const makeUniqueCounterSlug = (
   title: string,
-  detail: AdventureModuleDetail,
+  detail: CampaignDetail,
   excludeSlug: string,
 ): string => {
   const baseSlug = toEntitySlug(title);
@@ -653,7 +673,7 @@ const makeUniqueCounterSlug = (
 
 const makeUniqueAssetSlug = (
   title: string,
-  detail: AdventureModuleDetail,
+  detail: CampaignDetail,
   excludeSlug: string,
 ): string => {
   const baseSlug = toEntitySlug(title);
@@ -678,9 +698,9 @@ const makeUniqueAssetSlug = (
 };
 
 const replaceCounterInDetail = (
-  detail: AdventureModuleDetail,
-  nextCounter: AdventureModuleDetail["counters"][number],
-): AdventureModuleDetail => ({
+  detail: CampaignDetail,
+  nextCounter: CampaignDetail["counters"][number],
+): CampaignDetail => ({
   ...detail,
   index: {
     ...detail.index,
@@ -1541,16 +1561,27 @@ const validateQuestForm = (
   };
 };
 
-export const AdventureModuleAuthoringPage = (): JSX.Element => {
+export const CampaignAuthoringPage = (): JSX.Element => {
   const navigate = useNavigate();
-  const { slug, tab, entityId } = useParams<{
+  const { slug, campaignSlug, sessionId, tab, entityId } = useParams<{
     slug?: string;
+    campaignSlug?: string;
+    sessionId?: string;
     tab?: string;
     entityId?: string;
   }>();
   const creatorToken = useMemo(() => getAdventureModuleCreatorToken(), []);
+  const routeSlug = campaignSlug ?? slug;
+  const storytellerSessionMode = Boolean(campaignSlug && sessionId);
+  const storytellerIdentity = useMemo(
+    () =>
+      storytellerSessionMode && routeSlug && sessionId
+        ? getCampaignSessionIdentity(routeSlug, sessionId, "storyteller")
+        : null,
+    [routeSlug, sessionId, storytellerSessionMode],
+  );
   const [moduleDetail, setModuleDetail] =
-    useState<AdventureModuleDetail | null>(null);
+    useState<CampaignDetail | null>(null);
   const [baseForm, setBaseForm] = useState<BaseFormState>({
     title: "",
     premise: "",
@@ -1578,7 +1609,6 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const [assetForm, setAssetForm] = useState<AssetFormState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [creatingCampaign, setCreatingCampaign] = useState(false);
   const [baseDirty, setBaseDirty] = useState(false);
   const [playerInfoDirty, setPlayerInfoDirty] = useState(false);
   const [storytellerInfoDirty, setStorytellerInfoDirty] = useState(false);
@@ -1635,19 +1665,83 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const [autosaveMessage, setAutosaveMessage] = useState<string | undefined>(
     undefined,
   );
+  const [creatingSession, setCreatingSession] = useState(false);
+  const [chatDraft, setChatDraft] = useState("");
   const saveTimerRef = useRef<number | null>(null);
   const savingRef = useRef(false);
+  const sessionRealtime = useCampaignSession({
+    campaignSlug: routeSlug ?? "campaign",
+    sessionId: sessionId ?? "session",
+    enabled: storytellerSessionMode && Boolean(routeSlug && sessionId),
+  });
+  const campaignWatch = useCampaignWatch({
+    enabled: !storytellerSessionMode && Boolean(routeSlug),
+  });
+  const validTab = storytellerSessionMode
+    ? isStorytellerSessionTab(tab)
+    : isCampaignDetailTab(tab);
 
   useEffect(() => {
-    if (!slug || isAuthoringTab(tab)) {
+    if (storytellerSessionMode || !routeSlug || !campaignWatch.connected) {
       return;
     }
-    navigate(`/adventure-module/${encodeURIComponent(slug)}/player-info`, {
-      replace: true,
-    });
-  }, [navigate, slug, tab]);
 
-  const activeTab: AuthoringTab = isAuthoringTab(tab) ? tab : "player-info";
+    campaignWatch.watchCampaign(routeSlug);
+
+    return () => {
+      campaignWatch.unwatchCampaign(routeSlug);
+    };
+  }, [campaignWatch, routeSlug, storytellerSessionMode]);
+
+  useEffect(() => {
+    if (!routeSlug || validTab) {
+      return;
+    }
+    navigate(
+      storytellerSessionMode && sessionId
+        ? `/campaign/${encodeURIComponent(routeSlug)}/session/${encodeURIComponent(sessionId)}/storyteller/chat`
+        : `/campaign/${encodeURIComponent(routeSlug)}/player-info`,
+      {
+        replace: true,
+      },
+    );
+  }, [navigate, routeSlug, sessionId, storytellerSessionMode, validTab]);
+
+  const activeTab: CampaignTab = storytellerSessionMode
+    ? isStorytellerSessionTab(tab)
+      ? tab
+      : "chat"
+    : isCampaignDetailTab(tab)
+      ? tab
+      : "player-info";
+  const tabItems = useMemo<AdventureModuleTabItem[]>(
+    () =>
+      (storytellerSessionMode
+        ? STORYTELLER_SESSION_TABS
+        : CAMPAIGN_DETAIL_TABS
+      ).map((tabId) => ({
+        id: tabId,
+        label: TAB_LABELS[tabId],
+      })),
+    [storytellerSessionMode],
+  );
+  const buildCampaignRoute = useCallback(
+    (
+      nextSlug: string,
+      nextTab: CampaignTab | AuthoringTab,
+      nextEntityId?: string,
+    ): string => {
+      const encodedSlug = encodeURIComponent(nextSlug);
+      const suffix = nextEntityId ? `/${encodeURIComponent(nextEntityId)}` : "";
+
+      if (storytellerSessionMode && sessionId) {
+        return `/campaign/${encodedSlug}/session/${encodeURIComponent(sessionId)}/storyteller/${nextTab}${suffix}`;
+      }
+
+      return `/campaign/${encodedSlug}/${nextTab}${suffix}`;
+    },
+    [sessionId, storytellerSessionMode],
+  );
   const normalizedEntityId = useMemo(() => {
     if (!entityId) {
       return undefined;
@@ -1662,9 +1756,12 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
   const activeEntityTabConfig = activeEntityTab
     ? ENTITY_TAB_CONFIG[activeEntityTab]
     : null;
+  const storytellerSession = storytellerSessionMode
+    ? sessionRealtime.session
+    : null;
 
   useEffect(() => {
-    if (!slug) {
+    if (!routeSlug) {
       return;
     }
 
@@ -1672,7 +1769,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setLoading(true);
     setError(null);
 
-    void getAdventureModuleBySlug(slug, creatorToken)
+    void getCampaignBySlug(routeSlug, creatorToken)
       .then((detail) => {
         if (cancelled) {
           return;
@@ -1715,7 +1812,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Could not load adventure module.",
+            : "Could not load campaign.",
         );
       })
       .finally(() => {
@@ -1727,7 +1824,35 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     return () => {
       cancelled = true;
     };
-  }, [creatorToken, slug]);
+  }, [
+    campaignWatch.campaignUpdatedAtIso,
+    creatorToken,
+    routeSlug,
+    sessionRealtime.campaignUpdatedAtIso,
+  ]);
+
+  useEffect(() => {
+    if (
+      !storytellerSessionMode ||
+      !sessionId ||
+      !storytellerIdentity ||
+      !sessionRealtime.connected
+    ) {
+      return;
+    }
+
+    sessionRealtime.joinSession(storytellerIdentity.participantId);
+    sessionRealtime.joinRole({
+      participantId: storytellerIdentity.participantId,
+      displayName: storytellerIdentity.displayName,
+      role: "storyteller",
+    });
+  }, [
+    sessionId,
+    sessionRealtime,
+    storytellerIdentity,
+    storytellerSessionMode,
+  ]);
 
   const activeActor = useMemo(() => {
     if (activeTab !== "actors" || !normalizedEntityId || !moduleDetail) {
@@ -1921,7 +2046,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         dos: validated.dos,
         donts: validated.donts,
       };
-      const saved = await updateAdventureModuleIndex(
+      const saved = await updateCampaignIndex(
         moduleDetail.index.moduleId,
         nextIndex,
         creatorToken,
@@ -2012,7 +2137,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
           fragments: nextIndexFragments,
         };
 
-        nextDetail = await updateAdventureModuleIndex(
+        nextDetail = await updateCampaignIndex(
           nextDetail.index.moduleId,
           nextIndex,
           creatorToken,
@@ -2020,7 +2145,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       }
 
       if (infoTextChanged) {
-        nextDetail = await updateAdventureModuleFragment(
+        nextDetail = await updateCampaignFragment(
           nextDetail.index.moduleId,
           playerSummaryState.fragmentId,
           validated.infoText,
@@ -2117,7 +2242,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
           fragments: nextIndexFragments,
         };
 
-        nextDetail = await updateAdventureModuleIndex(
+        nextDetail = await updateCampaignIndex(
           nextDetail.index.moduleId,
           nextIndex,
           creatorToken,
@@ -2125,7 +2250,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       }
 
       if (infoTextChanged) {
-        nextDetail = await updateAdventureModuleFragment(
+        nextDetail = await updateCampaignFragment(
           nextDetail.index.moduleId,
           storytellerSummaryState.fragmentId,
           validated.infoText,
@@ -2178,7 +2303,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setActorCreateError(null);
 
     try {
-      const nextDetail = await updateAdventureModuleActor(
+      const nextDetail = await updateCampaignActor(
         moduleDetail.index.moduleId,
         actorForm.actorSlug,
         {
@@ -2207,7 +2332,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         normalizedEntityId === actorForm.actorSlug
       ) {
         navigate(
-          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/actors/${encodeURIComponent(nextActor.actorSlug)}`,
+          buildCampaignRoute(nextDetail.index.slug, "actors", nextActor.actorSlug),
           { replace: true },
         );
       }
@@ -2253,7 +2378,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setLocationCreateError(null);
 
     try {
-      const nextDetail = await updateAdventureModuleLocation(
+      const nextDetail = await updateCampaignLocation(
         moduleDetail.index.moduleId,
         locationForm.locationSlug,
         {
@@ -2283,7 +2408,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         normalizedEntityId === locationForm.locationSlug
       ) {
         navigate(
-          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/locations/${encodeURIComponent(nextLocation.locationSlug)}`,
+          buildCampaignRoute(nextDetail.index.slug, "locations", nextLocation.locationSlug),
           { replace: true },
         );
       }
@@ -2336,7 +2461,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setEncounterCreateError(null);
 
     try {
-      const nextDetail = await updateAdventureModuleEncounter(
+      const nextDetail = await updateCampaignEncounter(
         moduleDetail.index.moduleId,
         encounterForm.encounterSlug,
         {
@@ -2364,7 +2489,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         normalizedEntityId === encounterForm.encounterSlug
       ) {
         navigate(
-          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/encounters/${encodeURIComponent(nextEncounter.encounterSlug)}`,
+          buildCampaignRoute(nextDetail.index.slug, "encounters", nextEncounter.encounterSlug),
           { replace: true },
         );
       }
@@ -2417,7 +2542,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setQuestCreateError(null);
 
     try {
-      const nextDetail = await updateAdventureModuleQuest(
+      const nextDetail = await updateCampaignQuest(
         moduleDetail.index.moduleId,
         questForm.questSlug,
         {
@@ -2443,7 +2568,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         normalizedEntityId === questForm.questSlug
       ) {
         navigate(
-          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/quests/${encodeURIComponent(nextQuest.questSlug)}`,
+          buildCampaignRoute(nextDetail.index.slug, "quests", nextQuest.questSlug),
           { replace: true },
         );
       }
@@ -2494,7 +2619,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         moduleDetail,
         counterForm.slug,
       );
-      const nextDetail = await updateAdventureModuleCounter(
+      const nextDetail = await updateCampaignCounter(
         moduleDetail.index.moduleId,
         counterForm.slug,
         {
@@ -2525,7 +2650,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         normalizedEntityId === counterForm.slug
       ) {
         navigate(
-          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/counters/${encodeURIComponent(nextCounter.slug)}`,
+          buildCampaignRoute(nextDetail.index.slug, "counters", nextCounter.slug),
           { replace: true },
         );
       }
@@ -2576,7 +2701,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         moduleDetail,
         assetForm.assetSlug,
       );
-      const nextDetail = await updateAdventureModuleAsset(
+      const nextDetail = await updateCampaignAsset(
         moduleDetail.index.moduleId,
         assetForm.assetSlug,
         {
@@ -2611,7 +2736,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         normalizedEntityId === assetForm.assetSlug
       ) {
         navigate(
-          `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/assets/${encodeURIComponent(nextAsset.assetSlug)}`,
+          buildCampaignRoute(nextDetail.index.slug, "assets", nextAsset.assetSlug),
           { replace: true },
         );
       }
@@ -2638,7 +2763,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setError(null);
 
     try {
-      const nextDetail = await createAdventureModuleActor(
+      const nextDetail = await createCampaignActor(
         moduleDetail.index.moduleId,
         {
           title: "New Actor",
@@ -2654,7 +2779,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setActorForm(toActorFormState(createdActor));
       setActorDirty(false);
       navigate(
-        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/actors/${encodeURIComponent(createdActor.actorSlug)}`,
+        buildCampaignRoute(nextDetail.index.slug, "actors", createdActor.actorSlug),
       );
       setAutosaveStatus("saved");
       setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
@@ -2679,7 +2804,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setError(null);
 
     try {
-      const nextDetail = await createAdventureModuleLocation(
+      const nextDetail = await createCampaignLocation(
         moduleDetail.index.moduleId,
         { title: "New Location" },
         creatorToken,
@@ -2693,7 +2818,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setLocationForm(toLocationFormState(createdLocation));
       setLocationDirty(false);
       navigate(
-        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/locations/${encodeURIComponent(createdLocation.locationSlug)}`,
+        buildCampaignRoute(nextDetail.index.slug, "locations", createdLocation.locationSlug),
       );
       setAutosaveStatus("saved");
       setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
@@ -2720,7 +2845,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setError(null);
 
     try {
-      const nextDetail = await createAdventureModuleEncounter(
+      const nextDetail = await createCampaignEncounter(
         moduleDetail.index.moduleId,
         { title: "New Encounter" },
         creatorToken,
@@ -2734,7 +2859,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setEncounterForm(toEncounterFormState(createdEncounter));
       setEncounterDirty(false);
       navigate(
-        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/encounters/${encodeURIComponent(createdEncounter.encounterSlug)}`,
+        buildCampaignRoute(nextDetail.index.slug, "encounters", createdEncounter.encounterSlug),
       );
       setAutosaveStatus("saved");
       setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
@@ -2761,7 +2886,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setError(null);
 
     try {
-      const nextDetail = await createAdventureModuleQuest(
+      const nextDetail = await createCampaignQuest(
         moduleDetail.index.moduleId,
         { title: "New Quest" },
         creatorToken,
@@ -2774,7 +2899,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setQuestForm(toQuestFormState(createdQuest));
       setQuestDirty(false);
       navigate(
-        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/quests/${encodeURIComponent(createdQuest.questSlug)}`,
+        buildCampaignRoute(nextDetail.index.slug, "quests", createdQuest.questSlug),
       );
       setAutosaveStatus("saved");
       setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
@@ -2799,7 +2924,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setError(null);
 
     try {
-      const nextDetail = await createAdventureModuleCounter(
+      const nextDetail = await createCampaignCounter(
         moduleDetail.index.moduleId,
         { title: "New Counter" },
         creatorToken,
@@ -2812,7 +2937,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setCounterForm(toCounterFormState(createdCounter));
       setCounterDirty(false);
       navigate(
-        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/counters/${encodeURIComponent(createdCounter.slug)}`,
+        buildCampaignRoute(nextDetail.index.slug, "counters", createdCounter.slug),
       );
       setAutosaveStatus("saved");
       setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
@@ -2837,7 +2962,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     setError(null);
 
     try {
-      const nextDetail = await createAdventureModuleAsset(
+      const nextDetail = await createCampaignAsset(
         moduleDetail.index.moduleId,
         { title: "New Asset" },
         creatorToken,
@@ -2850,7 +2975,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setAssetForm(toAssetFormState(createdAsset));
       setAssetDirty(false);
       navigate(
-        `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/assets/${encodeURIComponent(createdAsset.assetSlug)}`,
+        buildCampaignRoute(nextDetail.index.slug, "assets", createdAsset.assetSlug),
       );
       setAutosaveStatus("saved");
       setAutosaveMessage(`at ${new Date().toLocaleTimeString()}`);
@@ -2880,7 +3005,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setAutosaveMessage(undefined);
 
       try {
-        const nextDetail = await deleteAdventureModuleActor(
+        const nextDetail = await deleteCampaignActor(
           moduleDetail.index.moduleId,
           actorSlug,
           creatorToken,
@@ -2891,7 +3016,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         if (activeTab === "actors" && normalizedEntityId === actorSlug) {
           setActorForm(null);
           navigate(
-            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/actors`,
+            buildCampaignRoute(nextDetail.index.slug, "actors"),
           );
         }
         setAutosaveStatus("saved");
@@ -2922,7 +3047,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setAutosaveMessage(undefined);
 
       try {
-        const nextDetail = await deleteAdventureModuleLocation(
+        const nextDetail = await deleteCampaignLocation(
           moduleDetail.index.moduleId,
           locationSlug,
           creatorToken,
@@ -2933,7 +3058,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         if (activeTab === "locations" && normalizedEntityId === locationSlug) {
           setLocationForm(null);
           navigate(
-            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/locations`,
+            buildCampaignRoute(nextDetail.index.slug, "locations"),
           );
         }
         setAutosaveStatus("saved");
@@ -2966,7 +3091,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setAutosaveMessage(undefined);
 
       try {
-        const nextDetail = await deleteAdventureModuleEncounter(
+        const nextDetail = await deleteCampaignEncounter(
           moduleDetail.index.moduleId,
           encounterSlug,
           creatorToken,
@@ -2977,7 +3102,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         if (activeTab === "encounters" && normalizedEntityId === encounterSlug) {
           setEncounterForm(null);
           navigate(
-            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/encounters`,
+            buildCampaignRoute(nextDetail.index.slug, "encounters"),
           );
         }
         setAutosaveStatus("saved");
@@ -3010,7 +3135,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setAutosaveMessage(undefined);
 
       try {
-        const nextDetail = await deleteAdventureModuleQuest(
+        const nextDetail = await deleteCampaignQuest(
           moduleDetail.index.moduleId,
           questSlug,
           creatorToken,
@@ -3021,7 +3146,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         if (activeTab === "quests" && normalizedEntityId === questSlug) {
           setQuestForm(null);
           navigate(
-            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/quests`,
+            buildCampaignRoute(nextDetail.index.slug, "quests"),
           );
         }
         setAutosaveStatus("saved");
@@ -3052,7 +3177,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setAutosaveMessage(undefined);
 
       try {
-        const nextDetail = await deleteAdventureModuleCounter(
+        const nextDetail = await deleteCampaignCounter(
           moduleDetail.index.moduleId,
           counterSlug,
           creatorToken,
@@ -3063,7 +3188,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         if (activeTab === "counters" && normalizedEntityId === counterSlug) {
           setCounterForm(null);
           navigate(
-            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/counters`,
+            buildCampaignRoute(nextDetail.index.slug, "counters"),
           );
         }
         setAutosaveStatus("saved");
@@ -3094,7 +3219,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setAutosaveMessage(undefined);
 
       try {
-        const nextDetail = await deleteAdventureModuleAsset(
+        const nextDetail = await deleteCampaignAsset(
           moduleDetail.index.moduleId,
           assetSlug,
           creatorToken,
@@ -3105,7 +3230,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         if (activeTab === "assets" && normalizedEntityId === assetSlug) {
           setAssetForm(null);
           navigate(
-            `/adventure-module/${encodeURIComponent(nextDetail.index.slug)}/assets`,
+            buildCampaignRoute(nextDetail.index.slug, "assets"),
           );
         }
         setAutosaveStatus("saved");
@@ -3214,7 +3339,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       setError(null);
 
       try {
-        const nextDetail = await updateAdventureModuleCounter(
+        const nextDetail = await updateCampaignCounter(
           previousDetail.index.moduleId,
           counterSlug,
           {
@@ -3698,7 +3823,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       return [];
     }
 
-    const moduleSlug = encodeURIComponent(moduleDetail.index.slug);
+    const moduleSlug = moduleDetail.index.slug;
     const currentLocationFragmentId = locationForm?.fragmentId;
     const locationTargets: AdventureModuleLocationPinTarget[] =
       moduleDetail.locations
@@ -3710,7 +3835,11 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
           title: location.title,
           summary: location.summary,
           titleImageUrl: location.titleImageUrl,
-          routePath: `/adventure-module/${moduleSlug}/locations/${encodeURIComponent(location.locationSlug)}`,
+          routePath: buildCampaignRoute(
+            moduleSlug,
+            "locations",
+            location.locationSlug,
+          ),
         }));
     const actorTargets: AdventureModuleLocationPinTarget[] =
       moduleDetail.actors.map((actor) => ({
@@ -3724,7 +3853,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
           tacticalRoleSlug: actor.tacticalRoleSlug,
           tacticalSpecialSlug: actor.tacticalSpecialSlug,
         },
-        routePath: `/adventure-module/${moduleSlug}/actors/${encodeURIComponent(actor.actorSlug)}`,
+        routePath: buildCampaignRoute(moduleSlug, "actors", actor.actorSlug),
       }));
     const encounterTargets: AdventureModuleLocationPinTarget[] =
       moduleDetail.encounters.map((encounter) => ({
@@ -3734,7 +3863,11 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         title: encounter.title,
         summary: encounter.summary,
         titleImageUrl: encounter.titleImageUrl,
-        routePath: `/adventure-module/${moduleSlug}/encounters/${encodeURIComponent(encounter.encounterSlug)}`,
+        routePath: buildCampaignRoute(
+          moduleSlug,
+          "encounters",
+          encounter.encounterSlug,
+        ),
       }));
     const questTargets: AdventureModuleLocationPinTarget[] =
       moduleDetail.quests.map((quest) => ({
@@ -3744,11 +3877,11 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         title: quest.title,
         summary: quest.summary,
         titleImageUrl: quest.titleImageUrl,
-        routePath: `/adventure-module/${moduleSlug}/quests/${encodeURIComponent(quest.questSlug)}`,
+        routePath: buildCampaignRoute(moduleSlug, "quests", quest.questSlug),
       }));
 
     return [...locationTargets, ...actorTargets, ...encounterTargets, ...questTargets];
-  }, [locationForm?.fragmentId, moduleDetail]);
+  }, [buildCampaignRoute, locationForm?.fragmentId, moduleDetail]);
 
   const openLocationPinTarget = useCallback(
     (target: AdventureModuleLocationPinTarget): void => {
@@ -3757,31 +3890,46 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     [navigate],
   );
 
-  const handleCreateCampaign = useCallback(async (): Promise<void> => {
-    if (!moduleDetail || creatingCampaign) {
+  const handleCreateSession = useCallback(async (): Promise<void> => {
+    if (!moduleDetail || creatingSession) {
       return;
     }
 
-    setCreatingCampaign(true);
+    setCreatingSession(true);
     setError(null);
-
     try {
-      const campaign = await createCampaign({
-        sourceModuleId: moduleDetail.index.moduleId,
-        title: moduleDetail.index.title,
-        slug: moduleDetail.index.slug,
-      });
-      navigate(`/campaign/${encodeURIComponent(campaign.index.slug)}/base`);
+      const created = await createCampaignSession(
+        moduleDetail.campaignId,
+        creatorToken,
+      );
+      navigate(
+        `/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(created.sessionId)}`,
+      );
     } catch (createError) {
       setError(
         createError instanceof Error
           ? createError.message
-          : "Could not create campaign.",
+          : "Could not create campaign session.",
       );
     } finally {
-      setCreatingCampaign(false);
+      setCreatingSession(false);
     }
-  }, [creatingCampaign, moduleDetail, navigate]);
+  }, [creatingSession, creatorToken, moduleDetail, navigate]);
+
+  const handleSendStorytellerMessage = useCallback((): void => {
+    if (!storytellerIdentity || chatDraft.trim().length === 0) {
+      return;
+    }
+    sessionRealtime.sendMessage(storytellerIdentity.participantId, chatDraft.trim());
+    setChatDraft("");
+  }, [chatDraft, sessionRealtime, storytellerIdentity]);
+
+  const handleCloseStorytellerSession = useCallback((): void => {
+    if (!storytellerIdentity) {
+      return;
+    }
+    sessionRealtime.closeSession(storytellerIdentity.participantId);
+  }, [sessionRealtime, storytellerIdentity]);
 
   return (
     <div className="app-shell stack py-8 gap-4">
@@ -3790,7 +3938,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
           {editable ? (
             <input
               type="text"
-              aria-label="Module title"
+              aria-label="Campaign title"
               maxLength={120}
               value={baseForm.title}
               onChange={(event) => {
@@ -3812,26 +3960,28 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
             />
           ) : (
             <Text variant="h2" color="iron">
-              {moduleDetail?.index.title ?? "Adventure Module"}
+              {moduleDetail?.index.title ?? "Campaign"}
             </Text>
           )}
           <Text variant="body" color="iron-light" className="text-sm">
             {moduleDetail?.index.slug
               ? `/${moduleDetail.index.slug}`
-              : "Authoring"}
+              : storytellerSessionMode
+                ? "Storyteller Session"
+                : "Campaign Authoring"}
           </Text>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {moduleDetail ? (
+          {!storytellerSessionMode && moduleDetail ? (
             <Button
               variant="ghost"
               color="gold"
-              disabled={creatingCampaign}
+              disabled={creatingSession}
               onClick={() => {
-                void handleCreateCampaign();
+                void handleCreateSession();
               }}
             >
-              {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
+              {creatingSession ? "Creating Session..." : "Create Session"}
             </Button>
           ) : null}
           <AutosaveStatusBadge
@@ -3850,7 +4000,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
       {loading ? (
         <Panel>
           <Text variant="body" color="iron-light">
-            Loading module...
+            Loading campaign...
           </Text>
         </Panel>
       ) : null}
@@ -3859,13 +4009,16 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         <>
           {!moduleDetail.ownedByRequester ? (
             <Message label="Read-Only" color="bone">
-              You can view this module, but only its author can edit.
+              You can view this campaign, but only its current editor can modify it.
             </Message>
           ) : null}
 
           <AdventureModuleTabNav
             moduleSlug={moduleDetail.index.slug}
-            tabs={TAB_ITEMS}
+            tabs={tabItems}
+            buildTabPath={(moduleSlug, tabId) =>
+              buildCampaignRoute(moduleSlug, tabId as CampaignTab)
+            }
           />
 
           {entityId ? (
@@ -4435,6 +4588,14 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               storytellerInfo={storytellerInfoForm.infoText}
               editable={editable}
               validationMessage={baseValidationMessage}
+              persistCoverImage={async (coverImageUrl) => {
+                const nextDetail = await updateCampaignCoverImage(
+                  moduleDetail.campaignId,
+                  { coverImageUrl },
+                  creatorToken,
+                );
+                setModuleDetail(nextDetail);
+              }}
               onPremiseChange={(nextValue) => {
                 setBaseForm((current) => ({ ...current, premise: nextValue }));
                 setBaseDirty(true);
@@ -4529,7 +4690,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onOpenActor={(actorSlug) => {
                 navigate(
-                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/actors/${encodeURIComponent(actorSlug)}`,
+                  buildCampaignRoute(moduleDetail.index.slug, "actors", actorSlug),
                 );
               }}
               onDeleteActor={(actorSlug, title) => {
@@ -4547,7 +4708,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onOpenLocation={(locationSlug) => {
                 navigate(
-                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/locations/${encodeURIComponent(locationSlug)}`,
+                  buildCampaignRoute(moduleDetail.index.slug, "locations", locationSlug),
                 );
               }}
               onDeleteLocation={(locationSlug, title) => {
@@ -4565,7 +4726,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onOpenEncounter={(encounterSlug) => {
                 navigate(
-                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/encounters/${encodeURIComponent(encounterSlug)}`,
+                  buildCampaignRoute(moduleDetail.index.slug, "encounters", encounterSlug),
                 );
               }}
               onDeleteEncounter={(encounterSlug, title) => {
@@ -4583,7 +4744,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onOpenQuest={(questSlug) => {
                 navigate(
-                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/quests/${encodeURIComponent(questSlug)}`,
+                  buildCampaignRoute(moduleDetail.index.slug, "quests", questSlug),
                 );
               }}
               onDeleteQuest={(questSlug, title) => {
@@ -4601,7 +4762,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onOpenCounter={(counterSlug) => {
                 navigate(
-                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/counters/${encodeURIComponent(counterSlug)}`,
+                  buildCampaignRoute(moduleDetail.index.slug, "counters", counterSlug),
                 );
               }}
               onDeleteCounter={(counterSlug, title) => {
@@ -4622,13 +4783,204 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               }}
               onOpenAsset={(assetSlug) => {
                 navigate(
-                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/assets/${encodeURIComponent(assetSlug)}`,
+                  buildCampaignRoute(moduleDetail.index.slug, "assets", assetSlug),
                 );
               }}
               onDeleteAsset={(assetSlug, title) => {
                 void handleDeleteAsset(assetSlug, title);
               }}
             />
+          ) : activeTab === "sessions" ? (
+            <Panel contentClassName="stack gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="stack gap-1">
+                  <Text variant="h3" color="iron">
+                    Sessions
+                  </Text>
+                  <Text variant="body" color="iron-light" className="text-sm">
+                    Each session is a live or archived play instance of this campaign.
+                  </Text>
+                </div>
+                <Button
+                  color="gold"
+                  disabled={creatingSession}
+                  onClick={() => {
+                    void handleCreateSession();
+                  }}
+                >
+                  {creatingSession ? "Creating Session..." : "Create Session"}
+                </Button>
+              </div>
+              {(moduleDetail.sessions ?? []).length > 0 ? (
+                <div className="grid gap-3">
+                  {moduleDetail.sessions.map((session) => (
+                    <Panel
+                      key={session.sessionId}
+                      contentClassName="stack gap-2"
+                      className="bg-kac-bone-light/40"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <Text variant="emphasised" color="iron">
+                          Session {session.sessionId}
+                        </Text>
+                        <Text variant="note" color="steel-dark" className="text-xs">
+                          {session.status}
+                        </Text>
+                      </div>
+                      <Text variant="body" color="iron-light" className="text-sm">
+                        Storytellers: {session.storytellerCount} | Players: {session.playerCount}
+                      </Text>
+                      <Text variant="body" color="iron-light" className="text-sm">
+                        {session.transcriptPreview ?? "No transcript yet."}
+                      </Text>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="ghost"
+                          color="cloth"
+                          onClick={() =>
+                            navigate(
+                              `/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(session.sessionId)}`,
+                            )
+                          }
+                        >
+                          Open Lobby
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          color="gold"
+                          onClick={() =>
+                            navigate(
+                              `/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(session.sessionId)}/storyteller/chat`,
+                            )
+                          }
+                        >
+                          Open Storyteller View
+                        </Button>
+                      </div>
+                    </Panel>
+                  ))}
+                </div>
+              ) : (
+                <Text variant="body" color="iron-light" className="text-sm">
+                  No sessions have been created yet.
+                </Text>
+              )}
+            </Panel>
+          ) : activeTab === "chat" ? (
+            <Panel contentClassName="stack gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="stack gap-1">
+                  <Text variant="h3" color="iron">
+                    Chat
+                  </Text>
+                  <Text variant="body" color="iron-light" className="text-sm">
+                    Session roster, transcript, and storyteller controls.
+                  </Text>
+                </div>
+                <Button
+                  variant="ghost"
+                  color="blood"
+                  disabled={storytellerSession?.status === "closed"}
+                  onClick={handleCloseStorytellerSession}
+                >
+                  Close Session
+                </Button>
+              </div>
+
+              {sessionRealtime.error ? (
+                <Message label="Session Error" color="blood">
+                  {sessionRealtime.error}
+                </Message>
+              ) : null}
+
+              <div className="grid gap-4 xl:grid-cols-[minmax(18rem,20rem)_minmax(0,1fr)]">
+                <Panel contentClassName="stack gap-2">
+                  <Text variant="h3" color="iron">
+                    Roster
+                  </Text>
+                  {(storytellerSession?.participants ?? []).map((participant) => (
+                    <div
+                      key={participant.participantId}
+                      className="rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/60 px-3 py-2"
+                    >
+                      <Text variant="emphasised" color="iron">
+                        {participant.displayName}
+                      </Text>
+                      <Text variant="note" color="steel-dark" className="text-xs">
+                        {participant.role}
+                        {participant.isMock ? " mock" : ""}
+                        {participant.connected ? " connected" : " disconnected"}
+                      </Text>
+                    </div>
+                  ))}
+                </Panel>
+
+                <div className="stack gap-3">
+                  <Panel contentClassName="stack gap-3">
+                    <Text variant="h3" color="iron">
+                      Transcript
+                    </Text>
+                    <div className="max-h-[24rem] overflow-y-auto rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
+                      <div className="stack gap-3">
+                        {(storytellerSession?.transcript ?? []).map((entry) => (
+                          <div key={entry.entryId} className="stack gap-1">
+                            <Text
+                              variant="note"
+                              color="steel-dark"
+                              className="text-xs"
+                            >
+                              {entry.authorDisplayName
+                                ? `${entry.authorDisplayName} (${entry.authorRole})`
+                                : "System"}
+                            </Text>
+                            <Text
+                              variant="body"
+                              color="iron"
+                              className="text-sm whitespace-pre-wrap"
+                            >
+                              {entry.text}
+                            </Text>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </Panel>
+
+                  <Panel contentClassName="stack gap-3">
+                    <TextArea
+                      label="Storyteller Message"
+                      rows={4}
+                      value={chatDraft}
+                      onChange={(event) => setChatDraft(event.target.value)}
+                      placeholder="Share narration, rulings, or prompts with the table..."
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        color="gold"
+                        disabled={
+                          storytellerSession?.status === "closed" ||
+                          chatDraft.trim().length === 0
+                        }
+                        onClick={handleSendStorytellerMessage}
+                      >
+                        Send to Group Chat
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        color="cloth"
+                        onClick={() =>
+                          navigate(
+                            `/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(sessionId ?? "")}`,
+                          )
+                        }
+                      >
+                        Open Lobby
+                      </Button>
+                    </div>
+                  </Panel>
+                </div>
+              </div>
+            </Panel>
           ) : activeEntityTab && activeEntityTabConfig ? (
             <EntityList
               tab={activeEntityTab}
@@ -4638,7 +4990,7 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               editable={editable}
               onCreate={() => {
                 navigate(
-                  `/adventure-module/${encodeURIComponent(moduleDetail.index.slug)}/${activeEntityTab}/new`,
+                  buildCampaignRoute(moduleDetail.index.slug, activeEntityTab, "new"),
                 );
               }}
             />
@@ -4650,3 +5002,6 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
     </div>
   );
 };
+
+
+

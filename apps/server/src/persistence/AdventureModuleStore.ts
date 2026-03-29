@@ -295,6 +295,7 @@ const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
         ...(typeof existing?.tacticalSpecialSlug === "string"
           ? { tacticalSpecialSlug: existing.tacticalSpecialSlug }
           : {}),
+        isPlayerCharacter: existing?.isPlayerCharacter === true,
       };
     }),
     assetCards: assetFragmentIds.map((fragmentId) => {
@@ -536,6 +537,49 @@ export class AdventureModuleStore {
     }
 
     return cloned;
+  }
+
+  public async importModule(options: {
+    source: AdventureModuleDetail;
+    creatorToken?: string;
+    title?: string;
+    slug?: string;
+    status?: AdventureModuleIndex["status"];
+  }): Promise<AdventureModuleDetail> {
+    const nowIso = new Date().toISOString();
+    const moduleId = makeId("am");
+    const title =
+      options.title?.trim().length ? options.title.trim() : options.source.index.title;
+    const slug = toSlug(options.slug?.trim().length ? options.slug : title);
+    await this.assertSlugAvailable(slug);
+
+    const importedIndex = adventureModuleIndexSchema.parse({
+      ...options.source.index,
+      moduleId,
+      slug,
+      title,
+      status: options.status ?? "draft",
+      publishedAtIso: undefined,
+      updatedAtIso: nowIso,
+      postMvpExtension: true,
+    });
+
+    await this.writeFullModule({
+      moduleId,
+      index: importedIndex,
+      fragments: options.source.fragments,
+      creatorTokenHash: hashCreatorToken(options.creatorToken),
+      createdAtIso: nowIso,
+      updatedAtIso: nowIso,
+      coverImageUrl: options.source.coverImageUrl,
+    });
+
+    const imported = await this.getModule(moduleId, options.creatorToken);
+    if (!imported) {
+      throw new AdventureModuleValidationError("Imported module could not be loaded.");
+    }
+
+    return imported;
   }
 
   public async getModule(
@@ -1563,6 +1607,7 @@ export class AdventureModuleStore {
     moduleId: string;
     creatorToken?: string;
     title: string;
+    isPlayerCharacter?: boolean;
   }): Promise<AdventureModuleDetail> {
     const moduleId = options.moduleId;
     return this.withModuleWriteLock(moduleId, async () => {
@@ -1594,6 +1639,7 @@ export class AdventureModuleStore {
             fragmentId,
             baseLayerSlug: defaultActorBaseLayerSlug,
             tacticalRoleSlug: defaultActorTacticalRoleSlug,
+            isPlayerCharacter: options.isPlayerCharacter === true,
           },
         ],
         fragments: [...loaded.index.fragments, fragmentRef],
@@ -1650,6 +1696,7 @@ export class AdventureModuleStore {
     baseLayerSlug: AdventureModuleIndex["actorCards"][number]["baseLayerSlug"];
     tacticalRoleSlug: AdventureModuleIndex["actorCards"][number]["tacticalRoleSlug"];
     tacticalSpecialSlug?: AdventureModuleIndex["actorCards"][number]["tacticalSpecialSlug"];
+    isPlayerCharacter: boolean;
     content: string;
   }): Promise<AdventureModuleDetail> {
     const moduleId = options.moduleId;
@@ -1694,6 +1741,7 @@ export class AdventureModuleStore {
           fragmentId: actorCard.fragmentId,
           baseLayerSlug: options.baseLayerSlug,
           tacticalRoleSlug: options.tacticalRoleSlug,
+          isPlayerCharacter: options.isPlayerCharacter,
           ...(options.tacticalSpecialSlug
             ? { tacticalSpecialSlug: options.tacticalSpecialSlug }
             : {}),
@@ -3370,6 +3418,7 @@ export class AdventureModuleStore {
           baseLayerSlug: actorCard.baseLayerSlug,
           tacticalRoleSlug: actorCard.tacticalRoleSlug,
           tacticalSpecialSlug: actorCard.tacticalSpecialSlug,
+          isPlayerCharacter: actorCard.isPlayerCharacter,
           content: fragmentContentById.get(fragmentId) ?? "",
         },
       ];

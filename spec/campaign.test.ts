@@ -2,19 +2,23 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  adventureModuleDetailSchema,
-  adventureModuleUpdateQuestRequestSchema,
-  adventureModuleUpdateAssetRequestSchema,
-  adventureModuleCreateQuestRequestSchema,
-  adventureModuleUpdateActorRequestSchema,
-} from "./adventureModuleAuthoring";
+  campaignCreateRequestSchema,
+  campaignDetailSchema,
+  campaignSessionDetailSchema,
+} from "./campaign";
 
-const createValidModuleDetailCandidate = () => ({
+const createValidCampaignDetailCandidate = () => ({
+  campaignId: "campaign-flooded-bells",
+  sourceModuleId: "module-flooded-bells",
+  sourceModuleSlug: "flooded-bells",
+  sourceModuleTitle: "Flooded Bells",
+  createdAtIso: "2026-03-15T00:00:00.000Z",
+  updatedAtIso: "2026-03-15T00:00:00.000Z",
   index: {
-    moduleId: "am-location-detail",
-    slug: "location-detail",
-    title: "Location Detail",
-    summary: "Summary",
+    moduleId: "campaign-flooded-bells",
+    slug: "flooded-bells-campaign",
+    title: "Flooded Bells Campaign",
+    summary: "A campaign fork of Flooded Bells.",
     premise: "Premise",
     intent: "Intent",
     status: "draft",
@@ -62,6 +66,7 @@ const createValidModuleDetailCandidate = () => ({
         fragmentId: "frag-actor-main",
         baseLayerSlug: "civilian",
         tacticalRoleSlug: "pawn",
+        isPlayerCharacter: true,
       },
     ],
     counters: [],
@@ -391,6 +396,7 @@ const createValidModuleDetailCandidate = () => ({
       title: "Primary Actor",
       baseLayerSlug: "civilian",
       tacticalRoleSlug: "pawn",
+      isPlayerCharacter: true,
       content: "# Primary Actor",
     },
   ],
@@ -458,211 +464,93 @@ const createValidModuleDetailCandidate = () => ({
       content: "# Primary Quest",
     },
   ],
-  ownedByRequester: true,
-});
-
-test("adventureModuleDetailSchema accepts resolved locations joined from location metadata", () => {
-  const parsed = adventureModuleDetailSchema.parse(createValidModuleDetailCandidate());
-
-  assert.equal(parsed.locations.length, 1);
-  assert.equal(parsed.locations[0]?.locationSlug, "primary-location");
-  assert.equal(parsed.locations[0]?.mapPins[0]?.targetFragmentId, "frag-location-main");
-});
-
-test("adventureModuleDetailSchema rejects resolved locations that do not match location metadata", () => {
-  const candidate = createValidModuleDetailCandidate();
-  candidate.locations[0] = {
-    ...candidate.locations[0],
-    titleImageUrl: "https://example.com/unexpected.png",
-  };
-
-  assert.throws(
-    () => adventureModuleDetailSchema.parse(candidate),
-    /resolved location .* does not match index location metadata/i,
-  );
-});
-
-test("adventureModuleDetailSchema accepts resolved custom assets joined from custom asset metadata", () => {
-  const candidate = createValidModuleDetailCandidate();
-  candidate.index.assetCards = [
+  sessions: [
     {
-      fragmentId: "frag-asset-main",
-      kind: "custom",
-      modifier: "Smoldering",
-      noun: "Lantern Shard",
-      nounDescription: "Glows brighter around hidden doors.",
-      adjectiveDescription: "Whispers when ward-lines start to fail.",
-      iconUrl: "https://example.com/assets/lantern-shard.png",
-      overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
+      sessionId: "session-one",
+      status: "active",
+      createdAtIso: "2026-03-15T01:00:00.000Z",
+      updatedAtIso: "2026-03-15T01:05:00.000Z",
+      closedAtIso: undefined,
+      storytellerCount: 1,
+      playerCount: 1,
+      transcriptEntryCount: 2,
+      transcriptPreview: "The bell tolls once as the plaza floods.",
     },
-  ];
-  candidate.assets = [
-    {
-      fragmentId: "frag-asset-main",
-      assetSlug: "primary-asset",
-      title: "Primary Asset",
-      kind: "custom",
-      modifier: "Smoldering",
-      noun: "Lantern Shard",
-      nounDescription: "Glows brighter around hidden doors.",
-      adjectiveDescription: "Whispers when ward-lines start to fail.",
-      iconUrl: "https://example.com/assets/lantern-shard.png",
-      overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
-      content: "# Primary Asset",
-    },
-  ];
-
-  const parsed = adventureModuleDetailSchema.parse(candidate);
-
-  assert.equal(parsed.assets[0]?.kind, "custom");
-  assert.equal(parsed.assets[0]?.noun, "Lantern Shard");
+  ],
 });
 
-test("adventureModuleDetailSchema accepts resolved encounters joined from encounter metadata", () => {
-  const parsed = adventureModuleDetailSchema.parse(createValidModuleDetailCandidate());
+test("campaignCreateRequestSchema requires a source adventure module", () => {
+  const parsed = campaignCreateRequestSchema.parse({
+    sourceModuleId: "module-flooded-bells",
+    title: "Flooded Bells Campaign",
+    slug: "flooded-bells-campaign",
+  });
 
-  assert.equal(parsed.encounters.length, 1);
-  assert.equal(parsed.encounters[0]?.encounterSlug, "primary-encounter");
-  assert.equal(
-    parsed.encounters[0]?.prerequisites,
-    "Level 3+ or already tracking the flooded bell quest.",
-  );
+  assert.equal(parsed.sourceModuleId, "module-flooded-bells");
 });
 
-test("adventureModuleDetailSchema rejects resolved encounters that do not match encounter metadata", () => {
-  const candidate = createValidModuleDetailCandidate();
-  candidate.encounters[0] = {
-    ...candidate.encounters[0],
-    titleImageUrl: "https://example.com/unexpected-encounter-image.png",
-  };
+test("campaignDetailSchema accepts module-derived content with session summaries", () => {
+  const parsed = campaignDetailSchema.parse(createValidCampaignDetailCandidate());
 
-  assert.throws(
-    () => adventureModuleDetailSchema.parse(candidate),
-    /resolved encounter .* does not match index encounter metadata/i,
-  );
-});
-
-test("adventureModuleDetailSchema accepts resolved quests joined from quest metadata", () => {
-  const parsed = adventureModuleDetailSchema.parse(createValidModuleDetailCandidate());
-
-  assert.equal(parsed.quests.length, 1);
-  assert.equal(parsed.quests[0]?.questSlug, "primary-quest");
-  assert.equal(parsed.quests[0]?.questId, "quest-main");
-  assert.equal(
-    parsed.quests[0]?.titleImageUrl,
-    "https://example.com/quest-title.png",
-  );
-});
-
-test("adventureModuleDetailSchema preserves actor player-character metadata", () => {
-  const candidate = createValidModuleDetailCandidate();
-  candidate.index.actorCards[0] = {
-    ...candidate.index.actorCards[0],
-    isPlayerCharacter: true,
-  };
-  candidate.actors[0] = {
-    ...candidate.actors[0],
-    isPlayerCharacter: true,
-  };
-
-  const parsed = adventureModuleDetailSchema.parse(candidate);
-
-  assert.equal(parsed.index.actorCards[0]?.isPlayerCharacter, true);
+  assert.equal(parsed.campaignId, "campaign-flooded-bells");
   assert.equal(parsed.actors[0]?.isPlayerCharacter, true);
+  assert.equal(parsed.sessions[0]?.status, "active");
 });
 
-test("adventureModuleDetailSchema rejects resolved quests that do not match quest metadata", () => {
-  const candidate = createValidModuleDetailCandidate();
-  candidate.quests[0] = {
-    ...candidate.quests[0],
-    titleImageUrl: "https://example.com/unexpected-quest-image.png",
-  };
-
-  assert.throws(
-    () => adventureModuleDetailSchema.parse(candidate),
-    /resolved quest .* does not match quest metadata/i,
-  );
-});
-
-test("adventureModuleUpdateAssetRequestSchema accepts custom asset fields", () => {
-  const parsed = adventureModuleUpdateAssetRequestSchema.parse({
-    title: "Storm Lantern",
-    summary: "Portable ward light with a hidden shutter.",
-    modifier: "Smoldering",
-    noun: "Lantern Shard",
-    nounDescription: "Glows brighter around hidden doors.",
-    adjectiveDescription: "Whispers when ward-lines start to fail.",
-    iconUrl: "https://example.com/assets/lantern-shard.png",
-    overlayUrl: "https://example.com/assets/lantern-shard-overlay.png",
-    content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
+test("campaignSessionDetailSchema accepts setup and transcript state", () => {
+  const parsed = campaignSessionDetailSchema.parse({
+    sessionId: "session-one",
+    status: "setup",
+    createdAtIso: "2026-03-15T01:00:00.000Z",
+    updatedAtIso: "2026-03-15T01:05:00.000Z",
+    storytellerCount: 1,
+    playerCount: 1,
+    transcriptEntryCount: 2,
+    transcriptPreview: "The bell tolls once as the plaza floods.",
+    participants: [
+      {
+        participantId: "participant-storyteller",
+        displayName: "Morgan",
+        role: "storyteller",
+        isMock: false,
+        connected: true,
+        joinedAtIso: "2026-03-15T01:00:00.000Z",
+      },
+      {
+        participantId: "participant-player",
+        displayName: "Jun",
+        role: "player",
+        isMock: false,
+        connected: true,
+        joinedAtIso: "2026-03-15T01:02:00.000Z",
+      },
+    ],
+    claims: [
+      {
+        actorFragmentId: "frag-actor-main",
+        participantId: "participant-player",
+        claimedAtIso: "2026-03-15T01:03:00.000Z",
+      },
+    ],
+    transcript: [
+      {
+        entryId: "event-created",
+        kind: "system",
+        text: "Session created.",
+        createdAtIso: "2026-03-15T01:00:00.000Z",
+      },
+      {
+        entryId: "message-1",
+        kind: "group_message",
+        participantId: "participant-player",
+        authorDisplayName: "Jun",
+        authorRole: "player",
+        text: "I push open the floodgate.",
+        createdAtIso: "2026-03-15T01:04:00.000Z",
+      },
+    ],
   });
 
-  assert.equal(parsed.noun, "Lantern Shard");
-});
-
-test("adventureModuleUpdateAssetRequestSchema rejects legacy layered asset payload fields", () => {
-  assert.throws(
-    () =>
-      adventureModuleUpdateAssetRequestSchema.parse({
-        title: "Storm Lantern",
-        summary: "Portable ward light with a hidden shutter.",
-        baseAssetSlug: "medieval_lantern",
-        modifierSlug: "base_hidden",
-        content: "# Storm Lantern\n\nKeeps the corridor lit in rain and fog.",
-      }),
-    /baseAssetSlug|modifierSlug/i,
-  );
-});
-
-test("adventureModule encounter request schemas accept encounter authoring fields", async () => {
-  const mod = await import("./adventureModuleAuthoring");
-
-  const createParsed = mod.adventureModuleCreateEncounterRequestSchema.parse({
-    title: "Rope Bridge Escape",
-  });
-  const updateParsed = mod.adventureModuleUpdateEncounterRequestSchema.parse({
-    title: "Rope Bridge Escape",
-    summary: "Cross the collapsing bridge before the rear guard catches up.",
-    prerequisites: "Already escaped the prison cells.",
-    titleImageUrl: "https://example.com/bridge-escape.png",
-    content: "# Rope Bridge Escape\n\nKeep the bridge intact long enough to cross.",
-  });
-
-  assert.equal(createParsed.title, "Rope Bridge Escape");
-  assert.equal(
-    updateParsed.prerequisites,
-    "Already escaped the prison cells.",
-  );
-});
-
-test("adventureModule quest request schemas accept quest authoring fields", () => {
-  const createParsed = adventureModuleCreateQuestRequestSchema.parse({
-    title: "Recover the Lantern",
-  });
-  const updateParsed = adventureModuleUpdateQuestRequestSchema.parse({
-    title: "Recover the Lantern",
-    summary: "Steal back the lantern before the floodgate seals the district.",
-    titleImageUrl: "https://example.com/recover-the-lantern.png",
-    content:
-      "# Recover the Lantern\n\nTrack the relic across the flood district and bring it home.",
-  });
-
-  assert.equal(createParsed.title, "Recover the Lantern");
-  assert.equal(
-    updateParsed.titleImageUrl,
-    "https://example.com/recover-the-lantern.png",
-  );
-});
-
-test("adventureModule actor request schemas accept player-character metadata", () => {
-  const parsed = adventureModuleUpdateActorRequestSchema.parse({
-    title: "Bell Runner",
-    summary: "Keeps the flood routes open.",
-    baseLayerSlug: "civilian",
-    tacticalRoleSlug: "pawn",
-    isPlayerCharacter: true,
-    content: "# Bell Runner\n\nReady for a player to claim.",
-  });
-
-  assert.equal(parsed.isPlayerCharacter, true);
+  assert.equal(parsed.claims[0]?.actorFragmentId, "frag-actor-main");
+  assert.equal(parsed.transcript[1]?.kind, "group_message");
 });

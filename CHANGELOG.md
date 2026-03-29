@@ -10,6 +10,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 - Add configurable AI text provider (`AI_TEXT_PROVIDER` env var) supporting `openrouter` (default, API-based) and `claude_cli` (local CLI). Set `AI_TEXT_PROVIDER=claude_cli` in `.env.local` to use Claude CLI for all text completions without an API key. New env vars: `CLAUDE_CLI_MODEL`, `CLAUDE_CLI_MAX_CONCURRENT`.
 - Extract `TextCompletionClient` interface from `OpenRouterClient` to allow pluggable text providers across the storyteller pipeline.
+- Add a persisted `Campaigns` domain backed by shared campaign/session contracts, REST routes, campaign list/detail pages, module-to-campaign creation flows, and campaign detail tabs that mirror Adventure Module authoring plus `Sessions`.
+- Add human-storyteller campaign sessions with neutral lobby routes, player claim/create-PC flow, storyteller campaign shell reuse with a `Chat` tab, session transcripts, explicit dev-only mock participants, and route-level live refresh via campaign watch broadcasts.
 
 - Add typed Adventure Module actor authoring with create/edit APIs, resolved actor detail payloads, layered actor-card metadata, and legacy-module backfill for missing actor card records.
 - Add layered ActorCard rendering, actor list authoring UI, actor editor UI, and actor shortcode copy support in the Adventure Module authoring flow.
@@ -27,6 +29,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Switch the zero-config local server default from port `8080` to `8081` and align the web client's split-dev fallback with the same port.
 - Build the shared `spec/` workspace to JavaScript plus declaration files, update package exports to built output, and start the server from compiled JS instead of `tsx` in production.
 - Narrow Render installs to the deploy-relevant workspaces and remove the accidental root `playwright` dependency from the deploy path.
+- Extend Adventure Module actor authoring with a `Player Character` flag so authored actors can seed campaign-time claimable PCs.
 - Derive web asset card titles from the shared `spec` asset catalog so built-in asset names have one source of truth across shared contracts and the UI.
 - Lazy-load top-level web routes and scope the MDX editor stylesheet to the authoring flow to reduce the initial client bundle.
 - Render Adventure Module authoring GameCards inline in MDX rich text, normalize legacy shortcode tokens to canonical `<GameCard />` source, and remove the separate markdown preview panel.
@@ -68,6 +71,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Update Adventure Module docs to reflect typed quest authoring, `QuestCard` embeds, the real Quests tab/editor flow, and the new `/styleguide/quest-card` route.
 - Update the route and UI docs for the new `/rules/assets` reference page, the shortcode-first copy behavior used by the rules reference pages, and the optional modifier-bearing asset shortcode format.
 - Update Adventure Module authoring docs to reflect Base-tab cover-image persistence and the expanded generated-image lookup behavior added on March 27, 2026.
+- Add campaign and human-storyteller session docs, update route/architecture/event docs for the new `/campaign/...` surface, and document the module-side `Create Campaign` handoff plus mock-participant testing flow.
 
 ## [0.1.0] - 2026-03-13
 

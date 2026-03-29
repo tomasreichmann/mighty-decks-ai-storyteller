@@ -401,6 +401,7 @@ export const updateAdventureModuleActor = async (
     baseLayerSlug: string;
     tacticalRoleSlug: string;
     tacticalSpecialSlug?: string | null;
+    isPlayerCharacter: boolean;
     content: string;
   },
   creatorToken?: string,

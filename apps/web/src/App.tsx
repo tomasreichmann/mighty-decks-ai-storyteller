@@ -6,6 +6,20 @@ const AdventureModuleAuthoringPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleAuthoringPage"))
     .AdventureModuleAuthoringPage,
 }));
+const CampaignAuthoringPage = lazy(async () => ({
+  default: (await import("./routes/CampaignAuthoringPage")).CampaignAuthoringPage,
+}));
+const CampaignListPage = lazy(async () => ({
+  default: (await import("./routes/CampaignListPage")).CampaignListPage,
+}));
+const CampaignSessionLobbyPage = lazy(async () => ({
+  default: (await import("./routes/CampaignSessionLobbyPage"))
+    .CampaignSessionLobbyPage,
+}));
+const CampaignSessionPlayerPage = lazy(async () => ({
+  default: (await import("./routes/CampaignSessionPlayerPage"))
+    .CampaignSessionPlayerPage,
+}));
 const AdventureModuleListPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleListPage"))
     .AdventureModuleListPage,
@@ -102,6 +116,28 @@ export const App = (): JSX.Element => {
         <Route element={<FitContentLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/image" element={<ImageGenerator />} />
+          <Route path="/campaign/list" element={<CampaignListPage />} />
+          <Route path="/campaign/:slug/:tab" element={<CampaignAuthoringPage />} />
+          <Route
+            path="/campaign/:slug/:tab/:entityId"
+            element={<CampaignAuthoringPage />}
+          />
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId"
+            element={<CampaignSessionLobbyPage />}
+          />
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId/player"
+            element={<CampaignSessionPlayerPage />}
+          />
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab"
+            element={<CampaignAuthoringPage />}
+          />
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId"
+            element={<CampaignAuthoringPage />}
+          />
           <Route path="/adventure-module/list" element={<AdventureModuleListPage />} />
           <Route path="/adventure-module/new" element={<AdventureModuleNewPage />} />
           <Route path="/adventure-module/:slug/:tab" element={<AdventureModuleAuthoringPage />} />
@@ -139,6 +175,10 @@ export const App = (): JSX.Element => {
           <Route path="/adventure/:adventureId/screen" element={<ScreenPage />} />
         </Route>
 
+        <Route
+          path="/campaign"
+          element={<Navigate to="/campaign/list" replace />}
+        />
         <Route
           path="/adventure-module"
           element={<Navigate to="/adventure-module/list" replace />}

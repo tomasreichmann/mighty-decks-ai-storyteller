@@ -209,6 +209,7 @@ export const adventureModuleActorCardSchema = z.object({
   baseLayerSlug: actorBaseLayerSlugSchema,
   tacticalRoleSlug: actorTacticalRoleSlugSchema,
   tacticalSpecialSlug: actorTacticalSpecialSlugSchema.optional(),
+  isPlayerCharacter: z.boolean().default(false),
 });
 export type AdventureModuleActorCard = z.infer<
   typeof adventureModuleActorCardSchema

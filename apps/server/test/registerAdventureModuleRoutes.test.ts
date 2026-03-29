@@ -67,6 +67,7 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
         fragmentId: string;
         baseLayerSlug: string;
         tacticalRoleSlug: string;
+        isPlayerCharacter: boolean;
       }>;
     };
     actors?: Array<{
@@ -74,12 +75,14 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
       title: string;
       baseLayerSlug: string;
       tacticalRoleSlug: string;
+      isPlayerCharacter: boolean;
     }>;
   };
   assert.equal(Array.isArray(createdActorState.index.actorCards), true);
   assert.equal(createdActorState.index.actorCards?.length, 1);
   assert.equal(Array.isArray(createdActorState.actors), true);
   assert.equal(createdActorState.actors?.[0]?.actorSlug, "primary-actor");
+  assert.equal(createdActorState.actors?.[0]?.isPlayerCharacter, false);
 
   const availableSlugResponse = await app.inject({
     method: "GET",
@@ -207,6 +210,7 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
     },
     payload: {
       title: "River Smuggler Nyra",
+      isPlayerCharacter: true,
     },
   });
   assert.equal(createActorResponse.statusCode, 201);
@@ -216,11 +220,12 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
       title: string;
       baseLayerSlug: string;
       tacticalRoleSlug: string;
+      isPlayerCharacter: boolean;
     }>;
   };
   assert.equal(
     createActorPayload.actors?.some(
-      (actor) => actor.actorSlug === "river-smuggler-nyra",
+      (actor) => actor.actorSlug === "river-smuggler-nyra" && actor.isPlayerCharacter,
     ),
     true,
   );
@@ -237,6 +242,7 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
       baseLayerSlug: "merchant",
       tacticalRoleSlug: "ranger",
       tacticalSpecialSlug: "fast",
+      isPlayerCharacter: false,
       content: "# River Smuggler Nyra\n\nControls the hidden canal routes.",
     },
   });
@@ -246,12 +252,14 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
       actorSlug: string;
       title: string;
       tacticalSpecialSlug?: string;
+      isPlayerCharacter: boolean;
     }>;
   };
   const updatedActor = updatedActorPayload.actors?.find((actor) => actor.actorSlug === "river-queen-nyra");
   assert.ok(updatedActor);
   assert.equal(updatedActor.title, "River Queen Nyra");
   assert.equal(updatedActor.tacticalSpecialSlug, "fast");
+  assert.equal(updatedActor.isPlayerCharacter, false);
 
   const createCounterResponse = await app.inject({
     method: "POST",

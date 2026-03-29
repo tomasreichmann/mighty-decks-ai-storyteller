@@ -1,5 +1,14 @@
 import { io, Socket } from "socket.io-client";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
+import type {
+  CampaignClientToServerEvents,
+  CampaignServerToClientEvents,
+} from "@mighty-decks/spec/campaignEvents";
+
+type CombinedClientToServerEvents =
+  ClientToServerEvents & CampaignClientToServerEvents;
+type CombinedServerToClientEvents =
+  ServerToClientEvents & CampaignServerToClientEvents;
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const DEFAULT_LOCAL_DEV_SERVER_PORT = 8081;
@@ -55,7 +64,10 @@ export const getServerUrlWarning = (serverUrl: string): string | null => {
   return null;
 };
 
-export const createSocketClient = (): Socket<ServerToClientEvents, ClientToServerEvents> => {
+export const createSocketClient = (): Socket<
+  CombinedServerToClientEvents,
+  CombinedClientToServerEvents
+> => {
   const serverUrl = resolveServerUrl();
   return io(serverUrl, {
     autoConnect: false,

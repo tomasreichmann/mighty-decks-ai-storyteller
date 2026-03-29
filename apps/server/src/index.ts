@@ -4,6 +4,10 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { Server as SocketServer } from "socket.io";
+import type {
+  CampaignClientToServerEvents,
+  CampaignServerToClientEvents,
+} from "@mighty-decks/spec/campaignEvents";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
 import { isSafeFileName } from "./image/ImageNaming";
 import { ClaudeCliClient } from "./ai/ClaudeCliClient";
@@ -14,6 +18,8 @@ import { createWorkflowAdapters } from "./ai/workflow/createWorkflowAdapters";
 import { FalQueueClient } from "./ai/workflow/FalQueueClient";
 import { createWorkflowDefinitionRegistrations } from "./ai/workflow/sampleWorkflows";
 import { registerAdventureModuleRoutes } from "./adventureModule/registerAdventureModuleRoutes";
+import { registerCampaignRoutes } from "./campaign/registerCampaignRoutes";
+import { registerCampaignSocketHandlers } from "./campaign/registerCampaignSocketHandlers";
 import { AdventureManager } from "./adventure/AdventureManager";
 import { env } from "./config/env";
 import { AdventureDiagnosticsLogger } from "./diagnostics/AdventureDiagnosticsLogger";
@@ -28,6 +34,7 @@ import { registerImageRoutes } from "./image/registerImageRoutes";
 import { AdventureArtifactStore } from "./persistence/AdventureArtifactStore";
 import { AdventureModuleStore } from "./persistence/AdventureModuleStore";
 import { AdventureSnapshotStore } from "./persistence/AdventureSnapshotStore";
+import { CampaignStore } from "./persistence/CampaignStore";
 import { registerSocketHandlers } from "./socket/registerSocketHandlers";
 import { createWorkflowFactory } from "./workflow/executor";
 import { registerWorkflowLabRoutes } from "./workflow/registerWorkflowLabRoutes";
@@ -95,6 +102,11 @@ const adventureModuleStore = new AdventureModuleStore({
   rootDir: env.adventureModules.outputDir,
 });
 await adventureModuleStore.initialize();
+const campaignStore = new CampaignStore({
+  rootDir: env.campaigns.outputDir,
+  sourceModuleStore: adventureModuleStore,
+});
+await campaignStore.initialize();
 const adventureSnapshotStore = new AdventureSnapshotStore({
   rootDir: env.adventureSnapshots.outputDir,
   historyLimit: env.adventureSnapshots.historyLimit,
@@ -162,7 +174,10 @@ manager = new AdventureManager({
   snapshotWriteDebounceMs: env.adventureSnapshots.writeDebounceMs,
 });
 
-const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(app.server, {
+const io = new SocketServer<
+  ClientToServerEvents & CampaignClientToServerEvents,
+  ServerToClientEvents & CampaignServerToClientEvents
+>(app.server, {
   cors: {
     origin: env.corsOrigins,
     methods: ["GET", "POST"],
@@ -172,6 +187,7 @@ const io = new SocketServer<ClientToServerEvents, ServerToClientEvents>(app.serv
 registerSocketHandlers(io, manager, {
   clientIdleTimeoutMs: env.clientIdleTimeoutMs,
 });
+registerCampaignSocketHandlers(io, campaignStore);
 registerImageRoutes(app, imageGenerationService);
 const workflowFactory = createWorkflowFactory({
   adapters: createWorkflowAdapters({
@@ -202,6 +218,15 @@ registerWorkflowLabRoutes(app, {
 });
 registerAdventureModuleRoutes(app, {
   store: adventureModuleStore,
+});
+registerCampaignRoutes(app, {
+  store: campaignStore,
+  onCampaignUpdated: ({ campaignSlug, updatedAtIso }) => {
+    io.to(`campaign:${campaignSlug}`).emit("campaign_updated", {
+      campaignSlug,
+      updatedAtIso,
+    });
+  },
 });
 
 app.get("/api/adventure-artifacts/:fileName", async (request, reply) => {

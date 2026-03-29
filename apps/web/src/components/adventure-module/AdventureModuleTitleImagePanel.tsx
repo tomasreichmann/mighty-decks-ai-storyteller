@@ -42,6 +42,7 @@ interface AdventureModuleTitleImagePanelProps {
   storytellerInfo: string;
   coverImageUrl?: string;
   disabled?: boolean;
+  persistCoverImage?: (coverImageUrl: string | null) => Promise<void>;
 }
 
 const resolveContextLines = (
@@ -133,6 +134,7 @@ const resolveContextLines = (
 export const AdventureModuleTitleImagePanel = ({
   disabled = false,
   coverImageUrl,
+  persistCoverImage,
   ...context
 }: AdventureModuleTitleImagePanelProps): JSX.Element => {
   const [persistError, setPersistError] = useState<string | null>(null);
@@ -161,18 +163,24 @@ export const AdventureModuleTitleImagePanel = ({
     }
 
     let cancelled = false;
-    const persistCoverImage = async (): Promise<void> => {
+    const persistSelectedCoverImage = async (): Promise<void> => {
       setPersisting(true);
       setPersistError(null);
       try {
-        await updateAdventureModuleCoverImage(
-          context.moduleId,
-          {
-            coverImageUrl:
-              normalizedImageUrl.length > 0 ? normalizedImageUrl : null,
-          },
-          context.creatorToken,
-        );
+        if (persistCoverImage) {
+          await persistCoverImage(
+            normalizedImageUrl.length > 0 ? normalizedImageUrl : null,
+          );
+        } else {
+          await updateAdventureModuleCoverImage(
+            context.moduleId,
+            {
+              coverImageUrl:
+                normalizedImageUrl.length > 0 ? normalizedImageUrl : null,
+            },
+            context.creatorToken,
+          );
+        }
         if (cancelled) {
           return;
         }
@@ -193,7 +201,7 @@ export const AdventureModuleTitleImagePanel = ({
       }
     };
 
-    void persistCoverImage();
+    void persistSelectedCoverImage();
 
     return () => {
       cancelled = true;
@@ -202,6 +210,7 @@ export const AdventureModuleTitleImagePanel = ({
     context.creatorToken,
     context.moduleId,
     disabled,
+    persistCoverImage,
     selectedImageUrl,
   ]);
 
