@@ -193,7 +193,7 @@ Canonical patterns:
 
 Current route chrome note:
 
-- The top navigation in `Page.tsx` and `Page.module.css` now uses explicit per-link comic panel background assets (`grey`, `curse`, `cloth`, `gold`, `monster`) instead of hue-rotating a shared image.
+- The top navigation in `Page.tsx` and `Page.module.css` now uses explicit per-link comic panel background assets (`monster` for Home, `gold` for Modules, `fire` for Campaigns, `cloth` for Rules, `curse` for Image Lab, and `grey` for Workflow) instead of hue-rotating a shared image.
 - When adding or revising top-level nav items, assign a specific background asset in the nav item config rather than recoloring a single shared background in CSS.
 
 Each pattern in payload includes:
