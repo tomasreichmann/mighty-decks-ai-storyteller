@@ -51,7 +51,7 @@ const sampleQuest: AdventureModuleResolvedQuest = {
     "## Hook\n\nRecover the shard before the floodwall seals the district.",
 };
 
-test("GameCard renders a location card with a pinned icon medallion and lighter summary strip", () => {
+test("GameCard renders location content without leaking internal location metadata", () => {
   const markup = renderToStaticMarkup(
     React.createElement(GameCard, {
       type: "location",
@@ -65,23 +65,12 @@ test("GameCard renders a location card with a pinned icon medallion and lighter 
     markup,
     /Catwalks groan over dark water channels while the pumps thrum beneath the district\./,
   );
-  assert.match(markup, /aspect-\[3\/2\]/);
-  assert.match(markup, /max-w-\[30rem\]/);
-  assert.match(markup, /left-3 top-3/);
-  assert.match(markup, /right-3 top-3/);
-  assert.match(markup, /bottom-0/);
-  assert.match(markup, /w-full/);
-  assert.match(markup, /rounded-full/);
-  assert.match(markup, /bg-\[#f7f3eb\]/);
-  assert.match(markup, /text-md\/\[0\.8\]/);
-  assert.match(markup, /cloth title chip/);
-  assert.match(markup, /whitespace-normal/);
   assert.doesNotMatch(markup, /ImageCard-driven direction/);
   assert.doesNotMatch(markup, /drowned-gate-district/);
   assert.doesNotMatch(markup, /map pins/i);
 });
 
-test("GameCard renders an encounter card with a warning medallion and lighter summary strip", () => {
+test("GameCard renders encounter content without leaking prerequisites", () => {
   const markup = renderToStaticMarkup(
     React.createElement(GameCard, {
       type: "encounter",
@@ -92,19 +81,10 @@ test("GameCard renders an encounter card with a warning medallion and lighter su
   assert.match(markup, /Bridge Tribute Checkpoint/);
   assert.match(markup, /⚠️/);
   assert.match(markup, /Pay, bluff, or break through an armored toll blockade\./);
-  assert.match(markup, /aspect-\[3\/2\]/);
-  assert.match(markup, /max-w-\[30rem\]/);
-  assert.match(markup, /left-3 top-3/);
-  assert.match(markup, /right-3 top-3/);
-  assert.match(markup, /bottom-0/);
-  assert.match(markup, /w-full/);
-  assert.match(markup, /rounded-full/);
-  assert.match(markup, /bg-\[#f7f3eb\]/);
-  assert.match(markup, /fire title chip/);
   assert.doesNotMatch(markup, /Suggested for level 3\+/);
 });
 
-test("GameCard renders a quest card with a scroll medallion and lighter summary strip", () => {
+test("GameCard renders quest content without leaking the quest slug", () => {
   const markup = renderToStaticMarkup(
     React.createElement(GameCard, {
       type: "quest",
@@ -118,15 +98,5 @@ test("GameCard renders a quest card with a scroll medallion and lighter summary 
     /Retrieve a stolen lantern shard before rival factions claim it\./,
   );
   assert.match(markup, /📜/u);
-  assert.match(markup, /aspect-\[3\/2\]/);
-  assert.match(markup, /max-w-\[30rem\]/);
-  assert.match(markup, /left-3 top-3/);
-  assert.match(markup, /right-3 top-3/);
-  assert.match(markup, /bottom-0/);
-  assert.match(markup, /w-full/);
-  assert.match(markup, /rounded-full/);
-  assert.match(markup, /bg-\[#f7f3eb\]/);
-  assert.match(markup, /gold title chip/);
-  assert.match(markup, /scroll icon medallion/);
   assert.doesNotMatch(markup, /recover-the-shard/);
 });

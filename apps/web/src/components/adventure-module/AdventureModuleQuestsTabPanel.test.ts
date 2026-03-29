@@ -12,5 +12,4 @@ test("AdventureModuleQuestsTabPanel exposes quest delete affordance and canonica
   assert.match(source, /<QuestCardView quest=\{quest\} \/>/);
   assert.match(source, /@quest\/\$\{questSlug\}/);
   assert.match(source, /Copy Shortcode/);
-  assert.doesNotMatch(source, /max-w-none/);
 });

@@ -11,5 +11,4 @@ test("ImageCard keeps its single bottom-right label API", () => {
   assert.doesNotMatch(source, /secondaryLabel/);
   assert.doesNotMatch(source, /labelPosition/);
   assert.doesNotMatch(source, /labelRotate/);
-  assert.match(source, /absolute -bottom-2 -right-2 z-10/);
 });

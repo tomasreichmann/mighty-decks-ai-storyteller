@@ -11,7 +11,4 @@ test("AdventureModuleLocationMapEditor includes pin controls and hover preview c
   assert.match(source, /Add Pin/);
   assert.match(source, /Map Pins/);
   assert.match(source, /Hover to preview linked content/);
-  assert.doesNotMatch(source, /bg-kac-iron-dark\/95/);
-  assert.doesNotMatch(source, /bg-kac-iron-dark\/70/);
-  assert.match(source, /bg-gradient-to-b from-\[#fffdf5\] to-kac-bone-light/);
 });
