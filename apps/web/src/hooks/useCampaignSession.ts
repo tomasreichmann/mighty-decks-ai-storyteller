@@ -14,6 +14,8 @@ export const useCampaignSession = ({
   enabled = true,
 }: UseCampaignSessionOptions) => {
   const socketRef = useRef(createSocketClient());
+  const lastJoinedParticipantIdRef = useRef<string | null>(null);
+  const lastJoinedRoleKeyRef = useRef<string | null>(null);
   const [session, setSession] = useState<CampaignSessionDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(socketRef.current.connected);
@@ -33,6 +35,8 @@ export const useCampaignSession = ({
     };
     const handleDisconnect = (): void => {
       setConnected(false);
+      lastJoinedParticipantIdRef.current = null;
+      lastJoinedRoleKeyRef.current = null;
     };
     const handleState = (nextSession: CampaignSessionDetail): void => {
       setSession(nextSession);
@@ -72,6 +76,7 @@ export const useCampaignSession = ({
 
   const joinSession = useCallback(
     (participantId: string): void => {
+      lastJoinedParticipantIdRef.current = participantId;
       socketRef.current.emit("join_campaign_session", {
         ...basePayload,
         participantId,
@@ -86,6 +91,11 @@ export const useCampaignSession = ({
       displayName: string;
       role: "player" | "storyteller";
     }): void => {
+      lastJoinedRoleKeyRef.current = [
+        options.participantId,
+        options.displayName,
+        options.role,
+      ].join(":");
       socketRef.current.emit("join_campaign_session_role", {
         ...basePayload,
         ...options,
@@ -93,6 +103,44 @@ export const useCampaignSession = ({
     },
     [basePayload],
   );
+
+  const ensureSessionParticipant = useCallback(
+    (participantId: string): void => {
+      if (lastJoinedParticipantIdRef.current === participantId) {
+        return;
+      }
+
+      joinSession(participantId);
+    },
+    [joinSession],
+  );
+
+  const ensureSessionRole = useCallback(
+    (options: {
+      participantId: string;
+      displayName: string;
+      role: "player" | "storyteller";
+    }): void => {
+      ensureSessionParticipant(options.participantId);
+
+      const roleKey = [
+        options.participantId,
+        options.displayName,
+        options.role,
+      ].join(":");
+      if (lastJoinedRoleKeyRef.current === roleKey) {
+        return;
+      }
+
+      joinRole(options);
+    },
+    [ensureSessionParticipant, joinRole],
+  );
+
+  useEffect(() => {
+    lastJoinedParticipantIdRef.current = null;
+    lastJoinedRoleKeyRef.current = null;
+  }, [campaignSlug, sessionId]);
 
   const leaveSession = useCallback(
     (participantId: string): void => {
@@ -164,6 +212,8 @@ export const useCampaignSession = ({
     campaignUpdatedAtIso,
     joinSession,
     joinRole,
+    ensureSessionParticipant,
+    ensureSessionRole,
     leaveSession,
     addMock,
     claimCharacter,

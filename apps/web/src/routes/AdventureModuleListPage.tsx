@@ -4,6 +4,7 @@ import type { AdventureModuleListItem } from "@mighty-decks/spec/adventureModule
 import { AdventureModuleCard } from "../components/adventure-module/AdventureModuleCard";
 import { Button } from "../components/common/Button";
 import { DepressedInput } from "../components/common/DepressedInput";
+import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
@@ -143,10 +144,26 @@ export const AdventureModuleListPage = (): JSX.Element => {
     <div className="app-shell stack py-8 gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Text variant="h2" color="iron">
+          <Heading
+            variant="h1"
+            color="iron"
+            className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
+            highlightProps={{
+              color: "gold",
+              lineHeight: 8,
+              brushHeight: 6,
+              lineOffsets: [0, 8, 14, 20],
+              className:
+                "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
+            }}
+          >
             Adventure Modules
-          </Text>
-          <Text variant="body" color="iron-light" className="text-sm">
+          </Heading>
+          <Text
+            variant="body"
+            color="iron-light"
+            className="relative z-10 mt-3 text-sm"
+          >
             Browse and start authored adventures.
           </Text>
         </div>

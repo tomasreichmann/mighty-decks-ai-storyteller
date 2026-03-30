@@ -164,10 +164,16 @@ Motion rules:
 Canonical contracts are defined for:
 
 - `Button`
+- `ToggleButton`
+- `RockerSwitch`
+- `ButtonRadioGroup`
+- `CTAButton`
 - `Panel`
 - `Text`
 - `Label`
 - `Message`
+- `Tag`
+- `ConnectionStatusPill`
 - `Toggle`
 - `DepressedInput`
 
@@ -190,11 +196,31 @@ Canonical patterns:
 5. `callout-card`
 6. `narrative-stack`
 7. `phase-shell`
+8. `cta-highlight-button`
+9. `status-pill-with-dot`
+10. `grouped-toggle-row`
 
 Current route chrome note:
 
 - The top navigation in `Page.tsx` and `Page.module.css` now uses explicit per-link comic panel background assets (`monster` for Home, `gold` for Modules, `fire` for Campaigns, `cloth` for Rules, `curse` for Image Lab, and `grey` for Workflow) instead of hue-rotating a shared image.
 - When adding or revising top-level nav items, assign a specific background asset in the nav item config rather than recoloring a single shared background in CSS.
+
+Campaign/session alignment note:
+
+- Session-facing campaign screens should borrow Adventure-mode discipline:
+  - one dominant surface for the main storytelling task
+  - transcript-first hierarchy
+  - roster/status/debug regions expressed with lighter wrappers before another framed panel
+- Join entry should use one compact CTA-width action, not stretched full-width buttons whose hover skew/rotation becomes visually noisy.
+- Status summaries should prefer `Tag` and `ConnectionStatusPill` near the section title before introducing another content surface.
+- `Panel` remains the right choice for primary story surfaces, summary cards, and major route blocks, but it should not become the default wrapper for every inner subsection, roster item, or form cluster on session screens.
+
+Grouped-control note:
+
+- Use `ToggleButton` and `ButtonRadioGroup` for compact stateful choices that need to sit side-by-side.
+- These controls intentionally avoid the main `Button` solid variant's tilt and skew so grouped rows stay aligned and readable.
+- Emphasis should come from accent color and depth changes between inactive and active states, not from irregular rotation.
+- Use `RockerSwitch` when a binary choice should feel more toy-like or mechanical than a flat toggle button. It can carry an optional left-side `Label` that sits slightly underneath the switch like a tucked tag.
 
 Each pattern in payload includes:
 
@@ -220,6 +246,7 @@ Tracked implementation drifts:
 6. `Panel` disabled pseudo behavior mismatch.
 7. `Text` h1 transform class syntax risk.
 8. Penpot token payload does not yet encode the Page nav's per-route background art assignments.
+9. Grouped toggle controls currently live beside, not inside, the original `Button` variant taxonomy.
 
 Canonical decision policy:
 

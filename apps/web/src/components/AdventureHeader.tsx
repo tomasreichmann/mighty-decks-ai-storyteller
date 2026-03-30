@@ -3,9 +3,9 @@ import type { AiCostMetrics } from "@mighty-decks/spec/adventureState";
 import { Section } from "./common/Section";
 import { Button } from "./common/Button";
 import { ShareLinkOverlay } from "./ShareLinkOverlay";
-import { cn } from "../utils/cn";
 import { Label } from "./common/Label";
 import { Text } from "./common/Text";
+import { ConnectionStatusPill } from "./common/ConnectionStatusPill";
 
 interface AdventureHeaderProps {
   adventureId: string;
@@ -17,22 +17,16 @@ interface AdventureHeaderProps {
 
 const connectionStatusMeta: Record<
   NonNullable<AdventureHeaderProps["connectionStatus"]>,
-  { label: string; dot: string; text: string }
+  { label: string }
 > = {
   connected: {
     label: "Connected",
-    dot: "bg-kac-monster-dark border border-ink shadow-[2px_2px_0_0_#121b23]",
-    text: "text-kac-monster-darker",
   },
   reconnecting: {
     label: "Reconnecting...",
-    dot: "bg-kac-gold-dark border border-ink shadow-[2px_2px_0_0_#121b23]",
-    text: "text-kac-gold-darker",
   },
   offline: {
     label: "Offline",
-    dot: "bg-kac-blood border border-ink shadow-[2px_2px_0_0_#121b23]",
-    text: "text-kac-blood-darker",
   },
 };
 
@@ -182,19 +176,15 @@ export const AdventureHeader = ({
         <Text as="span" variant="emphasised" color="iron">
           {adventureId}
         </Text>
-        {statusMeta ? (
-          <Text
-            as="span"
-            variant="emphasised"
-            className={cn(
-              "inline-flex items-baseline gap-2 text-base",
-              statusMeta.text,
-            )}
-          >
-            <span className={cn("h-3 w-3 rounded-full", statusMeta.dot)} />
-            {statusMeta.label}
-            {connectionStatus !== "offline" ? <> as {role}</> : null}
-          </Text>
+        {statusMeta && connectionStatus ? (
+          <ConnectionStatusPill
+            status={connectionStatus}
+            label={statusMeta.label}
+            detail={
+              connectionStatus !== "offline" && role ? `as ${role}` : undefined
+            }
+            className="text-base"
+          />
         ) : null}
         {costMetrics && totalCostLabel && totalUsdEstimateLabel ? (
           <Text as="span" variant="note">

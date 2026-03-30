@@ -81,6 +81,7 @@ Components:
 
 - `LandingHero`
 - `CreateAdventureCTA`
+- `CTAButton`
 
 No server phase dependency.
 
@@ -326,6 +327,81 @@ Behavior:
 - `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image generation/paste controls, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, title-image generation/paste controls, and markdown script authoring.
 - `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, title-image generation/paste controls, markdown brief authoring, and slug-driven route updates after saves.
+
+---
+
+### `/campaign/list`
+
+Campaign browsing route for opening campaign detail or jumping straight into session management.
+
+Components:
+
+- page shell via shared layout
+- campaign summary cards as primary surfaces
+- shared `Button`, `Text`, and input primitives for search/actions
+
+Behavior:
+
+- keep one major surface per campaign card
+- avoid nesting additional framed panels inside campaign cards for metadata rows or action groups
+- rely on spacing, hierarchy, and button grouping before adding extra framed chrome
+
+---
+
+### `/campaign/:campaignSlug/session/:sessionId`
+
+Campaign session lobby route for role entry.
+
+Components:
+
+- one primary role-entry surface
+- shared status/presence block
+- `ShareLinkOverlay`
+- dev-only mock controls
+
+Behavior:
+
+- treat role choice as one clear moment rather than two competing heavyweight forms
+- use one role toggle, one shared name field, and one shared join CTA before branching into player vs storyteller routes
+- use lighter layout wrappers inside the main surface instead of framing each sub-block
+- express session status in compact pills near the title instead of a separate framed status block
+- keep mock controls visually subordinate to the real player/storyteller entry flow
+
+---
+
+### `/campaign/:campaignSlug/session/:sessionId/player`
+
+Player session route for campaign-backed human play.
+
+Components:
+
+- pre-play character claim/create surface
+- transcript surface once a character is claimed
+- composer for adding to the transcript
+
+Behavior:
+
+- player flow is two-step: claim/create first, transcript second
+- use `Transcript` as the primary mental model instead of splitting the experience into transcript vs chat
+- keep claim/create out of the live transcript surface once the player has entered play
+
+---
+
+### `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab`
+
+Storyteller campaign-session route.
+
+Components:
+
+- campaign shell for authoring tabs
+- dedicated live transcript tab for `chat`
+- lighter roster rail/sidebar for live play
+
+Behavior:
+
+- keep storyteller inside the campaign shell overall
+- make the `chat` tab feel like a purpose-built live session surface, not another generic stacked panel page
+- reserve heavy framed panels for the primary transcript surface and avoid framing every inner subsection
 
 ---
 
@@ -652,12 +728,18 @@ Behavior:
 Located in `apps/web/src/components/common/`:
 
 - `Button` (project variants/sizes; use for all actions)
+- `ToggleButton` (straight-edged active/inactive option button for grouped controls)
+- `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label`)
+- `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton`)
+- `CTAButton` (shared high-emphasis button with hover highlight underlay)
 - `Section`
 - `Panel`
 - `Text`
 - `Heading`
 - `Label`
 - `Message`
+- `Tag`
+- `ConnectionStatusPill`
 - `TextField`
 - `TextArea`
 - `DepressedInput`
@@ -672,6 +754,7 @@ Recent routes/components already follow this in many places:
 - `WorkflowLabPage` uses `Panel` + `Button` for nearly all surfaced UI blocks/actions
 - `ImageGenerator` uses `Section`/`Panel` + `Heading`/`Text` + `Button`
 - `AdventureHeader`, `NarratedSceneCard`, `GenericVotePanel`, `ReadyGatePanel`, `TranscriptFeed` rely on shared primitives instead of one-off shells
+- `/styleguide` now includes a grouped-control lab for `ToggleButton`, `ButtonRadioGroup`, and `RockerSwitch` covering active state, palette variants, size comparisons, and alternate switch styling
 
 New views should follow these patterns by default rather than introducing custom framed boxes or custom typography wrappers.
 

@@ -31,6 +31,9 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
   assert.match(source, /campaignUpdatedAtIso/);
   assert.match(source, /handleSendStorytellerMessage/);
   assert.match(source, /handleCloseStorytellerSession/);
+  assert.match(source, /Live Transcript/);
+  assert.doesNotMatch(source, /Send to Group Chat/);
+  assert.doesNotMatch(source, /<Panel\s+key=\{session\.sessionId\}/);
 });
 
 test("CampaignAuthoringPage watches campaign updates outside active sessions", () => {

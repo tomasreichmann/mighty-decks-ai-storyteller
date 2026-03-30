@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import type { GeneratedImageAsset } from "@mighty-decks/spec/imageGeneration";
-import { useNavigate } from "react-router-dom";
 import {
   GeneratedImage,
   type ImageGeneration,
@@ -10,10 +9,11 @@ import {
   ContextMenu,
   type ContextMenuRow,
 } from "../components/common/ContextMenu";
-import { Heading } from "../components/common/Heading";
 import { DepressedInput } from "../components/common/DepressedInput";
+import { Heading } from "../components/common/Heading";
+import { Label } from "../components/common/Label";
 import { Message } from "../components/common/Message";
-import { Panel } from "../components/common/Panel";
+import { RockerSwitch } from "../components/common/RockerSwitch";
 import { Section } from "../components/common/Section";
 import { Text } from "../components/common/Text";
 import {
@@ -22,7 +22,7 @@ import {
 } from "../hooks/useImageGeneration";
 
 const SELECT_CLASSES =
-  "w-full border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-3 py-2 text-kac-iron font-ui";
+  "w-full min-h-[42px] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-3 py-2 text-sm text-kac-iron font-ui shadow-[inset_2px_2px_0_0_#9f8a6d,inset_-2px_-2px_0_0_#fff7e6]";
 
 const sortImages = (images: GeneratedImageAsset[]): GeneratedImageAsset[] =>
   [...images].sort((left, right) => {
@@ -41,8 +41,13 @@ const toDisplayImage = (image: GeneratedImageAsset): ImageGeneration => ({
   alt: `Generated image b${image.batchIndex} i${image.imageIndex}`,
 });
 
+const FieldSticker = ({ children }: { children: string }): JSX.Element => (
+  <div className="-mb-2 -ml-1 relative self-start z-20">
+    <Label>{children}</Label>
+  </div>
+);
+
 export const ImageGenerator = (): JSX.Element => {
-  const navigate = useNavigate();
   const [menuImageId, setMenuImageId] = useState<string | null>(null);
   const {
     provider,
@@ -61,7 +66,6 @@ export const ImageGenerator = (): JSX.Element => {
     submittingJob,
     refreshingGroup,
     error,
-    resolvedResolution,
     setProvider,
     setSelectedModelId,
     setPrompt,
@@ -108,15 +112,27 @@ export const ImageGenerator = (): JSX.Element => {
   return (
     <div className="app-shell stack py-6 gap-4">
       <Section className="stack gap-2 paper-shadow">
-        <div className="flex items-center justify-between gap-2">
-          <Heading as="h1" variant="h2" color="iron" className="z-10">
-            Image Generator
-          </Heading>
-          <Button variant="ghost" color="cloth" onClick={() => navigate("/")}>
-            Back
-          </Button>
-        </div>
-        <Text variant="emphasised" color="iron-light" className="text-sm">
+        <Heading
+          as="h1"
+          variant="h1"
+          color="iron"
+          className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
+          highlightProps={{
+            color: "gold",
+            lineHeight: 8,
+            brushHeight: 6,
+            lineOffsets: [0, 8, 14, 20],
+            className:
+              "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
+          }}
+        >
+          Image Lab
+        </Heading>
+        <Text
+          variant="body"
+          color="iron-light"
+          className="relative z-10 mt-3 text-sm"
+        >
           Standalone image generation tool with fal.ai and Leonardo providers.
         </Text>
       </Section>
@@ -127,10 +143,7 @@ export const ImageGenerator = (): JSX.Element => {
         </Message>
       ) : null}
 
-      <Panel className="stack gap-3">
-        <Text variant="h3" color="iron">
-          Generate
-        </Text>
+      <Section className="stack gap-4">
         <DepressedInput
           label="Prompt"
           multiline={true}
@@ -142,64 +155,67 @@ export const ImageGenerator = (): JSX.Element => {
           placeholder="Describe the scene you want to generate..."
         />
 
-        <label className="stack gap-1">
-          <Text variant="note" color="iron" className="text-base">
-            Provider
-          </Text>
-          <select
-            className={SELECT_CLASSES}
-            value={provider}
-            onChange={(event) =>
-              setProvider(event.target.value as "fal" | "leonardo")
-            }
-            disabled={loadingModels || submittingJob}
-          >
-            <option value="fal">fal.ai</option>
-            <option value="leonardo">Leonardo</option>
-          </select>
-        </label>
-
-        <label className="stack gap-1">
-          <Text variant="note" color="iron" className="text-base">
-            Model
-          </Text>
-          <div className="flex gap-2">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="stack max-w-[14rem] min-w-[11rem] flex-1 gap-1">
+            <FieldSticker>Provider</FieldSticker>
             <select
               className={SELECT_CLASSES}
-              value={selectedModelId}
-              onChange={(event) => setSelectedModelId(event.target.value)}
-              disabled={loadingModels}
+              value={provider}
+              onChange={(event) =>
+                setProvider(event.target.value as "fal" | "leonardo")
+              }
+              disabled={loadingModels || submittingJob}
             >
-              {sortedModels.map((model) => {
-                const isFavorite = favoriteModelIds.includes(model.modelId);
-                const isStreamVariant = /\/stream(?:$|\/)/i.test(model.modelId);
-                return (
-                  <option key={model.modelId} value={model.modelId}>
-                    {isFavorite ? "[Favorite] " : ""}
-                    {model.displayName}
-                    {isStreamVariant ? " [stream]" : ""}
-                    {" - "}
-                    {model.modelId}
-                  </option>
-                );
-              })}
+              <option value="fal">fal.ai</option>
+              <option value="leonardo">Leonardo</option>
             </select>
-            <Button
-              variant={selectedModelIsFavorite ? "solid" : "ghost"}
-              color={selectedModelIsFavorite ? "gold" : "cloth"}
-              onClick={() => toggleFavorite(selectedModelId)}
-              disabled={selectedModelId.length === 0}
-            >
-              {selectedModelIsFavorite ? "Unfavorite" : "Favorite"}
-            </Button>
-          </div>
-        </label>
+          </label>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="stack gap-1">
-            <Text variant="note" color="iron" className="text-base">
-              Resolution
-            </Text>
+          <label className="stack min-w-[16rem] flex-[1.6] gap-1 xl:max-w-[34rem]">
+            <FieldSticker>Model</FieldSticker>
+            <div className="grid gap-2 min-[420px]:grid-cols-[minmax(0,1fr)_auto] min-[420px]:items-end">
+              <select
+                className={SELECT_CLASSES}
+                value={selectedModelId}
+                onChange={(event) => setSelectedModelId(event.target.value)}
+                disabled={loadingModels}
+              >
+                {sortedModels.map((model) => {
+                  const isFavorite = favoriteModelIds.includes(model.modelId);
+                  const isStreamVariant = /\/stream(?:$|\/)/i.test(model.modelId);
+                  return (
+                    <option key={model.modelId} value={model.modelId}>
+                      {isFavorite ? "[Favorite] " : ""}
+                      {model.displayName}
+                      {isStreamVariant ? " [stream]" : ""}
+                      {" - "}
+                      {model.modelId}
+                    </option>
+                  );
+                })}
+              </select>
+              <Button
+                variant={selectedModelIsFavorite ? "solid" : "ghost"}
+                color={selectedModelIsFavorite ? "gold" : "cloth"}
+                onClick={() => toggleFavorite(selectedModelId)}
+                disabled={selectedModelId.length === 0}
+                className="shrink-0 min-[420px]:self-end"
+              >
+                {selectedModelIsFavorite ? "Unfavorite" : "Favorite"}
+              </Button>
+            </div>
+          </label>
+        </div>
+
+        <div
+          className={
+            resolutionPresetId === "custom"
+              ? "grid gap-3 xl:grid-cols-[minmax(0,13rem)_minmax(0,8rem)_minmax(0,8rem)_minmax(0,8rem)]"
+              : "grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,13rem)_minmax(0,8rem)]"
+          }
+        >
+          <label className="stack gap-1 xl:max-w-[13rem]">
+            <FieldSticker>Resolution</FieldSticker>
             <select
               className={SELECT_CLASSES}
               value={resolutionPresetId}
@@ -221,45 +237,44 @@ export const ImageGenerator = (): JSX.Element => {
             max={8}
             value={amount}
             onChange={(event) => setAmount(Number(event.target.value))}
+            className="xl:max-w-[8rem]"
           />
+
+          {resolutionPresetId === "custom" ? (
+            <>
+              <DepressedInput
+                label="Custom Width"
+                type="number"
+                min={64}
+                max={4096}
+                value={customWidth}
+                onChange={(event) => setCustomWidth(event.target.value)}
+                className="xl:max-w-[8rem]"
+              />
+              <DepressedInput
+                label="Custom Height"
+                type="number"
+                min={64}
+                max={4096}
+                value={customHeight}
+                onChange={(event) => setCustomHeight(event.target.value)}
+                className="xl:max-w-[8rem]"
+              />
+            </>
+          ) : null}
         </div>
 
-        {resolutionPresetId === "custom" ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <DepressedInput
-              label="Custom Width"
-              type="number"
-              min={64}
-              max={4096}
-              value={customWidth}
-              onChange={(event) => setCustomWidth(event.target.value)}
-            />
-            <DepressedInput
-              label="Custom Height"
-              type="number"
-              min={64}
-              max={4096}
-              value={customHeight}
-              onChange={(event) => setCustomHeight(event.target.value)}
-            />
-          </div>
-        ) : null}
-
-        <label className="inline-flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={useCache}
-            onChange={(event) => setUseCache(event.target.checked)}
+        <div>
+          <RockerSwitch
+            active={useCache}
+            color="gold"
+            size="s"
+            label="Use Cache"
+            inactiveText="Disabled"
+            activeText="Enabled"
+            onClick={() => setUseCache(!useCache)}
           />
-          <Text variant="body" color="iron-light" className="text-sm">
-            Use cache
-          </Text>
-        </label>
-
-        <Text variant="body" color="steel-dark" className="text-xs">
-          Resolved resolution: {resolvedResolution.width} x{" "}
-          {resolvedResolution.height}
-        </Text>
+        </div>
 
         <div className="flex flex-wrap gap-2">
           <Button
@@ -281,7 +296,7 @@ export const ImageGenerator = (): JSX.Element => {
             {submittingJob ? "Generating..." : "Generate"}
           </Button>
         </div>
-      </Panel>
+      </Section>
 
       {job ? (
         <Message label="Generation Progress" color="gold">
@@ -301,10 +316,7 @@ export const ImageGenerator = (): JSX.Element => {
         </Message>
       ) : null}
 
-      <Panel className="stack gap-3">
-        <Text variant="h3" color="iron">
-          Active Image
-        </Text>
+      <Section className="stack gap-3">
         <GeneratedImage
           image={activeImage ? toDisplayImage(activeImage) : null}
           batch={activeBatchImages.map(toDisplayImage)}
@@ -312,16 +324,13 @@ export const ImageGenerator = (): JSX.Element => {
             void selectActiveImage(nextImage.imageId);
           }}
         />
-      </Panel>
+      </Section>
 
-      <Panel className="stack gap-3">
-        <Text variant="h3" color="iron">
-          Image Gallery
-        </Text>
+      <Section className="stack gap-3">
         {sortedImages.length === 0 ? (
-          <Text variant="body" color="steel-dark" className="text-sm">
+          <Message label="Image Gallery" color="cloth">
             No images in this prompt/model group yet.
-          </Text>
+          </Message>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {sortedImages.map((image) => {
@@ -406,7 +415,7 @@ export const ImageGenerator = (): JSX.Element => {
             })}
           </div>
         )}
-      </Panel>
+      </Section>
     </div>
   );
 };

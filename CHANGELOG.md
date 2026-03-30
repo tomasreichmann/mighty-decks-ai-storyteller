@@ -8,6 +8,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Add shared `ToggleButton` and `ButtonRadioGroup` primitives for straight-edged grouped option controls, with active/inactive states, six material color variants, and `s|m|l` sizing.
+- Add a shared `RockerSwitch` primitive for perspective-tilted binary controls with accent-lit active state and an optional tucked-under `Label` tag.
 - Add configurable AI text provider (`AI_TEXT_PROVIDER` env var) supporting `openrouter` (default, API-based) and `claude_cli` (local CLI). Set `AI_TEXT_PROVIDER=claude_cli` in `.env.local` to use Claude CLI for all text completions without an API key. New env vars: `CLAUDE_CLI_MODEL`, `CLAUDE_CLI_MAX_CONCURRENT`.
 - Extract `TextCompletionClient` interface from `OpenRouterClient` to allow pluggable text providers across the storyteller pipeline.
 - Add a persisted `Campaigns` domain backed by shared campaign/session contracts, REST routes, campaign list/detail pages, module-to-campaign creation flows, and campaign detail tabs that mirror Adventure Module authoring plus `Sessions`.
@@ -26,6 +28,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Extend the hidden `/styleguide` index with a grouped-control lab covering the new toggle and radio-button primitives across active state, palette, and size comparisons.
+- Extend the hidden `/styleguide` grouped-controls lab to include the new `RockerSwitch` direction alongside the existing flat toggle controls.
+- Collapse the primary nav into a burger menu on mobile breakpoints while keeping the full comic-button row on wider screens.
+- Rename the standalone image tooling route from `/image` to `/image-lab`, flatten the Image Lab surface headings, convert select captions to shared `Label` stickers, replace the cache checkbox with a toggle button, and tighten the form widths so the generator controls stay on fewer lines at larger breakpoints.
 - Switch the zero-config local server default from port `8080` to `8081` and align the web client's split-dev fallback with the same port.
 - Build the shared `spec/` workspace to JavaScript plus declaration files, update package exports to built output, and start the server from compiled JS instead of `tsx` in production.
 - Narrow Render installs to the deploy-relevant workspaces and remove the accidental root `playwright` dependency from the deploy path.
@@ -49,6 +55,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Extend Base-tab generated-image lookup so the authoring UI can restore persisted title images by file name, show same-prompt matches from other models, and browse all stored provider images when no prompt is present.
 - Refresh the styleguide `LocationCard` to include a visible `Location` badge and full-width summary strip, align the new `EncounterCard` to the same shared frame with a distinct `Encounter` badge, and add `/styleguide/encounter-card`.
 - Standardize the location and encounter authoring lists around wrapped horizontal scene cards, use the location summary as the card footer text, stop repeating card summaries below the frame, and rename the encounter editor field from `Short Description` to `Summary`.
+- Refresh campaign-session UX toward the polished Adventure flow: lighter role-entry lobby, transcript-first player/storyteller session copy, a focused player claim step before live play, and a cleaner storyteller live transcript tab inside the campaign shell.
+- Merge the campaign-session lobby join flow into one role-toggle form, extract reusable `CTAButton` and `ConnectionStatusPill` primitives from the Adventure-inspired UI language, and surface session/presence state as compact pills instead of separate framed status blocks.
 
 ### Fixed
 
@@ -58,9 +66,11 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Tighten Counter editor numeric fields and move CounterCard +/- controls inline before the shared value so authoring cards keep the header on a single line.
 - Add a second inline `+` and `-` control pair after the max counter value so authoring cards can adjust both current and max values without leaving the card.
 - Return `coverImageUrl` in Adventure Module detail payloads so Base-tab title image selection survives tab switches and remounts.
+- Stabilize campaign session realtime joins so storyteller live-session routes stop re-emitting join events on rerender, stale session errors clear after fresh session state, and player character claim/create waits for confirmed session membership.
 
 ### Docs
 
+- Update the shared UI and style-system docs to document the new grouped toggle/radio button primitives and their non-tilted alignment rules.
 - Add the root changelog to track notable product, workflow, deployment, and documentation updates.
 - Add AI contributor instructions in `AGENTS.md` requiring documentation and changelog updates when repo behavior, contracts, routes, env vars, or deployment guidance change.
 - Add a root `README.md` covering the current repo overview, implementation status, setup, AI configuration, contribution expectations, and deployment paths.
@@ -74,6 +84,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Update the route and UI docs for the new `/rules/assets` reference page, the shortcode-first copy behavior used by the rules reference pages, and the optional modifier-bearing asset shortcode format.
 - Update Adventure Module authoring docs to reflect Base-tab cover-image persistence and the expanded generated-image lookup behavior added on March 27, 2026.
 - Add campaign and human-storyteller session docs, update route/architecture/event docs for the new `/campaign/...` surface, and document the module-side `Create Campaign` handoff plus mock-participant testing flow.
+- Update UI/style and campaign-session docs to formalize Adventure-derived transcript-first campaign/session guidance and explicitly discourage overusing framed panels on live session surfaces.
+- Update the component/style docs and hidden styleguide to document the shared CTA highlight button and reusable connection-status pill patterns.
 
 ## [0.1.0] - 2026-03-13
 

@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/common/Button";
+import { ButtonRadioGroup } from "../components/common/ButtonRadioGroup";
+import { CTAButton } from "../components/common/CTAButton";
+import { ConnectionStatusPill } from "../components/common/ConnectionStatusPill";
 import { Message } from "../components/common/Message";
-import { Panel } from "../components/common/Panel";
+import { Section } from "../components/common/Section";
+import { Tag } from "../components/common/Tag";
 import { Text } from "../components/common/Text";
 import { TextField } from "../components/common/TextField";
 import { ShareLinkOverlay } from "../components/ShareLinkOverlay";
@@ -35,6 +39,9 @@ export const CampaignSessionLobbyPage = (): JSX.Element => {
     sessionId?: string;
   }>();
   const [shareOpen, setShareOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"player" | "storyteller">(
+    "player",
+  );
   const [playerName, setPlayerName] = useState("");
   const [storytellerName, setStorytellerName] = useState("");
   const [mockName, setMockName] = useState("");
@@ -54,8 +61,8 @@ export const CampaignSessionLobbyPage = (): JSX.Element => {
     session,
     error,
     connected,
-    joinSession,
-    joinRole,
+    ensureSessionParticipant,
+    ensureSessionRole,
     addMock,
   } = useCampaignSession({
     campaignSlug,
@@ -63,8 +70,12 @@ export const CampaignSessionLobbyPage = (): JSX.Element => {
   });
 
   useEffect(() => {
-    joinSession(viewerId);
-  }, [joinSession, viewerId]);
+    if (!connected) {
+      return;
+    }
+
+    ensureSessionParticipant(viewerId);
+  }, [connected, ensureSessionParticipant, viewerId]);
 
   const playerIdentity = useMemo(
     () => getCampaignSessionIdentity(campaignSlug, sessionId, "player"),
@@ -92,16 +103,58 @@ export const CampaignSessionLobbyPage = (): JSX.Element => {
     }
   }, [storytellerIdentity.displayName, storytellerName]);
 
+  const selectedIdentity =
+    selectedRole === "player" ? playerIdentity : storytellerIdentity;
+  const selectedName = selectedRole === "player" ? playerName : storytellerName;
+  const setSelectedName =
+    selectedRole === "player" ? setPlayerName : setStorytellerName;
+
+  const joinSelectedRole = (): void => {
+    const nextName = selectedName.trim() || selectedIdentity.displayName;
+
+    setCampaignSessionDisplayName(
+      campaignSlug,
+      sessionId,
+      selectedRole,
+      nextName,
+    );
+    ensureSessionRole({
+      participantId: selectedIdentity.participantId,
+      displayName: nextName,
+      role: selectedRole,
+    });
+    navigate(
+      selectedRole === "player"
+        ? `/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(sessionId)}/player`
+        : `/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(sessionId)}/storyteller/chat`,
+    );
+  };
+
   return (
     <div className="app-shell stack py-8 gap-4">
       <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="stack gap-1">
-          <Text variant="h2" color="iron">
-            Campaign Session Lobby
-          </Text>
+        <div className="stack gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Text variant="h2" color="iron">
+              Session
+            </Text>
+            <Tag tone={session?.status === "active" ? "monster" : "cloth"}>
+              {session?.status ?? "loading"}
+            </Tag>
+          </div>
           <Text variant="body" color="iron-light" className="text-sm">
-            Join as Player or Storyteller, then invite the rest of the table.
+            Choose your seat, then invite the rest of the table.
           </Text>
+          <div className="flex flex-wrap gap-2">
+            {(session?.participants ?? []).map((participant) => (
+              <ConnectionStatusPill
+                key={participant.participantId}
+                label={participant.displayName}
+                status={participant.connected ? "connected" : "disconnected"}
+                detail={`${participant.role}${participant.isMock ? " mock" : ""}`}
+              />
+            ))}
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -124,144 +177,109 @@ export const CampaignSessionLobbyPage = (): JSX.Element => {
         </Message>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Panel contentClassName="stack gap-4">
+      <Section className="stack gap-4 py-4">
+        <div className="stack items-center gap-2 text-center">
           <Text variant="h3" color="iron">
-            Join as Player
+            Choose your seat
           </Text>
-          <TextField
-            label="Player Name"
-            value={playerName}
-            onChange={(event) => setPlayerName(event.target.value)}
-            maxLength={120}
-          />
-          <Button
-            color="gold"
-            onClick={() => {
-              const nextName = playerName.trim() || playerIdentity.displayName;
-              setCampaignSessionDisplayName(
-                campaignSlug,
-                sessionId,
-                "player",
-                nextName,
-              );
-              joinRole({
-                participantId: playerIdentity.participantId,
-                displayName: nextName,
-                role: "player",
-              });
-              navigate(
-                `/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(sessionId)}/player`,
-              );
-            }}
-          >
-            Join as Player
-          </Button>
-        </Panel>
-
-        <Panel contentClassName="stack gap-4">
-          <Text variant="h3" color="iron">
-            Join as Storyteller
-          </Text>
-          <TextField
-            label="Storyteller Name"
-            value={storytellerName}
-            onChange={(event) => setStorytellerName(event.target.value)}
-            maxLength={120}
-          />
-          <Button
-            color="gold"
-            onClick={() => {
-              const nextName =
-                storytellerName.trim() || storytellerIdentity.displayName;
-              setCampaignSessionDisplayName(
-                campaignSlug,
-                sessionId,
-                "storyteller",
-                nextName,
-              );
-              joinRole({
-                participantId: storytellerIdentity.participantId,
-                displayName: nextName,
-                role: "storyteller",
-              });
-              navigate(
-                `/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(sessionId)}/storyteller/chat`,
-              );
-            }}
-          >
-            Join as Storyteller
-          </Button>
-        </Panel>
-      </div>
-
-      <Panel contentClassName="stack gap-3">
-        <Text variant="h3" color="iron">
-          Session Status
-        </Text>
-        <Text variant="body" color="iron-light" className="text-sm">
-          Status: {session?.status ?? "loading"}
-        </Text>
-        <div className="grid gap-2 md:grid-cols-2">
-          {(session?.participants ?? []).map((participant) => (
-            <div
-              key={participant.participantId}
-              className="rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/60 px-3 py-2"
-            >
-              <Text variant="emphasised" color="iron">
-                {participant.displayName}
-              </Text>
-              <Text variant="note" color="steel-dark" className="text-xs">
-                {participant.role}
-                {participant.isMock ? " mock" : ""}
-                {participant.connected ? " connected" : " disconnected"}
-              </Text>
-            </div>
-          ))}
         </div>
-      </Panel>
+
+        <Section className="stack items-center gap-4">
+          <div className="stack items-center gap-3">
+            <ButtonRadioGroup
+              ariaLabel="Choose your seat"
+              color="gold"
+              onValueChange={setSelectedRole}
+              options={[
+                {
+                  label: (
+                    <span className="inline-flex items-center gap-2">
+                      <span aria-hidden="true" className="text-base leading-none">
+                        ♟️
+                      </span>
+                      <span>Player</span>
+                    </span>
+                  ),
+                  value: "player",
+                },
+                {
+                  label: (
+                    <span className="inline-flex items-center gap-2">
+                      <span aria-hidden="true" className="text-base leading-none">
+                        🖥️
+                      </span>
+                      <span>Storyteller</span>
+                    </span>
+                  ),
+                  value: "storyteller",
+                },
+              ]}
+              size="m"
+              value={selectedRole}
+            />
+          </div>
+          <TextField
+            label="Name"
+            className="max-w-[20rem]"
+            value={selectedName}
+            onChange={(event) => setSelectedName(event.target.value)}
+            maxLength={120}
+          />
+          <CTAButton
+            color="gold"
+            containerClassName="self-center"
+            onClick={joinSelectedRole}
+          >
+            {selectedRole === "player"
+              ? "Join as Player"
+              : "Join as Storyteller"}
+          </CTAButton>
+        </Section>
+      </Section>
 
       {allowMocks ? (
-        <Panel contentClassName="stack gap-3">
-          <Text variant="h3" color="iron">
-            Dev Mock Seats
-          </Text>
-          <TextField
-            label="Mock Name"
-            value={mockName}
-            onChange={(event) => setMockName(event.target.value)}
-            placeholder="Mock Scout"
-            maxLength={120}
-          />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="ghost"
-              color="cloth"
-              onClick={() => {
-                addMock({
-                  displayName: mockName.trim() || "Mock Player",
-                  role: "player",
-                });
-                setMockName("");
-              }}
-            >
-              Add Mock Player
-            </Button>
-            <Button
-              variant="ghost"
-              color="cloth"
-              onClick={() => {
-                addMock({
-                  displayName: mockName.trim() || "Mock Storyteller",
-                  role: "storyteller",
-                });
-                setMockName("");
-              }}
-            >
-              Add Mock Storyteller
-            </Button>
-          </div>
-        </Panel>
+        <Section className="stack gap-3">
+          <Message label="Dev Mock Seats" color="cloth">
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="w-full max-w-[18rem] self-end">
+                <TextField
+                  label="Mock Name"
+                  className="w-full"
+                  value={mockName}
+                  onChange={(event) => setMockName(event.target.value)}
+                  placeholder="Mock Scout"
+                  maxLength={120}
+                />
+              </div>
+              <Button
+                variant="ghost"
+                color="cloth"
+                onClick={() => {
+                  addMock({
+                    displayName: mockName.trim() || "Mock Player",
+                    role: "player",
+                  });
+                  setMockName("");
+                }}
+              >
+                Add Mock Player
+              </Button>
+              <Button
+                variant="ghost"
+                color="cloth"
+                onClick={() => {
+                  addMock({
+                    displayName: mockName.trim() || "Mock Storyteller",
+                    role: "storyteller",
+                  });
+                  setMockName("");
+                }}
+              >
+                Add Mock Storyteller
+              </Button>
+            </div>
+          </Message>
+        </Section>
       ) : null}
 
       <ShareLinkOverlay

@@ -6,6 +6,7 @@ import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { Button } from "../components/common/Button";
+import { Heading } from "../components/common/Heading";
 import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
 import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
 import { AdventureModuleAssetEditor } from "../components/adventure-module/AdventureModuleAssetEditor";
@@ -3808,14 +3809,30 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
                 }
                 event.currentTarget.blur();
               }}
-              className="m-0 w-full appearance-none border-0 bg-transparent p-0 font-heading text-3xl/none font-bold tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-4xl/none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
+              className="m-0 w-full appearance-none border-0 bg-transparent p-0 font-heading text-[2.4rem] font-bold leading-none tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-[3.4rem] sm:leading-none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
             />
           ) : (
-            <Text variant="h2" color="iron">
+            <Heading
+              variant="h1"
+              color="iron"
+              className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
+              highlightProps={{
+                color: "gold",
+                lineHeight: 8,
+                brushHeight: 6,
+                lineOffsets: [0, 8, 14, 20],
+                className:
+                  "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
+              }}
+            >
               {moduleDetail?.index.title ?? "Adventure Module"}
-            </Text>
+            </Heading>
           )}
-          <Text variant="body" color="iron-light" className="text-sm">
+          <Text
+            variant="body"
+            color="iron-light"
+            className="relative z-10 mt-3 text-sm"
+          >
             {moduleDetail?.index.slug
               ? `/${moduleDetail.index.slug}`
               : "Authoring"}
@@ -3824,7 +3841,6 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
         <div className="flex flex-wrap items-center gap-2">
           {moduleDetail ? (
             <Button
-              variant="ghost"
               color="gold"
               disabled={creatingCampaign}
               onClick={() => {

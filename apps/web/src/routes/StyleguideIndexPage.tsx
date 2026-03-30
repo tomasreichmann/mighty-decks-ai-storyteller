@@ -1,25 +1,47 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ButtonRadioGroup } from "../components/common/ButtonRadioGroup";
+import { CTAButton } from "../components/common/CTAButton";
+import { ConnectionStatusPill } from "../components/common/ConnectionStatusPill";
 import { Heading } from "../components/common/Heading";
+import { RockerSwitch } from "../components/common/RockerSwitch";
+import { ToggleButton } from "../components/common/ToggleButton";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
-import { Label } from "../components/common/Label";
+
+const toggleColors = ["gold", "fire", "monster", "cloth", "bone", "curse"] as const;
+const toggleSizes = ["s", "m", "l"] as const;
 
 export const StyleguideIndexPage = (): JSX.Element => {
+  const [activeColor, setActiveColor] =
+    useState<(typeof toggleColors)[number]>("gold");
+  const [rockerModeActive, setRockerModeActive] = useState(false);
+  const [rockerPowerActive, setRockerPowerActive] = useState(true);
+  const [rockerReadyActive, setRockerReadyActive] = useState(true);
+
   return (
     <div className="app-shell stack gap-6 py-8">
       <div className="stack gap-2">
-        <Label variant="cloth" className="self-start">
-          Internal
-        </Label>
         <Heading
           variant="h1"
           color="iron"
-          className="text-[2.4rem] sm:text-[3.4rem]"
-          highlightProps={{ color: "gold" }}
+          className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
+          highlightProps={{
+            color: "gold",
+            lineHeight: 8,
+            brushHeight: 6,
+            lineOffsets: [0, 8, 14, 20],
+            className:
+              "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
+          }}
         >
           Styleguide
         </Heading>
-        <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
+        <Text
+          variant="body"
+          color="iron-light"
+          className="relative z-10 mt-3 max-w-3xl text-sm"
+        >
           Hidden component playground for iterating on visual directions without
           touching the main player or storyteller flows.
         </Text>
@@ -42,6 +64,138 @@ export const StyleguideIndexPage = (): JSX.Element => {
           >
             Open Gallery
           </Link>
+        </div>
+      </Panel>
+
+      <Panel as="section" tone="bone" contentClassName="stack gap-3">
+        <div className="stack gap-3">
+          <div className="stack gap-1">
+            <Text variant="h3" color="iron">
+              Shared CTA and Status Pills
+            </Text>
+            <Text variant="body" color="iron-light" className="text-sm">
+              Shared action and connection treatments used across the landing
+              page, Adventure header, and campaign session surfaces.
+            </Text>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <CTAButton size="md">Join as Player</CTAButton>
+            <ConnectionStatusPill label="Player" status="connected" />
+            <ConnectionStatusPill
+              label="Storyteller"
+              status="disconnected"
+            />
+          </div>
+        </div>
+      </Panel>
+
+      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+        <div className="stack gap-1">
+          <Text variant="h3" color="iron">
+            Toggle and Radio Buttons
+          </Text>
+          <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
+            Straight-edged grouped controls for option picking. They keep the
+            tactile comic palette, but avoid the tilted primary button
+            silhouette so active rows stay orderly when buttons sit together.
+          </Text>
+        </div>
+
+        <div className="stack gap-2">
+          <Text variant="note" color="iron-light" className="text-xs uppercase">
+            ToggleButton states
+          </Text>
+          <div className="flex flex-wrap gap-3">
+            <ToggleButton color="gold">Inactive</ToggleButton>
+            <ToggleButton active color="gold">
+              Active
+            </ToggleButton>
+            <ToggleButton color="cloth" disabled>
+              Disabled
+            </ToggleButton>
+          </div>
+        </div>
+
+        <div className="stack gap-2">
+          <Text variant="note" color="iron-light" className="text-xs uppercase">
+            ButtonRadioGroup example
+          </Text>
+          <ButtonRadioGroup
+            ariaLabel="Toggle button palette lab"
+            color={activeColor}
+            onValueChange={setActiveColor}
+            options={toggleColors.map((color) => ({
+              label: color,
+              value: color,
+            }))}
+            size="m"
+            value={activeColor}
+          />
+        </div>
+
+        <div className="stack gap-2">
+          <Text variant="note" color="iron-light" className="text-xs uppercase">
+            Color variants
+          </Text>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {toggleColors.map((color) => (
+              <div
+                key={color}
+                className="flex flex-wrap items-center gap-3 rounded-sm border border-kac-iron/15 bg-kac-bone-light/35 p-3"
+              >
+                <ToggleButton color={color}>{color}</ToggleButton>
+                <ToggleButton active color={color}>
+                  {color} active
+                </ToggleButton>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="stack gap-2">
+          <Text variant="note" color="iron-light" className="text-xs uppercase">
+            Size variants
+          </Text>
+          <div className="flex flex-wrap items-center gap-3">
+            {toggleSizes.map((size) => (
+              <ToggleButton key={size} active color="fire" size={size}>
+                Size {size.toUpperCase()}
+              </ToggleButton>
+            ))}
+          </div>
+        </div>
+
+        <div className="stack gap-2">
+          <Text variant="note" color="iron-light" className="text-xs uppercase">
+            RockerSwitch
+          </Text>
+          <div className="flex flex-wrap items-end gap-4">
+            <RockerSwitch
+              active={rockerModeActive}
+              color="cloth"
+              label="Mode"
+              inactiveText="Off"
+              activeText="On"
+              onClick={() => setRockerModeActive((current) => !current)}
+            />
+            <RockerSwitch
+              active={rockerPowerActive}
+              color="fire"
+              label="Power"
+              inactiveText="Idle"
+              activeText="Live"
+              onClick={() => setRockerPowerActive((current) => !current)}
+            />
+            <RockerSwitch
+              active={rockerReadyActive}
+              color="monster"
+              size="l"
+              label="Ready"
+              inactiveText="Safe"
+              activeText="Armed"
+              onClick={() => setRockerReadyActive((current) => !current)}
+            />
+          </div>
         </div>
       </Panel>
 

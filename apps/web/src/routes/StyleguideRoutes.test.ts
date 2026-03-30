@@ -14,3 +14,31 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /path="encounter-card"|path="\/styleguide\/encounter-card"/);
   assert.match(source, /path="quest-card"|path="\/styleguide\/quest-card"/);
 });
+
+test("StyleguideIndexPage documents the shared CTA and connection pills", () => {
+  const source = readFileSync(
+    new URL("./StyleguideIndexPage.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /CTAButton/);
+  assert.match(source, /ConnectionStatusPill/);
+  assert.match(source, /Shared CTA and Status Pills/);
+});
+
+test("StyleguideIndexPage documents the toggle-button controls lab", () => {
+  const source = readFileSync(
+    new URL("./StyleguideIndexPage.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /ToggleButton/);
+  assert.match(source, /ButtonRadioGroup/);
+  assert.match(source, /Toggle and Radio Buttons/);
+  assert.match(source, /gold/);
+  assert.match(source, /fire/);
+  assert.match(source, /monster/);
+  assert.match(source, /cloth/);
+  assert.match(source, /bone/);
+  assert.match(source, /curse/);
+});

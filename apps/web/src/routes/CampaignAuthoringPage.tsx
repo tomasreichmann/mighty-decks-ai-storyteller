@@ -4,6 +4,7 @@ import type { CampaignDetail } from "@mighty-decks/spec/campaign";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
+import { Section } from "../components/common/Section";
 import { Text } from "../components/common/Text";
 import { Button } from "../components/common/Button";
 import { TextArea } from "../components/common/TextArea";
@@ -1677,21 +1678,34 @@ export const CampaignAuthoringPage = (): JSX.Element => {
   const campaignWatch = useCampaignWatch({
     enabled: !storytellerSessionMode && Boolean(routeSlug),
   });
+  const campaignWatchConnected = campaignWatch.connected;
+  const watchedCampaignUpdatedAtIso = campaignWatch.campaignUpdatedAtIso;
+  const watchCampaign = campaignWatch.watchCampaign;
+  const unwatchCampaign = campaignWatch.unwatchCampaign;
+  const storytellerSessionUpdatedAtIso = sessionRealtime.campaignUpdatedAtIso;
+  const storytellerSessionConnected = sessionRealtime.connected;
+  const ensureStorytellerSessionRole = sessionRealtime.ensureSessionRole;
   const validTab = storytellerSessionMode
     ? isStorytellerSessionTab(tab)
     : isCampaignDetailTab(tab);
 
   useEffect(() => {
-    if (storytellerSessionMode || !routeSlug || !campaignWatch.connected) {
+    if (storytellerSessionMode || !routeSlug || !campaignWatchConnected) {
       return;
     }
 
-    campaignWatch.watchCampaign(routeSlug);
+    watchCampaign(routeSlug);
 
     return () => {
-      campaignWatch.unwatchCampaign(routeSlug);
+      unwatchCampaign(routeSlug);
     };
-  }, [campaignWatch, routeSlug, storytellerSessionMode]);
+  }, [
+    campaignWatchConnected,
+    routeSlug,
+    storytellerSessionMode,
+    unwatchCampaign,
+    watchCampaign,
+  ]);
 
   useEffect(() => {
     if (!routeSlug || validTab) {
@@ -1759,6 +1773,9 @@ export const CampaignAuthoringPage = (): JSX.Element => {
   const storytellerSession = storytellerSessionMode
     ? sessionRealtime.session
     : null;
+  const storytellerRealtimeError = storytellerSessionMode
+    ? sessionRealtime.error
+    : null;
 
   useEffect(() => {
     if (!routeSlug) {
@@ -1825,10 +1842,10 @@ export const CampaignAuthoringPage = (): JSX.Element => {
       cancelled = true;
     };
   }, [
-    campaignWatch.campaignUpdatedAtIso,
+    watchedCampaignUpdatedAtIso,
     creatorToken,
     routeSlug,
-    sessionRealtime.campaignUpdatedAtIso,
+    storytellerSessionUpdatedAtIso,
   ]);
 
   useEffect(() => {
@@ -1836,21 +1853,21 @@ export const CampaignAuthoringPage = (): JSX.Element => {
       !storytellerSessionMode ||
       !sessionId ||
       !storytellerIdentity ||
-      !sessionRealtime.connected
+      !storytellerSessionConnected
     ) {
       return;
     }
 
-    sessionRealtime.joinSession(storytellerIdentity.participantId);
-    sessionRealtime.joinRole({
+    ensureStorytellerSessionRole({
       participantId: storytellerIdentity.participantId,
       displayName: storytellerIdentity.displayName,
       role: "storyteller",
     });
   }, [
+    ensureStorytellerSessionRole,
     sessionId,
-    sessionRealtime,
     storytellerIdentity,
+    storytellerSessionConnected,
     storytellerSessionMode,
   ]);
 
@@ -4814,10 +4831,9 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               {(moduleDetail.sessions ?? []).length > 0 ? (
                 <div className="grid gap-3">
                   {moduleDetail.sessions.map((session) => (
-                    <Panel
+                    <div
                       key={session.sessionId}
-                      contentClassName="stack gap-2"
-                      className="bg-kac-bone-light/40"
+                      className="stack gap-2 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/40 px-4 py-3"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <Text variant="emphasised" color="iron">
@@ -4857,7 +4873,7 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                           Open Storyteller View
                         </Button>
                       </div>
-                    </Panel>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -4874,7 +4890,7 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                     Chat
                   </Text>
                   <Text variant="body" color="iron-light" className="text-sm">
-                    Session roster, transcript, and storyteller controls.
+                    Session roster, live transcript, and storyteller controls.
                   </Text>
                 </div>
                 <Button
@@ -4887,14 +4903,14 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                 </Button>
               </div>
 
-              {sessionRealtime.error ? (
+              {storytellerRealtimeError ? (
                 <Message label="Session Error" color="blood">
-                  {sessionRealtime.error}
+                  {storytellerRealtimeError}
                 </Message>
               ) : null}
 
               <div className="grid gap-4 xl:grid-cols-[minmax(18rem,20rem)_minmax(0,1fr)]">
-                <Panel contentClassName="stack gap-2">
+                <aside className="stack gap-3">
                   <Text variant="h3" color="iron">
                     Roster
                   </Text>
@@ -4913,12 +4929,12 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                       </Text>
                     </div>
                   ))}
-                </Panel>
+                </aside>
 
                 <div className="stack gap-3">
-                  <Panel contentClassName="stack gap-3">
+                  <Section className="stack gap-3">
                     <Text variant="h3" color="iron">
-                      Transcript
+                      Live Transcript
                     </Text>
                     <div className="max-h-[24rem] overflow-y-auto rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
                       <div className="stack gap-3">
@@ -4944,11 +4960,14 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                         ))}
                       </div>
                     </div>
-                  </Panel>
+                  </Section>
 
-                  <Panel contentClassName="stack gap-3">
+                  <Section className="stack gap-3">
+                    <Text variant="h3" color="iron">
+                      Storyteller Controls
+                    </Text>
                     <TextArea
-                      label="Storyteller Message"
+                      label="Add to Transcript"
                       rows={4}
                       value={chatDraft}
                       onChange={(event) => setChatDraft(event.target.value)}
@@ -4963,7 +4982,7 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                         }
                         onClick={handleSendStorytellerMessage}
                       >
-                        Send to Group Chat
+                        Add to Transcript
                       </Button>
                       <Button
                         variant="ghost"
@@ -4977,7 +4996,7 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                         Open Lobby
                       </Button>
                     </div>
-                  </Panel>
+                  </Section>
                 </div>
               </div>
             </Panel>

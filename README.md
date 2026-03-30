@@ -21,7 +21,7 @@ Current route families:
 - `/workflow-lab`, `/workflow-lab/:workflowId`
 - `/rules`, `/rules/outcomes`, `/rules/effects`, `/rules/stunts`, `/rules/assets`
 - `/styleguide`, `/styleguide/location-card`, `/styleguide/encounter-card` (hidden internal component lab)
-- `/image`
+- `/image-lab`
 
 ## Current Status
 

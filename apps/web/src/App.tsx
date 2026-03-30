@@ -115,7 +115,7 @@ export const App = (): JSX.Element => {
       <Routes>
         <Route element={<FitContentLayout />}>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/image" element={<ImageGenerator />} />
+          <Route path="/image-lab" element={<ImageGenerator />} />
           <Route path="/campaign/list" element={<CampaignListPage />} />
           <Route path="/campaign/:slug/:tab" element={<CampaignAuthoringPage />} />
           <Route
@@ -178,6 +178,10 @@ export const App = (): JSX.Element => {
         <Route
           path="/campaign"
           element={<Navigate to="/campaign/list" replace />}
+        />
+        <Route
+          path="/image"
+          element={<Navigate to="/image-lab" replace />}
         />
         <Route
           path="/adventure-module"

@@ -160,8 +160,8 @@ They may come from:
 Current player session scope:
 
 - claim/create PC
-- read transcript
-- send group messages
+- enter the live transcript after claim/create succeeds
+- add messages to the shared transcript
 
 Not yet included:
 
@@ -184,11 +184,18 @@ Storyteller flow:
 The `Chat` tab currently includes:
 
 - participant roster
-- persistent transcript
-- storyteller group-message composer
+- persistent live transcript
+- storyteller transcript composer
 - close-session action
 
 The storyteller stays inside the same campaign-backed entity editors while the session is live.
+
+Current UX direction:
+
+- session-facing screens borrow Adventure-mode patterns where players feel them most
+- `Transcript` is the primary conversation model across player and storyteller screens
+- the storyteller `Chat` tab is a dedicated live-session split view inside the broader campaign shell, not a fully separate storyteller app
+- player flow is intentionally two-step: character claim/create first, live transcript second
 
 ---
 
@@ -219,6 +226,12 @@ Transcript persistence includes:
 - player character claimed/created
 - group messages
 - session closed
+
+Realtime stability note:
+
+- client joins must be treated as idempotent session membership assertions rather than rerender-driven repeated emits
+- stale session errors should clear on the next authoritative `campaign_session_state`
+- player claim/create should stay gated on confirmed session membership so claim attempts do not race ahead of join state
 
 ---
 

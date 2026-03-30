@@ -10,25 +10,52 @@ test("CampaignSessionLobbyPage offers role join and invite flows", () => {
 
   assert.match(source, /ShareLinkOverlay/);
   assert.match(source, /useCampaignSession/);
-  assert.match(source, /joinSession/);
-  assert.match(source, /joinRole/);
-  assert.match(source, /Join as Player/);
-  assert.match(source, /Join as Storyteller/);
+  assert.match(source, /ensureSessionParticipant/);
+  assert.match(source, /ensureSessionRole/);
+  assert.match(source, /selectedRole/);
+  assert.match(source, /ConnectionStatusPill/);
+  assert.match(source, /CTAButton/);
+  assert.match(source, /ButtonRadioGroup/);
+  assert.match(source, /<TextField[\s\S]*label="Name"/);
+  assert.match(source, /Session/);
+  assert.match(source, /♟️/);
+  assert.match(source, /🖥️/);
+  assert.match(source, /<span>Player<\/span>/);
+  assert.match(source, /<span>Storyteller<\/span>/);
   assert.match(source, /Invite players/);
   assert.match(source, /addMock/);
+  assert.match(source, /max-w-\[20rem\]/);
+  assert.match(source, /max-w-\[18rem\]/);
+  assert.match(source, /Dev Mock Seats/);
+  assert.match(source, /<Message label="Dev Mock Seats" color="cloth"/);
+  assert.doesNotMatch(
+    source,
+    /Claim or create a character, then enter the session transcript\./,
+  );
+  assert.doesNotMatch(source, /Session Status/);
+  assert.doesNotMatch(source, /Campaign Session Lobby/);
+  assert.doesNotMatch(source, /Dev Utility/);
+  assert.doesNotMatch(source, /<Panel/);
 });
 
-test("CampaignSessionPlayerPage supports claim, create, and group chat", () => {
+test("CampaignSessionPlayerPage supports claim, create, and a transcript-first flow", () => {
   const source = readFileSync(
     new URL("./CampaignSessionPlayerPage.tsx", import.meta.url),
     "utf8",
   );
 
   assert.match(source, /useCampaignSession/);
+  assert.match(source, /ensureSessionRole/);
   assert.match(source, /claimCharacter/);
   assert.match(source, /createCharacter/);
   assert.match(source, /sendMessage/);
+  assert.match(source, /ActorCard/);
+  assert.match(source, /Claim a Character/);
   assert.match(source, /Create a New Character/);
+  assert.match(source, />\s*Create\s*</);
+  assert.match(source, /flex justify-end/);
   assert.match(source, /Claim This Character/);
-  assert.match(source, /Group Chat/);
+  assert.match(source, /Transcript/);
+  assert.doesNotMatch(source, /Group Chat/);
+  assert.doesNotMatch(source, /Claim an Existing Character/);
 });

@@ -8,7 +8,14 @@ import type {
 } from "@mighty-decks/spec/workflowLab";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/common/Button";
+import { DepressedInput } from "../components/common/DepressedInput";
+import { Heading } from "../components/common/Heading";
+import { Label } from "../components/common/Label";
+import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
+import { RockerSwitch } from "../components/common/RockerSwitch";
+import { Section } from "../components/common/Section";
+import { Text } from "../components/common/Text";
 import { listWorkflowLabWorkflows, startWorkflowLabRun, getWorkflowLabRun, subscribeWorkflowLabRunEvents, invalidateWorkflowLabRunSteps, rerunWorkflowLabRun } from "../lib/workflowLabApi";
 
 const MODEL_SLOTS: WorkflowModelSlot[] = [
@@ -25,6 +32,15 @@ const MODEL_SLOTS: WorkflowModelSlot[] = [
   "fast_stt_model",
   "hq_stt_model",
 ];
+
+const SELECT_CLASSES =
+  "w-full min-h-[42px] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-3 py-2 text-sm text-kac-iron font-ui shadow-[inset_2px_2px_0_0_#9f8a6d,inset_-2px_-2px_0_0_#fff7e6]";
+
+const FieldSticker = ({ children }: { children: string }): JSX.Element => (
+  <div className="-mb-2 -ml-1 relative self-start z-20">
+    <Label>{children}</Label>
+  </div>
+);
 
 const prettyJson = (value: unknown): string => JSON.stringify(value, null, 2);
 
@@ -472,46 +488,58 @@ export const WorkflowLabPage = (): JSX.Element => {
 
   return (
     <div className="app-shell stack py-6 gap-4">
-      <Panel className="stack gap-3">
+      <Section className="stack gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="font-display text-2xl text-kac-iron">Workflow Lab</h1>
-            <p className="text-sm text-kac-iron-light">
+            <Heading
+              as="h1"
+              variant="h1"
+              color="iron"
+              className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
+              highlightProps={{
+                color: "gold",
+                lineHeight: 8,
+                brushHeight: 6,
+                lineOffsets: [0, 8, 14, 20],
+                className:
+                  "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
+              }}
+            >
+              Workflow Lab
+            </Heading>
+            <Text
+              variant="body"
+              color="iron-light"
+              className="relative z-10 mt-3 text-sm"
+            >
               Server-backed workflow visualizer with live run events and step inspection.
-            </p>
+            </Text>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" color="cloth" onClick={() => navigate("/")}>
-              Back
-            </Button>
             <Button variant="ghost" color="bone" onClick={() => navigate("/workflow-lab")}>
               Reset View
             </Button>
           </div>
         </div>
-      </Panel>
+      </Section>
 
       {error ? (
-        <Panel tone="fire">
-          <p className="text-sm text-kac-blood-dark font-ui font-bold uppercase">Error</p>
-          <p className="text-sm text-kac-iron mt-1 whitespace-pre-wrap">{error}</p>
-        </Panel>
+        <Message label="Error" color="blood">
+          <p className="text-sm whitespace-pre-wrap">{error}</p>
+        </Message>
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
         <div className="stack gap-4">
-          <Panel className="stack gap-3">
-            <h2 className="font-display text-lg text-kac-iron">Workflow</h2>
+          <Section className="stack gap-3">
             {loadingWorkflows ? (
               <p className="text-sm text-kac-iron-light">Loading workflows...</p>
             ) : (
               <>
-                <label className="stack gap-1">
-                  <span className="text-xs font-ui uppercase tracking-[0.08em] text-kac-iron">
-                    Select Workflow
-                  </span>
+                <label className="stack max-w-[22rem] gap-1">
+                  <FieldSticker>Select Workflow</FieldSticker>
                   <select
-                    className="w-full border-2 border-kac-iron rounded-sm bg-white px-3 py-2 text-sm font-ui"
+                    className={SELECT_CLASSES}
                     value={selectedWorkflowId ?? ""}
                     onChange={(event) => onSelectWorkflow(event.target.value)}
                   >
@@ -524,59 +552,60 @@ export const WorkflowLabPage = (): JSX.Element => {
                 </label>
                 {selectedWorkflow ? (
                   <div className="text-xs text-kac-steel-dark space-y-1">
-                    <p><span className="font-semibold text-kac-iron">ID:</span> {selectedWorkflow.workflowId}</p>
-                    <p><span className="font-semibold text-kac-iron">Version:</span> {selectedWorkflow.version}</p>
+                    <p>
+                      <span className="font-semibold text-kac-iron">ID:</span>{" "}
+                      {selectedWorkflow.workflowId}
+                      {" | "}
+                      <span className="font-semibold text-kac-iron">Version:</span>{" "}
+                      {selectedWorkflow.version}
+                    </p>
                     <p className="text-sm text-kac-iron-light">{selectedWorkflow.description}</p>
                   </div>
                 ) : null}
               </>
             )}
-          </Panel>
+          </Section>
 
-          <Panel className="stack gap-3">
-            <h2 className="font-display text-lg text-kac-iron">Run Config</h2>
-            <label className="stack gap-1">
-              <span className="text-xs font-ui uppercase tracking-[0.08em] text-kac-iron">
-                Workflow Run Timeout (ms)
-              </span>
-              <input
-                className="w-full border-2 border-kac-iron rounded-sm bg-white px-3 py-2 text-sm font-mono"
-                value={timeoutMsText}
-                onChange={(event) => setTimeoutMsText(event.target.value)}
-                placeholder="180000"
-              />
-            </label>
-            <div className="stack gap-2 max-h-60 overflow-auto">
+          <Section className="stack gap-3">
+            <DepressedInput
+              label="Workflow Run Timeout (ms)"
+              value={timeoutMsText}
+              onChange={(event) => setTimeoutMsText(event.target.value)}
+              placeholder="180000"
+              className="max-w-[14rem]"
+              controlClassName="font-mono text-sm"
+            />
+            <div className="stack max-h-60 gap-2 overflow-auto px-1 pb-1 pt-2">
               {MODEL_SLOTS.map((slot) => (
-                <label key={slot} className="stack gap-1">
-                  <span className="text-[11px] font-ui uppercase tracking-[0.08em] text-kac-iron">
-                    {slot}
-                  </span>
-                  <input
-                    className="w-full border border-kac-iron/60 rounded-sm bg-white px-2 py-1 text-xs font-mono"
-                    value={modelOverrides[slot] ?? ""}
-                    placeholder="(default from server)"
-                    onChange={(event) =>
-                      setModelOverrides((current) => ({
-                        ...current,
-                        [slot]: event.target.value,
-                      }))
-                    }
-                  />
-                </label>
+                <DepressedInput
+                  key={slot}
+                  label={slot}
+                  value={modelOverrides[slot] ?? ""}
+                  placeholder="(default from server)"
+                  onChange={(event) =>
+                    setModelOverrides((current) => ({
+                      ...current,
+                      [slot]: event.target.value,
+                    }))
+                  }
+                  className="max-w-[22rem]"
+                  controlClassName="font-mono text-xs"
+                />
               ))}
             </div>
-          </Panel>
+          </Section>
         </div>
 
         <div className="stack gap-4 min-w-0">
-          <Panel className="stack gap-3">
-            <h2 className="font-display text-lg text-kac-iron">Input JSON</h2>
-            <textarea
-              className="w-full min-h-[220px] border-2 border-kac-iron rounded-sm bg-white px-3 py-2 text-xs font-mono"
+          <Section className="stack gap-3">
+            <DepressedInput
+              label="Input JSON"
+              multiline={true}
               value={inputText}
               onChange={(event) => setInputText(event.target.value)}
               spellCheck={false}
+              rows={12}
+              controlClassName="min-h-[220px] font-mono text-xs"
             />
             <div className="flex flex-wrap gap-2">
               <Button color="gold" disabled={!selectedWorkflow || busy} onClick={() => void onStartRun()}>
@@ -595,15 +624,18 @@ export const WorkflowLabPage = (): JSX.Element => {
                 Full Rerun
               </Button>
             </div>
-            <label className="inline-flex items-center gap-2 text-sm text-kac-iron">
-              <input
-                type="checkbox"
-                checked={includeDependents}
-                onChange={(event) => setIncludeDependents(event.target.checked)}
+            <div>
+              <RockerSwitch
+                active={includeDependents}
+                color="cloth"
+                size="s"
+                label="Include Dependents"
+                inactiveText="Disabled"
+                activeText="Enabled"
+                onClick={() => setIncludeDependents(!includeDependents)}
               />
-              Include dependent steps when invalidating
-            </label>
-          </Panel>
+            </div>
+          </Section>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
             <Panel className="stack gap-3 min-w-0">

@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { CampaignDetail } from "@mighty-decks/spec/campaign";
+import { ActorCard } from "../components/cards/ActorCard";
 import { Button } from "../components/common/Button";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
+import { Section } from "../components/common/Section";
 import { Text } from "../components/common/Text";
 import { TextArea } from "../components/common/TextArea";
 import { TextField } from "../components/common/TextField";
@@ -40,8 +42,8 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     session,
     error,
     connected,
-    joinSession,
-    joinRole,
+    campaignUpdatedAtIso,
+    ensureSessionRole,
     claimCharacter,
     createCharacter,
     sendMessage,
@@ -51,13 +53,21 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
   });
 
   useEffect(() => {
-    joinSession(identity.participantId);
-    joinRole({
+    if (!connected) {
+      return;
+    }
+
+    ensureSessionRole({
       participantId: identity.participantId,
       displayName: identity.displayName,
       role: "player",
     });
-  }, [identity.displayName, identity.participantId, joinRole, joinSession]);
+  }, [
+    connected,
+    ensureSessionRole,
+    identity.displayName,
+    identity.participantId,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,7 +90,17 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     return () => {
       cancelled = true;
     };
-  }, [campaignSlug, session?.updatedAtIso]);
+  }, [campaignSlug, campaignUpdatedAtIso]);
+
+  const joinedPlayerParticipant = useMemo(
+    () =>
+      session?.participants.find(
+        (participant) =>
+          participant.participantId === identity.participantId &&
+          participant.role === "player",
+      ) ?? null,
+    [identity.participantId, session?.participants],
+  );
 
   const myClaim = useMemo(
     () =>
@@ -108,7 +128,11 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
       ) ?? null,
     [campaign?.actors, myClaim?.actorFragmentId],
   );
-  const canChat = Boolean(claimedCharacter) && session?.status !== "closed";
+  const canChat =
+    Boolean(claimedCharacter) &&
+    Boolean(joinedPlayerParticipant) &&
+    session?.status !== "closed";
+  const readyToClaimCharacter = Boolean(joinedPlayerParticipant);
 
   return (
     <div className="app-shell stack py-8 gap-4">
@@ -118,8 +142,8 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
             Player Session
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Claim an existing player character or create a new one, then join the
-            Group Chat.
+            Claim an existing player character or create a new one before you
+            enter the live transcript.
           </Text>
         </div>
         <Button
@@ -153,85 +177,103 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
       ) : null}
 
       {!claimedCharacter ? (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-          <Panel contentClassName="stack gap-3">
-            <Text variant="h3" color="iron">
-              Claim an Existing Character
-            </Text>
-            {(availableCharacters.length > 0 ? availableCharacters : []).map((actor) => (
-              <div
-                key={actor.fragmentId}
-                className="rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="stack gap-1">
-                    <Text variant="emphasised" color="iron">
-                      {actor.title}
-                    </Text>
-                    <Text variant="body" color="iron-light" className="text-sm">
-                      {actor.summary ?? "No summary yet."}
-                    </Text>
-                  </div>
-                  <Button
-                    color="gold"
-                    onClick={() =>
-                      claimCharacter(identity.participantId, actor.fragmentId)
-                    }
-                  >
-                    Claim This Character
-                  </Button>
-                </div>
-              </div>
-            ))}
-            {availableCharacters.length === 0 ? (
-              <Text variant="body" color="iron-light" className="text-sm">
-                No unclaimed player characters are available yet.
-              </Text>
-            ) : null}
-          </Panel>
+        <Section className="stack gap-5">
+          {!readyToClaimCharacter ? (
+            <Message label="Joining Seat" color="cloth">
+              Confirming your player seat with the session before character
+              claim opens.
+            </Message>
+          ) : null}
 
-          <Panel contentClassName="stack gap-3">
-            <Text variant="h3" color="iron">
-              Create a New Character
-            </Text>
-            <TextField
-              label="Character Name"
-              value={newCharacterTitle}
-              onChange={(event) => setNewCharacterTitle(event.target.value)}
-              maxLength={120}
-              placeholder="Lyra Vell"
-            />
-            <Button
-              color="gold"
-              disabled={newCharacterTitle.trim().length === 0}
-              onClick={() => {
-                createCharacter(identity.participantId, newCharacterTitle.trim());
-                setNewCharacterTitle("");
-              }}
-            >
-              Create a New Character
-            </Button>
-          </Panel>
-        </div>
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+            <Section className="stack gap-3">
+              <Text variant="h3" color="iron">
+                Claim a Character
+              </Text>
+              {(availableCharacters.length > 0 ? availableCharacters : []).map((actor) => (
+                <div key={actor.fragmentId} className="flex flex-wrap items-start gap-4">
+                  <ActorCard
+                    className="w-full max-w-[13rem] shrink-0"
+                    baseLayerSlug={actor.baseLayerSlug}
+                    tacticalRoleSlug={actor.tacticalRoleSlug}
+                    tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
+                  />
+                  <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3 rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
+                    <div className="stack min-w-0 gap-1">
+                      <Text variant="emphasised" color="iron">
+                        {actor.title}
+                      </Text>
+                      <Text
+                        variant="body"
+                        color="iron-light"
+                        className="text-sm"
+                      >
+                        {actor.summary ?? "No summary yet."}
+                      </Text>
+                    </div>
+                    <Button
+                      color="gold"
+                      disabled={!readyToClaimCharacter}
+                      onClick={() =>
+                        claimCharacter(identity.participantId, actor.fragmentId)
+                      }
+                    >
+                      Claim This Character
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {availableCharacters.length === 0 ? (
+                <Text variant="body" color="iron-light" className="text-sm">
+                  No unclaimed player characters are available yet.
+                </Text>
+              ) : null}
+            </Section>
+
+            <Section className="stack gap-3">
+              <Text variant="h3" color="iron">
+                Create a New Character
+              </Text>
+              <TextField
+                label="Character Name"
+                value={newCharacterTitle}
+                onChange={(event) => setNewCharacterTitle(event.target.value)}
+                maxLength={120}
+                placeholder="Lyra Vell"
+              />
+              <div className="flex justify-end">
+                <Button
+                  color="gold"
+                  disabled={
+                    !readyToClaimCharacter || newCharacterTitle.trim().length === 0
+                  }
+                  onClick={() => {
+                    createCharacter(identity.participantId, newCharacterTitle.trim());
+                    setNewCharacterTitle("");
+                  }}
+                >
+                  Create
+                </Button>
+              </div>
+            </Section>
+          </div>
+        </Section>
       ) : null}
 
       {claimedCharacter ? (
         <>
-          <Panel contentClassName="stack gap-2">
-            <Text variant="h3" color="iron">
-              Claimed Character
-            </Text>
+          <Message label="Claimed Character" color="gold">
             <Text variant="emphasised" color="iron">
               {claimedCharacter.title}
             </Text>
             <Text variant="body" color="iron-light" className="text-sm">
               {claimedCharacter.summary ?? "No summary yet."}
             </Text>
-          </Panel>
+          </Message>
 
-          <Panel contentClassName="stack gap-3">
+          <Panel contentClassName="stack gap-4">
             <Text variant="h3" color="iron">
-              Group Chat
+              Transcript
             </Text>
             <div className="max-h-[24rem] overflow-y-auto rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
               <div className="stack gap-3">
@@ -257,11 +299,11 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
             ) : null}
 
             <TextArea
-              label="Message"
+              label="Add to Transcript"
               rows={4}
               value={messageText}
               onChange={(event) => setMessageText(event.target.value)}
-              placeholder="Share your action or ask the table a question..."
+              placeholder="Share your action, narration, or question for the table..."
             />
             <Button
               color="gold"
@@ -271,7 +313,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
                 setMessageText("");
               }}
             >
-              Send to Group Chat
+              Add to Transcript
             </Button>
           </Panel>
         </>

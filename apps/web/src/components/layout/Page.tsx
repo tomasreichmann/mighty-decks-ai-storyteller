@@ -1,5 +1,5 @@
-import type { CSSProperties, PropsWithChildren, ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState, type CSSProperties, type PropsWithChildren, type ReactNode } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "../../utils/cn";
 import { Text } from "../common/Text";
 import styles from "./Page.module.css";
@@ -44,14 +44,14 @@ const navItems: NavItem[] = [
     buttonBackgroundImage: "/button-background-cloth.png",
   },
   {
-    to: "/image",
+    to: "/image-lab",
     label: "Image Lab",
     buttonBackgroundImage: "/button-background-curse.png",
     hideInProduction: true,
   },
   {
     to: "/workflow-lab",
-    label: "Workflow",
+    label: "Workflow Lab",
     buttonBackgroundImage: "/button-background-grey.png",
     hideInProduction: true,
   },
@@ -77,6 +77,13 @@ export const Page = ({
   footerContent = defaultFooterContent,
   children,
 }: PageProps): JSX.Element => {
+  const location = useLocation();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
+
   return (
     <div
       className={cn(
@@ -84,7 +91,7 @@ export const Page = ({
         mode === "fit-screen" ? "h-[100dvh] overflow-hidden" : "min-h-full",
       )}
     >
-      <header className="overflow-hidden pb-4">
+      <header className="overflow-visible pb-4">
         <div className={cn("app-shell py-3 paper-shadow", styles.headerShell)}>
           <NavLink
             to="/"
@@ -100,7 +107,24 @@ export const Page = ({
             />
           </NavLink>
 
-          <nav className={styles.comicNav} aria-label="Primary">
+          <button
+            type="button"
+            className={styles.comicNavToggle}
+            aria-expanded={mobileNavOpen}
+            aria-controls="primary-navigation"
+            aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+            onClick={() => setMobileNavOpen((current) => !current)}
+          >
+            <span className={styles.comicNavToggleLine} />
+            <span className={styles.comicNavToggleLine} />
+            <span className={styles.comicNavToggleLine} />
+          </button>
+
+          <nav
+            id="primary-navigation"
+            className={cn(styles.comicNav, mobileNavOpen && styles.comicNavOpen)}
+            aria-label="Primary"
+          >
             {navItems.map((item) => {
               const style: ComicNavStyle = {
                 "--button-background-image": `url("${item.buttonBackgroundImage}")`,
@@ -118,6 +142,7 @@ export const Page = ({
                       isActive && styles.comicNavLinkActive,
                     )
                   }
+                  onClick={() => setMobileNavOpen(false)}
                 >
                   <span className={styles.comicNavLabel}>{item.label}</span>
                 </NavLink>
