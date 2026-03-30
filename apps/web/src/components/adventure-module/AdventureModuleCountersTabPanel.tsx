@@ -94,10 +94,7 @@ export const AdventureModuleCountersTabPanel = ({
   return (
     <div className="stack gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <Text variant="h3" color="iron">
-            Counters
-          </Text>
+        <div className="stack gap-1">
           <Text variant="body" color="iron-light" className="text-sm">
             Click a CounterCard to edit it. Plus and minus update shared current and max values everywhere in authoring.
           </Text>

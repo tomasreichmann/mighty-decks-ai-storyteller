@@ -97,10 +97,7 @@ export const AdventureModuleQuestsTabPanel = ({
   return (
     <div className="stack gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <Text variant="h3" color="iron">
-            Quests
-          </Text>
+        <div className="stack gap-1">
           <Text variant="body" color="iron-light" className="text-sm">
             Open a quest to edit its title, summary, title art, and markdown
             brief.

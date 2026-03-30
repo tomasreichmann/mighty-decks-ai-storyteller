@@ -99,10 +99,7 @@ export const AdventureModuleEncountersTabPanel = ({
   return (
     <div className="stack gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <Text variant="h3" color="iron">
-            Encounters
-          </Text>
+        <div className="stack gap-1">
           <Text variant="body" color="iron-light" className="text-sm">
             Open an encounter to edit its playable setup, prerequisites, title
             art, and markdown script.

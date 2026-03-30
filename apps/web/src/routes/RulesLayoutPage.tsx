@@ -38,7 +38,7 @@ export const RulesLayoutPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Tabs items={rulesTabs} ariaLabel="Rules sections" />
+      <Tabs items={rulesTabs} ariaLabel="Rules sections" color="cloth" />
 
       <Outlet />
     </div>

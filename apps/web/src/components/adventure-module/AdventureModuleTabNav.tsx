@@ -1,4 +1,5 @@
 import { Tabs, type TabItem } from "../common/Tabs";
+import type { ToggleButtonColor } from "../common/ToggleButton";
 
 export interface AdventureModuleTabItem {
   id: string;
@@ -9,12 +10,14 @@ interface AdventureModuleTabNavProps {
   moduleSlug: string;
   tabs: AdventureModuleTabItem[];
   buildTabPath?: (moduleSlug: string, tabId: string) => string;
+  color?: ToggleButtonColor;
 }
 
 export const AdventureModuleTabNav = ({
   moduleSlug,
   tabs,
   buildTabPath,
+  color = "gold",
 }: AdventureModuleTabNavProps): JSX.Element => {
   const encodedModuleSlug = encodeURIComponent(moduleSlug);
 
@@ -26,5 +29,5 @@ export const AdventureModuleTabNav = ({
       : `/adventure-module/${encodedModuleSlug}/${tab.id}`,
   }));
 
-  return <Tabs items={items} ariaLabel="Adventure module sections" />;
+  return <Tabs items={items} ariaLabel="Adventure module sections" color={color} />;
 };

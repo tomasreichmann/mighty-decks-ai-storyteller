@@ -99,10 +99,7 @@ export const AdventureModuleLocationsTabPanel = ({
   return (
     <div className="stack gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <Text variant="h3" color="iron">
-            Locations
-          </Text>
+        <div className="stack gap-1">
           <Text variant="body" color="iron-light" className="text-sm">
             Open a location to edit its flavor text, GM notes, title image, and
             interactive map pins.

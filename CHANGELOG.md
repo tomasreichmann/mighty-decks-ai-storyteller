@@ -29,8 +29,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Changed
 
 - Extend the hidden `/styleguide` index with a grouped-control lab covering the new toggle and radio-button primitives across active state, palette, and size comparisons.
+- Fold the approved grouped-button direction into the shared component set and keep the final example only in the root `/styleguide`.
 - Extend the hidden `/styleguide` grouped-controls lab to include the new `RockerSwitch` direction alongside the existing flat toggle controls.
 - Collapse the primary nav into a burger menu on mobile breakpoints while keeping the full comic-button row on wider screens.
+- Promote the approved A1 grouped-control direction into the shared `ButtonRadioGroup`/tab rail styling, and replace module, campaign, rules, and campaign-session seat switchers with the new capped radio-group treatment.
 - Rename the standalone image tooling route from `/image` to `/image-lab`, flatten the Image Lab surface headings, convert select captions to shared `Label` stickers, replace the cache checkbox with a toggle button, and tighten the form widths so the generator controls stay on fewer lines at larger breakpoints.
 - Switch the zero-config local server default from port `8080` to `8081` and align the web client's split-dev fallback with the same port.
 - Build the shared `spec/` workspace to JavaScript plus declaration files, update package exports to built output, and start the server from compiled JS instead of `tsx` in production.

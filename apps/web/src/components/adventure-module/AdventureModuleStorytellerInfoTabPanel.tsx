@@ -91,12 +91,6 @@ export const AdventureModuleStorytellerInfoTabPanel = ({
       />
 
       <Text variant="note" color="iron-light" className="text-sm !opacity-100">
-        Storyteller-facing copy may include spoilers. Rich Text renders
-        GameCards inline, and source mode stores canonical{" "}
-        <code>{"<GameCard />"}</code> markup.
-      </Text>
-
-      <Text variant="note" color="iron-light" className="text-sm !opacity-100">
         Character limit: {MAX_MARKDOWN_LENGTH.toLocaleString()} per field.
       </Text>
 

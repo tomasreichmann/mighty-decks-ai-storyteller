@@ -4808,12 +4808,9 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               }}
             />
           ) : activeTab === "sessions" ? (
-            <Panel contentClassName="stack gap-4">
+            <Section className="stack gap-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="stack gap-1">
-                  <Text variant="h3" color="iron">
-                    Sessions
-                  </Text>
                   <Text variant="body" color="iron-light" className="text-sm">
                     Each session is a live or archived play instance of this campaign.
                   </Text>
@@ -4881,18 +4878,10 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                   No sessions have been created yet.
                 </Text>
               )}
-            </Panel>
+            </Section>
           ) : activeTab === "chat" ? (
-            <Panel contentClassName="stack gap-4">
+            <Section className="stack gap-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="stack gap-1">
-                  <Text variant="h3" color="iron">
-                    Chat
-                  </Text>
-                  <Text variant="body" color="iron-light" className="text-sm">
-                    Session roster, live transcript, and storyteller controls.
-                  </Text>
-                </div>
                 <Button
                   variant="ghost"
                   color="blood"
@@ -4911,61 +4900,55 @@ export const CampaignAuthoringPage = (): JSX.Element => {
 
               <div className="grid gap-4 xl:grid-cols-[minmax(18rem,20rem)_minmax(0,1fr)]">
                 <aside className="stack gap-3">
-                  <Text variant="h3" color="iron">
-                    Roster
-                  </Text>
                   {(storytellerSession?.participants ?? []).map((participant) => (
-                    <div
+                    <Message
                       key={participant.participantId}
-                      className="rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/60 px-3 py-2"
+                      label={participant.displayName}
+                      color={participant.role === "storyteller" ? "gold" : "fire"}
+                      contentClassName="stack gap-1"
                     >
-                      <Text variant="emphasised" color="iron">
-                        {participant.displayName}
-                      </Text>
                       <Text variant="note" color="steel-dark" className="text-xs">
                         {participant.role}
                         {participant.isMock ? " mock" : ""}
                         {participant.connected ? " connected" : " disconnected"}
                       </Text>
-                    </div>
+                    </Message>
                   ))}
                 </aside>
 
                 <div className="stack gap-3">
-                  <Section className="stack gap-3">
-                    <Text variant="h3" color="iron">
-                      Live Transcript
-                    </Text>
-                    <div className="max-h-[24rem] overflow-y-auto rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
-                      <div className="stack gap-3">
-                        {(storytellerSession?.transcript ?? []).map((entry) => (
-                          <div key={entry.entryId} className="stack gap-1">
-                            <Text
-                              variant="note"
-                              color="steel-dark"
-                              className="text-xs"
-                            >
-                              {entry.authorDisplayName
-                                ? `${entry.authorDisplayName} (${entry.authorRole})`
-                                : "System"}
-                            </Text>
-                            <Text
-                              variant="body"
-                              color="iron"
-                              className="text-sm whitespace-pre-wrap"
-                            >
-                              {entry.text}
-                            </Text>
-                          </div>
-                        ))}
-                      </div>
+                  <div className="max-h-[24rem] overflow-y-auto rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
+                    <div className="stack gap-3">
+                      {(storytellerSession?.transcript ?? []).map((entry) => (
+                        <Message
+                          key={entry.entryId}
+                          label={
+                            entry.authorDisplayName
+                              ? `${entry.authorDisplayName} (${entry.authorRole})`
+                              : "System"
+                          }
+                          color={
+                            entry.authorRole === "storyteller"
+                              ? "gold"
+                              : entry.authorRole === "player"
+                                ? "fire"
+                                : "cloth"
+                          }
+                          contentClassName="stack gap-1"
+                        >
+                          <Text
+                            variant="body"
+                            color="iron"
+                            className="text-sm whitespace-pre-wrap"
+                          >
+                            {entry.text}
+                          </Text>
+                        </Message>
+                      ))}
                     </div>
-                  </Section>
+                  </div>
 
-                  <Section className="stack gap-3">
-                    <Text variant="h3" color="iron">
-                      Storyteller Controls
-                    </Text>
+                  <div className="stack gap-3">
                     <TextArea
                       label="Add to Transcript"
                       rows={4}
@@ -4996,10 +4979,10 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                         Open Lobby
                       </Button>
                     </div>
-                  </Section>
+                  </div>
                 </div>
               </div>
-            </Panel>
+            </Section>
           ) : activeEntityTab && activeEntityTabConfig ? (
             <EntityList
               tab={activeEntityTab}
