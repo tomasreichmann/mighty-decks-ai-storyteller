@@ -16,6 +16,7 @@ import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
 import { AdventureModuleGeneratedImageField } from "./AdventureModuleGeneratedImageField";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleQuestEditorProps {
   quest: AdventureModuleResolvedQuest;
@@ -257,6 +258,8 @@ export const AdventureModuleQuestEditor = ({
             Quest slug: <code>{quest.questSlug}</code>. It is regenerated from
             the quest name when you save.
           </Text>
+
+          <ShortcodeField shortcode={`@quest/${quest.questSlug}`} />
 
           <Text variant="note" color="iron-light" className="text-sm !opacity-100">
             Embed with <code>{createQuestCardJsx(quest.questSlug)}</code> or the

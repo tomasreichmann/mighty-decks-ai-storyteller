@@ -1,14 +1,24 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { CampaignDetail } from "@mighty-decks/spec/campaign";
+import type { CampaignSessionStatus } from "@mighty-decks/spec/campaign";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Section } from "../components/common/Section";
 import { Text } from "../components/common/Text";
 import { Button } from "../components/common/Button";
+import { ConnectionStatusPill } from "../components/common/ConnectionStatusPill";
 import { DepressedInput } from "../components/common/DepressedInput";
 import { CampaignSessionTranscriptFeed } from "../components/CampaignSessionTranscriptFeed";
+import { MarkdownImageInsertButton } from "../components/MarkdownImageInsertButton";
 import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
 import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
 import { AdventureModuleAssetEditor } from "../components/adventure-module/AdventureModuleAssetEditor";
@@ -68,6 +78,7 @@ import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
 import { getCampaignSessionIdentity } from "../lib/campaignSessionIdentity";
 import { normalizeLegacyGameCardMarkdown } from "../lib/gameCardMarkdown";
 import { createGameCardCatalogContextValue } from "../lib/gameCardCatalogContext";
+import { appendMarkdownSnippet } from "../lib/markdownImage";
 import { toMarkdownPlainTextSnippet } from "../lib/markdownSnippet";
 import type { SmartInputDocumentContext } from "../lib/smartInputContext";
 import { useCampaignSession } from "../hooks/useCampaignSession";
@@ -86,7 +97,7 @@ const AUTHORING_TABS = [
 ] as const;
 
 const CAMPAIGN_DETAIL_TABS = [...AUTHORING_TABS, "sessions"] as const;
-const STORYTELLER_SESSION_TABS = [...AUTHORING_TABS, "chat"] as const;
+const STORYTELLER_SESSION_TABS = ["chat", ...AUTHORING_TABS] as const;
 
 type AuthoringTab = (typeof AUTHORING_TABS)[number];
 type CampaignDetailTab = (typeof CAMPAIGN_DETAIL_TABS)[number];
@@ -105,6 +116,34 @@ const TAB_LABELS: Record<CampaignTab, string> = {
   assets: "Assets",
   sessions: "Sessions",
   chat: "Chat",
+};
+
+const formatSessionCreatedAt = (createdAtIso: string): string => {
+  const parsed = new Date(createdAtIso);
+  if (Number.isNaN(parsed.getTime())) {
+    return createdAtIso;
+  }
+
+  return parsed.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const resolveSessionStatusTone = (
+  status: CampaignSessionStatus,
+): "connected" | "reconnecting" | "offline" => {
+  switch (status) {
+    case "active":
+      return "connected";
+    case "setup":
+      return "reconnecting";
+    case "closed":
+      return "offline";
+    default:
+      return "offline";
+  }
 };
 
 const isCampaignDetailTab = (
@@ -3942,6 +3981,24 @@ export const CampaignAuthoringPage = (): JSX.Element => {
     sessionRealtime.sendMessage(storytellerIdentity.participantId, chatDraft.trim());
     setChatDraft("");
   }, [chatDraft, sessionRealtime, storytellerIdentity]);
+  const handleStorytellerMessageKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLTextAreaElement>): void => {
+      if (
+        event.key !== "Enter" ||
+        event.shiftKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        event.nativeEvent.isComposing
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      handleSendStorytellerMessage();
+    },
+    [handleSendStorytellerMessage],
+  );
 
   const handleCloseStorytellerSession = useCallback((): void => {
     if (!storytellerIdentity) {
@@ -4014,16 +4071,7 @@ export const CampaignAuthoringPage = (): JSX.Element => {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {storytellerSessionMode ? (
-            <Button
-              variant="ghost"
-              color="blood"
-              disabled={storytellerSession?.status === "closed"}
-              onClick={handleCloseStorytellerSession}
-            >
-              Close Session
-            </Button>
-          ) : moduleDetail ? (
+          {storytellerSessionMode ? null : moduleDetail ? (
             <Button
               variant="ghost"
               color="gold"
@@ -4862,17 +4910,21 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               {(moduleDetail.sessions ?? []).length > 0 ? (
                 <div className="grid gap-3">
                   {moduleDetail.sessions.map((session) => (
-                    <div
+                    <Message
                       key={session.sessionId}
-                      className="stack gap-2 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/40 px-4 py-3"
+                      label={`Session ${session.sessionId}`}
+                      color="bone"
+                      contentClassName="stack gap-2"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <Text variant="emphasised" color="iron">
-                          Session {session.sessionId}
-                        </Text>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <Text variant="note" color="steel-dark" className="text-xs">
-                          {session.status}
+                          Created: {formatSessionCreatedAt(session.createdAtIso)}
                         </Text>
+                        <ConnectionStatusPill
+                          label="Status"
+                          status={resolveSessionStatusTone(session.status)}
+                          detail={session.status}
+                        />
                       </div>
                       <Text variant="body" color="iron-light" className="text-sm">
                         Storytellers: {session.storytellerCount} | Players: {session.playerCount}
@@ -4881,30 +4933,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                         {session.transcriptPreview ?? "No transcript yet."}
                       </Text>
                       <div className="flex flex-wrap gap-2">
+                        <div className="flex-1" />
                         <Button
-                          variant="ghost"
-                          color="cloth"
-                          onClick={() =>
-                            navigate(
-                              `/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(session.sessionId)}`,
-                            )
-                          }
-                        >
-                          Open Lobby
-                        </Button>
-                        <Button
-                          variant="ghost"
                           color="gold"
-                          onClick={() =>
-                            navigate(
-                              `/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(session.sessionId)}/storyteller/chat`,
-                            )
-                          }
+                          href={`/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(session.sessionId)}`}
                         >
-                          Open Storyteller View
+                          Join
                         </Button>
                       </div>
-                    </div>
+                    </Message>
                   ))}
                 </div>
               ) : (
@@ -4951,15 +4988,50 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                   <div className="stack gap-2">
                     <DepressedInput
                       multiline
-                      label="Add to Transcript"
+                      label="Message"
                       labelColor="gold"
                       rows={4}
                       value={chatDraft}
                       onChange={(event) => setChatDraft(event.target.value)}
+                      onKeyDown={handleStorytellerMessageKeyDown}
                       placeholder="Share narration, rulings, or prompts with the table..."
-                      controlClassName="min-h-[7.5rem]"
+                      controlClassName="min-h-[7.5rem] pr-12"
+                      topRightControl={
+                        <MarkdownImageInsertButton
+                          identityKey={`${moduleDetail.index.slug}-${sessionId ?? "chat"}-storyteller-chat-image`}
+                          smartContextDocument={smartContextDocument}
+                          currentInputValue={chatDraft}
+                          disabled={storytellerSession?.status === "closed"}
+                          dialogTitle="Share Image"
+                          dialogDescription="Generate a new image or reuse an existing one, then insert it into your storyteller draft as standard markdown."
+                          promptDescription="Generate or reuse an image to share in the live storyteller transcript."
+                          workflowContextIntro="Markdown image prompt for a campaign storyteller transcript message. Refine wording while preserving a clear, table-readable illustration."
+                          buttonAriaLabel="Insert image into storyteller transcript"
+                          buttonTitle="Share image"
+                          onInsertMarkdownSnippet={(snippet) => {
+                            setChatDraft((current) =>
+                              appendMarkdownSnippet(current, snippet),
+                            );
+                          }}
+                        />
+                      }
                     />
                     <div className="flex flex-wrap items-end gap-2 paper-shadow">
+                      <Button
+                        variant="solid"
+                        color="curse"
+                        size="sm"
+                        type="button"
+                        disabled={storytellerSession?.status === "closed"}
+                        onClick={() => {
+                          if (window.confirm("End this session now?")) {
+                            handleCloseStorytellerSession();
+                          }
+                        }}
+                      >
+                        End Session
+                      </Button>
+                      <div className="flex-1" />
                       <Button
                         color="gold"
                         disabled={
@@ -4968,19 +5040,17 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                         }
                         onClick={handleSendStorytellerMessage}
                       >
-                        Add to Transcript
+                        Send
                       </Button>
-                      <Button
-                        variant="ghost"
-                        color="cloth"
-                        onClick={() =>
-                          navigate(
-                            `/campaign/${encodeURIComponent(moduleDetail.index.slug)}/session/${encodeURIComponent(sessionId ?? "")}`,
-                          )
-                        }
+                    </div>
+                    <div className="flex flex-col items-end mt-2 paper-shadow min-h-[2.2em]">
+                      <Text
+                        variant="note"
+                        color="steel-dark"
+                        className="normal-case tracking-normal"
                       >
-                        Open Lobby
-                      </Button>
+                        Press Enter to send. Shift+Enter for newline.
+                      </Text>
                     </div>
                   </div>
                 </div>

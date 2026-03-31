@@ -37,3 +37,15 @@ test("AdventureModuleMarkdownField exposes Quest insertion with canonical QuestC
   assert.match(source, /name: "QuestCard"/);
   assert.match(source, /createQuestCardJsx/);
 });
+
+test("AdventureModuleMarkdownField enables standard markdown image tooling and reusable image modal insertion", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /imagePlugin\(/);
+  assert.match(source, /<InsertImage \/>/);
+  assert.match(source, /MarkdownImageInsertButton/);
+  assert.doesNotMatch(source, /GeneratedMarkdownImageInsertPanel/);
+});

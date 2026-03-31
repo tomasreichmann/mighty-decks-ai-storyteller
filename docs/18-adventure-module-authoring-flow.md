@@ -174,6 +174,7 @@ Behavior:
 
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
+- The editor exposes standard markdown image support through the built-in image toolbar plus a compact image button that opens a reusable generate-or-pick modal and inserts canonical `![alt](url)` snippets.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
@@ -192,6 +193,7 @@ Behavior:
 
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
+- The editor exposes standard markdown image support through the built-in image toolbar plus a compact image button that opens a reusable generate-or-pick modal and inserts canonical `![alt](url)` snippets.
 - Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
@@ -354,6 +356,7 @@ Actor editor behavior:
 - Actor slug is generated from the saved title and updates when the actor name changes.
 - Actors marked `Player Character` seed the campaign's claimable character pool when a campaign is created from the module.
 - The editor shows a live layered preview assembled from base art, tactical role metadata, and optional tactical special overlay.
+- The detail surface shows a reusable shortcode row that displays `@actor/<actor-slug>` and copies it directly to the clipboard.
 
 Counter edit example fields:
 
@@ -369,6 +372,7 @@ Counter editor behavior:
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/counters/:counterSlug`.
 - Counter slug is generated from the saved title and updates when the counter name changes.
 - The editor shows a live `CounterCard` preview with shared `+` and `-` controls for current and max values.
+- The detail surface shows a reusable shortcode row that displays `@counter/<counter-slug>` and copies it directly to the clipboard.
 
 Asset edit example fields:
 
@@ -390,6 +394,7 @@ Asset editor behavior:
 - The editor shows a live custom `AssetCard` preview with `custom` in the top-right heading and no modifier-side heading.
 - Legacy layered module assets open with blank custom fields plus a migration notice.
 - Legacy layered module assets remain unsupported in normal markdown rendering until the custom fields are saved successfully.
+- The detail surface shows a reusable shortcode row that displays `@asset/<asset-slug>` and copies it directly to the clipboard.
 
 Location edit example fields:
 
@@ -408,6 +413,7 @@ Location editor behavior:
 - Location slug is generated from the saved title and updates when the location name changes.
 - The editor supports manual image URLs plus generated-image selection for both title image and map image.
 - Map pins are stored by target `fragmentId`, can be added/removed/moved, exclude the current location from the picker, preview their linked content on hover, and navigate to the linked authoring route on click.
+- The detail surface shows a reusable shortcode row that displays `@location/<location-slug>` and copies it directly to the clipboard.
 
 Encounter edit example fields:
 
@@ -423,6 +429,7 @@ Encounter editor behavior:
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/encounters/:encounterSlug`.
 - Encounter slug is generated from the saved title and updates when the encounter name changes.
 - The editor supports title-image generation/paste flows and markdown script authoring.
+- The detail surface shows a reusable shortcode row that displays `@encounter/<encounter-slug>` and copies it directly to the clipboard.
 
 Quest edit example fields:
 
@@ -438,6 +445,7 @@ Quest editor behavior:
 - Quest slug is generated from the saved title and updates when the quest name changes.
 - The editor supports title-image generation/paste flows and markdown brief authoring.
 - Quest graph editing remains out of scope for this step; create/delete operations still maintain valid underlying quest graph records automatically.
+- The detail surface shows a reusable shortcode row that displays `@quest/<quest-slug>` and copies it directly to the clipboard.
 
 ---
 

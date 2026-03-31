@@ -14,4 +14,6 @@ test("AdventureModuleQuestEditor includes summary, title image, and quest script
   assert.match(source, /Quest Script/);
   assert.match(source, /Quest slug:/);
   assert.match(source, /createQuestCardJsx|QuestCard/);
+  assert.match(source, /ShortcodeField/);
+  assert.match(source, /@quest\/\$\{quest\.questSlug\}/);
 });

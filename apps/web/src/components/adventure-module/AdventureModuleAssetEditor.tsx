@@ -13,6 +13,7 @@ import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
+import { ShortcodeField } from "./ShortcodeField";
 
 export interface AdventureModuleAssetEditorAsset {
   assetSlug: string;
@@ -111,6 +112,8 @@ export const AdventureModuleAssetEditor = ({
           iconUrl={asset.iconUrl}
           overlayUrl={asset.overlayUrl}
         />
+
+        <ShortcodeField shortcode={`@asset/${asset.assetSlug}`} />
 
         {reauthorRequired ? (
           <Message label="Reauthor required" color="blood">

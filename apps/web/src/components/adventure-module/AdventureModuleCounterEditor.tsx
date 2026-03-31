@@ -7,6 +7,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleCounterEditorProps {
   counter: AdventureModuleResolvedCounter;
@@ -94,6 +95,8 @@ export const AdventureModuleCounterEditor = ({
               : undefined
           }
         />
+
+        <ShortcodeField shortcode={`@counter/${counter.slug}`} />
 
         <TextField
           label="Counter Name"

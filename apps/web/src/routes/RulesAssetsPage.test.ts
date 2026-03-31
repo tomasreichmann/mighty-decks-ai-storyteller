@@ -11,7 +11,7 @@ test("RulesAssetsPage renders base and medieval asset groups with modifier selec
   assert.match(source, /createAssetShortcode/);
   assert.match(
     source,
-    /CodeCopyRow[\s\S]*createAssetShortcode\(asset\.slug, appliedModifierSlug\)/,
+    /ShortcodeField[\s\S]*createAssetShortcode\([\s\S]*asset\.slug,[\s\S]*appliedModifierSlug,[\s\S]*\)/,
   );
   assert.match(source, /Modifier/);
   assert.match(source, /type="checkbox"/);

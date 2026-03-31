@@ -19,6 +19,7 @@ import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
 import { Toggle } from "../common/Toggle";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleActorEditorProps {
   actor: AdventureModuleResolvedActor;
@@ -105,6 +106,8 @@ export const AdventureModuleActorEditor = ({
           tacticalRoleSlug={actor.tacticalRoleSlug}
           tacticalSpecialSlug={actor.tacticalSpecialSlug}
         />
+
+        <ShortcodeField shortcode={`@actor/${actor.actorSlug}`} />
 
         <TextField
           label="Actor Name"

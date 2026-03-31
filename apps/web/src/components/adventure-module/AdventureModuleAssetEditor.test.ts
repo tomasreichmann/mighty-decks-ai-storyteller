@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 test("AdventureModuleAssetEditor exposes custom asset fields and legacy migration copy", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleAssetEditor.tsx",
+    new URL("./AdventureModuleAssetEditor.tsx", import.meta.url),
     "utf8",
   );
 
@@ -16,4 +16,6 @@ test("AdventureModuleAssetEditor exposes custom asset fields and legacy migratio
   assert.match(source, /Overlay URL/);
   assert.match(source, /custom/i);
   assert.match(source, /reauthor/i);
+  assert.match(source, /ShortcodeField/);
+  assert.match(source, /@asset\/\$\{asset\.assetSlug\}/);
 });

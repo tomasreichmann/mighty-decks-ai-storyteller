@@ -2,12 +2,19 @@ import {
   parseLegacyGameCardToken,
   type GameCardType,
 } from "./gameCardMarkdown";
+import { parseMarkdownImageToken } from "./markdownImage";
 
-const SHORTCODE_PATTERN =
-  /@(?:asset\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?|(?:outcome|effect|stunt|actor|counter|encounter|quest)\/[A-Za-z0-9_-]+)/g;
+const SEGMENT_PATTERN =
+  /!\[[^\]]*]\((?:<[^>\n]+>|[^)\s]+)(?:\s+"[^"]*")?\)|@(?:asset\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?|(?:outcome|effect|stunt|actor|counter|encounter|quest)\/[A-Za-z0-9_-]+)/g;
 
 export type CampaignSessionMessageSegment =
   | { kind: "text"; text: string }
+  | {
+      kind: "markdown_image";
+      token: string;
+      altText: string;
+      src: string;
+    }
   | {
       kind: "game_card";
       token: string;
@@ -21,6 +28,16 @@ export type CampaignSessionMessageSegment =
 const toShortcodeSegment = (
   token: string,
 ): CampaignSessionMessageSegment | null => {
+  const parsedImage = parseMarkdownImageToken(token);
+  if (parsedImage) {
+    return {
+      kind: "markdown_image",
+      token: parsedImage.token,
+      altText: parsedImage.altText,
+      src: parsedImage.src,
+    };
+  }
+
   if (token.startsWith("@encounter/")) {
     return {
       kind: "encounter_card",
@@ -59,7 +76,7 @@ export const parseCampaignSessionMessageSegments = (
   const segments: CampaignSessionMessageSegment[] = [];
   let cursor = 0;
 
-  for (const match of value.matchAll(SHORTCODE_PATTERN)) {
+  for (const match of value.matchAll(SEGMENT_PATTERN)) {
     const token = match[0];
     const index = match.index ?? 0;
 

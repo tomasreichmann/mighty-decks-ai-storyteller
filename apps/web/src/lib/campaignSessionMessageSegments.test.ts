@@ -57,3 +57,36 @@ test("parseCampaignSessionMessageSegments recognizes punctuation-adjacent asset 
     ],
   );
 });
+
+test("parseCampaignSessionMessageSegments preserves markdown images alongside prose and shortcodes", () => {
+  assert.deepEqual(
+    parseCampaignSessionMessageSegments(
+      "Scout ![Bridge approach](/api/image/files/bridge.png) before @quest/recover-the-shard.",
+    ),
+    [
+      { kind: "text", text: "Scout " },
+      {
+        kind: "markdown_image",
+        token: "![Bridge approach](/api/image/files/bridge.png)",
+        altText: "Bridge approach",
+        src: "/api/image/files/bridge.png",
+      },
+      { kind: "text", text: " before " },
+      {
+        kind: "quest_card",
+        token: "@quest/recover-the-shard",
+        slug: "recover-the-shard",
+      },
+      { kind: "text", text: "." },
+    ],
+  );
+});
+
+test("parseCampaignSessionMessageSegments leaves malformed markdown image syntax as plain text", () => {
+  assert.deepEqual(
+    parseCampaignSessionMessageSegments(
+      "Keep ![broken image](not a valid url) visible.",
+    ),
+    [{ kind: "text", text: "Keep ![broken image](not a valid url) visible." }],
+  );
+});

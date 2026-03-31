@@ -1,5 +1,5 @@
 import { GameCardView } from "../components/adventure-module/GameCardView";
-import { CodeCopyRow } from "../components/common/CodeCopyRow";
+import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Text } from "../components/common/Text";
 import { rulesEffectCards } from "../data/rulesComponents";
 import { resolveGameCard } from "../lib/markdownGameComponents";
@@ -26,7 +26,7 @@ export const RulesEffectsPage = (): JSX.Element => {
           return (
             <div key={effect.slug} className="stack h-full gap-2">
               <GameCardView gameCard={gameCard} className="mx-auto" />
-              <CodeCopyRow code={gameCard.legacyToken} />
+              <ShortcodeField shortcode={gameCard.legacyToken} />
             </div>
           );
         })}

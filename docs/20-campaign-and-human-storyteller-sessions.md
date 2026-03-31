@@ -162,7 +162,9 @@ Current player session scope:
 - claim/create PC
 - enter the live transcript after claim/create succeeds
 - add messages to the shared transcript
+- use a compact image button on the transcript composer to open a reusable modal for generating or reusing an image, then insert it into the draft as standard markdown `![alt](url)` syntax
 - paste supported component shortcodes into transcript messages and see them render inline in place
+- see markdown images render inline inside transcript messages without changing the stored session message shape
 - reuse the Adventure-style transcript wrapper treatment, including the softer unframed scroll area and fade mask
 - see known session events such as joins, leaves, and claims rendered with participant labels and Adventure-aligned role colors
 
@@ -189,12 +191,16 @@ The `Chat` tab currently includes:
 - participant roster
 - persistent live transcript
 - storyteller transcript composer
+- a compact image button on the transcript composer that opens the same reusable generate-or-pick modal used by markdown authoring
 - inline rendering for supported component shortcodes pasted into transcript messages
+- inline rendering for markdown images embedded in transcript text
 - the same shared session transcript presenter used by the player view, so wrapper styling and participant/system message treatment stay in sync
 - close-session action
 - a read-only campaign title header with the close-session action kept on the same top row
 
 The storyteller stays inside the same campaign-backed entity editors while the session is live.
+
+Those shared entity editors now surface the same shortcode copy row used in Adventure Module detail pages, so storytellers can copy `@actor/...`, `@counter/...`, `@asset/...`, `@location/...`, `@encounter/...`, and `@quest/...` directly from the live session detail tabs.
 
 Current UX direction:
 
@@ -231,12 +237,13 @@ Transcript persistence includes:
 - participant joined/left
 - mock added
 - player character claimed/created
-- group messages
+- group messages stored as raw transcript text, including plain prose, supported shortcodes, and standard markdown image syntax
 - session closed
 
 Transcript presentation includes:
 
 - shared web-side parsing of known session system events into labeled messages such as `Joined`, `Left`, `Claimed ...`, and `Created ...`
+- shared web-side parsing of standard markdown image tokens so transcript messages can display inline images while preserving raw text storage
 - role-aware message colors for storyteller vs player entries, with current-participant session messages visually separated from other players
 - Adventure-style transcript scrolling treatment with the same soft fade mask instead of a framed transcript box
 

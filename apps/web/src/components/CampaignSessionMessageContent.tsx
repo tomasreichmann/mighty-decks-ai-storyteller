@@ -30,6 +30,22 @@ export const CampaignSessionMessageContent = ({
           return <span key={`text-${index}`}>{segment.text}</span>;
         }
 
+        if (segment.kind === "markdown_image") {
+          return (
+            <span
+              key={`markdown-image-${index}`}
+              className="my-2 block max-w-full overflow-hidden rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/40 p-1"
+            >
+              <img
+                src={segment.src}
+                alt={segment.altText}
+                loading="lazy"
+                className="h-auto max-h-72 w-full rounded-sm object-cover"
+              />
+            </span>
+          );
+        }
+
         if (segment.kind === "game_card") {
           const resolved = resolveGameCard(
             segment.type,

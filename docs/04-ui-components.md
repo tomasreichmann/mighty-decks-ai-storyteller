@@ -327,6 +327,7 @@ Behavior:
 - `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image generation/paste controls, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, title-image generation/paste controls, and markdown script authoring.
 - `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, title-image generation/paste controls, markdown brief authoring, and slug-driven route updates after saves.
+- actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and `Copy Shortcode`
 
 ---
 
@@ -384,6 +385,7 @@ Behavior:
 - player flow is two-step: claim/create first, transcript second
 - use `Transcript` as the primary mental model instead of splitting the experience into transcript vs chat
 - keep claim/create out of the live transcript surface once the player has entered play
+- the transcript composer may expose a compact image trigger that opens the shared generate-or-pick modal, appends standard markdown image snippets, and relies on the transcript renderer to display those images inline
 
 ---
 
@@ -402,6 +404,8 @@ Behavior:
 - keep storyteller inside the campaign shell overall
 - make the `chat` tab feel like a purpose-built live session surface, not another generic stacked panel page
 - reserve heavy framed panels for the primary transcript surface and avoid framing every inner subsection
+- keep player and storyteller transcript composers aligned on the same compact image-trigger-plus-modal flow so both roles can share generated images through the same raw-text transcript model
+- reuse the same entity editor components as Adventure Module authoring so shortcode copy rows appear in storyteller detail tabs too
 
 ---
 

@@ -291,6 +291,7 @@ Rules:
 - transcript order defines narrative order
 - no edits or deletions in MVP
 - transcript is the primary continuity reference
+- transcript entries remain raw text at rest; the web client may enrich that text at render time with supported shortcodes and standard markdown image tokens such as `![alt](url)`
 
 ---
 

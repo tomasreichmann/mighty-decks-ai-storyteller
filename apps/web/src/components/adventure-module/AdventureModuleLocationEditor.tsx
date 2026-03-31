@@ -20,6 +20,7 @@ import {
 } from "./AdventureModuleLocationMapEditor";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import { Panel } from "../common/Panel";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleLocationEditorProps {
   location: AdventureModuleResolvedLocation;
@@ -295,6 +296,8 @@ export const AdventureModuleLocationEditor = ({
             Location slug: <code>{location.locationSlug}</code>. It is
             regenerated from the location name when you save.
           </Text>
+
+          <ShortcodeField shortcode={`@location/${location.locationSlug}`} />
 
           {validationMessage ? (
             <Text variant="note" color="blood" className="text-sm !opacity-100">

@@ -40,7 +40,7 @@
 .editorRoot :global([role="toolbar"]) {
   border-bottom: 2px solid #121b23;
   background: #ead9bd;
-  padding-right: 2.4rem;
+  padding-right: 5rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.2rem;
@@ -163,11 +163,14 @@
   box-shadow: 0 0 0 2px #121b23;
 }
 
-.smartMenuAnchor {
+.editorOverlayControls {
   position: absolute;
   top: 0.3rem;
   right: 0.45rem;
   z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .summaryEditable {

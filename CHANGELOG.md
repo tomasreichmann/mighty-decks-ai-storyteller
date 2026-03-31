@@ -27,6 +27,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add Adventure Module Quests tab and editor UI with title-image generation/paste flows, quest markdown authoring, canonical `<QuestCard slug="..." />` embeds, and a reusable `QuestCard` styleguide direction.
 
 ### Changed
+- Reused the compact shortcode copy component across the Rules asset, effect, stunt, and outcome reference pages so shortcode copying matches Adventure Module and storyteller detail views.
 
 - Extend the hidden `/styleguide` index with a grouped-control lab covering the new toggle and radio-button primitives across active state, palette, and size comparisons.
 - Fold the approved grouped-button direction into the shared component set and keep the final example only in the root `/styleguide`.
@@ -61,11 +62,21 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Merge the campaign-session lobby join flow into one role-toggle form, extract reusable `CTAButton` and `ConnectionStatusPill` primitives from the Adventure-inspired UI language, and surface session/presence state as compact pills instead of separate framed status blocks.
 - Render supported shortcode cards inline inside campaign session transcripts so players and storytellers can paste multiple component shortcodes into one shared message.
 - Tighten storyteller session chrome so the header uses a smaller read-only campaign title, keeps `Close Session` on the same row, hides the slug subtitle, and lets the live session surface span the full viewport width.
+- Move the storyteller-session `Chat` tab to the first position in the live Session navigation so the transcript view is the default leading action.
 - Reuse the Adventure transcript wrapper and a shared session-entry presenter across player and storyteller session chat so Session transcript styling, fade masking, and known participant event labels/colors stay consistent.
 - Restyle the player and storyteller Session transcript composers to use the same depressed message-input treatment as the Adventure action composer, while keeping the Session-specific send actions intact.
+- Extend Adventure Module markdown editors and human-session transcript composers with a reusable image button plus modal backed by the existing generated-image UI, and render `![alt](url)` images inline inside shared session transcript messages.
+- Align Session chat composers more closely with the Adventure action field by renaming the draft label to `Message`, switching the action button to `Send`, supporting Enter-to-send with Shift+Enter for newlines, and moving storyteller `End Session` into the lower-left composer row.
+- Restyle the campaign authoring `Sessions` list items to use the shared `Message` framing so archived/live session rows match the broader campaign shell language.
+- Extend the shared `Button` component with `href` support and switch the campaign `Sessions` list actions to real links so lobby and storyteller views can be opened in separate browser tabs.
+- Refine the campaign `Sessions` list rows with a created-date line, a shared `Status` pill, a single right-aligned primary `Join` action, and the removal of the separate storyteller-view link.
+- Add a shared detail-page shortcode copy row across Adventure Module entity editors and the reused campaign storyteller detail tabs, so shortcode copy is available outside the list views too.
+- Simplify the shared detail-page shortcode copy row down to the shortcode plus an icon button, with click feedback that swaps from copy to checkmark for two seconds before resetting.
+- Reposition the shared detail-page shortcode row under the left-side preview area and tighten its styling so the shortcode and copy icon sit centered together with darker, bolder shortcode text.
 
 ### Fixed
 
+- Align Session chat keyboard submission with the shared Adventure action composer so only plain Enter sends, while Shift+Enter and other modifier-enter combinations stay available for multiline editing.
 - Resolve the built web client path relative to the server module location so Render's plain-Node startup still serves the frontend from the single service root.
 - Proxy local Vite `/api`, `/adventures`, `/health`, and `/socket.io` traffic through the web origin so Adventure Module list/create flows still work when the backend `PORT` is overridden in root `.env.local`.
 - Regenerate Adventure Module actor and counter slugs from saved titles, keep the authoring route in sync after renames, and allow actor/counter deletes to complete without sending an empty JSON body.
@@ -75,6 +86,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Stabilize campaign session realtime joins so storyteller live-session routes stop re-emitting join events on rerender, stale session errors clear after fresh session state, and player character claim/create waits for confirmed session membership.
 - Return full `CampaignDetail` payloads from campaign edit routes so session-side actor and other campaign entity saves no longer fail client-side validation after successful server updates.
 - Give the desktop Workflow Lab nav button extra width so its longer label fits cleanly at the shell's widest breakpoint.
+- Keep the reusable markdown-image modal header/footer fixed while a padded inner body scrolls, so tall generate-or-pick content stays reachable without label clipping or horizontal overflow.
 
 ### Docs
 
@@ -95,6 +107,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Update UI/style and campaign-session docs to formalize Adventure-derived transcript-first campaign/session guidance and explicitly discourage overusing framed panels on live session surfaces.
 - Update the component/style docs and hidden styleguide to document the shared CTA highlight button and reusable connection-status pill patterns.
 - Update campaign session docs to note that supported component shortcodes now render inline inside shared transcript messages.
+- Update the authoring, UI, event-model, and campaign-session docs to describe the reusable image button-plus-modal flow in MDX editors and session composers, plus inline markdown image rendering inside session transcripts.
 
 ## [0.1.0] - 2026-03-13
 

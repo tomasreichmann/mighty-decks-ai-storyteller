@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 test("AdventureModuleLocationEditor includes introduction, description, and map editor hookup", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleLocationEditor.tsx",
+    new URL("./AdventureModuleLocationEditor.tsx", import.meta.url),
     "utf8",
   );
 
@@ -12,4 +12,6 @@ test("AdventureModuleLocationEditor includes introduction, description, and map 
   assert.match(source, /Description/);
   assert.match(source, /AdventureModuleLocationMapEditor/);
   assert.match(source, /Location slug:/);
+  assert.match(source, /ShortcodeField/);
+  assert.match(source, /@location\/\$\{location\.locationSlug\}/);
 });

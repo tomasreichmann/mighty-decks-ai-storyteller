@@ -15,6 +15,7 @@ import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
 import { AdventureModuleGeneratedImageField } from "./AdventureModuleGeneratedImageField";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleEncounterEditorProps {
   encounter: AdventureModuleResolvedEncounter;
@@ -280,6 +281,8 @@ export const AdventureModuleEncounterEditor = ({
             Encounter slug: <code>{encounter.encounterSlug}</code>. It is
             regenerated from the encounter name when you save.
           </Text>
+
+          <ShortcodeField shortcode={`@encounter/${encounter.encounterSlug}`} />
 
           {validationMessage ? (
             <Text variant="note" color="blood" className="text-sm !opacity-100">

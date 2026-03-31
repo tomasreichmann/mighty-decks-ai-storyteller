@@ -1,4 +1,9 @@
-import { ButtonHTMLAttributes, forwardRef } from "react";
+import {
+  type AnchorHTMLAttributes,
+  type ForwardedRef,
+  type HTMLAttributes,
+  forwardRef,
+} from "react";
 import { cn } from "../../utils/cn";
 
 export type ButtonVariant = "solid" | "ghost" | "circle";
@@ -44,10 +49,20 @@ export type ButtonColors =
   | "monster-dark";
 type ButtonSize = "sm" | "md" | "lg";
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonBaseProps {
   variant?: ButtonVariant;
   color?: ButtonColors;
   size?: ButtonSize;
+}
+
+export interface ButtonProps extends Omit<HTMLAttributes<HTMLElement>, "color">, ButtonBaseProps {
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  href?: string;
+  target?: AnchorHTMLAttributes<HTMLAnchorElement>["target"];
+  rel?: AnchorHTMLAttributes<HTMLAnchorElement>["rel"];
+  download?: AnchorHTMLAttributes<HTMLAnchorElement>["download"];
+  referrerPolicy?: AnchorHTMLAttributes<HTMLAnchorElement>["referrerPolicy"];
 }
 
 const variantClassMap: Record<ButtonVariant, string> = {
@@ -183,18 +198,14 @@ const resolveGhostColorClasses = (color: ButtonColors): string => {
   }
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
+export const Button = forwardRef<HTMLElement, ButtonProps>((rawProps, ref) => {
+    const {
       className = "",
       variant = "solid",
       color = "gold",
       size = "md",
-      type = "button",
-      ...props
-    },
-    ref,
-  ) => {
+    } = rawProps;
+    const disabled = rawProps.disabled ?? false;
     const colorClasses =
       variant === "ghost"
         ? resolveGhostColorClasses(color)
@@ -207,14 +218,74 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       "font-ui font-bold uppercase tracking-[0.08em] transition duration-100",
       "hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50",
       "disabled:cursor-not-allowed disabled:brightness-100 disabled:saturate-50 disabled:contrast-75 disabled:brightness-75",
+      disabled
+        ? "cursor-not-allowed brightness-75 saturate-50 contrast-75"
+        : "",
       variantClassMap[variant],
       colorClasses,
       sizeClasses,
       className,
     );
 
-    return <button ref={ref} type={type} className={classes} {...props} />;
-  },
-);
+    if ("href" in rawProps) {
+      const {
+        variant: _variant,
+        color: _color,
+        size: _size,
+        className: _className,
+        disabled: _disabled,
+        href,
+        target,
+        rel,
+        download,
+        referrerPolicy,
+        onClick,
+        ...anchorProps
+      } = rawProps;
+      return (
+        <a
+          ref={ref as ForwardedRef<HTMLAnchorElement>}
+          href={disabled ? undefined : href}
+          target={target}
+          rel={rel}
+          download={download}
+          referrerPolicy={referrerPolicy}
+          aria-disabled={disabled || undefined}
+          className={classes}
+          onClick={(event) => {
+            if (disabled) {
+              event.preventDefault();
+              return;
+            }
+            onClick?.(event);
+          }}
+          {...anchorProps}
+        />
+      );
+    }
+
+    const {
+      variant: _variant,
+      color: _color,
+      size: _size,
+      className: _className,
+      href: _href,
+      target: _target,
+      rel: _rel,
+      download: _download,
+      referrerPolicy: _referrerPolicy,
+      type = "button",
+      ...buttonProps
+    } = rawProps;
+
+    return (
+      <button
+        ref={ref as ForwardedRef<HTMLButtonElement>}
+        type={type}
+        className={classes}
+        {...buttonProps}
+      />
+    );
+  });
 
 Button.displayName = "Button";

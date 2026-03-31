@@ -57,9 +57,15 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /Claim This Character/);
   assert.match(source, /Transcript/);
   assert.match(source, /CampaignSessionTranscriptFeed/);
+  assert.match(source, /MarkdownImageInsertButton/);
   assert.match(source, /DepressedInput/);
-  assert.match(source, /<DepressedInput[\s\S]*label="Add to Transcript"/);
+  assert.match(source, /<DepressedInput[\s\S]*label="Message"[\s\S]*topRightControl=\{/);
+  assert.match(source, /handleMessageKeyDown/);
+  assert.match(source, /event\.shiftKey\s*\|\|\s*event\.ctrlKey\s*\|\|\s*event\.metaKey\s*\|\|\s*event\.altKey/);
+  assert.match(source, />\s*Send\s*</);
+  assert.match(source, /Press Enter to send\. Shift\+Enter for newline\./);
   assert.match(source, /paper-shadow/);
+  assert.doesNotMatch(source, /GeneratedMarkdownImageInsertPanel/);
   assert.doesNotMatch(source, /Group Chat/);
   assert.doesNotMatch(source, /Claim an Existing Character/);
   assert.doesNotMatch(

@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { CampaignDetail } from "@mighty-decks/spec/campaign";
 import { ActorCard } from "../components/cards/ActorCard";
 import { CampaignSessionTranscriptFeed } from "../components/CampaignSessionTranscriptFeed";
+import { MarkdownImageInsertButton } from "../components/MarkdownImageInsertButton";
 import { Button } from "../components/common/Button";
 import { DepressedInput } from "../components/common/DepressedInput";
 import { Message } from "../components/common/Message";
@@ -14,6 +15,8 @@ import { useCampaignSession } from "../hooks/useCampaignSession";
 import { getCampaignSessionIdentity } from "../lib/campaignSessionIdentity";
 import { getCampaignBySlug } from "../lib/campaignApi";
 import { createGameCardCatalogContextValue } from "../lib/gameCardCatalogContext";
+import { appendMarkdownSnippet } from "../lib/markdownImage";
+import type { SmartInputDocumentContext } from "../lib/smartInputContext";
 
 export const CampaignSessionPlayerPage = (): JSX.Element => {
   const navigate = useNavigate();
@@ -135,6 +138,28 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     Boolean(joinedPlayerParticipant) &&
     session?.status !== "closed";
   const readyToClaimCharacter = Boolean(joinedPlayerParticipant);
+  const playerSummaryContent = useMemo(() => {
+    if (!campaign) {
+      return "";
+    }
+    const fragmentId = campaign.index.playerSummaryFragmentId;
+    return (
+      campaign.fragments.find(
+        (fragment) => fragment.fragment.fragmentId === fragmentId,
+      )?.content ?? ""
+    );
+  }, [campaign]);
+  const storytellerSummaryContent = useMemo(() => {
+    if (!campaign) {
+      return "";
+    }
+    const fragmentId = campaign.index.storytellerSummaryFragmentId;
+    return (
+      campaign.fragments.find(
+        (fragment) => fragment.fragment.fragmentId === fragmentId,
+      )?.content ?? ""
+    );
+  }, [campaign]);
   const gameCardCatalogValue = useMemo(
     () =>
       createGameCardCatalogContextValue({
@@ -146,6 +171,48 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
       }),
     [campaign],
   );
+  const smartContextDocument = useMemo<SmartInputDocumentContext>(
+    () => ({
+      moduleTitle: campaign?.index.title ?? "",
+      moduleSummary: campaign?.index.summary ?? "",
+      moduleIntent: campaign?.index.intent ?? "",
+      premise: campaign?.index.premise ?? "",
+      haveTags: campaign?.index.dos ?? [],
+      avoidTags: campaign?.index.donts ?? [],
+      playerSummary: campaign?.index.playerSummaryMarkdown ?? "",
+      playerInfo: playerSummaryContent,
+      storytellerSummary: campaign?.index.storytellerSummaryMarkdown ?? "",
+      storytellerInfo: storytellerSummaryContent,
+    }),
+    [campaign, playerSummaryContent, storytellerSummaryContent],
+  );
+  const handleSendMessage = (): void => {
+    const text = messageText.trim();
+    if (!canChat || text.length === 0) {
+      return;
+    }
+
+    sendMessage(identity.participantId, text);
+    setMessageText("");
+  };
+
+  const handleMessageKeyDown = (
+    event: KeyboardEvent<HTMLTextAreaElement>,
+  ): void => {
+    if (
+      event.key !== "Enter" ||
+      event.shiftKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      event.nativeEvent.isComposing
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    handleSendMessage();
+  };
 
   return (
     <div className="app-shell stack py-8 gap-4">
@@ -305,25 +372,51 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
             <div className="stack gap-2">
               <DepressedInput
                 multiline
-                label="Add to Transcript"
+                label="Message"
                 labelColor="gold"
                 rows={4}
                 value={messageText}
                 onChange={(event) => setMessageText(event.target.value)}
+                onKeyDown={handleMessageKeyDown}
                 placeholder="Share your action, narration, or question for the table..."
-                controlClassName="min-h-[7.5rem]"
+                controlClassName="min-h-[7.5rem] pr-12"
+                topRightControl={
+                  <MarkdownImageInsertButton
+                    identityKey={`${campaignSlug}-${sessionId}-player-chat-image`}
+                    smartContextDocument={smartContextDocument}
+                    currentInputValue={messageText}
+                    disabled={!canChat}
+                    dialogTitle="Share Image"
+                    dialogDescription="Generate a new image or reuse an existing one, then insert it into your transcript draft as standard markdown."
+                    promptDescription="Generate or reuse an image to share in the live transcript."
+                    workflowContextIntro="Markdown image prompt for a campaign session player transcript message. Refine wording while preserving a clear, table-readable illustration."
+                    buttonAriaLabel="Insert image into transcript"
+                    buttonTitle="Share image"
+                    onInsertMarkdownSnippet={(snippet) => {
+                      setMessageText((current) =>
+                        appendMarkdownSnippet(current, snippet),
+                      );
+                    }}
+                  />
+                }
               />
               <div className="flex items-end justify-end gap-2 paper-shadow">
                 <Button
                   color="gold"
                   disabled={!canChat || messageText.trim().length === 0}
-                  onClick={() => {
-                    sendMessage(identity.participantId, messageText.trim());
-                    setMessageText("");
-                  }}
+                  onClick={handleSendMessage}
                 >
-                  Add to Transcript
+                  Send
                 </Button>
+              </div>
+              <div className="flex flex-col items-end mt-2 paper-shadow min-h-[2.2em]">
+                <Text
+                  variant="note"
+                  color="steel-dark"
+                  className="normal-case tracking-normal"
+                >
+                  Press Enter to send. Shift+Enter for newline.
+                </Text>
               </div>
             </div>
           </Panel>

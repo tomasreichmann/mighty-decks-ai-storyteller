@@ -13,6 +13,7 @@ import {
   BoldItalicUnderlineToggles,
   CreateLink,
   DiffSourceToggleWrapper,
+  InsertImage,
   InsertThematicBreak,
   ListsToggle,
   MDXEditor,
@@ -21,6 +22,7 @@ import {
   UndoRedo,
   diffSourcePlugin,
   headingsPlugin,
+  imagePlugin,
   linkDialogPlugin,
   linkPlugin,
   listsPlugin,
@@ -39,6 +41,7 @@ import {
 } from "../../lib/workflowLabApi";
 import { assetBaseCardsByGroup, assetModifierCards } from "../../data/assetCards";
 import { Button } from "../common/Button";
+import { MarkdownImageInsertButton } from "../MarkdownImageInsertButton";
 import { ContextMenu, type ContextMenuRow } from "../common/ContextMenu";
 import type { DropdownTriggerRenderProps } from "../common/Dropdown";
 import { InputDescriptionHint } from "../common/InputDescriptionHint";
@@ -388,6 +391,7 @@ const createEditorPlugins = (toolbarArgs: CreateEditorPluginsArgs) => [
   thematicBreakPlugin(),
   linkPlugin(),
   linkDialogPlugin(),
+  imagePlugin(),
   gameCardInlineFlowPlugin(),
   jsxPlugin({
     jsxComponentDescriptors: [
@@ -411,6 +415,7 @@ const createEditorPlugins = (toolbarArgs: CreateEditorPluginsArgs) => [
         <Separator />
         <ListsToggle />
         <CreateLink />
+        <InsertImage />
         <InsertThematicBreak />
         {renderToolbarInsertControls(toolbarArgs)}
       </DiffSourceToggleWrapper>
@@ -1068,6 +1073,13 @@ export const AdventureModuleMarkdownField = ({
     setInsertErrorMessage(null);
     return true;
   };
+  const handleInsertMarkdownImage = (snippet: string): boolean => {
+    if (!handleInsertComponent(snippet)) {
+      return false;
+    }
+    setInsertStatusMessage("Inserted markdown image.");
+    return true;
+  };
 
   const smartActions = useMarkdownSmartActions({
     contextDescription,
@@ -1297,7 +1309,23 @@ export const AdventureModuleMarkdownField = ({
         className={styles.editorShell}
         onBlur={(event) => handleEditorBlur(event, onFieldBlur, editable)}
       >
-        <div className={styles.smartMenuAnchor}>
+        <div className={styles.editorOverlayControls}>
+          <MarkdownImageInsertButton
+            identityKey={`${selfContextTag}-${label}`}
+            smartContextDocument={smartContextDocument}
+            currentInputValue={editorMarkdown}
+            disabled={!editable || smartActions.running}
+            dialogTitle={`${label} Image`}
+            dialogDescription="Generate a new image or reuse an existing one, then insert standard markdown into this field."
+            promptLabel={`${label} Image Prompt`}
+            promptDescription="Generate or reuse an image and insert it into this field as standard markdown syntax."
+            workflowContextIntro={`Image prompt for the "${label}" markdown field. Refine wording while preserving a clear, readable illustration for this content.`}
+            imageLabel="Markdown Image"
+            generateLabel="Generate Image"
+            buttonAriaLabel={`Insert image into ${label}`}
+            buttonTitle="Insert image"
+            onInsertMarkdownSnippet={handleInsertMarkdownImage}
+          />
           <ContextMenu
             rows={smartActions.menuRows}
             open={smartActions.menuOpen}

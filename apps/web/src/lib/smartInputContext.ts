@@ -116,7 +116,7 @@ interface ResolveContextLinesArgs {
   currentInputValue: string;
 }
 
-const resolveContextLines = ({
+export const resolveSmartContextLines = ({
   selectedTags,
   context,
   currentInputValue,
@@ -236,7 +236,7 @@ export const buildSmartInputContextDescription = ({
     lines.push(`Smart input description: ${truncate(description, 260)}`);
   }
 
-  const contextLines = resolveContextLines({
+  const contextLines = resolveSmartContextLines({
     selectedTags,
     context,
     currentInputValue,

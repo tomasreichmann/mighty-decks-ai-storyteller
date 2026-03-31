@@ -11,4 +11,6 @@ test("AdventureModuleActorEditor includes a player character toggle", () => {
   assert.match(source, /isPlayerCharacter/);
   assert.match(source, /Player Character/);
   assert.match(source, /Toggle/);
+  assert.match(source, /ShortcodeField/);
+  assert.match(source, /@actor\/\$\{actor\.actorSlug\}/);
 });

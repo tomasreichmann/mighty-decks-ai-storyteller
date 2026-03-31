@@ -5,7 +5,7 @@ import type {
 } from "@mighty-decks/spec/assetCards";
 import { AssetCard } from "../components/cards/AssetCard";
 import { AssetModifierCard } from "../components/cards/AssetModifierCard";
-import { CodeCopyRow } from "../components/common/CodeCopyRow";
+import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Text } from "../components/common/Text";
 import {
   assetBaseCardsByGroup,
@@ -117,8 +117,11 @@ export const RulesAssetsPage = (): JSX.Element => {
                   modifierSlug={appliedModifierSlug}
                   className="mx-auto"
                 />
-                <CodeCopyRow
-                  code={createAssetShortcode(asset.slug, appliedModifierSlug)}
+                <ShortcodeField
+                  shortcode={createAssetShortcode(
+                    asset.slug,
+                    appliedModifierSlug,
+                  )}
                 />
               </div>
             ))}
