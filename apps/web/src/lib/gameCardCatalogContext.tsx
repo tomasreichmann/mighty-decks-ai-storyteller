@@ -52,3 +52,54 @@ export const GameCardCatalogContext =
 
 export const useGameCardCatalogContext = (): GameCardCatalogContextValue =>
   useContext(GameCardCatalogContext);
+
+export const createGameCardCatalogContextValue = (
+  options: {
+    actors?: readonly AdventureModuleResolvedActor[];
+    counters?: readonly AdventureModuleResolvedCounter[];
+    assets?: readonly AdventureModuleResolvedAsset[];
+    encounters?: readonly AdventureModuleResolvedEncounter[];
+    quests?: readonly AdventureModuleResolvedQuest[];
+    onAdjustCounterValue?: (
+      counterSlug: string,
+      delta: number,
+      target?: CounterAdjustTarget,
+    ) => void;
+  } = {},
+): GameCardCatalogContextValue => {
+  const {
+    actors = [],
+    counters = [],
+    assets = [],
+    encounters = [],
+    quests = [],
+    onAdjustCounterValue,
+  } = options;
+
+  return {
+    actors,
+    actorsBySlug: new Map(
+      actors.map((actor) => [actor.actorSlug.toLocaleLowerCase(), actor]),
+    ),
+    counters,
+    countersBySlug: new Map(
+      counters.map((counter) => [counter.slug.toLocaleLowerCase(), counter]),
+    ),
+    assets,
+    assetsBySlug: new Map(
+      assets.map((asset) => [asset.assetSlug.toLocaleLowerCase(), asset]),
+    ),
+    encounters,
+    encountersBySlug: new Map(
+      encounters.map((encounter) => [
+        encounter.encounterSlug.toLocaleLowerCase(),
+        encounter,
+      ]),
+    ),
+    quests,
+    questsBySlug: new Map(
+      quests.map((quest) => [quest.questSlug.toLocaleLowerCase(), quest]),
+    ),
+    onAdjustCounterValue,
+  };
+};

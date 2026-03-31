@@ -31,9 +31,41 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
   assert.match(source, /campaignUpdatedAtIso/);
   assert.match(source, /handleSendStorytellerMessage/);
   assert.match(source, /handleCloseStorytellerSession/);
-  assert.match(source, /Live Transcript/);
+  assert.match(source, /storytellerSession\?\.transcript/);
+  assert.match(source, /CampaignSessionTranscriptFeed/);
+  assert.match(
+    source,
+    /activeTab === "chat"[\s\S]*<DepressedInput[\s\S]*label="Add to Transcript"/,
+  );
+  assert.match(
+    source,
+    /activeTab === "chat"[\s\S]*paper-shadow/,
+  );
   assert.doesNotMatch(source, /Send to Group Chat/);
   assert.doesNotMatch(source, /<Panel\s+key=\{session\.sessionId\}/);
+});
+
+test("CampaignAuthoringPage uses a read-only full-width header in storyteller session mode", () => {
+  const source = readFileSync(
+    new URL("./CampaignAuthoringPage.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(
+    source,
+    /storytellerSessionMode\s*\?\s*"[^"]*w-full max-w-none px-4 py-8 sm:px-6 lg:px-8[^"]*"/,
+  );
+  assert.match(source, /storytellerSessionMode \|\| !editable \? \(/);
+  assert.match(source, /<Text variant="h3" color="iron">/);
+  assert.match(source, /storytellerSessionMode \? null : \(/);
+  assert.match(
+    source,
+    /storytellerSessionMode \? \(\s*<Button[\s\S]*Close Session[\s\S]*\) : null/,
+  );
+  assert.match(
+    source,
+    /activeTab === "chat"[\s\S]*<Section className="stack gap-4">\s*\{storytellerRealtimeError \?/,
+  );
 });
 
 test("CampaignAuthoringPage watches campaign updates outside active sessions", () => {

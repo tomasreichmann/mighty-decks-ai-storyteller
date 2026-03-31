@@ -14,6 +14,7 @@ interface NavItem {
   label: string;
   end?: boolean;
   buttonBackgroundImage: string;
+  linkClassName?: string;
   hideInProduction?: boolean;
 }
 
@@ -53,6 +54,7 @@ const navItems: NavItem[] = [
     to: "/workflow-lab",
     label: "Workflow Lab",
     buttonBackgroundImage: "/button-background-grey.png",
+    linkClassName: styles.comicNavLinkWide,
     hideInProduction: true,
   },
 ].filter((item) => !(import.meta.env.PROD && item.hideInProduction));
@@ -139,6 +141,7 @@ export const Page = ({
                   className={({ isActive }) =>
                     cn(
                       styles.comicNavLink,
+                      item.linkClassName,
                       isActive && styles.comicNavLinkActive,
                     )
                   }

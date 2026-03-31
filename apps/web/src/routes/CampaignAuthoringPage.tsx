@@ -7,7 +7,8 @@ import { Panel } from "../components/common/Panel";
 import { Section } from "../components/common/Section";
 import { Text } from "../components/common/Text";
 import { Button } from "../components/common/Button";
-import { TextArea } from "../components/common/TextArea";
+import { DepressedInput } from "../components/common/DepressedInput";
+import { CampaignSessionTranscriptFeed } from "../components/CampaignSessionTranscriptFeed";
 import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
 import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
 import { AdventureModuleAssetEditor } from "../components/adventure-module/AdventureModuleAssetEditor";
@@ -66,6 +67,7 @@ import {
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
 import { getCampaignSessionIdentity } from "../lib/campaignSessionIdentity";
 import { normalizeLegacyGameCardMarkdown } from "../lib/gameCardMarkdown";
+import { createGameCardCatalogContextValue } from "../lib/gameCardCatalogContext";
 import { toMarkdownPlainTextSnippet } from "../lib/markdownSnippet";
 import type { SmartInputDocumentContext } from "../lib/smartInputContext";
 import { useCampaignSession } from "../hooks/useCampaignSession";
@@ -3947,12 +3949,39 @@ export const CampaignAuthoringPage = (): JSX.Element => {
     }
     sessionRealtime.closeSession(storytellerIdentity.participantId);
   }, [sessionRealtime, storytellerIdentity]);
+  const storytellerGameCardCatalogValue = useMemo(
+    () =>
+      createGameCardCatalogContextValue({
+        actors: moduleDetail?.actors ?? [],
+        counters: moduleDetail?.counters ?? [],
+        assets: moduleDetail?.assets ?? [],
+        encounters: moduleDetail?.encounters ?? [],
+        quests: moduleDetail?.quests ?? [],
+      }),
+    [moduleDetail],
+  );
 
   return (
-    <div className="app-shell stack py-8 gap-4">
+    <div
+      className={
+        storytellerSessionMode
+          ? "stack gap-4 w-full max-w-none px-4 py-8 sm:px-6 lg:px-8"
+          : "app-shell stack py-8 gap-4"
+      }
+    >
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          {editable ? (
+          {storytellerSessionMode || !editable ? (
+            storytellerSessionMode ? (
+              <Text variant="h3" color="iron">
+                {moduleDetail?.index.title ?? "Campaign"}
+              </Text>
+            ) : (
+              <Text variant="h2" color="iron">
+                {moduleDetail?.index.title ?? "Campaign"}
+              </Text>
+            )
+          ) : (
             <input
               type="text"
               aria-label="Campaign title"
@@ -3975,21 +4004,26 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               }}
               className="m-0 w-full appearance-none border-0 bg-transparent p-0 font-heading text-3xl/none font-bold tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-4xl/none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
             />
-          ) : (
-            <Text variant="h2" color="iron">
-              {moduleDetail?.index.title ?? "Campaign"}
+          )}
+          {storytellerSessionMode ? null : (
+            <Text variant="body" color="iron-light" className="text-sm">
+              {moduleDetail?.index.slug
+                ? `/${moduleDetail.index.slug}`
+                : "Campaign Authoring"}
             </Text>
           )}
-          <Text variant="body" color="iron-light" className="text-sm">
-            {moduleDetail?.index.slug
-              ? `/${moduleDetail.index.slug}`
-              : storytellerSessionMode
-                ? "Storyteller Session"
-                : "Campaign Authoring"}
-          </Text>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {!storytellerSessionMode && moduleDetail ? (
+          {storytellerSessionMode ? (
+            <Button
+              variant="ghost"
+              color="blood"
+              disabled={storytellerSession?.status === "closed"}
+              onClick={handleCloseStorytellerSession}
+            >
+              Close Session
+            </Button>
+          ) : moduleDetail ? (
             <Button
               variant="ghost"
               color="gold"
@@ -4881,17 +4915,6 @@ export const CampaignAuthoringPage = (): JSX.Element => {
             </Section>
           ) : activeTab === "chat" ? (
             <Section className="stack gap-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <Button
-                  variant="ghost"
-                  color="blood"
-                  disabled={storytellerSession?.status === "closed"}
-                  onClick={handleCloseStorytellerSession}
-                >
-                  Close Session
-                </Button>
-              </div>
-
               {storytellerRealtimeError ? (
                 <Message label="Session Error" color="blood">
                   {storytellerRealtimeError}
@@ -4917,46 +4940,26 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                 </aside>
 
                 <div className="stack gap-3">
-                  <div className="max-h-[24rem] overflow-y-auto rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
-                    <div className="stack gap-3">
-                      {(storytellerSession?.transcript ?? []).map((entry) => (
-                        <Message
-                          key={entry.entryId}
-                          label={
-                            entry.authorDisplayName
-                              ? `${entry.authorDisplayName} (${entry.authorRole})`
-                              : "System"
-                          }
-                          color={
-                            entry.authorRole === "storyteller"
-                              ? "gold"
-                              : entry.authorRole === "player"
-                                ? "fire"
-                                : "cloth"
-                          }
-                          contentClassName="stack gap-1"
-                        >
-                          <Text
-                            variant="body"
-                            color="iron"
-                            className="text-sm whitespace-pre-wrap"
-                          >
-                            {entry.text}
-                          </Text>
-                        </Message>
-                      ))}
-                    </div>
-                  </div>
+                  <CampaignSessionTranscriptFeed
+                    entries={storytellerSession?.transcript ?? []}
+                    participants={storytellerSession?.participants ?? []}
+                    currentParticipantId={storytellerIdentity?.participantId}
+                    gameCardCatalogValue={storytellerGameCardCatalogValue}
+                    className="max-h-[24rem]"
+                  />
 
-                  <div className="stack gap-3">
-                    <TextArea
+                  <div className="stack gap-2">
+                    <DepressedInput
+                      multiline
                       label="Add to Transcript"
+                      labelColor="gold"
                       rows={4}
                       value={chatDraft}
                       onChange={(event) => setChatDraft(event.target.value)}
                       placeholder="Share narration, rulings, or prompts with the table..."
+                      controlClassName="min-h-[7.5rem]"
                     />
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-end gap-2 paper-shadow">
                       <Button
                         color="gold"
                         disabled={

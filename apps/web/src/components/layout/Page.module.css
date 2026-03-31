@@ -118,6 +118,11 @@
     filter 150ms ease;
 }
 
+.comicNavLinkWide {
+  flex-grow: 1.22;
+  min-width: 8.4rem;
+}
+
 .comicNavLink::before {
   content: "";
   position: absolute;

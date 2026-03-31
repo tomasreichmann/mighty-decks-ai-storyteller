@@ -56,6 +56,15 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /flex justify-end/);
   assert.match(source, /Claim This Character/);
   assert.match(source, /Transcript/);
+  assert.match(source, /CampaignSessionTranscriptFeed/);
+  assert.match(source, /DepressedInput/);
+  assert.match(source, /<DepressedInput[\s\S]*label="Add to Transcript"/);
+  assert.match(source, /paper-shadow/);
   assert.doesNotMatch(source, /Group Chat/);
   assert.doesNotMatch(source, /Claim an Existing Character/);
+  assert.doesNotMatch(
+    source,
+    /max-h-\[24rem\] overflow-y-auto rounded-sm border-2 border-kac-iron\/15/,
+  );
+  assert.doesNotMatch(source, /import\s+\{\s*TextArea\s*\}/);
 });

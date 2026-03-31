@@ -20,21 +20,14 @@ import {
   adventureModuleCreateLocationRequestSchema,
   adventureModuleCreateQuestRequestSchema,
   adventureModuleUpdateActorRequestSchema,
-  adventureModuleUpdateActorResponseSchema,
   adventureModuleUpdateAssetRequestSchema,
-  adventureModuleUpdateAssetResponseSchema,
   adventureModuleUpdateCounterRequestSchema,
-  adventureModuleUpdateCounterResponseSchema,
   adventureModuleUpdateCoverImageRequestSchema,
   adventureModuleUpdateEncounterRequestSchema,
-  adventureModuleUpdateEncounterResponseSchema,
   adventureModuleUpdateFragmentRequestSchema,
   adventureModuleUpdateIndexRequestSchema,
   adventureModuleUpdateLocationRequestSchema,
-  adventureModuleUpdateLocationResponseSchema,
   adventureModuleUpdateQuestRequestSchema,
-  adventureModuleUpdateQuestResponseSchema,
-  adventureModuleUpdateResponseSchema,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import {
   CampaignNotFoundError,
@@ -151,7 +144,7 @@ export const registerCampaignRoutes = (
         index: payload.index,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -168,7 +161,7 @@ export const registerCampaignRoutes = (
         content: payload.content,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -206,7 +199,7 @@ export const registerCampaignRoutes = (
         mapPins: payload.mapPins,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateLocationResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -221,7 +214,7 @@ export const registerCampaignRoutes = (
         locationSlug: routeParams.locationSlug,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -257,7 +250,7 @@ export const registerCampaignRoutes = (
         content: payload.content,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateEncounterResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -272,7 +265,7 @@ export const registerCampaignRoutes = (
         encounterSlug: routeParams.encounterSlug,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -307,7 +300,7 @@ export const registerCampaignRoutes = (
         content: payload.content,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateQuestResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -322,7 +315,7 @@ export const registerCampaignRoutes = (
         questSlug: routeParams.questSlug,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -362,7 +355,7 @@ export const registerCampaignRoutes = (
         content: payload.content,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateActorResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -377,7 +370,7 @@ export const registerCampaignRoutes = (
         actorSlug: routeParams.actorSlug,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -417,7 +410,7 @@ export const registerCampaignRoutes = (
         content: payload.content,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateAssetResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -432,7 +425,7 @@ export const registerCampaignRoutes = (
         assetSlug: routeParams.assetSlug,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -468,7 +461,7 @@ export const registerCampaignRoutes = (
         description: payload.description,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateCounterResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -483,7 +476,7 @@ export const registerCampaignRoutes = (
         counterSlug: routeParams.counterSlug,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -498,7 +491,7 @@ export const registerCampaignRoutes = (
         coverImageUrl: payload.coverImageUrl ?? undefined,
       });
       notifyCampaignUpdated(options, updated.index.slug, updated.updatedAtIso);
-      return reply.send(adventureModuleUpdateResponseSchema.parse(updated));
+      return reply.send(campaignGetResponseSchema.parse(updated));
     } catch (error) {
       return sendKnownError(reply, error);
     }

@@ -162,6 +162,9 @@ Current player session scope:
 - claim/create PC
 - enter the live transcript after claim/create succeeds
 - add messages to the shared transcript
+- paste supported component shortcodes into transcript messages and see them render inline in place
+- reuse the Adventure-style transcript wrapper treatment, including the softer unframed scroll area and fade mask
+- see known session events such as joins, leaves, and claims rendered with participant labels and Adventure-aligned role colors
 
 Not yet included:
 
@@ -186,7 +189,10 @@ The `Chat` tab currently includes:
 - participant roster
 - persistent live transcript
 - storyteller transcript composer
+- inline rendering for supported component shortcodes pasted into transcript messages
+- the same shared session transcript presenter used by the player view, so wrapper styling and participant/system message treatment stay in sync
 - close-session action
+- a read-only campaign title header with the close-session action kept on the same top row
 
 The storyteller stays inside the same campaign-backed entity editors while the session is live.
 
@@ -196,6 +202,7 @@ Current UX direction:
 - `Transcript` is the primary conversation model across player and storyteller screens
 - the storyteller `Chat` tab is a dedicated live-session split view inside the broader campaign shell, not a fully separate storyteller app
 - player flow is intentionally two-step: character claim/create first, live transcript second
+- storyteller session routes widen beyond the standard authoring shell so the live roster and transcript can use the full viewport width
 
 ---
 
@@ -226,6 +233,12 @@ Transcript persistence includes:
 - player character claimed/created
 - group messages
 - session closed
+
+Transcript presentation includes:
+
+- shared web-side parsing of known session system events into labeled messages such as `Joined`, `Left`, `Claimed ...`, and `Created ...`
+- role-aware message colors for storyteller vs player entries, with current-participant session messages visually separated from other players
+- Adventure-style transcript scrolling treatment with the same soft fade mask instead of a framed transcript box
 
 Realtime stability note:
 

@@ -129,3 +129,70 @@ test("registerCampaignRoutes supports campaign CRUD and session creation", async
     createdSession.sessionId,
   );
 });
+
+test("registerCampaignRoutes keeps campaign metadata when updating actors", async (t) => {
+  const { app, sourceStore } = await createApp();
+
+  t.after(async () => {
+    await app.close();
+  });
+
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Flooded Bells",
+  });
+  await sourceStore.updateActor({
+    moduleId: source.index.moduleId,
+    actorSlug: "primary-actor",
+    creatorToken: "source-owner",
+    title: "Bell Runner",
+    summary: "Fast enough to slip through rising gates.",
+    baseLayerSlug: "civilian",
+    tacticalRoleSlug: "pawn",
+    isPlayerCharacter: true,
+    content: "# Bell Runner\n\nReady for play.",
+  });
+
+  const createResponse = await app.inject({
+    method: "POST",
+    url: "/api/campaigns",
+    payload: {
+      sourceModuleId: source.index.moduleId,
+      title: "Flooded Bells Campaign",
+    },
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const created = createResponse.json() as {
+    campaignId: string;
+    actors: Array<{ actorSlug: string }>;
+  };
+  const actorSlug = created.actors[0]?.actorSlug;
+  assert.equal(typeof actorSlug, "string");
+
+  const updateActorResponse = await app.inject({
+    method: "PUT",
+    url: `/api/campaigns/${created.campaignId}/actors/${actorSlug}`,
+    payload: {
+      title: "Bell Runner Revised",
+      summary: "Faster still through flooded gates.",
+      baseLayerSlug: "civilian",
+      tacticalRoleSlug: "pawn",
+      tacticalSpecialSlug: null,
+      isPlayerCharacter: true,
+      content: "# Bell Runner Revised\n\nStill ready for play.",
+    },
+  });
+  assert.equal(updateActorResponse.statusCode, 200);
+  const updated = updateActorResponse.json() as {
+    campaignId?: string;
+    sourceModuleId?: string;
+    sourceModuleSlug?: string;
+    sourceModuleTitle?: string;
+    actors: Array<{ actorSlug: string; title: string }>;
+  };
+  assert.equal(updated.campaignId, created.campaignId);
+  assert.equal(updated.sourceModuleId, source.index.moduleId);
+  assert.equal(updated.sourceModuleSlug, source.index.slug);
+  assert.equal(updated.sourceModuleTitle, source.index.title);
+  assert.equal(updated.actors.some((actor) => actor.title === "Bell Runner Revised"), true);
+});

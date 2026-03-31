@@ -2,16 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { CampaignDetail } from "@mighty-decks/spec/campaign";
 import { ActorCard } from "../components/cards/ActorCard";
+import { CampaignSessionTranscriptFeed } from "../components/CampaignSessionTranscriptFeed";
 import { Button } from "../components/common/Button";
+import { DepressedInput } from "../components/common/DepressedInput";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Section } from "../components/common/Section";
 import { Text } from "../components/common/Text";
-import { TextArea } from "../components/common/TextArea";
 import { TextField } from "../components/common/TextField";
 import { useCampaignSession } from "../hooks/useCampaignSession";
 import { getCampaignSessionIdentity } from "../lib/campaignSessionIdentity";
 import { getCampaignBySlug } from "../lib/campaignApi";
+import { createGameCardCatalogContextValue } from "../lib/gameCardCatalogContext";
 
 export const CampaignSessionPlayerPage = (): JSX.Element => {
   const navigate = useNavigate();
@@ -133,6 +135,17 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     Boolean(joinedPlayerParticipant) &&
     session?.status !== "closed";
   const readyToClaimCharacter = Boolean(joinedPlayerParticipant);
+  const gameCardCatalogValue = useMemo(
+    () =>
+      createGameCardCatalogContextValue({
+        actors: campaign?.actors ?? [],
+        counters: campaign?.counters ?? [],
+        assets: campaign?.assets ?? [],
+        encounters: campaign?.encounters ?? [],
+        quests: campaign?.quests ?? [],
+      }),
+    [campaign],
+  );
 
   return (
     <div className="app-shell stack py-8 gap-4">
@@ -275,22 +288,13 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
             <Text variant="h3" color="iron">
               Transcript
             </Text>
-            <div className="max-h-[24rem] overflow-y-auto rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
-              <div className="stack gap-3">
-                {(session?.transcript ?? []).map((entry) => (
-                  <div key={entry.entryId} className="stack gap-1">
-                    <Text variant="note" color="steel-dark" className="text-xs">
-                      {entry.authorDisplayName
-                        ? `${entry.authorDisplayName} (${entry.authorRole})`
-                        : "System"}
-                    </Text>
-                    <Text variant="body" color="iron" className="text-sm whitespace-pre-wrap">
-                      {entry.text}
-                    </Text>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <CampaignSessionTranscriptFeed
+              entries={session?.transcript ?? []}
+              participants={session?.participants ?? []}
+              currentParticipantId={identity.participantId}
+              gameCardCatalogValue={gameCardCatalogValue}
+              className="max-h-[24rem]"
+            />
 
             {session?.status === "closed" ? (
               <Message label="Closed" color="cloth">
@@ -298,23 +302,30 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
               </Message>
             ) : null}
 
-            <TextArea
-              label="Add to Transcript"
-              rows={4}
-              value={messageText}
-              onChange={(event) => setMessageText(event.target.value)}
-              placeholder="Share your action, narration, or question for the table..."
-            />
-            <Button
-              color="gold"
-              disabled={!canChat || messageText.trim().length === 0}
-              onClick={() => {
-                sendMessage(identity.participantId, messageText.trim());
-                setMessageText("");
-              }}
-            >
-              Add to Transcript
-            </Button>
+            <div className="stack gap-2">
+              <DepressedInput
+                multiline
+                label="Add to Transcript"
+                labelColor="gold"
+                rows={4}
+                value={messageText}
+                onChange={(event) => setMessageText(event.target.value)}
+                placeholder="Share your action, narration, or question for the table..."
+                controlClassName="min-h-[7.5rem]"
+              />
+              <div className="flex items-end justify-end gap-2 paper-shadow">
+                <Button
+                  color="gold"
+                  disabled={!canChat || messageText.trim().length === 0}
+                  onClick={() => {
+                    sendMessage(identity.participantId, messageText.trim());
+                    setMessageText("");
+                  }}
+                >
+                  Add to Transcript
+                </Button>
+              </div>
+            </div>
           </Panel>
         </>
       ) : null}

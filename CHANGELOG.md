@@ -59,6 +59,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Standardize the location and encounter authoring lists around wrapped horizontal scene cards, use the location summary as the card footer text, stop repeating card summaries below the frame, and rename the encounter editor field from `Short Description` to `Summary`.
 - Refresh campaign-session UX toward the polished Adventure flow: lighter role-entry lobby, transcript-first player/storyteller session copy, a focused player claim step before live play, and a cleaner storyteller live transcript tab inside the campaign shell.
 - Merge the campaign-session lobby join flow into one role-toggle form, extract reusable `CTAButton` and `ConnectionStatusPill` primitives from the Adventure-inspired UI language, and surface session/presence state as compact pills instead of separate framed status blocks.
+- Render supported shortcode cards inline inside campaign session transcripts so players and storytellers can paste multiple component shortcodes into one shared message.
+- Tighten storyteller session chrome so the header uses a smaller read-only campaign title, keeps `Close Session` on the same row, hides the slug subtitle, and lets the live session surface span the full viewport width.
+- Reuse the Adventure transcript wrapper and a shared session-entry presenter across player and storyteller session chat so Session transcript styling, fade masking, and known participant event labels/colors stay consistent.
+- Restyle the player and storyteller Session transcript composers to use the same depressed message-input treatment as the Adventure action composer, while keeping the Session-specific send actions intact.
 
 ### Fixed
 
@@ -69,6 +73,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add a second inline `+` and `-` control pair after the max counter value so authoring cards can adjust both current and max values without leaving the card.
 - Return `coverImageUrl` in Adventure Module detail payloads so Base-tab title image selection survives tab switches and remounts.
 - Stabilize campaign session realtime joins so storyteller live-session routes stop re-emitting join events on rerender, stale session errors clear after fresh session state, and player character claim/create waits for confirmed session membership.
+- Return full `CampaignDetail` payloads from campaign edit routes so session-side actor and other campaign entity saves no longer fail client-side validation after successful server updates.
+- Give the desktop Workflow Lab nav button extra width so its longer label fits cleanly at the shell's widest breakpoint.
 
 ### Docs
 
@@ -88,6 +94,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add campaign and human-storyteller session docs, update route/architecture/event docs for the new `/campaign/...` surface, and document the module-side `Create Campaign` handoff plus mock-participant testing flow.
 - Update UI/style and campaign-session docs to formalize Adventure-derived transcript-first campaign/session guidance and explicitly discourage overusing framed panels on live session surfaces.
 - Update the component/style docs and hidden styleguide to document the shared CTA highlight button and reusable connection-status pill patterns.
+- Update campaign session docs to note that supported component shortcodes now render inline inside shared transcript messages.
 
 ## [0.1.0] - 2026-03-13
 
