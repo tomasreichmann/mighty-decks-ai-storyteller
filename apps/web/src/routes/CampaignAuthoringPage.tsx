@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import type { CampaignDetail } from "@mighty-decks/spec/campaign";
 import type { CampaignSessionStatus } from "@mighty-decks/spec/campaign";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
@@ -4022,73 +4022,67 @@ export const CampaignAuthoringPage = (): JSX.Element => {
     <div
       className={
         storytellerSessionMode
-          ? "stack gap-4 w-full max-w-none px-4 py-8 sm:px-6 lg:px-8"
+          ? "stack gap-4 w-full max-w-none px-4 py-4 sm:px-6 lg:px-8"
           : "app-shell stack py-8 gap-4"
       }
     >
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          {storytellerSessionMode || !editable ? (
-            storytellerSessionMode ? (
-              <Text variant="h3" color="iron">
-                {moduleDetail?.index.title ?? "Campaign"}
-              </Text>
-            ) : (
+      {storytellerSessionMode ? null : (
+        <header className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            {!editable ? (
               <Text variant="h2" color="iron">
                 {moduleDetail?.index.title ?? "Campaign"}
               </Text>
-            )
-          ) : (
-            <input
-              type="text"
-              aria-label="Campaign title"
-              maxLength={120}
-              value={baseForm.title}
-              onChange={(event) => {
-                setBaseValidationMessage(null);
-                setBaseForm((current) => ({
-                  ...current,
-                  title: event.target.value,
-                }));
-                setBaseDirty(true);
-              }}
-              onBlur={handleBaseFieldBlur}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") {
-                  return;
-                }
-                event.currentTarget.blur();
-              }}
-              className="m-0 w-full appearance-none border-0 bg-transparent p-0 font-heading text-3xl/none font-bold tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-4xl/none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
-            />
-          )}
-          {storytellerSessionMode ? null : (
+            ) : (
+              <input
+                type="text"
+                aria-label="Campaign title"
+                maxLength={120}
+                value={baseForm.title}
+                onChange={(event) => {
+                  setBaseValidationMessage(null);
+                  setBaseForm((current) => ({
+                    ...current,
+                    title: event.target.value,
+                  }));
+                  setBaseDirty(true);
+                }}
+                onBlur={handleBaseFieldBlur}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") {
+                    return;
+                  }
+                  event.currentTarget.blur();
+                }}
+                className="m-0 w-full appearance-none border-0 bg-transparent p-0 font-heading text-3xl/none font-bold tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-4xl/none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
+              />
+            )}
             <Text variant="body" color="iron-light" className="text-sm">
               {moduleDetail?.index.slug
                 ? `/${moduleDetail.index.slug}`
                 : "Campaign Authoring"}
             </Text>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {storytellerSessionMode ? null : moduleDetail ? (
-            <Button
-              variant="ghost"
-              color="gold"
-              disabled={creatingSession}
-              onClick={() => {
-                void handleCreateSession();
-              }}
-            >
-              {creatingSession ? "Creating Session..." : "Create Session"}
-            </Button>
-          ) : null}
-          <AutosaveStatusBadge
-            status={autosaveStatus}
-            message={autosaveMessage}
-          />
-        </div>
-      </header>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {moduleDetail ? (
+              <Button
+                variant="ghost"
+                color="gold"
+                disabled={creatingSession}
+                onClick={() => {
+                  void handleCreateSession();
+                }}
+              >
+                {creatingSession ? "Creating Session..." : "Create Session"}
+              </Button>
+            ) : null}
+            <AutosaveStatusBadge
+              status={autosaveStatus}
+              message={autosaveMessage}
+            />
+          </div>
+        </header>
+      )}
 
       {error ? (
         <Message label="Error" color="blood">
@@ -4117,6 +4111,31 @@ export const CampaignAuthoringPage = (): JSX.Element => {
             tabs={tabItems}
             buildTabPath={(moduleSlug, tabId) =>
               buildCampaignRoute(moduleSlug, tabId as CampaignTab)
+            }
+            leadingContent={
+              storytellerSessionMode ? (
+                <NavLink
+                  to="/"
+                  aria-label="Go to home page"
+                  className="inline-flex shrink-0"
+                >
+                  <img
+                    src="/mighty-decks-ai-storyteller-logo.png"
+                    alt="Mighty Decks AI Storyteller"
+                    className="h-12 w-auto drop-shadow-[0_4px_0_rgba(9,15,21,0.38)]"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </NavLink>
+              ) : undefined
+            }
+            trailingContent={
+              storytellerSessionMode ? (
+                <AutosaveStatusBadge
+                  status={autosaveStatus}
+                  message={autosaveMessage}
+                />
+              ) : undefined
             }
           />
 

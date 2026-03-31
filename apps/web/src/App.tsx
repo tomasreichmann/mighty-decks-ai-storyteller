@@ -87,6 +87,14 @@ const FitContentLayout = (): JSX.Element => {
   );
 };
 
+const NoHeaderFitContentLayout = (): JSX.Element => {
+  return (
+    <Page mode="fit-content" footerContent={null} hideHeader>
+      <Outlet />
+    </Page>
+  );
+};
+
 const FitScreenLayout = (): JSX.Element => {
   return (
     <Page mode="fit-screen" footerContent={null}>
@@ -126,18 +134,6 @@ export const App = (): JSX.Element => {
             path="/campaign/:campaignSlug/session/:sessionId"
             element={<CampaignSessionLobbyPage />}
           />
-          <Route
-            path="/campaign/:campaignSlug/session/:sessionId/player"
-            element={<CampaignSessionPlayerPage />}
-          />
-          <Route
-            path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab"
-            element={<CampaignAuthoringPage />}
-          />
-          <Route
-            path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId"
-            element={<CampaignAuthoringPage />}
-          />
           <Route path="/adventure-module/list" element={<AdventureModuleListPage />} />
           <Route path="/adventure-module/new" element={<AdventureModuleNewPage />} />
           <Route path="/adventure-module/:slug/:tab" element={<AdventureModuleAuthoringPage />} />
@@ -168,6 +164,21 @@ export const App = (): JSX.Element => {
             <Route path="stunts" element={<RulesStuntsPage />} />
             <Route path="assets" element={<RulesAssetsPage />} />
           </Route>
+        </Route>
+
+        <Route element={<NoHeaderFitContentLayout />}>
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId/player"
+            element={<CampaignSessionPlayerPage />}
+          />
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab"
+            element={<CampaignAuthoringPage />}
+          />
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId"
+            element={<CampaignAuthoringPage />}
+          />
         </Route>
 
         <Route element={<FitScreenLayout />}>

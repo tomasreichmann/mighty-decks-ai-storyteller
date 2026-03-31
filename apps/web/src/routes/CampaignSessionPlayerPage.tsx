@@ -1,5 +1,5 @@
 import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import type { CampaignDetail } from "@mighty-decks/spec/campaign";
 import { ActorCard } from "../components/cards/ActorCard";
 import { CampaignSessionTranscriptFeed } from "../components/CampaignSessionTranscriptFeed";
@@ -19,7 +19,6 @@ import { appendMarkdownSnippet } from "../lib/markdownImage";
 import type { SmartInputDocumentContext } from "../lib/smartInputContext";
 
 export const CampaignSessionPlayerPage = (): JSX.Element => {
-  const navigate = useNavigate();
   const { campaignSlug, sessionId } = useParams<{
     campaignSlug?: string;
     sessionId?: string;
@@ -215,30 +214,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
   };
 
   return (
-    <div className="app-shell stack py-8 gap-4">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="stack gap-1">
-          <Text variant="h2" color="iron">
-            Player Session
-          </Text>
-          <Text variant="body" color="iron-light" className="text-sm">
-            Claim an existing player character or create a new one before you
-            enter the live transcript.
-          </Text>
-        </div>
-        <Button
-          variant="ghost"
-          color="cloth"
-          onClick={() =>
-            navigate(
-              `/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(sessionId)}`,
-            )
-          }
-        >
-          Back to Lobby
-        </Button>
-      </header>
-
+    <div className="stack w-full max-w-none gap-4 px-4 py-3 sm:px-6 lg:px-8">
       {!connected ? (
         <Message label="Connecting" color="cloth">
           Reconnecting to session realtime...

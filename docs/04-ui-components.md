@@ -217,6 +217,8 @@ Shared shell components:
 
 - `AdventureModuleAuthoringHeader`
 - `AdventureModuleTabNav`
+  - supports optional leading/trailing slot content for session-specific chrome such as a home-link logo and autosave badge
+  - collapses to a burger-triggered vertical menu on tablet/mobile breakpoints while keeping the full button rail on desktop
 - `AutosaveStatusBadge`
 - `PublishModuleButton`
 - `AuthoringTabContentHost`

@@ -167,6 +167,7 @@ Current player session scope:
 - see markdown images render inline inside transcript messages without changing the stored session message shape
 - reuse the Adventure-style transcript wrapper treatment, including the softer unframed scroll area and fade mask
 - see known session events such as joins, leaves, and claims rendered with participant labels and Adventure-aligned role colors
+- use a headerless, footerless player session shell so claim/chat screens keep more vertical room for the live transcript and composer
 
 Not yet included:
 
@@ -196,7 +197,7 @@ The `Chat` tab currently includes:
 - inline rendering for markdown images embedded in transcript text
 - the same shared session transcript presenter used by the player view, so wrapper styling and participant/system message treatment stay in sync
 - close-session action
-- a read-only campaign title header with the close-session action kept on the same top row
+- a compact session-nav row where the Mighty Decks logo links home, `Chat` stays first in the tab order, the autosave indicator sits immediately after the tab rail, and tablet/mobile use a burger menu instead of the full button group
 
 The storyteller stays inside the same campaign-backed entity editors while the session is live.
 

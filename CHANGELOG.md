@@ -67,6 +67,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Restyle the player and storyteller Session transcript composers to use the same depressed message-input treatment as the Adventure action composer, while keeping the Session-specific send actions intact.
 - Extend Adventure Module markdown editors and human-session transcript composers with a reusable image button plus modal backed by the existing generated-image UI, and render `![alt](url)` images inline inside shared session transcript messages.
 - Align Session chat composers more closely with the Adventure action field by renaming the draft label to `Message`, switching the action button to `Send`, supporting Enter-to-send with Shift+Enter for newlines, and moving storyteller `End Session` into the lower-left composer row.
+- Remove the player session page-shell header/title chrome for more transcript room, and restyle storyteller live-session navigation so the home-link logo sits before the tab rail, the autosave badge follows it, and tablet/mobile collapse the tab buttons into a burger menu.
+- Reduce the vertical shell padding on player and storyteller live-session chat routes so more of the viewport is available to the transcript and composer.
 - Restyle the campaign authoring `Sessions` list items to use the shared `Message` framing so archived/live session rows match the broader campaign shell language.
 - Extend the shared `Button` component with `href` support and switch the campaign `Sessions` list actions to real links so lobby and storyteller views can be opened in separate browser tabs.
 - Refine the campaign `Sessions` list rows with a created-date line, a shared `Status` pill, a single right-aligned primary `Join` action, and the removal of the separate storyteller-view link.
@@ -76,6 +78,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Move storyteller live-session routes onto the same headerless shell as the player session route so the global site header no longer steals vertical space above session chat.
 - Align Session chat keyboard submission with the shared Adventure action composer so only plain Enter sends, while Shift+Enter and other modifier-enter combinations stay available for multiline editing.
 - Resolve the built web client path relative to the server module location so Render's plain-Node startup still serves the frontend from the single service root.
 - Proxy local Vite `/api`, `/adventures`, `/health`, and `/socket.io` traffic through the web origin so Adventure Module list/create flows still work when the backend `PORT` is overridden in root `.env.local`.

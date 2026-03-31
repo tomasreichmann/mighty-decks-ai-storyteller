@@ -47,6 +47,9 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
   assert.match(source, /storytellerSession\?\.transcript/);
   assert.match(source, /CampaignSessionTranscriptFeed/);
   assert.match(source, /MarkdownImageInsertButton/);
+  assert.match(source, /storytellerSessionMode[\s\S]*leadingContent=\{/);
+  assert.match(source, /storytellerSessionMode[\s\S]*to="\/"[\s\S]*mighty-decks-ai-storyteller-logo\.png/);
+  assert.match(source, /storytellerSessionMode[\s\S]*trailingContent=\{[\s\S]*<AutosaveStatusBadge/);
   assert.match(
     source,
     /activeTab === "chat"[\s\S]*<DepressedInput[\s\S]*label="Message"[\s\S]*topRightControl=\{/,
@@ -64,7 +67,7 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
   assert.doesNotMatch(source, /<Panel\s+key=\{session\.sessionId\}/);
 });
 
-test("CampaignAuthoringPage uses a read-only full-width header in storyteller session mode", () => {
+test("CampaignAuthoringPage uses a compact full-width shell in storyteller session mode", () => {
   const source = readFileSync(
     new URL("./CampaignAuthoringPage.tsx", import.meta.url),
     "utf8",
@@ -72,11 +75,9 @@ test("CampaignAuthoringPage uses a read-only full-width header in storyteller se
 
   assert.match(
     source,
-    /storytellerSessionMode\s*\?\s*"[^"]*w-full max-w-none px-4 py-8 sm:px-6 lg:px-8[^"]*"/,
+    /storytellerSessionMode\s*\?\s*"[^"]*w-full max-w-none px-4 py-4 sm:px-6 lg:px-8[^"]*"/,
   );
-  assert.match(source, /storytellerSessionMode \|\| !editable \? \(/);
-  assert.match(source, /<Text variant="h3" color="iron">/);
-  assert.match(source, /storytellerSessionMode \? null : \(/);
+  assert.match(source, /storytellerSessionMode \? null : \(\s*<header/);
   assert.match(
     source,
     /activeTab === "chat"[\s\S]*<Section className="stack gap-4">\s*\{storytellerRealtimeError \?/,
