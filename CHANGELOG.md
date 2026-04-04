@@ -102,6 +102,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Keep the reusable markdown-image modal header/footer fixed while a padded inner body scrolls, so tall generate-or-pick content stays reachable without label clipping or horizontal overflow.
 - Fix storyteller session mobile tab navigation so it stays collapsed by default instead of rendering permanently open, and size landscape table cards (`Location`, `Encounter`, `Quest`) with a wider half-scale slot instead of forcing the same portrait width as other card types.
 - Polish landscape scene-card framing by moving the top-right icon deeper into the corner overlay, making title chips and bottom description strips hug their text more tightly, and replacing the box-shadow artifact with a shifted rounded shadow rectangle behind the card.
+- Refine landscape scene-card title styling by removing the title-chip border and using lighter hue-matched label text colors over the dark translucent title gradient.
+- Apply the title gradient as a true top-left corner overlay of the full landscape card surface (instead of a text-frame fill), while keeping the title text layered above it.
+- Remove circular `X` button shadows on table/selection card controls so the remove affordance no longer visually overlaps nearby card title text.
 
 ### Docs
 

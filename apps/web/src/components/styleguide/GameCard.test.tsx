@@ -60,11 +60,8 @@ test("GameCard renders location content without leaking internal location metada
   );
 
   assert.match(markup, /The Drowned Gate District/);
-  assert.match(markup, /📌/);
-  assert.match(
-    markup,
-    /Catwalks groan over dark water channels while the pumps thrum beneath the district\./,
-  );
+  assert.match(markup, /Catwalks groan over dark water channels while the pumps thrum/);
+  assert.match(markup, /beneath the district\./);
   assert.doesNotMatch(markup, /ImageCard-driven direction/);
   assert.doesNotMatch(markup, /drowned-gate-district/);
   assert.doesNotMatch(markup, /map pins/i);
@@ -79,7 +76,6 @@ test("GameCard renders encounter content without leaking prerequisites", () => {
   );
 
   assert.match(markup, /Bridge Tribute Checkpoint/);
-  assert.match(markup, /⚠️/);
   assert.match(markup, /Pay, bluff, or break through an armored toll blockade\./);
   assert.doesNotMatch(markup, /Suggested for level 3\+/);
 });
@@ -97,6 +93,5 @@ test("GameCard renders quest content without leaking the quest slug", () => {
     markup,
     /Retrieve a stolen lantern shard before rival factions claim it\./,
   );
-  assert.match(markup, /📜/u);
   assert.doesNotMatch(markup, /recover-the-shard/);
 });

@@ -133,7 +133,7 @@ export const LayeredCard = ({
   return (
     <article
       className={cn(
-        "relative aspect-[204/332] w-[204px] max-w-full overflow-hidden rounded-[0.6rem]",
+        "relative aspect-[204/332] w-[204px] max-w-full",
         className,
       )}
       {...restProps}

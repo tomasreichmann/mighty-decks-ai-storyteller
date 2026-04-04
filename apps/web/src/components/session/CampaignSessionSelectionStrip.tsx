@@ -46,7 +46,7 @@ export const CampaignSessionSelectionStrip = ({
               size="sm"
               aria-label={`Remove ${entry.label}`}
               title={`Remove ${entry.label}`}
-              className="!absolute !right-1 !top-1 !h-5 !w-5 !border-x-[2px] !border-y-[2px] text-[0.7rem]"
+              className="!absolute !right-1 !top-1 !h-5 !w-5 !border-x-[2px] !border-y-[2px] !shadow-none hover:!shadow-none active:!shadow-none disabled:!shadow-none text-[0.7rem]"
               onClick={() => {
                 onRemoveEntry(entry.id);
               }}

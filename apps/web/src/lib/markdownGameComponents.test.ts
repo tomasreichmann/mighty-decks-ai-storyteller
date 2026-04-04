@@ -10,7 +10,7 @@ test("markdownGameComponents resolves built-in asset slugs when module assets ar
   assert.match(source, /const builtInAssetsBySlug = new Map/);
   assert.match(source, /const moduleAsset = moduleAssetsBySlug\?\.get\(key\);/);
   assert.match(source, /const asset = builtInAssetsBySlug\.get\(key\);/);
-  assert.match(source, /modifierSlug: normalizedModifierSlug/);
+  assert.match(source, /modifierSlug: validatedModifierSlug/);
 });
 
 test("markdownGameComponents only offers custom module assets in insert options", () => {

@@ -1,5 +1,7 @@
-import { isValidElement, useId, type ReactNode } from "react";
+import React, { isValidElement, useId, type ReactNode } from "react";
 import { cn } from "../../utils/cn";
+
+void React;
 
 const SCENE_CARD_WIDTH = 332;
 const SCENE_CARD_HEIGHT = 204;
@@ -7,7 +9,8 @@ const SCENE_CARD_INSET = 2;
 const SCENE_CARD_INNER_WIDTH = 328;
 const SCENE_CARD_INNER_HEIGHT = 200;
 const SCENE_CARD_RADIUS = 7;
-const SCENE_CARD_SHADOW_OFFSET = 4;
+const SCENE_DESCRIPTION_LINE_HEIGHT_TOTAL = 17;
+const SCENE_DESCRIPTION_BASELINE_OFFSET = 20;
 
 interface SceneCardFrameProps {
   imageUrl: string;
@@ -29,23 +32,15 @@ export const SceneCardFrame = ({
   className = "",
 }: SceneCardFrameProps): JSX.Element => {
   const clipPathId = useId();
-  const overlayGradientId = useId();
-  const iconCornerGradientId = useId();
+  const topFadeGradientId = useId();
   const titleText = toTextContent(title, 96);
   const descriptionText = toTextContent(description, 170);
   const iconText = toTextContent(typeIcon, 4) || "?";
   const titleLines = wrapText(titleText, 32, 2);
   const descriptionLines = wrapText(descriptionText, 64, 2);
-  const titleMaxLineLength = titleLines.reduce(
-    (maxLength, line) => Math.max(maxLength, line.length),
-    0,
-  );
-  const titleChipWidth = Math.min(
-    224,
-    Math.max(94, 24 + titleMaxLineLength * 8),
-  );
-  const titleChipHeight = 34 + (titleLines.length - 1) * 19;
-  const descriptionBandHeight = 14 + descriptionLines.length * 16;
+  const descriptionBandHeight =
+    SCENE_DESCRIPTION_BASELINE_OFFSET +
+    descriptionLines.length * SCENE_DESCRIPTION_LINE_HEIGHT_TOTAL;
   const descriptionBandY =
     SCENE_CARD_INSET + SCENE_CARD_INNER_HEIGHT - descriptionBandHeight;
   const titleColors = TITLE_VARIANT_STYLES[titleVariant];
@@ -57,17 +52,10 @@ export const SceneCardFrame = ({
   return (
     <div
       className={cn(
-        "relative h-[204px] w-[332px] max-w-full overflow-visible",
+        "relative aspect-[332/204] w-[332px] max-w-full",
         className,
       )}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 rounded-[7px] bg-[#121b23]"
-        style={{
-          transform: `translate(${SCENE_CARD_SHADOW_OFFSET}px, ${SCENE_CARD_SHADOW_OFFSET}px)`,
-        }}
-      />
       <svg
         viewBox={`0 0 ${SCENE_CARD_WIDTH} ${SCENE_CARD_HEIGHT}`}
         role="img"
@@ -85,14 +73,9 @@ export const SceneCardFrame = ({
               ry={SCENE_CARD_RADIUS}
             />
           </clipPath>
-          <linearGradient id={overlayGradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(18, 27, 35, 0.14)" />
-            <stop offset="62%" stopColor="rgba(18, 27, 35, 0.06)" />
-            <stop offset="100%" stopColor="rgba(18, 27, 35, 0.58)" />
-          </linearGradient>
-          <linearGradient id={iconCornerGradientId} x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id={topFadeGradientId} x1="0" y1="1" x2="0" y2="0">
             <stop offset="0%" stopColor="rgba(18, 27, 35, 0)" />
-            <stop offset="100%" stopColor="rgba(18, 27, 35, 0.62)" />
+            <stop offset="100%" stopColor="rgba(18, 27, 35, 0.58)" />
           </linearGradient>
         </defs>
 
@@ -104,34 +87,40 @@ export const SceneCardFrame = ({
           rx={SCENE_CARD_RADIUS}
           fill="#121b23"
         />
-        <image
-          href={imageUrl}
-          x={SCENE_CARD_INSET}
-          y={SCENE_CARD_INSET}
-          width={SCENE_CARD_INNER_WIDTH}
-          height={SCENE_CARD_INNER_HEIGHT}
-          preserveAspectRatio="xMidYMid slice"
-          clipPath={`url(#${clipPathId})`}
-        />
-        <rect
-          x={SCENE_CARD_INSET}
-          y={SCENE_CARD_INSET}
-          width={SCENE_CARD_INNER_WIDTH}
-          height={SCENE_CARD_INNER_HEIGHT}
-          rx={SCENE_CARD_RADIUS}
-          fill={`url(#${overlayGradientId})`}
-        />
+        <g clipPath={`url(#${clipPathId})`}>
+          <image
+            href={imageUrl}
+            x={SCENE_CARD_INSET}
+            y={SCENE_CARD_INSET}
+            width={SCENE_CARD_INNER_WIDTH}
+            height={SCENE_CARD_INNER_HEIGHT}
+            preserveAspectRatio="xMidYMid slice"
+          />
+          <rect
+            x={SCENE_CARD_INSET}
+            y={SCENE_CARD_INSET}
+            width={SCENE_CARD_INNER_WIDTH}
+            height={Math.max(0, descriptionBandY - SCENE_CARD_INSET)}
+            rx={SCENE_CARD_RADIUS}
+            fill={`url(#${topFadeGradientId})`}
+          />
+          <rect
+            x={SCENE_CARD_INSET}
+            y={descriptionBandY}
+            width={SCENE_CARD_INNER_WIDTH}
+            height={descriptionBandHeight}
+            fill="#f7f3eb"
+          />
+          <line
+            x1={SCENE_CARD_INSET}
+            y1={descriptionBandY}
+            x2={SCENE_CARD_INSET + SCENE_CARD_INNER_WIDTH}
+            y2={descriptionBandY}
+            stroke="#121b23"
+            strokeWidth="2"
+          />
+        </g>
 
-        <rect
-          x="16"
-          y="14"
-          width={titleChipWidth}
-          height={titleChipHeight}
-          rx="7"
-          fill={titleColors.fill}
-          stroke="#121b23"
-          strokeWidth="2"
-        />
         {titleLines.map((line, index) => (
           <text
             key={`${line}-${index}`}
@@ -147,10 +136,6 @@ export const SceneCardFrame = ({
           </text>
         ))}
 
-        <path
-          d="M 248 2 L 330 2 L 330 84 Z"
-          fill={`url(#${iconCornerGradientId})`}
-        />
         <text
           x="306"
           y="36"
@@ -164,27 +149,15 @@ export const SceneCardFrame = ({
         >
           {iconText}
         </text>
-
-        <rect
-          x={SCENE_CARD_INSET}
-          y={descriptionBandY}
-          width={SCENE_CARD_INNER_WIDTH}
-          height={descriptionBandHeight}
-          fill="#f7f3eb"
-        />
-        <line
-          x1={SCENE_CARD_INSET}
-          y1={descriptionBandY}
-          x2={SCENE_CARD_INSET + SCENE_CARD_INNER_WIDTH}
-          y2={descriptionBandY}
-          stroke="#121b23"
-          strokeWidth="2"
-        />
         {descriptionLines.map((line, index) => (
           <text
             key={`${line}-${index}`}
             x="18"
-            y={descriptionBandY + 14 + index * 16}
+            y={
+              descriptionBandY +
+              SCENE_DESCRIPTION_BASELINE_OFFSET +
+              index * SCENE_DESCRIPTION_LINE_HEIGHT_TOTAL
+            }
             fill="#1f2d37"
             fontSize="12.5"
             fontFamily="'Kalam', cursive"
@@ -211,16 +184,13 @@ export const SceneCardFrame = ({
 
 const TITLE_VARIANT_STYLES = {
   gold: {
-    fill: "#c19400",
-    text: "#121b23",
+    text: "#e0b749",
   },
   fire: {
-    fill: "#b73d27",
-    text: "#fff8e6",
+    text: "#d97361",
   },
   cloth: {
-    fill: "#527092",
-    text: "#f6f7fa",
+    text: "#8aa8ca",
   },
 } as const;
 

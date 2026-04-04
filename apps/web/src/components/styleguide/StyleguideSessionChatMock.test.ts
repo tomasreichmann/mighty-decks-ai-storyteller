@@ -102,5 +102,5 @@ test("StyleguideSessionChatMock uses label-led dividers instead of boxed player 
   assert.match(css, /\.laneLabel/);
   assert.match(css, /\.stackTopCard/);
   assert.match(css, /\.stackPeekViewport/);
-  assert.match(css, /border-radius: 0\.55rem 0\.55rem 0 0/);
+  assert.doesNotMatch(css, /border-radius: 0\.55rem 0\.55rem 0 0/);
 });

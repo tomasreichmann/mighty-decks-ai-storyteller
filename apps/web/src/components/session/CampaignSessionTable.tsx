@@ -41,7 +41,6 @@ interface TableEntryGroup {
 const compactCardClassName = "w-full max-w-[6.5rem]";
 const compactCardSlotClassName = "w-[6.5rem] max-w-[6.5rem]";
 const compactSceneCardSlotClassName = "w-[10.375rem] max-w-[10.375rem]";
-const compactSceneCardClassName = "!w-[10.375rem] !max-w-[10.375rem] !shadow-[2px_2px_0_0_#121b23]";
 const fullCardHeightRem = 10.6;
 const stackPeekStepRem = 0.9;
 const removeFadeDurationMs = 180;
@@ -158,7 +157,7 @@ const resolveReference = (
     }
     return {
       title: location.title,
-      node: <LocationCardView location={location} className={compactSceneCardClassName} />,
+      node: <LocationCardView location={location} />,
     };
   }
 
@@ -167,12 +166,12 @@ const resolveReference = (
     if (!encounter) {
       return {
         title: makeReferenceTitle(card),
-        node: <InvalidEncounterCardView slug={card.slug} className={compactSceneCardClassName} />,
+        node: <InvalidEncounterCardView slug={card.slug} />,
       };
     }
     return {
       title: encounter.title,
-      node: <EncounterCardView encounter={encounter} className={compactSceneCardClassName} />,
+      node: <EncounterCardView encounter={encounter} />,
     };
   }
 
@@ -181,12 +180,12 @@ const resolveReference = (
     if (!quest) {
       return {
         title: makeReferenceTitle(card),
-        node: <InvalidQuestCardView slug={card.slug} className={compactSceneCardClassName} />,
+        node: <InvalidQuestCardView slug={card.slug} />,
       };
     }
     return {
       title: quest.title,
-      node: <QuestCardView quest={quest} className={compactSceneCardClassName} />,
+      node: <QuestCardView quest={quest} />,
     };
   }
 
@@ -312,7 +311,7 @@ const renderRemoveButton = (
       aria-label={`Remove ${title}`}
       title={`Remove ${title}`}
       onClick={onRemove}
-      className="!h-5 !w-5 !border-x-[2px] !border-y-[2px] text-[0.7rem]"
+      className="!h-5 !w-5 !border-x-[2px] !border-y-[2px] !shadow-none hover:!shadow-none active:!shadow-none disabled:!shadow-none text-[0.7rem]"
     >
       X
     </Button>

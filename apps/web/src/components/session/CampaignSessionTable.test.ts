@@ -21,7 +21,6 @@ test("CampaignSessionTable supports seat-owned lanes, send actions, and role-awa
   assert.match(source, /canStackReference/);
   assert.match(source, /isSceneReference/);
   assert.match(source, /compactSceneCardSlotClassName/);
-  assert.match(source, /compactSceneCardClassName = "!w-\[10\.375rem\] !max-w-\[10\.375rem\]/);
   assert.match(
     source,
     /slotWidthClassName = isSceneReference\(entry\.card\)\s*\?\s*compactSceneCardSlotClassName\s*:\s*compactCardSlotClassName/,
