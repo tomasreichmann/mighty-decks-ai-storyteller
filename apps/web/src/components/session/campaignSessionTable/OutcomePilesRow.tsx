@@ -297,7 +297,8 @@ const OutcomeHandPanel = ({
               color="gold"
               size="sm"
               onClick={handlePlaySelectedCards}
-              aria-label="Play Character"
+              aria-label="Play an Outcome card"
+              title="Play an Outcome card"
             >
               ▶
             </Button>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { AdventureModuleDetail } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
@@ -32,7 +32,6 @@ import {
 } from "../components/adventure-module/AdventureModuleTabNav";
 import { AdventureModuleTabPlaceholder } from "../components/adventure-module/AdventureModuleTabPlaceholder";
 import {
-  EntityList,
   type EntityListItem,
   type EntityListTab,
 } from "../components/adventure-module/EntityList";
@@ -109,6 +108,10 @@ const ENTITY_LIST_TABS: EntityListTab[] = [
 
 const isEntityListTab = (value: AuthoringTab): value is EntityListTab =>
   ENTITY_LIST_TABS.includes(value as EntityListTab);
+
+const EntityList = lazy(async () => ({
+  default: (await import("../components/adventure-module/EntityList")).EntityList,
+}));
 
 type EntitySeed = Omit<EntityListItem, "imageUrl">;
 

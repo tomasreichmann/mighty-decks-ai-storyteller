@@ -23,6 +23,7 @@ test("OutcomePilesRow centers the width-driven hand fan and removes visible pile
   assert.doesNotMatch(source, />\s*Deck\s*</);
   assert.doesNotMatch(source, />\s*Hand\s*</);
   assert.doesNotMatch(source, />\s*Discard\s*</);
-  assert.match(source, /aria-label="Play Character"/);
+  assert.match(source, /aria-label="Play an Outcome card"/);
+  assert.match(source, /title="Play an Outcome card"/);
   assert.match(source, />\s*▶\s*</);
 });

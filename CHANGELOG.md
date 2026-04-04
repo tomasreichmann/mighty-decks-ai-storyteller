@@ -32,7 +32,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
-- Swap the campaign-session outcome action label from `Play Character` to `▶` and keep the control accessible with an `aria-label`.
+- Keep the campaign-session outcome action icon-only, but update its accessible label and title to `Play an Outcome card`.
+- Center the global route loading fallback, restyle `Loading...` as a `Label`, and place the existing pending indicator above it.
 - Center the campaign session table outcome hand on a width that scales with card count, and double the horizontal spacing between the hand and the deck/discard piles while keeping the gentler vertical arc.
 - Raise hovered outcome hand cards above neighboring fan cards so every card in the player hand stays readable in the chat session view.
 - Apply the same hovered stacking fix to the campaign session player table hand, widen the fan spacing, and make the hand responsive so the live route fits without internal scrollbars or clipping.
@@ -92,12 +93,13 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Let the player session route use the full viewport in live play so the transcript feed expands into the available height and the message composer stays visible beneath it.
 - Replace live session chat-only surfaces with a responsive `Table + Chat` layout for storyteller and player chat routes, including mobile `Table / Chat` switching and compact stacked duplicate-card presentation on the table lanes.
 - Tune the live storyteller `Chat` tab shell so `/storyteller/chat` uses fit-screen sizing with independently scrollable `Table` and `Chat` panes, and keep table-card removals visually staged with a short fade-out before removal.
-- Render per-player outcome deck/hand/discard lanes inside the shared campaign session table, with face-up current-player hands, back-face remote hands/decks, fixed discard rotations, and a `Play Character` action that moves selected cards to discard.
+- Render per-player outcome deck/hand/discard lanes inside the shared campaign session table, with face-up current-player hands, back-face remote hands/decks, fixed discard rotations, and a `Play an Outcome card` action that moves selected cards to discard.
 - Refine storyteller session card staging UX by hiding the `Selection` strip when empty, replacing staged-count copy with an inline `(i)` hover/click hint, and reordering session tab navigation so `Outcomes/Effects/Stunts` appear before `Actors` and `Static Assets` appears before `Custom Assets`.
 - Rebuild shared `LocationCard`, `EncounterCard`, and `QuestCard` scene visuals as horizontal SVG cards (`332x204` viewBox, matching portrait card dimensions swapped to landscape) so styleguide, authoring lists, markdown embeds, transcript renders, and table previews all share the same vector frame treatment.
 
 ### Fixed
 
+- Split the `EntityList` authoring surface into its own lazy-loaded chunk so the campaign and adventure-module authoring pages stop pulling it into the main route bundle.
 - Move storyteller live-session routes onto the same headerless shell as the player session route so the global site header no longer steals vertical space above session chat.
 - Align Session chat keyboard submission with the shared Adventure action composer so only plain Enter sends, while Shift+Enter and other modifier-enter combinations stay available for multiline editing.
 - Resolve the built web client path relative to the server module location so Render's plain-Node startup still serves the frontend from the single service root.

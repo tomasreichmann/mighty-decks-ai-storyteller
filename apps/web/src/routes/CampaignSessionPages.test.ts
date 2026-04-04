@@ -62,7 +62,7 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /Create a New Character/);
   assert.match(source, />\s*Create\s*</);
   assert.match(source, /flex justify-end/);
-  assert.match(source, /Claim This Character/);
+  assert.match(source, /Claim/);
   assert.match(source, /CampaignSessionTranscriptFeed/);
   assert.match(source, /CampaignSessionChatLayout/);
   assert.match(source, /CampaignSessionTable/);

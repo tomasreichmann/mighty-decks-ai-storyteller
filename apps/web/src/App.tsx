@@ -8,6 +8,8 @@ import {
   useParams,
 } from "react-router-dom";
 import { Page } from "./components/layout/Page";
+import { Label } from "./components/common/Label";
+import { PendingIndicator } from "./components/PendingIndicator";
 
 const AdventureModuleAuthoringPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleAuthoringPage"))
@@ -159,7 +161,21 @@ const AdventureModuleRootRedirect = (): JSX.Element => {
 };
 
 const RouteLoadingFallback = (): JSX.Element => (
-  <div className="p-4 text-sm text-slate-600">Loading...</div>
+  <div className="w-full grid min-h-screen place-items-center px-6 py-10">
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex flex-col items-center gap-4 text-center"
+    >
+
+      <Label variant="gold" size="lg" rotate={false}>
+        <PendingIndicator
+          label="Loading"
+          color="gold-dark"
+        />
+      </Label>
+    </div>
+  </div>
 );
 
 export const App = (): JSX.Element => {

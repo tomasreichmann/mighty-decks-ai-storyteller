@@ -318,7 +318,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
                         claimCharacter(identity.participantId, actor.fragmentId)
                       }
                     >
-                      Claim This Character
+                      Claim
                     </Button>
                   </div>
                 </div>
