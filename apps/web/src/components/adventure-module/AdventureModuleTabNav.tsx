@@ -91,8 +91,8 @@ export const AdventureModuleTabNav = ({
         id={menuId}
         aria-label="Adventure module sections"
         className={cn(
-          "stack gap-2 xl:hidden",
-          menuOpen ? "block" : "hidden",
+          "gap-2 xl:hidden",
+          menuOpen ? "flex flex-col" : "hidden",
         )}
       >
         {items.map((tab) => (

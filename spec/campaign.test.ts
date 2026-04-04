@@ -5,6 +5,8 @@ import {
   campaignCreateRequestSchema,
   campaignDetailSchema,
   campaignSessionDetailSchema,
+  campaignSessionTableCardReferenceSchema,
+  campaignSessionTableTargetSchema,
 } from "./campaign";
 
 const createValidCampaignDetailCandidate = () => ({
@@ -549,8 +551,55 @@ test("campaignSessionDetailSchema accepts setup and transcript state", () => {
         createdAtIso: "2026-03-15T01:04:00.000Z",
       },
     ],
+    table: [
+      {
+        tableEntryId: "table-entry-shared",
+        target: { scope: "shared" },
+        card: { type: "EffectCard", slug: "burning" },
+        addedAtIso: "2026-03-15T01:03:30.000Z",
+      },
+      {
+        tableEntryId: "table-entry-player",
+        target: {
+          scope: "participant",
+          participantId: "participant-player",
+        },
+        card: {
+          type: "AssetCard",
+          slug: "medieval_lantern",
+          modifierSlug: "base_hidden",
+        },
+        addedAtIso: "2026-03-15T01:03:45.000Z",
+      },
+    ],
   });
 
   assert.equal(parsed.claims[0]?.actorFragmentId, "frag-actor-main");
   assert.equal(parsed.transcript[1]?.kind, "group_message");
+  assert.equal(parsed.table[0]?.target.scope, "shared");
+  assert.equal(parsed.table[1]?.card.type, "AssetCard");
+});
+
+test("campaignSession table schemas accept shared and participant targets with typed card references", () => {
+  const sharedTarget = campaignSessionTableTargetSchema.parse({
+    scope: "shared",
+  });
+  const participantTarget = campaignSessionTableTargetSchema.parse({
+    scope: "participant",
+    participantId: "participant-player-a",
+  });
+  const stuntCard = campaignSessionTableCardReferenceSchema.parse({
+    type: "StuntCard",
+    slug: "power-attack",
+  });
+  const questCard = campaignSessionTableCardReferenceSchema.parse({
+    type: "QuestCard",
+    slug: "recover-the-shard",
+  });
+
+  assert.equal(sharedTarget.scope, "shared");
+  assert.equal(participantTarget.scope, "participant");
+  assert.equal(participantTarget.participantId, "participant-player-a");
+  assert.equal(stuntCard.type, "StuntCard");
+  assert.equal(questCard.type, "QuestCard");
 });

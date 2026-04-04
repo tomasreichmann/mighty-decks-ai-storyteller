@@ -12,6 +12,7 @@ test("CampaignSessionTranscriptFeed reuses Adventure transcript wrapper styling 
   assert.match(source, /scrollMask/);
   assert.match(source, /presentCampaignSessionTranscriptEntry/);
   assert.match(source, /CampaignSessionMessageContent/);
+  assert.match(source, /claimedActorTitle=\{presentation\.claimedActorTitle\}/);
   assert.match(source, /Message/);
   assert.match(source, /GameCardCatalogContext\.Provider/);
 });

@@ -41,9 +41,9 @@ export const StyleguideQuestCardPage = (): JSX.Element => {
           Quest Card
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          QuestCard direction with the shared smaller 3:2 scene frame, a gold
-          title chip, a scroll icon medallion, and a lighter full-width summary
-          strip.
+          QuestCard direction using the shared landscape 332x204 scene frame
+          (the portrait-card size rotated), with a gold title chip, scroll icon
+          medallion, and lighter full-width summary strip.
         </Text>
       </div>
 

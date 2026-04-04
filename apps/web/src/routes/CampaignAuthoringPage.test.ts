@@ -22,11 +22,19 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
     "utf8",
   );
 
-  assert.match(source, /const STORYTELLER_SESSION_TABS = \["chat", \.\.\.AUTHORING_TABS\] as const;/);
+  assert.match(
+    source,
+    /const STORYTELLER_SESSION_TABS = \[[\s\S]*"chat"[\s\S]*"outcomes"[\s\S]*"effects"[\s\S]*"stunts"[\s\S]*"actors"[\s\S]*"static-assets"[\s\S]*"assets"[\s\S]*\] as const;/,
+  );
   assert.match(source, /"sessions"/);
   assert.match(source, /sessions: "Sessions"/);
   assert.match(source, /"chat"/);
   assert.match(source, /chat: "Chat"/);
+  assert.match(source, /outcomes: "Outcomes"/);
+  assert.match(source, /effects: "Effects"/);
+  assert.match(source, /stunts: "Stunts"/);
+  assert.match(source, /"static-assets": "Static Assets"/);
+  assert.match(source, /storytellerSessionMode && tabId === "assets"\s*\?\s*"Custom Assets"/);
   assert.match(source, /Create Session/);
   assert.match(source, /createCampaignSession/);
   assert.match(source, /campaignUpdatedAtIso/);
@@ -44,6 +52,16 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
   assert.doesNotMatch(source, /Open Lobby/);
   assert.match(source, /handleSendStorytellerMessage/);
   assert.match(source, /handleCloseStorytellerSession/);
+  assert.match(source, /handleSendSelectionToTarget/);
+  assert.match(source, /CampaignSessionSelectionStrip/);
+  assert.match(
+    source,
+    /storytellerSessionMode && tableSelection\.length > 0 \? \(\s*<CampaignSessionSelectionStrip/,
+  );
+  assert.match(source, /CampaignSessionTable/);
+  assert.match(source, /CampaignSessionChatLayout/);
+  assert.match(source, /sessionRealtime\.addTableCards/);
+  assert.match(source, /sessionRealtime\.removeTableCard/);
   assert.match(source, /storytellerSession\?\.transcript/);
   assert.match(source, /CampaignSessionTranscriptFeed/);
   assert.match(source, /MarkdownImageInsertButton/);
@@ -52,7 +70,7 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
   assert.match(source, /storytellerSessionMode[\s\S]*trailingContent=\{[\s\S]*<AutosaveStatusBadge/);
   assert.match(
     source,
-    /activeTab === "chat"[\s\S]*<DepressedInput[\s\S]*label="Message"[\s\S]*topRightControl=\{/,
+    /activeTab === "chat"[\s\S]*<CampaignSessionChatLayout[\s\S]*<DepressedInput[\s\S]*label="Message"[\s\S]*topRightControl=\{/,
   );
   assert.match(
     source,
@@ -75,16 +93,20 @@ test("CampaignAuthoringPage uses a compact full-width shell in storyteller sessi
 
   assert.match(
     source,
-    /storytellerSessionMode\s*\?\s*"[^"]*w-full max-w-none px-4 py-4 sm:px-6 lg:px-8[^"]*"/,
+    /storytellerSessionMode\s*\?\s*"[^"]*min-h-full[^"]*w-full[^"]*max-w-none[^"]*flex-1[^"]*px-4 py-4 sm:px-6 lg:px-8[^"]*"/,
   );
   assert.match(source, /storytellerSessionMode \? null : \(\s*<header/);
   assert.match(
     source,
-    /activeTab === "chat"[\s\S]*<Section className="stack gap-4">\s*\{storytellerRealtimeError \?/,
+    /activeTab === "chat"[\s\S]*<Section className="stack min-h-0 flex-1 gap-4 overflow-hidden">\s*\{storytellerRealtimeError \?/,
   );
   assert.match(
     source,
-    /activeTab === "chat"[\s\S]*End Session[\s\S]*Press Enter to send\. Shift\+Enter for newline\./,
+    /activeTab === "chat"[\s\S]*className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 sm:px-3"/,
+  );
+  assert.match(
+    source,
+    /activeTab === "chat"[\s\S]*<CampaignSessionChatLayout[\s\S]*End Session[\s\S]*Press Enter to send\. Shift\+Enter for newline\./,
   );
 });
 

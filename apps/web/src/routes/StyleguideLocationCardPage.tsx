@@ -46,9 +46,9 @@ export const StyleguideLocationCardPage = (): JSX.Element => {
           Location Card
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          LocationCard direction with a smaller 3:2 scene frame, a cloth title
-          chip, a pinned icon medallion, and a lighter full-width summary
-          strip.
+          LocationCard direction using the landscape 332x204 scene frame (the
+          portrait-card size rotated), with a cloth title chip, pinned icon
+          medallion, and lighter full-width summary strip.
         </Text>
       </div>
 

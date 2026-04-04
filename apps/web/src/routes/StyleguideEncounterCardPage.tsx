@@ -41,9 +41,9 @@ export const StyleguideEncounterCardPage = (): JSX.Element => {
           Encounter Card
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          EncounterCard direction with the shared smaller 3:2 scene frame, a
-          fire title chip, a warning icon medallion, and a lighter full-width
-          summary strip.
+          EncounterCard direction using the shared landscape 332x204 scene
+          frame (the portrait-card size rotated), plus a fire title chip,
+          warning icon medallion, and lighter full-width summary strip.
         </Text>
       </div>
 

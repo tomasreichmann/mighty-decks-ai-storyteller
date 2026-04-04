@@ -3,25 +3,58 @@ import { resolveEncounterCard } from "../lib/markdownEncounterComponents";
 import { resolveGameCard } from "../lib/markdownGameComponents";
 import { resolveQuestCard } from "../lib/markdownQuestComponents";
 import { parseCampaignSessionMessageSegments } from "../lib/campaignSessionMessageSegments";
+import { ActorCard } from "./cards/ActorCard";
 import { EncounterCardView } from "./adventure-module/EncounterCardView";
 import { GameCardView } from "./adventure-module/GameCardView";
 import { QuestCardView } from "./adventure-module/QuestCardView";
 
 interface CampaignSessionMessageContentProps {
   text: string;
+  claimedActorTitle?: string;
 }
+
+const normalizeActorTitle = (value: string): string =>
+  value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
 
 export const CampaignSessionMessageContent = ({
   text,
+  claimedActorTitle,
 }: CampaignSessionMessageContentProps): JSX.Element => {
   const {
+    actors,
     actorsBySlug,
     countersBySlug,
     assetsBySlug,
     encountersBySlug,
     questsBySlug,
   } = useGameCardCatalogContext();
+  const actor = claimedActorTitle
+    ? actors.find(
+        (candidate) =>
+          normalizeActorTitle(candidate.title) ===
+          normalizeActorTitle(claimedActorTitle),
+      ) ?? null
+    : null;
   const segments = parseCampaignSessionMessageSegments(text);
+
+  if (actor) {
+    return (
+      <div className="flex flex-wrap items-start gap-4">
+        <ActorCard
+          className="w-full max-w-[13rem] shrink-0"
+          baseLayerSlug={actor.baseLayerSlug}
+          tacticalRoleSlug={actor.tacticalRoleSlug}
+          tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
+        />
+        <div className="stack min-w-0 flex-1 gap-1">
+          <span className="font-semibold">{actor.title}</span>
+          <span className="text-sm text-kac-iron-light">
+            {actor.summary ?? "No summary yet."}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="whitespace-pre-wrap break-words text-inherit">

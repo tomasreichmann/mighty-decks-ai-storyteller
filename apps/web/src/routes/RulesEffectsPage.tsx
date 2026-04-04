@@ -4,7 +4,13 @@ import { Text } from "../components/common/Text";
 import { rulesEffectCards } from "../data/rulesComponents";
 import { resolveGameCard } from "../lib/markdownGameComponents";
 
-export const RulesEffectsPage = (): JSX.Element => {
+interface RulesEffectsContentProps {
+  onAddEffectCard?: (card: { type: "EffectCard"; slug: string }) => void;
+}
+
+export const RulesEffectsContent = ({
+  onAddEffectCard,
+}: RulesEffectsContentProps): JSX.Element => {
   return (
     <div className="stack gap-4">
       <div className="stack gap-1">
@@ -26,11 +32,26 @@ export const RulesEffectsPage = (): JSX.Element => {
           return (
             <div key={effect.slug} className="stack h-full gap-2">
               <GameCardView gameCard={gameCard} className="mx-auto" />
-              <ShortcodeField shortcode={gameCard.legacyToken} />
+              <ShortcodeField
+                shortcode={gameCard.legacyToken}
+                onAddToSelection={
+                  onAddEffectCard
+                    ? () =>
+                        onAddEffectCard({
+                          type: "EffectCard",
+                          slug: gameCard.slug,
+                        })
+                    : undefined
+                }
+              />
             </div>
           );
         })}
       </div>
     </div>
   );
+};
+
+export const RulesEffectsPage = (): JSX.Element => {
+  return <RulesEffectsContent />;
 };

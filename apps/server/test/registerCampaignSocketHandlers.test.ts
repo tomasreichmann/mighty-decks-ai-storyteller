@@ -246,3 +246,85 @@ test("registerCampaignSocketHandlers lets campaign detail clients watch and unwa
   });
   assert.equal(watcherSocket.rooms.has(`campaign:${campaign.index.slug}`), false);
 });
+
+test("registerCampaignSocketHandlers broadcasts table updates and enforces removal permissions", async () => {
+  const { store, campaign, session } = await createFixture();
+  const io = new FakeIo();
+  registerCampaignSocketHandlers(io as never, store);
+
+  const storytellerSocket = new FakeSocket("socket-storyteller");
+  io.connect(storytellerSocket);
+  await storytellerSocket.trigger("join_campaign_session_role", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+
+  const playerSocket = new FakeSocket("socket-player");
+  io.connect(playerSocket);
+  await playerSocket.trigger("join_campaign_session_role", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const room = `campaign-session:${campaign.index.slug}:${session.sessionId}`;
+
+  await storytellerSocket.trigger("add_campaign_session_table_cards", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    target: {
+      scope: "participant",
+      participantId: "player-1",
+    },
+    cards: [
+      { type: "EffectCard", slug: "burning" },
+      { type: "EffectCard", slug: "burning" },
+    ],
+  });
+
+  const addedState = lastRoomEvent(io, room, "campaign_session_state");
+  const table = (addedState?.payload as { table: Array<{ tableEntryId: string }> }).table;
+  assert.equal(table.length, 2);
+
+  await playerSocket.trigger("remove_campaign_session_table_card", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+    tableEntryId: table[0]?.tableEntryId,
+  });
+  const removedState = lastRoomEvent(io, room, "campaign_session_state");
+  assert.equal(
+    (removedState?.payload as { table: Array<unknown> }).table.length,
+    1,
+  );
+
+  await storytellerSocket.trigger("add_campaign_session_table_cards", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    target: { scope: "shared" },
+    cards: [{ type: "CounterCard", slug: "threat-clock" }],
+  });
+  const withSharedState = lastRoomEvent(io, room, "campaign_session_state");
+  const sharedEntryId = (
+    withSharedState?.payload as { table: Array<{ target: { scope: string }; tableEntryId: string }> }
+  ).table.find((entry) => entry.target.scope === "shared")?.tableEntryId;
+  assert.ok(sharedEntryId);
+
+  await playerSocket.trigger("remove_campaign_session_table_card", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+    tableEntryId: sharedEntryId,
+  });
+  assert.equal(
+    playerSocket.emitted.at(-1)?.event,
+    "campaign_session_error",
+  );
+});

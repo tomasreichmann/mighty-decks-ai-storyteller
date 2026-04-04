@@ -15,6 +15,7 @@ interface AdventureModuleActorsTabPanelProps {
   onCreate: () => void;
   onOpenActor: (actorSlug: string) => void;
   onDeleteActor?: (actorSlug: string, title: string) => void;
+  onAddActorCardToSelection?: (actorSlug: string) => void;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -45,6 +46,7 @@ export const AdventureModuleActorsTabPanel = ({
   onCreate,
   onOpenActor,
   onDeleteActor,
+  onAddActorCardToSelection,
 }: AdventureModuleActorsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
   const [copiedActorSlug, setCopiedActorSlug] = useState<string | null>(null);
@@ -179,6 +181,20 @@ export const AdventureModuleActorsTabPanel = ({
                   >
                     Copy Shortcode
                   </Button>
+                  {onAddActorCardToSelection ? (
+                    <Button
+                      variant="circle"
+                      color="gold"
+                      size="sm"
+                      aria-label={`Add ${actor.title} to table selection`}
+                      title={`Add ${actor.title} to table selection`}
+                      onClick={() => {
+                        onAddActorCardToSelection(actor.actorSlug);
+                      }}
+                    >
+                      +
+                    </Button>
+                  ) : null}
                   {onDeleteActor ? (
                     <Button
                       variant="circle"

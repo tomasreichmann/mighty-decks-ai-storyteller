@@ -205,6 +205,47 @@ export const useCampaignSession = ({
     [basePayload],
   );
 
+  const addTableCards = useCallback(
+    (options: {
+      participantId: string;
+      target:
+        | {
+            scope: "shared";
+          }
+        | {
+            scope: "participant";
+            participantId: string;
+          };
+      cards: Array<
+        | { type: "OutcomeCard"; slug: string }
+        | { type: "EffectCard"; slug: string }
+        | { type: "StuntCard"; slug: string }
+        | { type: "ActorCard"; slug: string }
+        | { type: "CounterCard"; slug: string }
+        | { type: "AssetCard"; slug: string; modifierSlug?: string }
+        | { type: "LocationCard"; slug: string }
+        | { type: "EncounterCard"; slug: string }
+        | { type: "QuestCard"; slug: string }
+      >;
+    }): void => {
+      socketRef.current.emit("add_campaign_session_table_cards", {
+        ...basePayload,
+        ...options,
+      });
+    },
+    [basePayload],
+  );
+
+  const removeTableCard = useCallback(
+    (options: { participantId: string; tableEntryId: string }): void => {
+      socketRef.current.emit("remove_campaign_session_table_card", {
+        ...basePayload,
+        ...options,
+      });
+    },
+    [basePayload],
+  );
+
   return {
     session,
     error,
@@ -220,5 +261,7 @@ export const useCampaignSession = ({
     createCharacter,
     sendMessage,
     closeSession,
+    addTableCards,
+    removeTableCard,
   };
 };

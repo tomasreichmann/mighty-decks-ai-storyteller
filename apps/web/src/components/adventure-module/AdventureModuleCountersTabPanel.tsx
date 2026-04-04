@@ -16,6 +16,7 @@ interface AdventureModuleCountersTabPanelProps {
   onCreate: () => void;
   onOpenCounter: (counterSlug: string) => void;
   onDeleteCounter?: (counterSlug: string, title: string) => void;
+  onAddCounterCardToSelection?: (counterSlug: string) => void;
   onAdjustCounterValue?: (
     counterSlug: string,
     delta: number,
@@ -51,6 +52,7 @@ export const AdventureModuleCountersTabPanel = ({
   onCreate,
   onOpenCounter,
   onDeleteCounter,
+  onAddCounterCardToSelection,
   onAdjustCounterValue,
 }: AdventureModuleCountersTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -201,6 +203,20 @@ export const AdventureModuleCountersTabPanel = ({
                   >
                     Copy Shortcode
                   </Button>
+                  {onAddCounterCardToSelection ? (
+                    <Button
+                      variant="circle"
+                      color="gold"
+                      size="sm"
+                      aria-label={`Add ${counter.title} to table selection`}
+                      title={`Add ${counter.title} to table selection`}
+                      onClick={() => {
+                        onAddCounterCardToSelection(counter.slug);
+                      }}
+                    >
+                      +
+                    </Button>
+                  ) : null}
                   {onDeleteCounter ? (
                     <Button
                       variant="circle"

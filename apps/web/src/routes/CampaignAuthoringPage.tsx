@@ -7,8 +7,12 @@ import {
   useState,
 } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-import type { CampaignDetail } from "@mighty-decks/spec/campaign";
-import type { CampaignSessionStatus } from "@mighty-decks/spec/campaign";
+import type {
+  CampaignDetail,
+  CampaignSessionStatus,
+  CampaignSessionTableCardReference,
+  CampaignSessionTableTarget,
+} from "@mighty-decks/spec/campaign";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
@@ -49,6 +53,12 @@ import {
   type EntityListTab,
 } from "../components/adventure-module/EntityList";
 import type { AdventureModuleLocationPinTarget } from "../components/adventure-module/AdventureModuleLocationMapEditor";
+import { CampaignSessionChatLayout } from "../components/session/CampaignSessionChatLayout";
+import {
+  CampaignSessionSelectionStrip,
+  type CampaignSessionSelectionEntry,
+} from "../components/session/CampaignSessionSelectionStrip";
+import { CampaignSessionTable } from "../components/session/CampaignSessionTable";
 import {
   createCampaignActor,
   createCampaignAsset,
@@ -83,6 +93,10 @@ import { toMarkdownPlainTextSnippet } from "../lib/markdownSnippet";
 import type { SmartInputDocumentContext } from "../lib/smartInputContext";
 import { useCampaignSession } from "../hooks/useCampaignSession";
 import { useCampaignWatch } from "../hooks/useCampaignWatch";
+import { RulesAssetsContent } from "./RulesAssetsPage";
+import { RulesEffectsContent } from "./RulesEffectsPage";
+import { RulesOutcomesContent } from "./RulesOutcomesPage";
+import { RulesStuntsContent } from "./RulesStuntsPage";
 
 const AUTHORING_TABS = [
   "base",
@@ -97,7 +111,22 @@ const AUTHORING_TABS = [
 ] as const;
 
 const CAMPAIGN_DETAIL_TABS = [...AUTHORING_TABS, "sessions"] as const;
-const STORYTELLER_SESSION_TABS = ["chat", ...AUTHORING_TABS] as const;
+const STORYTELLER_SESSION_TABS = [
+  "chat",
+  "base",
+  "player-info",
+  "storyteller-info",
+  "outcomes",
+  "effects",
+  "stunts",
+  "actors",
+  "counters",
+  "locations",
+  "encounters",
+  "quests",
+  "static-assets",
+  "assets",
+] as const;
 
 type AuthoringTab = (typeof AUTHORING_TABS)[number];
 type CampaignDetailTab = (typeof CAMPAIGN_DETAIL_TABS)[number];
@@ -116,6 +145,10 @@ const TAB_LABELS: Record<CampaignTab, string> = {
   assets: "Assets",
   sessions: "Sessions",
   chat: "Chat",
+  outcomes: "Outcomes",
+  effects: "Effects",
+  stunts: "Stunts",
+  "static-assets": "Static Assets",
 };
 
 const formatSessionCreatedAt = (createdAtIso: string): string => {
@@ -145,6 +178,22 @@ const resolveSessionStatusTone = (
       return "offline";
   }
 };
+
+const createTableSelectionId = (): string =>
+  `table-selection-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const formatTableSelectionLabel = (
+  card: CampaignSessionTableCardReference,
+): string => {
+  if (card.type === "AssetCard" && card.modifierSlug) {
+    return `Asset ${card.slug}/${card.modifierSlug}`;
+  }
+  return `${card.type.replace("Card", "")} ${card.slug}`;
+};
+
+interface StorytellerTableSelectionEntry extends CampaignSessionSelectionEntry {
+  card: CampaignSessionTableCardReference;
+}
 
 const isCampaignDetailTab = (
   value: string | undefined,
@@ -1709,6 +1758,9 @@ export const CampaignAuthoringPage = (): JSX.Element => {
   );
   const [creatingSession, setCreatingSession] = useState(false);
   const [chatDraft, setChatDraft] = useState("");
+  const [tableSelection, setTableSelection] = useState<
+    StorytellerTableSelectionEntry[]
+  >([]);
   const saveTimerRef = useRef<number | null>(null);
   const savingRef = useRef(false);
   const sessionRealtime = useCampaignSession({
@@ -1776,7 +1828,10 @@ export const CampaignAuthoringPage = (): JSX.Element => {
         : CAMPAIGN_DETAIL_TABS
       ).map((tabId) => ({
         id: tabId,
-        label: TAB_LABELS[tabId],
+        label:
+          storytellerSessionMode && tabId === "assets"
+            ? "Custom Assets"
+            : TAB_LABELS[tabId],
       })),
     [storytellerSessionMode],
   );
@@ -4006,6 +4061,59 @@ export const CampaignAuthoringPage = (): JSX.Element => {
     }
     sessionRealtime.closeSession(storytellerIdentity.participantId);
   }, [sessionRealtime, storytellerIdentity]);
+
+  useEffect(() => {
+    setTableSelection([]);
+  }, [sessionId, storytellerSessionMode]);
+
+  const addCardToTableSelection = useCallback(
+    (card: CampaignSessionTableCardReference): void => {
+      setTableSelection((current) => [
+        ...current,
+        {
+          id: createTableSelectionId(),
+          label: formatTableSelectionLabel(card),
+          card,
+        },
+      ]);
+    },
+    [],
+  );
+
+  const removeCardFromSelection = useCallback((entryId: string): void => {
+    setTableSelection((current) =>
+      current.filter((entry) => entry.id !== entryId),
+    );
+  }, []);
+
+  const handleSendSelectionToTarget = useCallback(
+    (target: CampaignSessionTableTarget): void => {
+      if (!storytellerIdentity || tableSelection.length === 0) {
+        return;
+      }
+      sessionRealtime.addTableCards({
+        participantId: storytellerIdentity.participantId,
+        target,
+        cards: tableSelection.map((entry) => entry.card),
+      });
+      setTableSelection([]);
+    },
+    [sessionRealtime, storytellerIdentity, tableSelection],
+  );
+
+  const handleRemoveStorytellerTableCard = useCallback(
+    (tableEntryId: string): void => {
+      if (!storytellerIdentity) {
+        return;
+      }
+      sessionRealtime.removeTableCard({
+        participantId: storytellerIdentity.participantId,
+        tableEntryId,
+      });
+    },
+    [sessionRealtime, storytellerIdentity],
+  );
+
   const storytellerGameCardCatalogValue = useMemo(
     () =>
       createGameCardCatalogContextValue({
@@ -4022,7 +4130,7 @@ export const CampaignAuthoringPage = (): JSX.Element => {
     <div
       className={
         storytellerSessionMode
-          ? "stack gap-4 w-full max-w-none px-4 py-4 sm:px-6 lg:px-8"
+          ? "flex min-h-full w-full max-w-none flex-1 flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8"
           : "app-shell stack py-8 gap-4"
       }
     >
@@ -4139,6 +4247,13 @@ export const CampaignAuthoringPage = (): JSX.Element => {
             }
           />
 
+          {storytellerSessionMode && tableSelection.length > 0 ? (
+            <CampaignSessionSelectionStrip
+              entries={tableSelection}
+              onRemoveEntry={removeCardFromSelection}
+            />
+          ) : null}
+
           {entityId ? (
             activeTab === "actors" ? (
               activeActor && actorForm ? (
@@ -4237,6 +4352,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                   onDelete={() => {
                     void handleDeleteActor(activeActor.actorSlug, activeActor.title);
                   }}
+                  onAddActorCardToSelection={
+                    storytellerSessionMode
+                      ? () =>
+                          addCardToTableSelection({
+                            type: "ActorCard",
+                            slug: activeActor.actorSlug,
+                          })
+                      : undefined
+                  }
                 />
               ) : (
                 <AdventureModuleTabPlaceholder
@@ -4350,6 +4474,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                       activeLocation.title,
                     );
                   }}
+                  onAddLocationCardToSelection={
+                    storytellerSessionMode
+                      ? () =>
+                          addCardToTableSelection({
+                            type: "LocationCard",
+                            slug: activeLocation.locationSlug,
+                          })
+                      : undefined
+                  }
                 />
               ) : (
                 <AdventureModuleTabPlaceholder
@@ -4427,6 +4560,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                       activeEncounter.title,
                     );
                   }}
+                  onAddEncounterCardToSelection={
+                    storytellerSessionMode
+                      ? () =>
+                          addCardToTableSelection({
+                            type: "EncounterCard",
+                            slug: activeEncounter.encounterSlug,
+                          })
+                      : undefined
+                  }
                 />
               ) : (
                 <AdventureModuleTabPlaceholder
@@ -4491,6 +4633,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                   onDelete={() => {
                     void handleDeleteQuest(activeQuest.questSlug, activeQuest.title);
                   }}
+                  onAddQuestCardToSelection={
+                    storytellerSessionMode
+                      ? () =>
+                          addCardToTableSelection({
+                            type: "QuestCard",
+                            slug: activeQuest.questSlug,
+                          })
+                      : undefined
+                  }
                 />
               ) : (
                 <AdventureModuleTabPlaceholder
@@ -4571,6 +4722,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                   onDelete={() => {
                     void handleDeleteCounter(activeCounter.slug, activeCounter.title);
                   }}
+                  onAddCounterCardToSelection={
+                    storytellerSessionMode
+                      ? () =>
+                          addCardToTableSelection({
+                            type: "CounterCard",
+                            slug: activeCounter.slug,
+                          })
+                      : undefined
+                  }
                 />
               ) : (
                 <AdventureModuleTabPlaceholder
@@ -4672,6 +4832,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                   onDelete={() => {
                     void handleDeleteAsset(activeAsset.assetSlug, activeAsset.title);
                   }}
+                  onAddAssetCardToSelection={
+                    storytellerSessionMode
+                      ? () =>
+                          addCardToTableSelection({
+                            type: "AssetCard",
+                            slug: activeAsset.assetSlug,
+                          })
+                      : undefined
+                  }
                 />
               ) : (
                 <AdventureModuleTabPlaceholder
@@ -4814,6 +4983,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               onDeleteActor={(actorSlug, title) => {
                 void handleDeleteActor(actorSlug, title);
               }}
+              onAddActorCardToSelection={
+                storytellerSessionMode
+                  ? (actorSlug) =>
+                      addCardToTableSelection({
+                        type: "ActorCard",
+                        slug: actorSlug,
+                      })
+                  : undefined
+              }
             />
           ) : activeTab === "locations" ? (
             <AdventureModuleLocationsTabPanel
@@ -4832,6 +5010,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               onDeleteLocation={(locationSlug, title) => {
                 void handleDeleteLocation(locationSlug, title);
               }}
+              onAddLocationCardToSelection={
+                storytellerSessionMode
+                  ? (locationSlug) =>
+                      addCardToTableSelection({
+                        type: "LocationCard",
+                        slug: locationSlug,
+                      })
+                  : undefined
+              }
             />
           ) : activeTab === "encounters" ? (
             <AdventureModuleEncountersTabPanel
@@ -4850,6 +5037,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               onDeleteEncounter={(encounterSlug, title) => {
                 void handleDeleteEncounter(encounterSlug, title);
               }}
+              onAddEncounterCardToSelection={
+                storytellerSessionMode
+                  ? (encounterSlug) =>
+                      addCardToTableSelection({
+                        type: "EncounterCard",
+                        slug: encounterSlug,
+                      })
+                  : undefined
+              }
             />
           ) : activeTab === "quests" ? (
             <AdventureModuleQuestsTabPanel
@@ -4868,6 +5064,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               onDeleteQuest={(questSlug, title) => {
                 void handleDeleteQuest(questSlug, title);
               }}
+              onAddQuestCardToSelection={
+                storytellerSessionMode
+                  ? (questSlug) =>
+                      addCardToTableSelection({
+                        type: "QuestCard",
+                        slug: questSlug,
+                      })
+                  : undefined
+              }
             />
           ) : activeTab === "counters" ? (
             <AdventureModuleCountersTabPanel
@@ -4889,6 +5094,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               onAdjustCounterValue={(counterSlug, delta, target) => {
                 void handleAdjustCounterValue(counterSlug, delta, target);
               }}
+              onAddCounterCardToSelection={
+                storytellerSessionMode
+                  ? (counterSlug) =>
+                      addCardToTableSelection({
+                        type: "CounterCard",
+                        slug: counterSlug,
+                      })
+                  : undefined
+              }
             />
           ) : activeTab === "assets" ? (
             <AdventureModuleAssetsTabPanel
@@ -4907,6 +5121,39 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               onDeleteAsset={(assetSlug, title) => {
                 void handleDeleteAsset(assetSlug, title);
               }}
+              onAddAssetCardToSelection={
+                storytellerSessionMode
+                  ? (assetSlug) =>
+                      addCardToTableSelection({
+                        type: "AssetCard",
+                        slug: assetSlug,
+                      })
+                  : undefined
+              }
+            />
+          ) : activeTab === "outcomes" ? (
+            <RulesOutcomesContent
+              onAddOutcomeCard={
+                storytellerSessionMode ? addCardToTableSelection : undefined
+              }
+            />
+          ) : activeTab === "effects" ? (
+            <RulesEffectsContent
+              onAddEffectCard={
+                storytellerSessionMode ? addCardToTableSelection : undefined
+              }
+            />
+          ) : activeTab === "stunts" ? (
+            <RulesStuntsContent
+              onAddStuntCard={
+                storytellerSessionMode ? addCardToTableSelection : undefined
+              }
+            />
+          ) : activeTab === "static-assets" ? (
+            <RulesAssetsContent
+              onAddAssetCard={
+                storytellerSessionMode ? addCardToTableSelection : undefined
+              }
             />
           ) : activeTab === "sessions" ? (
             <Section className="stack gap-4">
@@ -4970,110 +5217,107 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               )}
             </Section>
           ) : activeTab === "chat" ? (
-            <Section className="stack gap-4">
+            <Section className="stack min-h-0 flex-1 gap-4 overflow-hidden">
               {storytellerRealtimeError ? (
                 <Message label="Session Error" color="blood">
                   {storytellerRealtimeError}
                 </Message>
               ) : null}
 
-              <div className="grid gap-4 xl:grid-cols-[minmax(18rem,20rem)_minmax(0,1fr)]">
-                <aside className="stack gap-3">
-                  {(storytellerSession?.participants ?? []).map((participant) => (
-                    <Message
-                      key={participant.participantId}
-                      label={participant.displayName}
-                      color={participant.role === "storyteller" ? "gold" : "fire"}
-                      contentClassName="stack gap-1"
-                    >
-                      <Text variant="note" color="steel-dark" className="text-xs">
-                        {participant.role}
-                        {participant.isMock ? " mock" : ""}
-                        {participant.connected ? " connected" : " disconnected"}
-                      </Text>
-                    </Message>
-                  ))}
-                </aside>
-
-                <div className="stack gap-3">
-                  <CampaignSessionTranscriptFeed
-                    entries={storytellerSession?.transcript ?? []}
-                    participants={storytellerSession?.participants ?? []}
+              <CampaignSessionChatLayout
+                tablePane={
+                  <CampaignSessionTable
+                    campaign={moduleDetail}
+                    session={storytellerSession}
+                    viewerRole="storyteller"
                     currentParticipantId={storytellerIdentity?.participantId}
-                    gameCardCatalogValue={storytellerGameCardCatalogValue}
-                    className="max-h-[24rem]"
+                    hasStagedCards={tableSelection.length > 0}
+                    onSendCardsToTarget={handleSendSelectionToTarget}
+                    onRemoveEntry={handleRemoveStorytellerTableCard}
+                    className="mx-2 sm:mx-3"
                   />
-
-                  <div className="stack gap-2">
-                    <DepressedInput
-                      multiline
-                      label="Message"
-                      labelColor="gold"
-                      rows={4}
-                      value={chatDraft}
-                      onChange={(event) => setChatDraft(event.target.value)}
-                      onKeyDown={handleStorytellerMessageKeyDown}
-                      placeholder="Share narration, rulings, or prompts with the table..."
-                      controlClassName="min-h-[7.5rem] pr-12"
-                      topRightControl={
-                        <MarkdownImageInsertButton
-                          identityKey={`${moduleDetail.index.slug}-${sessionId ?? "chat"}-storyteller-chat-image`}
-                          smartContextDocument={smartContextDocument}
-                          currentInputValue={chatDraft}
-                          disabled={storytellerSession?.status === "closed"}
-                          dialogTitle="Share Image"
-                          dialogDescription="Generate a new image or reuse an existing one, then insert it into your storyteller draft as standard markdown."
-                          promptDescription="Generate or reuse an image to share in the live storyteller transcript."
-                          workflowContextIntro="Markdown image prompt for a campaign storyteller transcript message. Refine wording while preserving a clear, table-readable illustration."
-                          buttonAriaLabel="Insert image into storyteller transcript"
-                          buttonTitle="Share image"
-                          onInsertMarkdownSnippet={(snippet) => {
-                            setChatDraft((current) =>
-                              appendMarkdownSnippet(current, snippet),
-                            );
-                          }}
-                        />
-                      }
+                }
+                chatPane={
+                  <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-2 sm:px-3">
+                    <CampaignSessionTranscriptFeed
+                      entries={storytellerSession?.transcript ?? []}
+                      participants={storytellerSession?.participants ?? []}
+                      currentParticipantId={storytellerIdentity?.participantId}
+                      gameCardCatalogValue={storytellerGameCardCatalogValue}
+                      className="min-h-[16rem] flex-1"
                     />
-                    <div className="flex flex-wrap items-end gap-2 paper-shadow">
-                      <Button
-                        variant="solid"
-                        color="curse"
-                        size="sm"
-                        type="button"
-                        disabled={storytellerSession?.status === "closed"}
-                        onClick={() => {
-                          if (window.confirm("End this session now?")) {
-                            handleCloseStorytellerSession();
-                          }
-                        }}
-                      >
-                        End Session
-                      </Button>
-                      <div className="flex-1" />
-                      <Button
-                        color="gold"
-                        disabled={
-                          storytellerSession?.status === "closed" ||
-                          chatDraft.trim().length === 0
+
+                    <div className="stack gap-2">
+                      <DepressedInput
+                        multiline
+                        label="Message"
+                        labelColor="gold"
+                        rows={4}
+                        value={chatDraft}
+                        onChange={(event) => setChatDraft(event.target.value)}
+                        onKeyDown={handleStorytellerMessageKeyDown}
+                        placeholder="Share narration, rulings, or prompts with the table..."
+                        controlClassName="min-h-[7.5rem] pr-12"
+                        topRightControl={
+                          <MarkdownImageInsertButton
+                            identityKey={`${moduleDetail.index.slug}-${sessionId ?? "chat"}-storyteller-chat-image`}
+                            smartContextDocument={smartContextDocument}
+                            currentInputValue={chatDraft}
+                            disabled={storytellerSession?.status === "closed"}
+                            dialogTitle="Share Image"
+                            dialogDescription="Generate a new image or reuse an existing one, then insert it into your storyteller draft as standard markdown."
+                            promptDescription="Generate or reuse an image to share in the live storyteller transcript."
+                            workflowContextIntro="Markdown image prompt for a campaign storyteller transcript message. Refine wording while preserving a clear, table-readable illustration."
+                            buttonAriaLabel="Insert image into storyteller transcript"
+                            buttonTitle="Share image"
+                            onInsertMarkdownSnippet={(snippet) => {
+                              setChatDraft((current) =>
+                                appendMarkdownSnippet(current, snippet),
+                              );
+                            }}
+                          />
                         }
-                        onClick={handleSendStorytellerMessage}
-                      >
-                        Send
-                      </Button>
-                    </div>
-                    <div className="flex flex-col items-end mt-2 paper-shadow min-h-[2.2em]">
-                      <Text
-                        variant="note"
-                        color="steel-dark"
-                        className="normal-case tracking-normal"
-                      >
-                        Press Enter to send. Shift+Enter for newline.
-                      </Text>
+                      />
+                      <div className="flex flex-wrap items-end gap-2 paper-shadow">
+                        <Button
+                          variant="solid"
+                          color="curse"
+                          size="sm"
+                          type="button"
+                          disabled={storytellerSession?.status === "closed"}
+                          onClick={() => {
+                            if (window.confirm("End this session now?")) {
+                              handleCloseStorytellerSession();
+                            }
+                          }}
+                        >
+                          End Session
+                        </Button>
+                        <div className="flex-1" />
+                        <Button
+                          color="gold"
+                          disabled={
+                            storytellerSession?.status === "closed" ||
+                            chatDraft.trim().length === 0
+                          }
+                          onClick={handleSendStorytellerMessage}
+                        >
+                          Send
+                        </Button>
+                      </div>
+                      <div className="flex min-h-[2.2em] flex-col items-end mt-2 paper-shadow">
+                        <Text
+                          variant="note"
+                          color="steel-dark"
+                          className="normal-case tracking-normal"
+                        >
+                          Press Enter to send. Shift+Enter for newline.
+                        </Text>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                }
+              />
             </Section>
           ) : activeEntityTab && activeEntityTabConfig ? (
             <EntityList

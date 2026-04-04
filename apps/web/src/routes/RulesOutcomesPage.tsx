@@ -4,7 +4,13 @@ import { Text } from "../components/common/Text";
 import { rulesOutcomeCards } from "../data/rulesComponents";
 import { resolveGameCard } from "../lib/markdownGameComponents";
 
-export const RulesOutcomesPage = (): JSX.Element => {
+interface RulesOutcomesContentProps {
+  onAddOutcomeCard?: (card: { type: "OutcomeCard"; slug: string }) => void;
+}
+
+export const RulesOutcomesContent = ({
+  onAddOutcomeCard,
+}: RulesOutcomesContentProps): JSX.Element => {
   return (
     <div className="stack gap-4">
       <div className="stack gap-1">
@@ -29,11 +35,26 @@ export const RulesOutcomesPage = (): JSX.Element => {
               className="stack h-full gap-2"
             >
               <GameCardView gameCard={gameCard} className="mx-auto" />
-              <ShortcodeField shortcode={gameCard.legacyToken} />
+              <ShortcodeField
+                shortcode={gameCard.legacyToken}
+                onAddToSelection={
+                  onAddOutcomeCard
+                    ? () =>
+                        onAddOutcomeCard({
+                          type: "OutcomeCard",
+                          slug: gameCard.slug,
+                        })
+                    : undefined
+                }
+              />
             </div>
           );
         })}
       </div>
     </div>
   );
+};
+
+export const RulesOutcomesPage = (): JSX.Element => {
+  return <RulesOutcomesContent />;
 };

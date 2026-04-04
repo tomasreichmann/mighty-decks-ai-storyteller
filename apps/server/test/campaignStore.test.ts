@@ -262,3 +262,214 @@ test("supports multiple active sessions on the same campaign", async () => {
     2,
   );
 });
+
+test("storytellers can add shared and player-targeted table cards while preserving duplicates", async () => {
+  const { sourceStore, store } = await createStores();
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Flooded Bells",
+  });
+  await flagPrimaryActorAsPlayerCharacter(sourceStore, source.index.moduleId);
+  const campaign = await store.createCampaign({
+    sourceModuleId: source.index.moduleId,
+    title: "Flooded Bells Campaign",
+  });
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+  });
+
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const withSharedCards = await store.addSessionTableCards({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    target: { scope: "shared" },
+    cards: [
+      { type: "EffectCard", slug: "burning" },
+      { type: "EffectCard", slug: "burning" },
+    ],
+  });
+  const withPlayerCards = await store.addSessionTableCards({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    target: {
+      scope: "participant",
+      participantId: "participant-player",
+    },
+    cards: [
+      { type: "AssetCard", slug: "medieval_lantern" },
+    ],
+  });
+
+  assert.equal(withSharedCards.table.length, 2);
+  assert.equal(withSharedCards.table[0]?.target.scope, "shared");
+  assert.equal(withSharedCards.table[1]?.card.slug, "burning");
+  assert.equal(withPlayerCards.table.length, 3);
+  assert.equal(withPlayerCards.table[2]?.target.scope, "participant");
+});
+
+test("table card removal follows storyteller and player ownership permissions", async () => {
+  const { sourceStore, store } = await createStores();
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Flooded Bells",
+  });
+  await flagPrimaryActorAsPlayerCharacter(sourceStore, source.index.moduleId);
+  const campaign = await store.createCampaign({
+    sourceModuleId: source.index.moduleId,
+    title: "Flooded Bells Campaign",
+  });
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+  });
+
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player-a",
+    displayName: "Jun",
+    role: "player",
+  });
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player-b",
+    displayName: "Ivo",
+    role: "player",
+  });
+
+  const seeded = await store.addSessionTableCards({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    target: {
+      scope: "participant",
+      participantId: "participant-player-a",
+    },
+    cards: [
+      { type: "StuntCard", slug: "power-attack" },
+    ],
+  });
+  const playerOwnedEntryId = seeded.table[0]?.tableEntryId;
+  assert.ok(playerOwnedEntryId);
+
+  await assert.rejects(
+    () =>
+      store.removeSessionTableCard({
+        campaignSlug: campaign.index.slug,
+        sessionId: session.sessionId,
+        participantId: "participant-player-b",
+        tableEntryId: playerOwnedEntryId,
+      }),
+    CampaignValidationError,
+  );
+
+  const afterPlayerRemoval = await store.removeSessionTableCard({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player-a",
+    tableEntryId: playerOwnedEntryId,
+  });
+  assert.equal(afterPlayerRemoval.table.length, 0);
+
+  const withSharedEntry = await store.addSessionTableCards({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    target: { scope: "shared" },
+    cards: [{ type: "CounterCard", slug: "threat-clock" }],
+  });
+  const sharedEntryId = withSharedEntry.table[0]?.tableEntryId;
+  assert.ok(sharedEntryId);
+
+  await assert.rejects(
+    () =>
+      store.removeSessionTableCard({
+        campaignSlug: campaign.index.slug,
+        sessionId: session.sessionId,
+        participantId: "participant-player-a",
+        tableEntryId: sharedEntryId,
+      }),
+    CampaignValidationError,
+  );
+
+  const afterStorytellerRemoval = await store.removeSessionTableCard({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    tableEntryId: sharedEntryId,
+  });
+  assert.equal(afterStorytellerRemoval.table.length, 0);
+});
+
+test("closed sessions reject table mutations", async () => {
+  const { sourceStore, store } = await createStores();
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Flooded Bells",
+  });
+  await flagPrimaryActorAsPlayerCharacter(sourceStore, source.index.moduleId);
+  const campaign = await store.createCampaign({
+    sourceModuleId: source.index.moduleId,
+    title: "Flooded Bells Campaign",
+  });
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+  });
+
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const closed = await store.closeSession({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+  });
+  assert.equal(closed.status, "closed");
+
+  await assert.rejects(
+    () =>
+      store.addSessionTableCards({
+        campaignSlug: campaign.index.slug,
+        sessionId: session.sessionId,
+        participantId: "participant-storyteller",
+        target: { scope: "shared" },
+        cards: [{ type: "EffectCard", slug: "burning" }],
+      }),
+    CampaignValidationError,
+  );
+});

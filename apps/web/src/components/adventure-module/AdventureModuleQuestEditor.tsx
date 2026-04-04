@@ -39,6 +39,7 @@ interface AdventureModuleQuestEditorProps {
     target?: CounterAdjustTarget,
   ) => void;
   onDelete?: () => void;
+  onAddQuestCardToSelection?: () => void;
 }
 
 interface QuestImageFieldProps {
@@ -201,6 +202,7 @@ export const AdventureModuleQuestEditor = ({
   onFieldBlur,
   onAdjustCounterValue,
   onDelete,
+  onAddQuestCardToSelection,
 }: AdventureModuleQuestEditorProps): JSX.Element => {
   const resolveImageContextLines = useCallback(
     (selectedContextTags: string[]) =>
@@ -259,7 +261,10 @@ export const AdventureModuleQuestEditor = ({
             the quest name when you save.
           </Text>
 
-          <ShortcodeField shortcode={`@quest/${quest.questSlug}`} />
+          <ShortcodeField
+            shortcode={`@quest/${quest.questSlug}`}
+            onAddToSelection={onAddQuestCardToSelection}
+          />
 
           <Text variant="note" color="iron-light" className="text-sm !opacity-100">
             Embed with <code>{createQuestCardJsx(quest.questSlug)}</code> or the

@@ -6,6 +6,8 @@ import { Text } from "../common/Text";
 interface ShortcodeFieldProps {
   shortcode: string;
   className?: string;
+  onAddToSelection?: () => void;
+  addButtonLabel?: string;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -31,6 +33,8 @@ const copyToClipboard = async (value: string): Promise<void> => {
 export const ShortcodeField = ({
   shortcode,
   className = "",
+  onAddToSelection,
+  addButtonLabel = "Add to table selection",
 }: ShortcodeFieldProps): JSX.Element => {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -79,8 +83,20 @@ export const ShortcodeField = ({
             void handleCopy();
           }}
         >
-          <span aria-hidden="true">{copied ? "✓" : "📋"}</span>
+          <span aria-hidden="true">{copied ? "OK" : "C"}</span>
         </Button>
+        {onAddToSelection ? (
+          <Button
+            variant="circle"
+            color="gold"
+            size="sm"
+            aria-label={addButtonLabel}
+            title={addButtonLabel}
+            onClick={onAddToSelection}
+          >
+            <span aria-hidden="true">+</span>
+          </Button>
+        ) : null}
       </div>
 
       {copyError ? (

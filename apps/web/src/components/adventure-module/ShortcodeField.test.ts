@@ -19,6 +19,10 @@ test("ShortcodeField renders shortcode text with compact copy feedback", () => {
   assert.match(source, /inline-flex max-w-full items-center justify-center gap-1\.5 self-center/);
   assert.match(source, /color="iron"/);
   assert.match(source, /font-semibold/);
+  assert.match(source, /onAddToSelection\?: \(\) => void/);
+  assert.match(source, /addButtonLabel = "Add to table selection"/);
+  assert.match(source, /onAddToSelection \?/);
+  assert.match(source, />\s*\+\s*</);
   assert.doesNotMatch(source, /Copy Shortcode/);
   assert.doesNotMatch(source, />\s*Shortcode\s*</);
 });

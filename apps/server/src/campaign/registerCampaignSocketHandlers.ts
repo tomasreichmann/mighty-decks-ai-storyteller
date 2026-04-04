@@ -1,6 +1,7 @@
 import type { Socket, Server as SocketServer } from "socket.io";
 import {
   addCampaignSessionMockPayloadSchema,
+  addCampaignSessionTableCardsPayloadSchema,
   campaignSessionErrorPayloadSchema,
   closeCampaignSessionPayloadSchema,
   claimCampaignSessionCharacterPayloadSchema,
@@ -8,6 +9,7 @@ import {
   joinCampaignSessionPayloadSchema,
   joinCampaignSessionRolePayloadSchema,
   leaveCampaignSessionPayloadSchema,
+  removeCampaignSessionTableCardPayloadSchema,
   sendCampaignSessionMessagePayloadSchema,
   watchCampaignPayloadSchema,
   type CampaignClientToServerEvents,
@@ -230,6 +232,38 @@ export const registerCampaignSocketHandlers = (
         emitSessionError(
           socket,
           error instanceof Error ? error.message : "Could not close campaign session.",
+        );
+      }
+    });
+
+    socket.on("add_campaign_session_table_cards", async (rawPayload) => {
+      const payload = withValidation(socket, addCampaignSessionTableCardsPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.addSessionTableCards(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not add session table cards.",
+        );
+      }
+    });
+
+    socket.on("remove_campaign_session_table_card", async (rawPayload) => {
+      const payload = withValidation(socket, removeCampaignSessionTableCardPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.removeSessionTableCard(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not remove session table card.",
         );
       }
     });

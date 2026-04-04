@@ -39,6 +39,7 @@ interface AdventureModuleEncounterEditorProps {
     target?: CounterAdjustTarget,
   ) => void;
   onDelete?: () => void;
+  onAddEncounterCardToSelection?: () => void;
 }
 
 interface EncounterImageFieldProps {
@@ -209,6 +210,7 @@ export const AdventureModuleEncounterEditor = ({
   onFieldBlur,
   onAdjustCounterValue,
   onDelete,
+  onAddEncounterCardToSelection,
 }: AdventureModuleEncounterEditorProps): JSX.Element => {
   const resolveImageContextLines = useCallback(
     (selectedContextTags: string[]) =>
@@ -282,7 +284,10 @@ export const AdventureModuleEncounterEditor = ({
             regenerated from the encounter name when you save.
           </Text>
 
-          <ShortcodeField shortcode={`@encounter/${encounter.encounterSlug}`} />
+          <ShortcodeField
+            shortcode={`@encounter/${encounter.encounterSlug}`}
+            onAddToSelection={onAddEncounterCardToSelection}
+          />
 
           {validationMessage ? (
             <Text variant="note" color="blood" className="text-sm !opacity-100">

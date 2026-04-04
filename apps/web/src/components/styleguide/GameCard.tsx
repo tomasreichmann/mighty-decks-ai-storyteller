@@ -77,7 +77,7 @@ const LocationGameCard = ({
         imageAlt={location.title}
         title={location.title}
         description={getLocationSceneDescription(location)}
-        className="aspect-[3/2] h-auto w-full max-w-[30rem]"
+        className="aspect-[332/204] h-auto w-full max-w-[20.75rem]"
       />
       <Text variant="note" color="iron-light" className="text-[11px] !opacity-100">
         LocationCard direction with a cloth title chip, a pinned icon medallion,
@@ -98,7 +98,7 @@ const EncounterGameCard = ({
         imageAlt={encounter.title}
         title={encounter.title}
         description={getEncounterSceneDescription(encounter)}
-        className="aspect-[3/2] h-auto w-full max-w-[30rem]"
+        className="aspect-[332/204] h-auto w-full max-w-[20.75rem]"
       />
       <Text variant="note" color="iron-light" className="text-[11px] !opacity-100">
         EncounterCard direction with a fire title chip, a warning icon
@@ -119,7 +119,7 @@ const QuestGameCard = ({
         imageAlt={quest.title}
         title={quest.title}
         description={getQuestSceneDescription(quest)}
-        className="aspect-[3/2] h-auto w-full max-w-[30rem]"
+        className="aspect-[332/204] h-auto w-full max-w-[20.75rem]"
       />
       <Text variant="note" color="iron-light" className="text-[11px] !opacity-100">
         QuestCard direction with a gold title chip, a scroll icon medallion,

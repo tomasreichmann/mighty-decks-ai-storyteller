@@ -25,7 +25,17 @@ const createAssetShortcode = (
     ? `@asset/${slug}/${modifierSlug}`
     : `@asset/${slug}`;
 
-export const RulesAssetsPage = (): JSX.Element => {
+interface RulesAssetsContentProps {
+  onAddAssetCard?: (card: {
+    type: "AssetCard";
+    slug: string;
+    modifierSlug?: AssetModifierSlug;
+  }) => void;
+}
+
+export const RulesAssetsContent = ({
+  onAddAssetCard,
+}: RulesAssetsContentProps): JSX.Element => {
   const [modifierEnabled, setModifierEnabled] = useState(false);
   const [selectedModifierSlug, setSelectedModifierSlug] = useState<
     AssetModifierSlug | undefined
@@ -122,6 +132,16 @@ export const RulesAssetsPage = (): JSX.Element => {
                     asset.slug,
                     appliedModifierSlug,
                   )}
+                  onAddToSelection={
+                    onAddAssetCard
+                      ? () =>
+                          onAddAssetCard({
+                            type: "AssetCard",
+                            slug: asset.slug,
+                            modifierSlug: appliedModifierSlug,
+                          })
+                      : undefined
+                  }
                 />
               </div>
             ))}
@@ -130,4 +150,8 @@ export const RulesAssetsPage = (): JSX.Element => {
       ))}
     </div>
   );
+};
+
+export const RulesAssetsPage = (): JSX.Element => {
+  return <RulesAssetsContent />;
 };

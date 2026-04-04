@@ -50,6 +50,7 @@ interface AdventureModuleAssetEditorProps {
   onContentChange: (nextValue: string) => void;
   onFieldBlur: () => void;
   onDelete?: () => void;
+  onAddAssetCardToSelection?: () => void;
 }
 
 const MAX_MARKDOWN_LENGTH = 200_000;
@@ -76,6 +77,7 @@ export const AdventureModuleAssetEditor = ({
   onContentChange,
   onFieldBlur,
   onDelete,
+  onAddAssetCardToSelection,
 }: AdventureModuleAssetEditorProps): JSX.Element => {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
@@ -113,7 +115,10 @@ export const AdventureModuleAssetEditor = ({
           overlayUrl={asset.overlayUrl}
         />
 
-        <ShortcodeField shortcode={`@asset/${asset.assetSlug}`} />
+        <ShortcodeField
+          shortcode={`@asset/${asset.assetSlug}`}
+          onAddToSelection={onAddAssetCardToSelection}
+        />
 
         {reauthorRequired ? (
           <Message label="Reauthor required" color="blood">

@@ -15,6 +15,7 @@ interface AdventureModuleEncountersTabPanelProps {
   onCreate: () => void;
   onOpenEncounter: (encounterSlug: string) => void;
   onDeleteEncounter?: (encounterSlug: string, title: string) => void;
+  onAddEncounterCardToSelection?: (encounterSlug: string) => void;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -45,6 +46,7 @@ export const AdventureModuleEncountersTabPanel = ({
   onCreate,
   onOpenEncounter,
   onDeleteEncounter,
+  onAddEncounterCardToSelection,
 }: AdventureModuleEncountersTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
   const [copiedEncounterSlug, setCopiedEncounterSlug] = useState<string | null>(
@@ -177,6 +179,20 @@ export const AdventureModuleEncountersTabPanel = ({
                   >
                     Copy Shortcode
                   </Button>
+                  {onAddEncounterCardToSelection ? (
+                    <Button
+                      variant="circle"
+                      color="gold"
+                      size="sm"
+                      aria-label={`Add ${encounter.title} to table selection`}
+                      title={`Add ${encounter.title} to table selection`}
+                      onClick={() => {
+                        onAddEncounterCardToSelection(encounter.encounterSlug);
+                      }}
+                    >
+                      +
+                    </Button>
+                  ) : null}
                   {onDeleteEncounter ? (
                     <Button
                       variant="circle"

@@ -25,6 +25,7 @@ interface AdventureModuleCounterEditorProps {
     target?: CounterAdjustTarget,
   ) => void;
   onDelete?: () => void;
+  onAddCounterCardToSelection?: () => void;
 }
 
 const controlClassName =
@@ -42,6 +43,7 @@ export const AdventureModuleCounterEditor = ({
   onFieldBlur,
   onAdjustCounterValue,
   onDelete,
+  onAddCounterCardToSelection,
 }: AdventureModuleCounterEditorProps): JSX.Element => {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
@@ -96,7 +98,10 @@ export const AdventureModuleCounterEditor = ({
           }
         />
 
-        <ShortcodeField shortcode={`@counter/${counter.slug}`} />
+        <ShortcodeField
+          shortcode={`@counter/${counter.slug}`}
+          onAddToSelection={onAddCounterCardToSelection}
+        />
 
         <TextField
           label="Counter Name"

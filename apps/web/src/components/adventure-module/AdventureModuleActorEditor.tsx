@@ -49,6 +49,7 @@ interface AdventureModuleActorEditorProps {
     target?: CounterAdjustTarget,
   ) => void;
   onDelete?: () => void;
+  onAddActorCardToSelection?: () => void;
 }
 
 const MAX_MARKDOWN_LENGTH = 200_000;
@@ -75,6 +76,7 @@ export const AdventureModuleActorEditor = ({
   onFieldBlur,
   onAdjustCounterValue,
   onDelete,
+  onAddActorCardToSelection,
 }: AdventureModuleActorEditorProps): JSX.Element => {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
@@ -107,7 +109,10 @@ export const AdventureModuleActorEditor = ({
           tacticalSpecialSlug={actor.tacticalSpecialSlug}
         />
 
-        <ShortcodeField shortcode={`@actor/${actor.actorSlug}`} />
+        <ShortcodeField
+          shortcode={`@actor/${actor.actorSlug}`}
+          onAddToSelection={onAddActorCardToSelection}
+        />
 
         <TextField
           label="Actor Name"

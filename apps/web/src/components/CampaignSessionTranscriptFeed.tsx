@@ -95,13 +95,16 @@ export const CampaignSessionTranscriptFeed = ({
                     presentation.align === "end" ? "self-end" : "self-start",
                   )}
                   contentClassName="min-w-0"
-                >
-                  <div className="text-sm text-kac-iron">
-                    <CampaignSessionMessageContent text={presentation.text} />
-                  </div>
-                </Message>
-              );
-            })}
+                    >
+                      <div className="text-sm text-kac-iron">
+                        <CampaignSessionMessageContent
+                          text={presentation.text}
+                          claimedActorTitle={presentation.claimedActorTitle}
+                        />
+                      </div>
+                    </Message>
+                  );
+                })}
             <div ref={endRef} />
           </div>
         </GameCardCatalogContext.Provider>

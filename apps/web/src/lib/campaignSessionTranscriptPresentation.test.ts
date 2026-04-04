@@ -121,6 +121,7 @@ test("presentCampaignSessionTranscriptEntry keeps authored chat messages role-co
     color: "fire-lightest",
     text: "Claimed Sir Rowan",
     align: "start",
+    claimedActorTitle: "Sir Rowan",
   });
 });
 

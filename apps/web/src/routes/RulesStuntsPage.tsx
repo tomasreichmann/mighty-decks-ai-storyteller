@@ -4,7 +4,13 @@ import { Text } from "../components/common/Text";
 import { rulesStuntCards } from "../data/rulesComponents";
 import { resolveGameCard } from "../lib/markdownGameComponents";
 
-export const RulesStuntsPage = (): JSX.Element => {
+interface RulesStuntsContentProps {
+  onAddStuntCard?: (card: { type: "StuntCard"; slug: string }) => void;
+}
+
+export const RulesStuntsContent = ({
+  onAddStuntCard,
+}: RulesStuntsContentProps): JSX.Element => {
   return (
     <div className="stack gap-4">
       <div className="stack gap-1">
@@ -26,11 +32,26 @@ export const RulesStuntsPage = (): JSX.Element => {
           return (
             <div key={stunt.slug} className="stack h-full gap-2">
               <GameCardView gameCard={gameCard} className="mx-auto" />
-              <ShortcodeField shortcode={gameCard.legacyToken} />
+              <ShortcodeField
+                shortcode={gameCard.legacyToken}
+                onAddToSelection={
+                  onAddStuntCard
+                    ? () =>
+                        onAddStuntCard({
+                          type: "StuntCard",
+                          slug: gameCard.slug,
+                        })
+                    : undefined
+                }
+              />
             </div>
           );
         })}
       </div>
     </div>
   );
+};
+
+export const RulesStuntsPage = (): JSX.Element => {
+  return <RulesStuntsContent />;
 };

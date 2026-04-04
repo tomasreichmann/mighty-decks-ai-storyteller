@@ -5,6 +5,9 @@ import {
   campaignDetailSchema,
   campaignListItemSchema,
   campaignSessionDetailSchema,
+  type CampaignSessionParticipant,
+  type CampaignSessionTableCardReference,
+  type CampaignSessionTableTarget,
   campaignSessionSummarySchema,
   type CampaignDetail,
   type CampaignListItem,
@@ -57,6 +60,10 @@ const countRole = (
   participants: CampaignSessionDetail["participants"],
   role: CampaignSessionParticipantRole,
 ): number => participants.filter((participant) => participant.role === role).length;
+
+const isStoryteller = (
+  participant: CampaignSessionParticipant | undefined,
+): boolean => participant?.role === "storyteller";
 
 interface CampaignStoreOptions {
   rootDir: string;
@@ -213,6 +220,7 @@ export class CampaignStore {
       transcriptEntryCount: 0,
       participants: [],
       claims: [],
+      table: [],
       transcript: [
         {
           entryId: makeId("session-entry"),
@@ -450,6 +458,81 @@ export class CampaignStore {
         text: options.text.trim(),
         createdAtIso: nowIso,
       });
+    });
+  }
+
+  public async addSessionTableCards(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    target: CampaignSessionTableTarget;
+    cards: readonly CampaignSessionTableCardReference[];
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const participant = session.participants.find(
+        (candidate) => candidate.participantId === options.participantId,
+      );
+      if (!isStoryteller(participant)) {
+        throw new CampaignValidationError("Only storytellers can send table cards.");
+      }
+
+      if (options.target.scope === "participant") {
+        const targetParticipantId = options.target.participantId;
+        const targetParticipant = session.participants.find(
+          (candidate) => candidate.participantId === targetParticipantId,
+        );
+        if (!targetParticipant || targetParticipant.role !== "player") {
+          throw new CampaignValidationError("Table target must be an active player participant.");
+        }
+      }
+
+      session.table.push(
+        ...options.cards.map((card) => ({
+          tableEntryId: makeId("session-table"),
+          target: options.target,
+          card,
+          addedAtIso: nowIso,
+        })),
+      );
+    });
+  }
+
+  public async removeSessionTableCard(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    tableEntryId: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session) => {
+      this.assertSessionWritable(session);
+      const participant = session.participants.find(
+        (candidate) => candidate.participantId === options.participantId,
+      );
+      if (!participant) {
+        throw new CampaignValidationError("Session participant not found.");
+      }
+
+      const tableEntry = session.table.find(
+        (entry) => entry.tableEntryId === options.tableEntryId,
+      );
+      if (!tableEntry) {
+        throw new CampaignValidationError("Session table card not found.");
+      }
+
+      const canRemove =
+        participant.role === "storyteller" ||
+        (participant.role === "player" &&
+          tableEntry.target.scope === "participant" &&
+          tableEntry.target.participantId === participant.participantId);
+
+      if (!canRemove) {
+        throw new CampaignValidationError("You cannot remove this table card.");
+      }
+
+      session.table = session.table.filter(
+        (entry) => entry.tableEntryId !== options.tableEntryId,
+      );
     });
   }
 

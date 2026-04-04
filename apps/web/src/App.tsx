@@ -1,5 +1,12 @@
 import { Suspense, lazy } from "react";
-import { Navigate, Outlet, Route, Routes, useParams } from "react-router-dom";
+import {
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import { Page } from "./components/layout/Page";
 
 const AdventureModuleAuthoringPage = lazy(async () => ({
@@ -75,6 +82,14 @@ const StyleguideQuestCardPage = lazy(async () => ({
   default: (await import("./routes/StyleguideQuestCardPage"))
     .StyleguideQuestCardPage,
 }));
+const StyleguideSessionChatPlayerPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideSessionChatPlayerPage"))
+    .StyleguideSessionChatPlayerPage,
+}));
+const StyleguideSessionChatStorytellerPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideSessionChatStorytellerPage"))
+    .StyleguideSessionChatStorytellerPage,
+}));
 const WorkflowLabPage = lazy(async () => ({
   default: (await import("./routes/WorkflowLabPage")).WorkflowLabPage,
 }));
@@ -87,9 +102,39 @@ const FitContentLayout = (): JSX.Element => {
   );
 };
 
-const NoHeaderFitContentLayout = (): JSX.Element => {
+const NoHeaderFitScreenLayout = (): JSX.Element => {
   return (
-    <Page mode="fit-content" footerContent={null} hideHeader>
+    <Page mode="fit-screen" footerContent={null} hideHeader>
+      <Outlet />
+    </Page>
+  );
+};
+
+const CampaignPlayerSessionLayout = (): JSX.Element => {
+  const { pathname } = useLocation();
+  const inChatRoute = pathname.endsWith("/chat");
+
+  return (
+    <Page
+      mode={inChatRoute ? "fit-screen" : "fit-content"}
+      footerContent={inChatRoute ? null : undefined}
+      hideHeader={inChatRoute}
+    >
+      <Outlet />
+    </Page>
+  );
+};
+
+const CampaignStorytellerSessionLayout = (): JSX.Element => {
+  const { pathname } = useLocation();
+  const inChatRoute = /\/storyteller\/chat(?:\/|$)/.test(pathname);
+
+  return (
+    <Page
+      mode={inChatRoute ? "fit-screen" : "fit-content"}
+      footerContent={inChatRoute ? null : undefined}
+      hideHeader
+    >
       <Outlet />
     </Page>
   );
@@ -166,11 +211,25 @@ export const App = (): JSX.Element => {
           </Route>
         </Route>
 
-        <Route element={<NoHeaderFitContentLayout />}>
+        <Route element={<NoHeaderFitScreenLayout />}>
           <Route
-            path="/campaign/:campaignSlug/session/:sessionId/player"
+            path="/styleguide/session-chat-player"
+            element={<StyleguideSessionChatPlayerPage />}
+          />
+          <Route
+            path="/styleguide/session-chat-storyteller"
+            element={<StyleguideSessionChatStorytellerPage />}
+          />
+        </Route>
+
+        <Route element={<CampaignPlayerSessionLayout />}>
+          <Route
+            path="/campaign/:campaignSlug/session/:sessionId/player/*"
             element={<CampaignSessionPlayerPage />}
           />
+        </Route>
+
+        <Route element={<CampaignStorytellerSessionLayout />}>
           <Route
             path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab"
             element={<CampaignAuthoringPage />}

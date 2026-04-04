@@ -1,5 +1,5 @@
-import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import type { CampaignDetail } from "@mighty-decks/spec/campaign";
 import { ActorCard } from "../components/cards/ActorCard";
 import { CampaignSessionTranscriptFeed } from "../components/CampaignSessionTranscriptFeed";
@@ -7,10 +7,11 @@ import { MarkdownImageInsertButton } from "../components/MarkdownImageInsertButt
 import { Button } from "../components/common/Button";
 import { DepressedInput } from "../components/common/DepressedInput";
 import { Message } from "../components/common/Message";
-import { Panel } from "../components/common/Panel";
 import { Section } from "../components/common/Section";
 import { Text } from "../components/common/Text";
 import { TextField } from "../components/common/TextField";
+import { CampaignSessionChatLayout } from "../components/session/CampaignSessionChatLayout";
+import { CampaignSessionTable } from "../components/session/CampaignSessionTable";
 import { useCampaignSession } from "../hooks/useCampaignSession";
 import { getCampaignSessionIdentity } from "../lib/campaignSessionIdentity";
 import { getCampaignBySlug } from "../lib/campaignApi";
@@ -19,6 +20,8 @@ import { appendMarkdownSnippet } from "../lib/markdownImage";
 import type { SmartInputDocumentContext } from "../lib/smartInputContext";
 
 export const CampaignSessionPlayerPage = (): JSX.Element => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { campaignSlug, sessionId } = useParams<{
     campaignSlug?: string;
     sessionId?: string;
@@ -42,6 +45,17 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     () => getCampaignSessionIdentity(campaignSlug, sessionId, "player"),
     [campaignSlug, sessionId],
   );
+  const playerClaimPath = useMemo(
+    () =>
+      `/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(sessionId)}/player`,
+    [campaignSlug, sessionId],
+  );
+  const playerChatPath = useMemo(
+    () =>
+      `/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(sessionId)}/player/chat`,
+    [campaignSlug, sessionId],
+  );
+  const inChatRoute = pathname.endsWith("/chat");
   const {
     session,
     error,
@@ -51,6 +65,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     claimCharacter,
     createCharacter,
     sendMessage,
+    removeTableCard,
   } = useCampaignSession({
     campaignSlug,
     sessionId,
@@ -113,6 +128,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
       ) ?? null,
     [identity.participantId, session?.claims],
   );
+  const hasClaim = Boolean(myClaim);
   const availableCharacters = useMemo(() => {
     const claimsByActorId = new Map(
       (session?.claims ?? []).map((claim) => [claim.actorFragmentId, claim.participantId]),
@@ -125,15 +141,8 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
       return !claimOwner || claimOwner === identity.participantId;
     });
   }, [campaign?.actors, identity.participantId, session?.claims]);
-  const claimedCharacter = useMemo(
-    () =>
-      campaign?.actors.find(
-        (actor) => actor.fragmentId === myClaim?.actorFragmentId,
-      ) ?? null,
-    [campaign?.actors, myClaim?.actorFragmentId],
-  );
   const canChat =
-    Boolean(claimedCharacter) &&
+    hasClaim &&
     Boolean(joinedPlayerParticipant) &&
     session?.status !== "closed";
   const readyToClaimCharacter = Boolean(joinedPlayerParticipant);
@@ -195,6 +204,16 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     setMessageText("");
   };
 
+  const handleRemoveTableCard = useCallback(
+    (tableEntryId: string): void => {
+      removeTableCard({
+        participantId: identity.participantId,
+        tableEntryId,
+      });
+    },
+    [identity.participantId, removeTableCard],
+  );
+
   const handleMessageKeyDown = (
     event: KeyboardEvent<HTMLTextAreaElement>,
   ): void => {
@@ -213,8 +232,30 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     handleSendMessage();
   };
 
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+
+    if (hasClaim && !inChatRoute) {
+      navigate(playerChatPath, { replace: true });
+      return;
+    }
+
+    if (!hasClaim && inChatRoute) {
+      navigate(playerClaimPath, { replace: true });
+    }
+  }, [
+    hasClaim,
+    inChatRoute,
+    navigate,
+    playerChatPath,
+    playerClaimPath,
+    session,
+  ]);
+
   return (
-    <div className="stack w-full max-w-none gap-4 px-4 py-3 sm:px-6 lg:px-8">
+    <div className="flex min-h-full w-full max-w-none flex-1 flex-col gap-4 px-4 py-3 sm:px-6 lg:px-8">
       {!connected ? (
         <Message label="Connecting" color="cloth">
           Reconnecting to session realtime...
@@ -232,7 +273,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
         </Message>
       ) : null}
 
-      {!claimedCharacter ? (
+      {!inChatRoute && !hasClaim ? (
         <Section className="stack gap-5">
           {!readyToClaimCharacter ? (
             <Message label="Joining Seat" color="cloth">
@@ -316,87 +357,87 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
         </Section>
       ) : null}
 
-      {claimedCharacter ? (
-        <>
-          <Message label="Claimed Character" color="gold">
-            <Text variant="emphasised" color="iron">
-              {claimedCharacter.title}
-            </Text>
-            <Text variant="body" color="iron-light" className="text-sm">
-              {claimedCharacter.summary ?? "No summary yet."}
-            </Text>
-          </Message>
-
-          <Panel contentClassName="stack gap-4">
-            <Text variant="h3" color="iron">
-              Transcript
-            </Text>
-            <CampaignSessionTranscriptFeed
-              entries={session?.transcript ?? []}
-              participants={session?.participants ?? []}
+      {inChatRoute && hasClaim ? (
+        <CampaignSessionChatLayout
+          tablePane={
+            <CampaignSessionTable
+              campaign={campaign}
+              session={session}
+              viewerRole="player"
               currentParticipantId={identity.participantId}
-              gameCardCatalogValue={gameCardCatalogValue}
-              className="max-h-[24rem]"
+              onRemoveEntry={handleRemoveTableCard}
+              className="mx-2 sm:mx-3"
             />
-
-            {session?.status === "closed" ? (
-              <Message label="Closed" color="cloth">
-                This session has been closed by the storyteller.
-              </Message>
-            ) : null}
-
-            <div className="stack gap-2">
-              <DepressedInput
-                multiline
-                label="Message"
-                labelColor="gold"
-                rows={4}
-                value={messageText}
-                onChange={(event) => setMessageText(event.target.value)}
-                onKeyDown={handleMessageKeyDown}
-                placeholder="Share your action, narration, or question for the table..."
-                controlClassName="min-h-[7.5rem] pr-12"
-                topRightControl={
-                  <MarkdownImageInsertButton
-                    identityKey={`${campaignSlug}-${sessionId}-player-chat-image`}
-                    smartContextDocument={smartContextDocument}
-                    currentInputValue={messageText}
-                    disabled={!canChat}
-                    dialogTitle="Share Image"
-                    dialogDescription="Generate a new image or reuse an existing one, then insert it into your transcript draft as standard markdown."
-                    promptDescription="Generate or reuse an image to share in the live transcript."
-                    workflowContextIntro="Markdown image prompt for a campaign session player transcript message. Refine wording while preserving a clear, table-readable illustration."
-                    buttonAriaLabel="Insert image into transcript"
-                    buttonTitle="Share image"
-                    onInsertMarkdownSnippet={(snippet) => {
-                      setMessageText((current) =>
-                        appendMarkdownSnippet(current, snippet),
-                      );
-                    }}
-                  />
-                }
+          }
+          chatPane={
+            <div className="flex min-h-0 flex-1 flex-col gap-3 px-2 sm:px-3">
+              <CampaignSessionTranscriptFeed
+                entries={session?.transcript ?? []}
+                participants={session?.participants ?? []}
+                currentParticipantId={identity.participantId}
+                gameCardCatalogValue={gameCardCatalogValue}
+                className="min-h-[16rem] flex-1"
               />
-              <div className="flex items-end justify-end gap-2 paper-shadow">
-                <Button
-                  color="gold"
-                  disabled={!canChat || messageText.trim().length === 0}
-                  onClick={handleSendMessage}
-                >
-                  Send
-                </Button>
-              </div>
-              <div className="flex flex-col items-end mt-2 paper-shadow min-h-[2.2em]">
-                <Text
-                  variant="note"
-                  color="steel-dark"
-                  className="normal-case tracking-normal"
-                >
-                  Press Enter to send. Shift+Enter for newline.
-                </Text>
+
+              {session?.status === "closed" ? (
+                <Message label="Closed" color="cloth">
+                  This session has been closed by the storyteller.
+                </Message>
+              ) : null}
+
+              <div className="stack shrink-0 gap-2">
+                <DepressedInput
+                  multiline
+                  label="Message"
+                  labelColor="gold"
+                  rows={4}
+                  value={messageText}
+                  onChange={(event) => setMessageText(event.target.value)}
+                  onKeyDown={handleMessageKeyDown}
+                  placeholder="Share your action, narration, or question for the table..."
+                  controlClassName="min-h-[7.5rem] pr-12"
+                  topRightControl={
+                    <MarkdownImageInsertButton
+                      identityKey={`${campaignSlug}-${sessionId}-player-chat-image`}
+                      smartContextDocument={smartContextDocument}
+                      currentInputValue={messageText}
+                      disabled={!canChat}
+                      dialogTitle="Share Image"
+                      dialogDescription="Generate a new image or reuse an existing one, then insert it into your transcript draft as standard markdown."
+                      promptDescription="Generate or reuse an image to share in the live transcript."
+                      workflowContextIntro="Markdown image prompt for a campaign session player transcript message. Refine wording while preserving a clear, table-readable illustration."
+                      buttonAriaLabel="Insert image into transcript"
+                      buttonTitle="Share image"
+                      onInsertMarkdownSnippet={(snippet) => {
+                        setMessageText((current) =>
+                          appendMarkdownSnippet(current, snippet),
+                        );
+                      }}
+                    />
+                  }
+                />
+                <div className="flex items-end justify-end gap-2 paper-shadow">
+                  <Button
+                    color="gold"
+                    disabled={!canChat || messageText.trim().length === 0}
+                    onClick={handleSendMessage}
+                  >
+                    Send
+                  </Button>
+                </div>
+                <div className="flex min-h-[2.2em] flex-col items-end mt-2 paper-shadow">
+                  <Text
+                    variant="note"
+                    color="steel-dark"
+                    className="normal-case tracking-normal"
+                  >
+                    Press Enter to send. Shift+Enter for newline.
+                  </Text>
+                </div>
               </div>
             </div>
-          </Panel>
-        </>
+          }
+        />
       ) : null}
     </div>
   );

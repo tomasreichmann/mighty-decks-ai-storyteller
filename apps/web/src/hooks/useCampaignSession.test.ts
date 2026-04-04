@@ -13,4 +13,8 @@ test("useCampaignSession exposes stable ensure-joined helpers and clears stale e
   assert.match(source, /lastJoinedParticipantIdRef/);
   assert.match(source, /lastJoinedRoleKeyRef/);
   assert.match(source, /setError\(null\)/);
+  assert.match(source, /addTableCards/);
+  assert.match(source, /removeTableCard/);
+  assert.match(source, /add_campaign_session_table_cards/);
+  assert.match(source, /remove_campaign_session_table_card/);
 });

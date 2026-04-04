@@ -45,21 +45,30 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   );
 
   assert.match(source, /useCampaignSession/);
+  assert.match(source, /useLocation/);
+  assert.match(source, /useNavigate/);
   assert.match(source, /ensureSessionRole/);
   assert.match(source, /claimCharacter/);
   assert.match(source, /createCharacter/);
   assert.match(source, /sendMessage/);
+  assert.match(source, /pathname\.endsWith\("\/chat"\)/);
+  assert.match(source, /\/player\/chat/);
+  assert.match(source, /replace:\s*true/);
   assert.match(source, /ActorCard/);
   assert.match(source, /Claim a Character/);
   assert.match(source, /Create a New Character/);
   assert.match(source, />\s*Create\s*</);
   assert.match(source, /flex justify-end/);
   assert.match(source, /Claim This Character/);
-  assert.match(source, /Transcript/);
   assert.match(source, /CampaignSessionTranscriptFeed/);
+  assert.match(source, /CampaignSessionChatLayout/);
+  assert.match(source, /CampaignSessionTable/);
   assert.match(source, /MarkdownImageInsertButton/);
   assert.match(source, /DepressedInput/);
-  assert.match(source, /<div className="stack w-full max-w-none gap-4 px-4 py-3 sm:px-6 lg:px-8">/);
+  assert.match(source, /removeTableCard/);
+  assert.match(source, /<div className="flex min-h-full w-full max-w-none flex-1 flex-col gap-4 px-4 py-3 sm:px-6 lg:px-8">/);
+  assert.match(source, /inChatRoute && hasClaim[\s\S]*<CampaignSessionChatLayout/);
+  assert.match(source, /className="min-h-\[16rem\] flex-1"/);
   assert.match(source, /<DepressedInput[\s\S]*label="Message"[\s\S]*topRightControl=\{/);
   assert.match(source, /handleMessageKeyDown/);
   assert.match(source, /event\.shiftKey\s*\|\|\s*event\.ctrlKey\s*\|\|\s*event\.metaKey\s*\|\|\s*event\.altKey/);
@@ -71,9 +80,10 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.doesNotMatch(source, /Claim an Existing Character/);
   assert.doesNotMatch(source, /Player Session/);
   assert.doesNotMatch(source, /Back to Lobby/);
-  assert.doesNotMatch(
-    source,
-    /max-h-\[24rem\] overflow-y-auto rounded-sm border-2 border-kac-iron\/15/,
-  );
+  assert.doesNotMatch(source, /<Message label="Claimed Character" color="gold">/);
+  assert.doesNotMatch(source, /<ActorCard[\s\S]*claimedCharacter\.baseLayerSlug/);
+  assert.doesNotMatch(source, /claimedCharacter\.summary \?\? "No summary yet\."./);
+  assert.doesNotMatch(source, />\s*Transcript\s*</);
+  assert.doesNotMatch(source, /import\s+\{\s*Panel\s*\}\s+from/);
   assert.doesNotMatch(source, /import\s+\{\s*TextArea\s*\}/);
 });

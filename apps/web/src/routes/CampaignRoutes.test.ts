@@ -9,8 +9,16 @@ test("App registers the campaign list, detail, and session routes", () => {
   assert.match(source, /CampaignAuthoringPage/);
   assert.match(source, /CampaignSessionLobbyPage/);
   assert.match(source, /CampaignSessionPlayerPage/);
+  assert.match(source, /CampaignPlayerSessionLayout/);
+  assert.match(source, /CampaignStorytellerSessionLayout/);
   assert.match(source, /hideHeader/);
-  assert.match(source, /NoHeaderFitContentLayout/);
+  assert.match(source, /NoHeaderFitScreenLayout/);
+  assert.match(source, /useLocation/);
+  assert.match(source, /pathname\.endsWith\("\/chat"\)/);
+  assert.match(
+    source,
+    /CampaignStorytellerSessionLayout[\s\S]*mode=\{inChatRoute \? "fit-screen" : "fit-content"\}/,
+  );
   assert.match(
     source,
     /path="\/campaign\/list"\s+element={<CampaignListPage \/>}/,
@@ -29,15 +37,23 @@ test("App registers the campaign list, detail, and session routes", () => {
   );
   assert.match(
     source,
-    /<Route element={<NoHeaderFitContentLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/player"\s+element={<CampaignSessionPlayerPage \/>}/,
+    /<Route element={<CampaignPlayerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/player\/\*"\s+element={<CampaignSessionPlayerPage \/>}/,
   );
   assert.match(
     source,
-    /<Route element={<NoHeaderFitContentLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab"\s+element={<CampaignAuthoringPage \/>}/,
+    /<Route element={<CampaignStorytellerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab"\s+element={<CampaignAuthoringPage \/>}/,
   );
   assert.match(
     source,
-    /<Route element={<NoHeaderFitContentLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab\/:entityId"\s+element={<CampaignAuthoringPage \/>}/,
+    /<Route element={<CampaignStorytellerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab\/:entityId"\s+element={<CampaignAuthoringPage \/>}/,
+  );
+  assert.doesNotMatch(
+    source,
+    /path="\/campaign\/:campaignSlug\/session\/:sessionId\/player"\s+element={<CampaignSessionPlayerPage \/>}/,
+  );
+  assert.doesNotMatch(
+    source,
+    /path="\/campaign\/:campaignSlug\/session\/:sessionId\/player\/chat"\s+element={<CampaignSessionPlayerPage \/>}/,
   );
 });
 
@@ -53,6 +69,7 @@ test("AdventureModuleTabNav supports responsive session chrome slots", () => {
   assert.match(source, /aria-expanded=\{menuOpen\}/);
   assert.match(source, /xl:hidden/);
   assert.match(source, /hidden min-w-0 flex-1 xl:flex/);
+  assert.match(source, /menuOpen \? "flex flex-col" : "hidden"/);
 });
 
 test("Page primary nav includes Campaigns", () => {

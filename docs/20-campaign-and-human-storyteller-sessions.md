@@ -18,7 +18,7 @@ Current defaults:
 - Campaigns are shared inside the current app instance. No account ownership is enforced.
 - Campaign editing is autosave-based and last-write-wins.
 - Multiple sessions may exist on the same campaign at the same time.
-- Human sessions currently support group chat only. Private messages and card-transfer flows are still out of scope.
+- Human sessions now support group chat plus a shared session table surface with storyteller-managed card placement.
 
 ---
 
@@ -31,6 +31,7 @@ Campaign routes:
 - `/campaign/:slug/:tab/:entityId`
 - `/campaign/:campaignSlug/session/:sessionId`
 - `/campaign/:campaignSlug/session/:sessionId/player`
+- `/campaign/:campaignSlug/session/:sessionId/player/chat`
 - `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab`
 - `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId`
 
@@ -49,8 +50,20 @@ Campaign detail tabs:
 
 Storyteller session tabs:
 
-- all campaign authoring tabs above
 - `chat`
+- `outcomes`
+- `effects`
+- `stunts`
+- `actors`
+- `counters`
+- `locations`
+- `encounters`
+- `quests`
+- `static-assets`
+- `assets` (labeled `Custom Assets` in session mode)
+- `base`
+- `player-info`
+- `storyteller-info`
 
 ---
 
@@ -142,13 +155,16 @@ This allows one person to test activation, chat, and session closure without nee
 
 ## 7. Player Flow
 
-Route: `/campaign/:campaignSlug/session/:sessionId/player`
+Claim route: `/campaign/:campaignSlug/session/:sessionId/player`
+
+Live transcript route: `/campaign/:campaignSlug/session/:sessionId/player/chat`
 
 Player entry flow:
 
 1. Join the session as `player`.
-2. Claim an existing unclaimed player character, or create a new one.
-3. Enter group chat.
+2. Land on the headered claim/create route.
+3. Claim an existing unclaimed player character, or create a new one.
+4. Enter the headerless live transcript route automatically after claim/create succeeds.
 
 Player characters are campaign actors with `isPlayerCharacter: true`.
 
@@ -166,8 +182,13 @@ Current player session scope:
 - paste supported component shortcodes into transcript messages and see them render inline in place
 - see markdown images render inline inside transcript messages without changing the stored session message shape
 - reuse the Adventure-style transcript wrapper treatment, including the softer unframed scroll area and fade mask
+- render the existing `Claimed ...` transcript event as an inline actor card with art, name, and summary inside the live transcript scroll area instead of a separate header callout
 - see known session events such as joins, leaves, and claims rendered with participant labels and Adventure-aligned role colors
-- use a headerless, footerless player session shell so claim/chat screens keep more vertical room for the live transcript and composer
+- keep `/player` on the usual page shell while claim/create is still in progress
+- switch the live transcript to a headerless, footerless `/player/chat` shell so only in-play screens reclaim that vertical room
+- let the live transcript scroll area grow to the remaining viewport height once play starts, so the composer stays on-screen while the transcript absorbs the extra space
+- see the same shared table lanes as the storyteller in a responsive `Table / Chat` split view
+- remove table cards only from the player's own lane (server-enforced)
 
 Not yet included:
 
@@ -189,9 +210,13 @@ Storyteller flow:
 
 The `Chat` tab currently includes:
 
-- participant roster
+- responsive table/chat split (`2/3` table, `1/3` chat on desktop; `Table / Chat` switcher on mobile)
+- fit-screen chat mode for `/storyteller/chat` with independent scrolling in both the `Table` pane and the `Chat` pane
 - persistent live transcript
 - storyteller transcript composer
+- storyteller table controls to remove any visible table card
+- table card removals animate with a short fade-out when `X` is clicked before the server-authoritative removal lands
+- lane-level and shared `Send Cards` actions that appear when local selection has staged cards
 - a compact image button on the transcript composer that opens the same reusable generate-or-pick modal used by markdown authoring
 - inline rendering for supported component shortcodes pasted into transcript messages
 - inline rendering for markdown images embedded in transcript text
@@ -201,14 +226,17 @@ The `Chat` tab currently includes:
 
 The storyteller stays inside the same campaign-backed entity editors while the session is live.
 
-Those shared entity editors now surface the same shortcode copy row used in Adventure Module detail pages, so storytellers can copy `@actor/...`, `@counter/...`, `@asset/...`, `@location/...`, `@encounter/...`, and `@quest/...` directly from the live session detail tabs.
+Those shared entity editors now surface the same shortcode copy row used in Adventure Module detail pages, and in session mode they also expose a `+` add action next to shortcode controls and list-row copy actions. This stages cards in a local storyteller selection strip (below the tab rail) that persists while moving between storyteller session tabs and clears after `Send Cards`.
+When no cards are staged, the selection strip is hidden.
+
+Session storyteller tabs also include direct rules references (`Outcomes`, `Effects`, `Stunts`, `Static Assets`) so the storyteller can stage rules cards without leaving the live session shell.
 
 Current UX direction:
 
 - session-facing screens borrow Adventure-mode patterns where players feel them most
 - `Transcript` is the primary conversation model across player and storyteller screens
 - the storyteller `Chat` tab is a dedicated live-session split view inside the broader campaign shell, not a fully separate storyteller app
-- player flow is intentionally two-step: character claim/create first, live transcript second
+- player flow is intentionally two-step: character claim/create first on `/player`, live transcript second on `/player/chat`
 - storyteller session routes widen beyond the standard authoring shell so the live roster and transcript can use the full viewport width
 
 ---
@@ -230,6 +258,8 @@ Socket.IO handles:
 - claim/create player character
 - group chat messages
 - close session
+- add cards to the shared session table or a specific player lane
+- remove a card entry from the session table (storyteller any lane; player own lane only)
 - broadcast session state updates
 
 Transcript persistence includes:
@@ -244,6 +274,7 @@ Transcript persistence includes:
 Transcript presentation includes:
 
 - shared web-side parsing of known session system events into labeled messages such as `Joined`, `Left`, `Claimed ...`, and `Created ...`
+- known claim events can resolve against campaign actors so the transcript entry itself renders the claimed character card inline
 - shared web-side parsing of standard markdown image tokens so transcript messages can display inline images while preserving raw text storage
 - role-aware message colors for storyteller vs player entries, with current-participant session messages visually separated from other players
 - Adventure-style transcript scrolling treatment with the same soft fade mask instead of a framed transcript box
@@ -262,5 +293,5 @@ Realtime stability note:
 - No campaign-level dedicated storyteller assignment outside sessions
 - No private messaging
 - No separate GM workspace
-- No card send/take flows
+- No outcome hand/deck/discard HUD yet (table-only slice)
 - No AI-runtime coupling to the campaign session flow yet

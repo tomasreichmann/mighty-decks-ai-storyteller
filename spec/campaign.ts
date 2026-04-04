@@ -88,6 +88,90 @@ export type CampaignSessionTranscriptEntry = z.infer<
   typeof campaignSessionTranscriptEntrySchema
 >;
 
+export const campaignSessionTableCardTypeSchema = z.enum([
+  "OutcomeCard",
+  "EffectCard",
+  "StuntCard",
+  "ActorCard",
+  "CounterCard",
+  "AssetCard",
+  "LocationCard",
+  "EncounterCard",
+  "QuestCard",
+]);
+export type CampaignSessionTableCardType = z.infer<
+  typeof campaignSessionTableCardTypeSchema
+>;
+
+export const campaignSessionTableCardReferenceSchema = z.discriminatedUnion(
+  "type",
+  [
+    z.object({
+      type: z.literal("OutcomeCard"),
+      slug: identifierSchema,
+    }),
+    z.object({
+      type: z.literal("EffectCard"),
+      slug: identifierSchema,
+    }),
+    z.object({
+      type: z.literal("StuntCard"),
+      slug: identifierSchema,
+    }),
+    z.object({
+      type: z.literal("ActorCard"),
+      slug: identifierSchema,
+    }),
+    z.object({
+      type: z.literal("CounterCard"),
+      slug: identifierSchema,
+    }),
+    z.object({
+      type: z.literal("AssetCard"),
+      slug: identifierSchema,
+      modifierSlug: identifierSchema.optional(),
+    }),
+    z.object({
+      type: z.literal("LocationCard"),
+      slug: identifierSchema,
+    }),
+    z.object({
+      type: z.literal("EncounterCard"),
+      slug: identifierSchema,
+    }),
+    z.object({
+      type: z.literal("QuestCard"),
+      slug: identifierSchema,
+    }),
+  ],
+);
+export type CampaignSessionTableCardReference = z.infer<
+  typeof campaignSessionTableCardReferenceSchema
+>;
+
+export const campaignSessionTableTargetSchema = z.discriminatedUnion("scope", [
+  z.object({
+    scope: z.literal("shared"),
+  }),
+  z.object({
+    scope: z.literal("participant"),
+    participantId: identifierSchema,
+  }),
+]);
+export type CampaignSessionTableTarget = z.infer<
+  typeof campaignSessionTableTargetSchema
+>;
+
+export const campaignSessionTableEntrySchema = z.object({
+  tableEntryId: identifierSchema,
+  target: campaignSessionTableTargetSchema,
+  card: campaignSessionTableCardReferenceSchema,
+  addedAtIso: z.string().datetime(),
+});
+export type CampaignSessionTableEntry = z.infer<
+  typeof campaignSessionTableEntrySchema
+>;
+
 export const campaignSessionSummarySchema = z.object({
   sessionId: identifierSchema,
   status: campaignSessionStatusSchema,
@@ -106,6 +190,7 @@ export const campaignSessionDetailSchema = campaignSessionSummarySchema
     participants: z.array(campaignSessionParticipantSchema).max(24).default([]),
     claims: z.array(campaignCharacterClaimSchema).max(40).default([]),
     transcript: z.array(campaignSessionTranscriptEntrySchema).max(5000).default([]),
+    table: z.array(campaignSessionTableEntrySchema).max(2000).default([]),
   })
   .superRefine((session, ctx) => {
     if (session.status === "closed" && !session.closedAtIso) {
@@ -158,6 +243,27 @@ export const campaignSessionDetailSchema = campaignSessionSummarySchema
           code: z.ZodIssueCode.custom,
           message: `transcript entry references unknown participant ${entry.participantId}`,
           path: ["transcript"],
+        });
+      }
+    }
+
+    for (const tableEntry of session.table) {
+      if (tableEntry.target.scope !== "participant") {
+        continue;
+      }
+      if (!participantIds.has(tableEntry.target.participantId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `table entry references unknown participant ${tableEntry.target.participantId}`,
+          path: ["table"],
+        });
+        continue;
+      }
+      if (!playerParticipantIds.has(tableEntry.target.participantId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `table entry target ${tableEntry.target.participantId} must have role player`,
+          path: ["table"],
         });
       }
     }

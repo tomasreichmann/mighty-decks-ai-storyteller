@@ -15,6 +15,7 @@ interface AdventureModuleAssetsTabPanelProps {
   onCreate: () => void;
   onOpenAsset: (assetSlug: string) => void;
   onDeleteAsset?: (assetSlug: string, title: string) => void;
+  onAddAssetCardToSelection?: (assetSlug: string) => void;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -45,6 +46,7 @@ export const AdventureModuleAssetsTabPanel = ({
   onCreate,
   onOpenAsset,
   onDeleteAsset,
+  onAddAssetCardToSelection,
 }: AdventureModuleAssetsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
   const [copiedAssetSlug, setCopiedAssetSlug] = useState<string | null>(null);
@@ -193,6 +195,20 @@ export const AdventureModuleAssetsTabPanel = ({
                   >
                     Copy Shortcode
                   </Button>
+                  {onAddAssetCardToSelection ? (
+                    <Button
+                      variant="circle"
+                      color="gold"
+                      size="sm"
+                      aria-label={`Add ${asset.title} to table selection`}
+                      title={`Add ${asset.title} to table selection`}
+                      onClick={() => {
+                        onAddAssetCardToSelection(asset.assetSlug);
+                      }}
+                    >
+                      +
+                    </Button>
+                  ) : null}
                   {onDeleteAsset ? (
                     <Button
                       variant="circle"

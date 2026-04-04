@@ -15,6 +15,7 @@ interface AdventureModuleLocationsTabPanelProps {
   onCreate: () => void;
   onOpenLocation: (locationSlug: string) => void;
   onDeleteLocation?: (locationSlug: string, title: string) => void;
+  onAddLocationCardToSelection?: (locationSlug: string) => void;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -45,6 +46,7 @@ export const AdventureModuleLocationsTabPanel = ({
   onCreate,
   onOpenLocation,
   onDeleteLocation,
+  onAddLocationCardToSelection,
 }: AdventureModuleLocationsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
   const [copiedLocationSlug, setCopiedLocationSlug] = useState<string | null>(
@@ -172,6 +174,20 @@ export const AdventureModuleLocationsTabPanel = ({
                   >
                     Copy Shortcode
                   </Button>
+                  {onAddLocationCardToSelection ? (
+                    <Button
+                      variant="circle"
+                      color="gold"
+                      size="sm"
+                      aria-label={`Add ${location.title} to table selection`}
+                      title={`Add ${location.title} to table selection`}
+                      onClick={() => {
+                        onAddLocationCardToSelection(location.locationSlug);
+                      }}
+                    >
+                      +
+                    </Button>
+                  ) : null}
                   {onDeleteLocation ? (
                     <Button
                       variant="circle"

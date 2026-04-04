@@ -10,6 +10,7 @@ export interface PresentedCampaignSessionTranscriptEntry {
   color: MessageColor;
   text: string;
   align: "start" | "end";
+  claimedActorTitle?: string;
 }
 
 interface PresentCampaignSessionTranscriptEntryOptions {
@@ -147,6 +148,7 @@ const presentKnownSystemEntry = (
     return {
       ...presentation,
       text: `Claimed ${claimedMatch.groups.target}`,
+      claimedActorTitle: claimedMatch.groups.target,
     };
   }
 

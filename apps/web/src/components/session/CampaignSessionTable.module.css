@@ -1,0 +1,66 @@
+.tableSurface {
+  position: relative;
+}
+
+.tableCardShell {
+  transform-origin: top left;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    filter 180ms ease;
+}
+
+.tableCardFading {
+  opacity: 0;
+  transform: translateY(-0.35rem) scale(0.96);
+  filter: saturate(0.55);
+  pointer-events: none;
+}
+
+.laneSurface {
+  position: relative;
+  overflow: visible;
+}
+
+.laneDividerRow {
+  position: relative;
+  min-height: 2.25rem;
+  margin-bottom: 0.65rem;
+}
+
+.laneDivider {
+  position: absolute;
+  inset-inline: 0;
+  top: 1.15rem;
+  border-top: 2px solid rgb(18 27 35 / 0.26);
+}
+
+.laneLabel {
+  position: relative;
+  z-index: 1;
+}
+
+.sharedLane .laneDivider {
+  border-top-color: rgb(82 112 146 / 0.4);
+}
+
+.currentLane .laneDivider {
+  border-top-color: rgb(193 148 0 / 0.75);
+}
+
+.stackTopCard {
+  position: absolute;
+  inset-inline: 0;
+}
+
+.stackPeek {
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+}
+
+.stackPeekViewport {
+  height: 1.15rem;
+  overflow: hidden;
+  border-radius: 0.55rem 0.55rem 0 0;
+}

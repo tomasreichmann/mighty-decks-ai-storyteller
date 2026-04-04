@@ -14,6 +14,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Extract `TextCompletionClient` interface from `OpenRouterClient` to allow pluggable text providers across the storyteller pipeline.
 - Add a persisted `Campaigns` domain backed by shared campaign/session contracts, REST routes, campaign list/detail pages, module-to-campaign creation flows, and campaign detail tabs that mirror Adventure Module authoring plus `Sessions`.
 - Add human-storyteller campaign sessions with neutral lobby routes, player claim/create-PC flow, storyteller campaign shell reuse with a `Chat` tab, session transcripts, explicit dev-only mock participants, and route-level live refresh via campaign watch broadcasts.
+- Add server-authoritative campaign session table state with typed table card references, storyteller add/remove table socket events, player own-lane remove permissions, and shared session-state rebroadcasts.
+- Add live storyteller table selection workflows in session mode, including `+` actions on shortcode/list surfaces, session-mode rules tabs (`Outcomes`, `Effects`, `Stunts`, `Static Assets`), and lane/shared `Send Cards` actions that place staged cards onto the live table.
 
 - Add typed Adventure Module actor authoring with create/edit APIs, resolved actor detail payloads, layered actor-card metadata, and legacy-module backfill for missing actor card records.
 - Add layered ActorCard rendering, actor list authoring UI, actor editor UI, and actor shortcode copy support in the Adventure Module authoring flow.
@@ -25,8 +27,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add Adventure Module Locations tab and editor UI with title-image and map-image generation/paste flows, introduction/description markdown authoring, hover previews, and click-through map pins for locations, actors, encounters, and quests.
 - Add Adventure Module Encounters tab and editor UI with prerequisites, title-image generation/paste flows, encounter markdown authoring, canonical `<EncounterCard slug="..." />` embeds, and encounter card previews in rich text.
 - Add Adventure Module Quests tab and editor UI with title-image generation/paste flows, quest markdown authoring, canonical `<QuestCard slug="..." />` embeds, and a reusable `QuestCard` styleguide direction.
+- Add hidden `/styleguide/session-chat-player` and `/styleguide/session-chat-storyteller` labs with responsive session-chat table mocks for reviewing desktop split layouts, collapsed mobile chat state, and role-specific discard affordances before wiring live rules UI.
 
 ### Changed
+- Split campaign player session routes so `/campaign/.../player` stays on the usual page shell for claim/create while `/campaign/.../player/chat` becomes the headerless live transcript surface.
 - Reused the compact shortcode copy component across the Rules asset, effect, stunt, and outcome reference pages so shortcode copying matches Adventure Module and storyteller detail views.
 
 - Extend the hidden `/styleguide` index with a grouped-control lab covering the new toggle and radio-button primitives across active state, palette, and size comparisons.
@@ -75,6 +79,12 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add a shared detail-page shortcode copy row across Adventure Module entity editors and the reused campaign storyteller detail tabs, so shortcode copy is available outside the list views too.
 - Simplify the shared detail-page shortcode copy row down to the shortcode plus an icon button, with click feedback that swaps from copy to checkmark for two seconds before resetting.
 - Reposition the shared detail-page shortcode row under the left-side preview area and tighten its styling so the shortcode and copy icon sit centered together with darker, bolder shortcode text.
+- Remove the extra player-session transcript panel chrome so the existing `Claimed ...` session entry now renders the actor card inline inside the transcript feed and the live view no longer repeats a `Transcript` title.
+- Let the player session route use the full viewport in live play so the transcript feed expands into the available height and the message composer stays visible beneath it.
+- Replace live session chat-only surfaces with a responsive `Table + Chat` layout for storyteller and player chat routes, including mobile `Table / Chat` switching and compact stacked duplicate-card presentation on the table lanes.
+- Tune the live storyteller `Chat` tab shell so `/storyteller/chat` uses fit-screen sizing with independently scrollable `Table` and `Chat` panes, and keep table-card removals visually staged with a short fade-out before removal.
+- Refine storyteller session card staging UX by hiding the `Selection` strip when empty, replacing staged-count copy with an inline `(i)` hover/click hint, and reordering session tab navigation so `Outcomes/Effects/Stunts` appear before `Actors` and `Static Assets` appears before `Custom Assets`.
+- Rebuild shared `LocationCard`, `EncounterCard`, and `QuestCard` scene visuals as horizontal SVG cards (`332x204` viewBox, matching portrait card dimensions swapped to landscape) so styleguide, authoring lists, markdown embeds, transcript renders, and table previews all share the same vector frame treatment.
 
 ### Fixed
 
@@ -90,9 +100,12 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Return full `CampaignDetail` payloads from campaign edit routes so session-side actor and other campaign entity saves no longer fail client-side validation after successful server updates.
 - Give the desktop Workflow Lab nav button extra width so its longer label fits cleanly at the shell's widest breakpoint.
 - Keep the reusable markdown-image modal header/footer fixed while a padded inner body scrolls, so tall generate-or-pick content stays reachable without label clipping or horizontal overflow.
+- Fix storyteller session mobile tab navigation so it stays collapsed by default instead of rendering permanently open, and size landscape table cards (`Location`, `Encounter`, `Quest`) with a wider half-scale slot instead of forcing the same portrait width as other card types.
+- Polish landscape scene-card framing by moving the top-right icon deeper into the corner overlay, making title chips and bottom description strips hug their text more tightly, and replacing the box-shadow artifact with a shifted rounded shadow rectangle behind the card.
 
 ### Docs
 
+- Update the campaign-session route and UI docs to document the headered player claim route plus the headerless `/player/chat` live transcript route.
 - Update the shared UI and style-system docs to document the new grouped toggle/radio button primitives and their non-tilted alignment rules.
 - Add the root changelog to track notable product, workflow, deployment, and documentation updates.
 - Add AI contributor instructions in `AGENTS.md` requiring documentation and changelog updates when repo behavior, contracts, routes, env vars, or deployment guidance change.

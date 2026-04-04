@@ -374,19 +374,37 @@ Behavior:
 
 ### `/campaign/:campaignSlug/session/:sessionId/player`
 
-Player session route for campaign-backed human play.
+Player session claim route for campaign-backed human play.
 
 Components:
 
 - pre-play character claim/create surface
+
+Behavior:
+
+- player flow is two-step: claim/create first on this route, transcript second on `/campaign/:campaignSlug/session/:sessionId/player/chat`
+- keep the usual page header visible here so claim/create still feels like part of the broader session detail flow
+- keep claim/create out of the live transcript surface once the player has entered play
+- auto-redirect to `/player/chat` after the local player has successfully claimed or created a character
+
+---
+
+### `/campaign/:campaignSlug/session/:sessionId/player/chat`
+
+Player live-transcript route for campaign-backed human play.
+
+Components:
+
 - transcript surface once a character is claimed
 - composer for adding to the transcript
 
 Behavior:
 
-- player flow is two-step: claim/create first, transcript second
 - use `Transcript` as the primary mental model instead of splitting the experience into transcript vs chat
-- keep claim/create out of the live transcript surface once the player has entered play
+- once a player has claimed a character, let the existing `Claimed ...` transcript message expand into an inline actor card with art, name, and summary rather than duplicating that state in a separate transcript header banner
+- avoid adding a second framed panel or redundant `Transcript` title above the player live feed; let the feed and composer sit directly in the page flow
+- make this route headerless and footerless so the live transcript can use the full viewport height once play starts
+- when the player is in the live transcript state, the route should fill the viewport and give the transcript scroll area the remaining height above the composer instead of capping it to a small fixed panel
 - the transcript composer may expose a compact image trigger that opens the shared generate-or-pick modal, appends standard markdown image snippets, and relies on the transcript renderer to display those images inline
 
 ---
@@ -454,7 +472,7 @@ Behavior:
 
 - direct-route accessible but intentionally unlinked from the public app flows
 - lists available component labs for contributor use
-- currently links to `/styleguide/location-card`, `/styleguide/encounter-card`, and `/styleguide/quest-card`
+- currently links to `/styleguide/location-card`, `/styleguide/encounter-card`, `/styleguide/quest-card`, `/styleguide/session-chat-player`, and `/styleguide/session-chat-storyteller`
 
 ---
 
@@ -472,6 +490,7 @@ Behavior:
 
 - single-card design preview
 - title, `Location` badge, and full-width scene-description strip are owned by `LocationCard`, not `ImageCard`
+- the shared scene frame is rendered as horizontal SVG (`viewBox 332x204`) so the same vector card treatment carries into authoring lists, transcript embeds, and session table previews
 - no markdown `GameCard` pipeline integration in this slice
 - intended for visual iteration before authoring/runtime adoption
 
@@ -491,6 +510,7 @@ Behavior:
 
 - single-card design preview
 - title, `Encounter` badge, and full-width scene-description strip are owned by `EncounterCard`
+- the shared scene frame is rendered as horizontal SVG (`viewBox 332x204`) so the same vector card treatment carries into authoring lists, transcript embeds, and session table previews
 - prerequisites remain in the editor/detail surface rather than on the compact card
 - intended for visual iteration before wider authoring/runtime adoption
 
@@ -510,8 +530,49 @@ Behavior:
 
 - single-card design preview
 - title, `Quest` framing, and full-width summary strip are owned by `QuestCard`
+- the shared scene frame is rendered as horizontal SVG (`viewBox 332x204`) so the same vector card treatment carries into authoring lists, transcript embeds, and session table previews
 - quest graph details remain in authoring/detail surfaces rather than on the compact card
 - intended for visual iteration before wider authoring/runtime adoption
+
+---
+
+### `/styleguide/session-chat-player`
+
+Hidden full-screen player-facing session chat mock for testing the new Mighty Decks table layout.
+
+Components:
+
+- shared styleguide `SessionChat` mock shell
+- responsive `ButtonRadioGroup` mobile pane switch
+- static transcript rail and composer
+- player table lanes plus shared center-table section
+
+Behavior:
+
+- desktop renders `Table` left at roughly two-thirds width and `Chat` right at roughly one-third width
+- mobile collapses to a single-pane `Chat` state with a visible `Table` / `Chat` switch that stays non-interactive in the styleguide
+- player route highlights the current player's lane and shows discard affordances only on that player's own table cards
+- milestone 1 focuses on visible table cards only: stunts, effects, assets, and counters
+
+---
+
+### `/styleguide/session-chat-storyteller`
+
+Hidden full-screen storyteller-facing session chat mock for reviewing the same table shell with moderator visibility.
+
+Components:
+
+- shared styleguide `SessionChat` mock shell
+- responsive `ButtonRadioGroup` mobile pane switch
+- static transcript rail and composer
+- player table lanes plus shared center-table section
+
+Behavior:
+
+- desktop renders the same `Table` / `Chat` split as the player mock
+- mobile collapses to the same single-pane `Chat` state with a visible non-interactive switch
+- storyteller route keeps all lanes equally visible and shows discard affordances on every player and shared table card
+- discarded cards render in a faded state so visual cleanup can be reviewed without adding interactivity
 
 ---
 

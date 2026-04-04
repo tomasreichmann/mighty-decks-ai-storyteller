@@ -15,6 +15,7 @@ interface AdventureModuleQuestsTabPanelProps {
   onCreate: () => void;
   onOpenQuest: (questSlug: string) => void;
   onDeleteQuest?: (questSlug: string, title: string) => void;
+  onAddQuestCardToSelection?: (questSlug: string) => void;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -45,6 +46,7 @@ export const AdventureModuleQuestsTabPanel = ({
   onCreate,
   onOpenQuest,
   onDeleteQuest,
+  onAddQuestCardToSelection,
 }: AdventureModuleQuestsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
   const [copiedQuestSlug, setCopiedQuestSlug] = useState<string | null>(null);
@@ -175,6 +177,20 @@ export const AdventureModuleQuestsTabPanel = ({
                   >
                     Copy Shortcode
                   </Button>
+                  {onAddQuestCardToSelection ? (
+                    <Button
+                      variant="circle"
+                      color="gold"
+                      size="sm"
+                      aria-label={`Add ${quest.title} to table selection`}
+                      title={`Add ${quest.title} to table selection`}
+                      onClick={() => {
+                        onAddQuestCardToSelection(quest.questSlug);
+                      }}
+                    >
+                      +
+                    </Button>
+                  ) : null}
                   {onDeleteQuest ? (
                     <Button
                       variant="circle"

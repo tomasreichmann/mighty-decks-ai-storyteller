@@ -1,7 +1,9 @@
 import { z } from "zod";
 import {
+  campaignSessionTableCardReferenceSchema,
   campaignSessionDetailSchema,
   campaignSessionParticipantRoleSchema,
+  campaignSessionTableTargetSchema,
 } from "./campaign";
 
 const identifierSchema = z.string().min(1).max(120);
@@ -84,6 +86,27 @@ export type CloseCampaignSessionPayload = z.infer<
   typeof closeCampaignSessionPayloadSchema
 >;
 
+export const addCampaignSessionTableCardsPayloadSchema = sessionLocatorSchema.extend(
+  {
+    participantId: identifierSchema,
+    target: campaignSessionTableTargetSchema,
+    cards: z.array(campaignSessionTableCardReferenceSchema).min(1).max(80),
+  },
+);
+export type AddCampaignSessionTableCardsPayload = z.infer<
+  typeof addCampaignSessionTableCardsPayloadSchema
+>;
+
+export const removeCampaignSessionTableCardPayloadSchema = sessionLocatorSchema.extend(
+  {
+    participantId: identifierSchema,
+    tableEntryId: identifierSchema,
+  },
+);
+export type RemoveCampaignSessionTableCardPayload = z.infer<
+  typeof removeCampaignSessionTableCardPayloadSchema
+>;
+
 export const campaignUpdatedPayloadSchema = z.object({
   campaignSlug: slugSchema,
   updatedAtIso: z.string().datetime(),
@@ -117,6 +140,12 @@ export interface CampaignClientToServerEvents {
   ) => void;
   send_campaign_session_message: (payload: SendCampaignSessionMessagePayload) => void;
   close_campaign_session: (payload: CloseCampaignSessionPayload) => void;
+  add_campaign_session_table_cards: (
+    payload: AddCampaignSessionTableCardsPayload,
+  ) => void;
+  remove_campaign_session_table_card: (
+    payload: RemoveCampaignSessionTableCardPayload,
+  ) => void;
 }
 
 export interface CampaignServerToClientEvents {

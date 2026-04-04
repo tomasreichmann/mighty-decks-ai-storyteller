@@ -48,6 +48,7 @@ interface AdventureModuleLocationEditorProps {
     target?: CounterAdjustTarget,
   ) => void;
   onDelete?: () => void;
+  onAddLocationCardToSelection?: () => void;
 }
 
 interface LocationImageFieldProps {
@@ -236,6 +237,7 @@ export const AdventureModuleLocationEditor = ({
   onOpenPinTarget,
   onAdjustCounterValue,
   onDelete,
+  onAddLocationCardToSelection,
 }: AdventureModuleLocationEditorProps): JSX.Element => {
   const resolveImageContextLines = useCallback(
     (selectedContextTags: string[]) =>
@@ -297,7 +299,10 @@ export const AdventureModuleLocationEditor = ({
             regenerated from the location name when you save.
           </Text>
 
-          <ShortcodeField shortcode={`@location/${location.locationSlug}`} />
+          <ShortcodeField
+            shortcode={`@location/${location.locationSlug}`}
+            onAddToSelection={onAddLocationCardToSelection}
+          />
 
           {validationMessage ? (
             <Text variant="note" color="blood" className="text-sm !opacity-100">

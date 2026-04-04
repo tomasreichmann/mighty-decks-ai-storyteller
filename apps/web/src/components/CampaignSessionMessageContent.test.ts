@@ -13,3 +13,16 @@ test("CampaignSessionMessageContent renders markdown images inside session chat 
   assert.match(source, /segment\.altText/);
   assert.match(source, /segment\.src/);
 });
+
+test("CampaignSessionMessageContent can render claimed-character transcript entries as actor cards", () => {
+  const source = readFileSync(
+    new URL("./CampaignSessionMessageContent.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /ActorCard/);
+  assert.match(source, /claimedActorTitle/);
+  assert.match(source, /actor\.baseLayerSlug/);
+  assert.match(source, /actor\.tacticalRoleSlug/);
+  assert.match(source, /actor\.summary \?\? "No summary yet\."./);
+});
