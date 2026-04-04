@@ -3,6 +3,7 @@ export * from "./actorCards";
 export * from "./assetCards";
 export * from "./campaign";
 export * from "./campaignEvents";
+export * from "./outcomeDeck";
 export * from "./counterCards";
 export * from "./adventureModule";
 export * from "./adventureModuleAuthoring";

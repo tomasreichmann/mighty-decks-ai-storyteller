@@ -5,8 +5,11 @@ import { join } from "node:path";
 import test from "node:test";
 import { AdventureModuleStore } from "../src/persistence/AdventureModuleStore";
 import { CampaignStore, CampaignValidationError } from "../src/persistence/CampaignStore";
+import { formatCampaignOutcomeCardPlayMessage } from "@mighty-decks/spec/outcomeDeck";
 
-const createStores = async () => {
+const createStores = async (options?: {
+  outcomeDeckShuffle?: (cards: readonly { slug: string }[]) => readonly { slug: string }[];
+}) => {
   const sourceRootDir = mkdtempSync(join(tmpdir(), "mighty-decks-campaign-source-"));
   const campaignRootDir = mkdtempSync(join(tmpdir(), "mighty-decks-campaign-target-"));
   const sourceStore = new AdventureModuleStore({ rootDir: sourceRootDir });
@@ -14,6 +17,7 @@ const createStores = async () => {
   const store = new CampaignStore({
     rootDir: campaignRootDir,
     sourceModuleStore: sourceStore,
+    outcomeDeckShuffle: options?.outcomeDeckShuffle,
   });
   await store.initialize();
   return { sourceStore, store };
@@ -138,6 +142,232 @@ test("persists session lifecycle, claims, chat, and close semantics", async () =
   assert.ok(reloadedCampaign);
   assert.equal(reloadedCampaign?.sessions[0]?.status, "closed");
   assert.equal(reloadedCampaign?.sessions[0]?.transcriptEntryCount, closed.transcript.length);
+});
+
+test("seeds an opening outcome pile for each player and persists it through reload", async () => {
+  const { sourceStore, store } = await createStores();
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Clock Market",
+  });
+  await flagPrimaryActorAsPlayerCharacter(sourceStore, source.index.moduleId);
+  const campaign = await store.createCampaign({
+    sourceModuleId: source.index.moduleId,
+    title: "Clock Market Campaign",
+  });
+
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+  });
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+  const withPlayer = await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const playerPile =
+    withPlayer.outcomePilesByParticipantId["participant-player"];
+  assert.ok(playerPile);
+  assert.equal(playerPile.hand.length, 3);
+  assert.equal(playerPile.deck.length, 9);
+  assert.equal(playerPile.discard.length, 0);
+  assert.equal(playerPile.deck.length + playerPile.hand.length + playerPile.discard.length, 12);
+
+  const reloaded = await store.getSession({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+  });
+  assert.ok(reloaded);
+  assert.equal(
+    reloaded?.outcomePilesByParticipantId["participant-player"]?.hand.length,
+    3,
+  );
+});
+
+test("reshuffles a new opening hand when the first draw is all Fumbles", async () => {
+  let shuffleCallCount = 0;
+  const { sourceStore, store } = await createStores({
+    outcomeDeckShuffle: (cards) => {
+      shuffleCallCount += 1;
+      const fumbles = cards.filter((card) => card.slug === "fumble");
+      const nonFumbles = cards.filter((card) => card.slug !== "fumble");
+      if (shuffleCallCount === 1) {
+        return [...nonFumbles, ...fumbles];
+      }
+      return [...fumbles, ...nonFumbles];
+    },
+  });
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Bell Market",
+  });
+  await flagPrimaryActorAsPlayerCharacter(sourceStore, source.index.moduleId);
+  const campaign = await store.createCampaign({
+    sourceModuleId: source.index.moduleId,
+    title: "Bell Market Campaign",
+  });
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+  });
+
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+  const withPlayer = await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const playerPile =
+    withPlayer.outcomePilesByParticipantId["participant-player"];
+  assert.ok(playerPile);
+  assert.equal(playerPile.hand.length, 3);
+  assert.equal(
+    playerPile.hand.some((card) => card.slug !== "fumble"),
+    true,
+  );
+});
+
+test("supports drawing, playing, shuffling, and persisting outcome pile state", async () => {
+  const { sourceStore, store } = await createStores();
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Lantern District",
+  });
+  await flagPrimaryActorAsPlayerCharacter(sourceStore, source.index.moduleId);
+  const campaign = await store.createCampaign({
+    sourceModuleId: source.index.moduleId,
+    title: "Lantern District Campaign",
+  });
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+  });
+
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const playerCharacter = campaign.actors.find((actor) => actor.isPlayerCharacter);
+  assert.ok(playerCharacter);
+  await store.claimSessionCharacter({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    actorFragmentId: playerCharacter.fragmentId,
+  });
+
+  const afterDraw = await store.drawSessionOutcomeCard({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+  });
+  const drawnPile = afterDraw.outcomePilesByParticipantId["participant-player"];
+  assert.ok(drawnPile);
+  assert.equal(drawnPile.hand.length, 4);
+  assert.equal(drawnPile.deck.length, 8);
+
+  const selectedCards = drawnPile.hand.slice(0, 2);
+  const afterPlay = await store.playSessionOutcomeCards({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    cardIds: selectedCards.map((card) => card.cardId),
+  });
+  const playedPile = afterPlay.outcomePilesByParticipantId["participant-player"];
+  assert.ok(playedPile);
+  assert.equal(playedPile.hand.length, 2);
+  assert.equal(playedPile.discard.length, 2);
+  assert.equal(
+    afterPlay.transcript.at(-1)?.text,
+    formatCampaignOutcomeCardPlayMessage(
+      playerCharacter.title,
+      selectedCards.map((card) => card.slug),
+    ),
+  );
+
+  let emptiedDeckState = afterPlay;
+  while ((emptiedDeckState.outcomePilesByParticipantId["participant-player"]?.deck.length ?? 0) > 0) {
+    emptiedDeckState = await store.drawSessionOutcomeCard({
+      campaignSlug: campaign.index.slug,
+      sessionId: session.sessionId,
+      participantId: "participant-player",
+    });
+  }
+
+  const emptiedPile = emptiedDeckState.outcomePilesByParticipantId["participant-player"];
+  assert.ok(emptiedPile);
+  const remainingCardIds = emptiedPile.hand.map((card) => card.cardId);
+  assert.equal(remainingCardIds.length, 10);
+
+  const afterEmptyingHand = await store.playSessionOutcomeCards({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    cardIds: remainingCardIds,
+  });
+  const emptyPile = afterEmptyingHand.outcomePilesByParticipantId["participant-player"];
+  assert.ok(emptyPile);
+  assert.equal(emptyPile.deck.length, 0);
+  assert.equal(emptyPile.hand.length, 0);
+  assert.equal(emptyPile.discard.length, 12);
+
+  const afterShuffle = await store.shuffleSessionOutcomeDeck({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+  });
+  const shuffledPile = afterShuffle.outcomePilesByParticipantId["participant-player"];
+  assert.ok(shuffledPile);
+  assert.equal(shuffledPile.deck.length, 12);
+  assert.equal(shuffledPile.discard.length, 0);
+
+  const persisted = await store.getSession({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+  });
+  assert.ok(persisted);
+  assert.equal(
+    persisted?.outcomePilesByParticipantId["participant-player"]?.deck.length,
+    12,
+  );
+
+  await assert.rejects(
+    () =>
+      store.playSessionOutcomeCards({
+        campaignSlug: campaign.index.slug,
+        sessionId: session.sessionId,
+        participantId: "participant-player",
+        cardIds: ["non-existent-card"],
+      }),
+    CampaignValidationError,
+  );
 });
 
 test("creates new player characters inside a session and prevents duplicate claims", async () => {

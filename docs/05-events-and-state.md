@@ -387,6 +387,7 @@ The repo now also includes a separate campaign/session contract alongside the or
 - `CampaignSession` - a live or archived play instance of a Campaign
 - `CampaignSessionParticipant` - a player or storyteller, optionally marked `isMock`
 - `CampaignCharacterClaim` - maps a participant to a player-character actor for one session
+- `CampaignSessionOutcomePile` - a server-seeded per-player outcome deck, hand, and discard pile keyed by `participantId`
 
 Exact shapes live in:
 
@@ -398,7 +399,17 @@ Exact shapes live in:
 Campaigns use a split transport model:
 
 - REST for campaign CRUD, campaign detail reads, and session create/list/read
-- Socket.IO for session presence, role join, mock participants, claim/create PC, group chat, close-session actions, and live refresh broadcasts
+- Socket.IO for session presence, role join, mock participants, claim/create PC, group chat, outcome deck actions, close-session actions, and live refresh broadcasts
+
+Campaign session state payloads are full `CampaignSessionDetail` objects. In practice that means the authoritative state broadcast includes:
+
+- participants
+- claims
+- `outcomePilesByParticipantId`
+- table cards
+- transcript entries
+
+Clients never invent outcome pile state locally. They only send intent events for drawing, shuffling, and playing outcome cards.
 
 ### Additional client -> server campaign events
 
@@ -411,6 +422,9 @@ Campaigns use a split transport model:
 - `claim_campaign_session_character`
 - `create_campaign_session_character`
 - `send_campaign_session_message`
+- `draw_campaign_session_outcome_card`
+- `shuffle_campaign_session_outcome_deck`
+- `play_campaign_session_outcome_cards`
 - `close_campaign_session`
 
 ### Additional server -> client campaign events

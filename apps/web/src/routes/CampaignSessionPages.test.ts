@@ -51,6 +51,9 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /claimCharacter/);
   assert.match(source, /createCharacter/);
   assert.match(source, /sendMessage/);
+  assert.match(source, /drawOutcomeCard/);
+  assert.match(source, /shuffleOutcomeDeck/);
+  assert.match(source, /playOutcomeCards/);
   assert.match(source, /pathname\.endsWith\("\/chat"\)/);
   assert.match(source, /\/player\/chat/);
   assert.match(source, /replace:\s*true/);
@@ -66,6 +69,9 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /MarkdownImageInsertButton/);
   assert.match(source, /DepressedInput/);
   assert.match(source, /removeTableCard/);
+  assert.match(source, /drawOutcomeCard/);
+  assert.match(source, /shuffleOutcomeDeck/);
+  assert.match(source, /playOutcomeCards/);
   assert.match(source, /<div className="flex min-h-full w-full max-w-none flex-1 flex-col gap-4 px-4 py-3 sm:px-6 lg:px-8">/);
   assert.match(source, /inChatRoute && hasClaim[\s\S]*<CampaignSessionChatLayout/);
   assert.match(source, /className="min-h-\[16rem\] flex-1"/);

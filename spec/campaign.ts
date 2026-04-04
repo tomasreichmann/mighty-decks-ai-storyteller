@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { adventureModuleDetailSchema } from "./adventureModuleAuthoring";
+import { outcomeCardTypeSchema } from "./adventureState";
 
 const identifierSchema = z.string().min(1).max(120);
 const shortTextSchema = z.string().min(1).max(120);
@@ -86,6 +87,31 @@ export const campaignSessionTranscriptEntrySchema = z
   });
 export type CampaignSessionTranscriptEntry = z.infer<
   typeof campaignSessionTranscriptEntrySchema
+>;
+
+export const campaignSessionOutcomeCardInstanceSchema = z.object({
+  cardId: identifierSchema,
+  slug: outcomeCardTypeSchema,
+  createdAtIso: z.string().datetime(),
+});
+export type CampaignSessionOutcomeCardInstance = z.infer<
+  typeof campaignSessionOutcomeCardInstanceSchema
+>;
+
+export const campaignSessionOutcomePileSchema = z.object({
+  deck: z.array(campaignSessionOutcomeCardInstanceSchema).max(200).default([]),
+  hand: z.array(campaignSessionOutcomeCardInstanceSchema).max(200).default([]),
+  discard: z.array(campaignSessionOutcomeCardInstanceSchema).max(200).default([]),
+});
+export type CampaignSessionOutcomePile = z.infer<
+  typeof campaignSessionOutcomePileSchema
+>;
+
+export const campaignSessionOutcomePilesByParticipantIdSchema = z
+  .record(identifierSchema, campaignSessionOutcomePileSchema)
+  .default({});
+export type CampaignSessionOutcomePilesByParticipantId = z.infer<
+  typeof campaignSessionOutcomePilesByParticipantIdSchema
 >;
 
 export const campaignSessionTableCardTypeSchema = z.enum([
@@ -189,6 +215,8 @@ export const campaignSessionDetailSchema = campaignSessionSummarySchema
   .extend({
     participants: z.array(campaignSessionParticipantSchema).max(24).default([]),
     claims: z.array(campaignCharacterClaimSchema).max(40).default([]),
+    outcomePilesByParticipantId:
+      campaignSessionOutcomePilesByParticipantIdSchema.default({}),
     transcript: z.array(campaignSessionTranscriptEntrySchema).max(5000).default([]),
     table: z.array(campaignSessionTableEntrySchema).max(2000).default([]),
   })
@@ -264,6 +292,16 @@ export const campaignSessionDetailSchema = campaignSessionSummarySchema
           code: z.ZodIssueCode.custom,
           message: `table entry target ${tableEntry.target.participantId} must have role player`,
           path: ["table"],
+        });
+      }
+    }
+
+    for (const participantId of Object.keys(session.outcomePilesByParticipantId)) {
+      if (!participantIds.has(participantId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `outcome pile references unknown participant ${participantId}`,
+          path: ["outcomePilesByParticipantId"],
         });
       }
     }

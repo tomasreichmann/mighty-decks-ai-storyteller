@@ -195,6 +195,37 @@ export const useCampaignSession = ({
     [basePayload],
   );
 
+  const drawOutcomeCard = useCallback(
+    (participantId: string): void => {
+      socketRef.current.emit("draw_campaign_session_outcome_card", {
+        ...basePayload,
+        participantId,
+      });
+    },
+    [basePayload],
+  );
+
+  const shuffleOutcomeDeck = useCallback(
+    (participantId: string): void => {
+      socketRef.current.emit("shuffle_campaign_session_outcome_deck", {
+        ...basePayload,
+        participantId,
+      });
+    },
+    [basePayload],
+  );
+
+  const playOutcomeCards = useCallback(
+    (participantId: string, cardIds: string[]): void => {
+      socketRef.current.emit("play_campaign_session_outcome_cards", {
+        ...basePayload,
+        participantId,
+        cardIds,
+      });
+    },
+    [basePayload],
+  );
+
   const closeSession = useCallback(
     (participantId: string): void => {
       socketRef.current.emit("close_campaign_session", {
@@ -260,6 +291,9 @@ export const useCampaignSession = ({
     claimCharacter,
     createCharacter,
     sendMessage,
+    drawOutcomeCard,
+    shuffleOutcomeDeck,
+    playOutcomeCards,
     closeSession,
     addTableCards,
     removeTableCard,

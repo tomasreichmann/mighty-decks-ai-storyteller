@@ -534,6 +534,36 @@ test("campaignSessionDetailSchema accepts setup and transcript state", () => {
         claimedAtIso: "2026-03-15T01:03:00.000Z",
       },
     ],
+    outcomePilesByParticipantId: {
+      participant-player: {
+        deck: [
+          {
+            cardId: "outcome-card-1",
+            slug: "success",
+            createdAtIso: "2026-03-15T01:03:15.000Z",
+          },
+        ],
+        hand: [
+          {
+            cardId: "outcome-card-2",
+            slug: "fumble",
+            createdAtIso: "2026-03-15T01:03:16.000Z",
+          },
+          {
+            cardId: "outcome-card-3",
+            slug: "success",
+            createdAtIso: "2026-03-15T01:03:17.000Z",
+          },
+        ],
+        discard: [
+          {
+            cardId: "outcome-card-4",
+            slug: "chaos",
+            createdAtIso: "2026-03-15T01:03:18.000Z",
+          },
+        ],
+      },
+    },
     transcript: [
       {
         entryId: "event-created",
@@ -575,6 +605,14 @@ test("campaignSessionDetailSchema accepts setup and transcript state", () => {
   });
 
   assert.equal(parsed.claims[0]?.actorFragmentId, "frag-actor-main");
+  assert.equal(
+    parsed.outcomePilesByParticipantId["participant-player"]?.hand.length,
+    2,
+  );
+  assert.equal(
+    parsed.outcomePilesByParticipantId["participant-player"]?.discard[0]?.slug,
+    "chaos",
+  );
   assert.equal(parsed.transcript[1]?.kind, "group_message");
   assert.equal(parsed.table[0]?.target.scope, "shared");
   assert.equal(parsed.table[1]?.card.type, "AssetCard");

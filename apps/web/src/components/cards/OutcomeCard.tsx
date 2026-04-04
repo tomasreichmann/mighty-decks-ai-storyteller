@@ -58,14 +58,38 @@ export const outcomeCardOrder: OutcomeCardType[] = [
 
 interface OutcomeCardProps {
   card: OutcomeCardType;
+  face?: "front" | "back";
   disabled?: boolean;
   selected?: boolean;
   className?: string;
   onSelect?: (card: OutcomeCardType) => void;
 }
 
+const OutcomeCardBack = ({
+  className,
+}: {
+  className?: string;
+}): JSX.Element => (
+  <article
+    aria-label="Outcome card back"
+    className={cn(
+      "relative aspect-[204/332] w-[204px] max-w-full overflow-hidden rounded-[0.6rem] border-[2px] border-kac-blood-dark/55 bg-[linear-gradient(135deg,_#2a333f_0%,_#18202a_52%,_#0f151c_100%)] shadow-[2px_2px_0_0_#121b23]",
+      className,
+    )}
+  >
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,_rgba(255,255,255,0.16),_transparent_46%),repeating-linear-gradient(135deg,_rgba(255,255,255,0.08)_0_12px,_rgba(255,255,255,0.02)_12px_24px)] opacity-95" />
+    <div className="absolute inset-[10%] rounded-[0.55rem] border border-kac-bone-light/20" />
+    <div className="absolute inset-0 flex items-center justify-center">
+      <span className="font-md-heading text-[44px] font-bold leading-none text-kac-bone-light/70">
+        ◎
+      </span>
+    </div>
+  </article>
+);
+
 export const OutcomeCard = ({
   card,
+  face = "front",
   disabled = false,
   selected = false,
   className,
@@ -73,11 +97,32 @@ export const OutcomeCard = ({
 }: OutcomeCardProps): JSX.Element => {
   const meta = outcomeCardMetaByType[card];
 
+  if (face === "back") {
+    return <OutcomeCardBack className={className} />;
+  }
+
+  if (!onSelect) {
+    return (
+      <LayeredCard
+        className={cn("mx-auto w-full max-w-[14rem]", className)}
+        imageUri={`/outcomes/${card}.png`}
+        noun={meta.title}
+        nounDeck="base"
+        nounCornerIcon="/types/outcome.png"
+        nounEffect={meta.description}
+        adjectiveEffect={meta.effect}
+        nounClassName={cn("text-[18px]", meta.titleClassName)}
+        nounEffectClassName="text-[11px] text-kac-iron-light"
+        adjectiveEffectClassName="text-[11px] font-semibold text-kac-iron"
+      />
+    );
+  }
+
   return (
     <button
       type="button"
       disabled={disabled}
-      onClick={() => onSelect?.(card)}
+      onClick={() => onSelect(card)}
       className={cn(
         "group relative w-full bg-transparent p-0 text-left transition",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/60",

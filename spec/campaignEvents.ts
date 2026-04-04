@@ -107,6 +107,28 @@ export type RemoveCampaignSessionTableCardPayload = z.infer<
   typeof removeCampaignSessionTableCardPayloadSchema
 >;
 
+export const drawCampaignSessionOutcomeCardPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+});
+export type DrawCampaignSessionOutcomeCardPayload = z.infer<
+  typeof drawCampaignSessionOutcomeCardPayloadSchema
+>;
+
+export const shuffleCampaignSessionOutcomeDeckPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+});
+export type ShuffleCampaignSessionOutcomeDeckPayload = z.infer<
+  typeof shuffleCampaignSessionOutcomeDeckPayloadSchema
+>;
+
+export const playCampaignSessionOutcomeCardsPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  cardIds: z.array(identifierSchema).min(1).max(80),
+});
+export type PlayCampaignSessionOutcomeCardsPayload = z.infer<
+  typeof playCampaignSessionOutcomeCardsPayloadSchema
+>;
+
 export const campaignUpdatedPayloadSchema = z.object({
   campaignSlug: slugSchema,
   updatedAtIso: z.string().datetime(),
@@ -145,6 +167,15 @@ export interface CampaignClientToServerEvents {
   ) => void;
   remove_campaign_session_table_card: (
     payload: RemoveCampaignSessionTableCardPayload,
+  ) => void;
+  draw_campaign_session_outcome_card: (
+    payload: DrawCampaignSessionOutcomeCardPayload,
+  ) => void;
+  shuffle_campaign_session_outcome_deck: (
+    payload: ShuffleCampaignSessionOutcomeDeckPayload,
+  ) => void;
+  play_campaign_session_outcome_cards: (
+    payload: PlayCampaignSessionOutcomeCardsPayload,
   ) => void;
 }
 

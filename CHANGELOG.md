@@ -16,6 +16,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add human-storyteller campaign sessions with neutral lobby routes, player claim/create-PC flow, storyteller campaign shell reuse with a `Chat` tab, session transcripts, explicit dev-only mock participants, and route-level live refresh via campaign watch broadcasts.
 - Add server-authoritative campaign session table state with typed table card references, storyteller add/remove table socket events, player own-lane remove permissions, and shared session-state rebroadcasts.
 - Add live storyteller table selection workflows in session mode, including `+` actions on shortcode/list surfaces, session-mode rules tabs (`Outcomes`, `Effects`, `Stunts`, `Static Assets`), and lane/shared `Send Cards` actions that place staged cards onto the live table.
+- Add server-authoritative outcome decks, hands, and discard piles to campaign sessions, with shared `spec` contracts, 12-card per-player seeding, draw/shuffle/play socket events, and inline chat logging for played outcome cards.
 
 - Add typed Adventure Module actor authoring with create/edit APIs, resolved actor detail payloads, layered actor-card metadata, and legacy-module backfill for missing actor card records.
 - Add layered ActorCard rendering, actor list authoring UI, actor editor UI, and actor shortcode copy support in the Adventure Module authoring flow.
@@ -83,6 +84,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Let the player session route use the full viewport in live play so the transcript feed expands into the available height and the message composer stays visible beneath it.
 - Replace live session chat-only surfaces with a responsive `Table + Chat` layout for storyteller and player chat routes, including mobile `Table / Chat` switching and compact stacked duplicate-card presentation on the table lanes.
 - Tune the live storyteller `Chat` tab shell so `/storyteller/chat` uses fit-screen sizing with independently scrollable `Table` and `Chat` panes, and keep table-card removals visually staged with a short fade-out before removal.
+- Render per-player outcome deck/hand/discard lanes inside the shared campaign session table, with face-up current-player hands, back-face remote hands/decks, fixed discard rotations, and a `Play Character` action that moves selected cards to discard.
 - Refine storyteller session card staging UX by hiding the `Selection` strip when empty, replacing staged-count copy with an inline `(i)` hover/click hint, and reordering session tab navigation so `Outcomes/Effects/Stunts` appear before `Actors` and `Static Assets` appears before `Custom Assets`.
 - Rebuild shared `LocationCard`, `EncounterCard`, and `QuestCard` scene visuals as horizontal SVG cards (`332x204` viewBox, matching portrait card dimensions swapped to landscape) so styleguide, authoring lists, markdown embeds, transcript renders, and table previews all share the same vector frame treatment.
 
@@ -109,6 +111,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Docs
 
 - Update the campaign-session route and UI docs to document the headered player claim route plus the headerless `/player/chat` live transcript route.
+- Update the campaign-session and event/state docs to describe per-player outcome piles, draw/shuffle/play session events, and the new chat logging format for played outcome cards.
 - Update the shared UI and style-system docs to document the new grouped toggle/radio button primitives and their non-tilted alignment rules.
 - Add the root changelog to track notable product, workflow, deployment, and documentation updates.
 - Add AI contributor instructions in `AGENTS.md` requiring documentation and changelog updates when repo behavior, contracts, routes, env vars, or deployment guidance change.

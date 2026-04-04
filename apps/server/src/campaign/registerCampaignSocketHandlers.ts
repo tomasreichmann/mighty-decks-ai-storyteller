@@ -2,6 +2,7 @@ import type { Socket, Server as SocketServer } from "socket.io";
 import {
   addCampaignSessionMockPayloadSchema,
   addCampaignSessionTableCardsPayloadSchema,
+  drawCampaignSessionOutcomeCardPayloadSchema,
   campaignSessionErrorPayloadSchema,
   closeCampaignSessionPayloadSchema,
   claimCampaignSessionCharacterPayloadSchema,
@@ -9,7 +10,9 @@ import {
   joinCampaignSessionPayloadSchema,
   joinCampaignSessionRolePayloadSchema,
   leaveCampaignSessionPayloadSchema,
+  playCampaignSessionOutcomeCardsPayloadSchema,
   removeCampaignSessionTableCardPayloadSchema,
+  shuffleCampaignSessionOutcomeDeckPayloadSchema,
   sendCampaignSessionMessagePayloadSchema,
   watchCampaignPayloadSchema,
   type CampaignClientToServerEvents,
@@ -216,6 +219,66 @@ export const registerCampaignSocketHandlers = (
         emitSessionError(
           socket,
           error instanceof Error ? error.message : "Could not send campaign session message.",
+        );
+      }
+    });
+
+    socket.on("draw_campaign_session_outcome_card", async (rawPayload) => {
+      const payload = withValidation(
+        socket,
+        drawCampaignSessionOutcomeCardPayloadSchema,
+        rawPayload,
+      );
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.drawSessionOutcomeCard(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not draw outcome card.",
+        );
+      }
+    });
+
+    socket.on("shuffle_campaign_session_outcome_deck", async (rawPayload) => {
+      const payload = withValidation(
+        socket,
+        shuffleCampaignSessionOutcomeDeckPayloadSchema,
+        rawPayload,
+      );
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.shuffleSessionOutcomeDeck(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not shuffle outcome deck.",
+        );
+      }
+    });
+
+    socket.on("play_campaign_session_outcome_cards", async (rawPayload) => {
+      const payload = withValidation(
+        socket,
+        playCampaignSessionOutcomeCardsPayloadSchema,
+        rawPayload,
+      );
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.playSessionOutcomeCards(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not play outcome cards.",
         );
       }
     });

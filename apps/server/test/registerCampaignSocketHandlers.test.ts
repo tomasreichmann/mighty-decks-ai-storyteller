@@ -67,16 +67,27 @@ const createFixture = async () => {
   const campaignRootDir = mkdtempSync(join(tmpdir(), "mighty-decks-campaign-socket-target-"));
   const sourceStore = new AdventureModuleStore({ rootDir: sourceRootDir });
   await sourceStore.initialize();
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Flooded Bells",
+  });
+  await sourceStore.updateActor({
+    moduleId: source.index.moduleId,
+    creatorToken: "source-owner",
+    actorSlug: "primary-actor",
+    title: "Bell Runner",
+    summary: "Fast enough to slip between rising floodgates.",
+    baseLayerSlug: "civilian",
+    tacticalRoleSlug: "pawn",
+    isPlayerCharacter: true,
+    content: "# Bell Runner\n\nReady to be claimed by a player.",
+  });
   const store = new CampaignStore({
     rootDir: campaignRootDir,
     sourceModuleStore: sourceStore,
   });
   await store.initialize();
 
-  const source = await sourceStore.createModule({
-    creatorToken: "source-owner",
-    title: "Flooded Bells",
-  });
   const campaign = await store.createCampaign({
     sourceModuleId: source.index.moduleId,
     title: "Flooded Bells Campaign",
@@ -143,6 +154,116 @@ test("registerCampaignSocketHandlers broadcasts session state for role join, cha
   });
   const closedState = lastRoomEvent(io, room, "campaign_session_state");
   assert.equal((closedState?.payload as { status: string }).status, "closed");
+});
+
+test("registerCampaignSocketHandlers supports outcome deck draws, plays, and shuffles", async () => {
+  const { store, campaign, session } = await createFixture();
+  const io = new FakeIo();
+  registerCampaignSocketHandlers(io as never, store);
+
+  const storytellerSocket = new FakeSocket("socket-storyteller");
+  io.connect(storytellerSocket);
+  await storytellerSocket.trigger("join_campaign_session_role", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+
+  const playerSocket = new FakeSocket("socket-player");
+  io.connect(playerSocket);
+  await playerSocket.trigger("join_campaign_session_role", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const room = `campaign-session:${campaign.index.slug}:${session.sessionId}`;
+  const initialState = lastRoomEvent(io, room, "campaign_session_state");
+  assert.ok(initialState);
+  assert.equal(
+    (initialState?.payload as { outcomePilesByParticipantId: Record<string, { hand: Array<unknown>; deck: Array<unknown> }> }).outcomePilesByParticipantId["player-1"]?.hand.length,
+    3,
+  );
+
+  await playerSocket.trigger("claim_campaign_session_character", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+    actorFragmentId:
+      campaign.actors.find((actor) => actor.isPlayerCharacter)?.fragmentId ??
+      "missing-actor",
+  });
+
+  await playerSocket.trigger("draw_campaign_session_outcome_card", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+  });
+  const afterDraw = lastRoomEvent(io, room, "campaign_session_state");
+  const drawnPile = (
+    afterDraw?.payload as {
+      outcomePilesByParticipantId: Record<string, { hand: Array<{ cardId: string }> ; deck: Array<unknown>; discard: Array<unknown> }>;
+    }
+  ).outcomePilesByParticipantId["player-1"];
+  assert.equal(drawnPile?.hand.length, 4);
+  assert.equal(drawnPile?.deck.length, 8);
+
+  const selectedCardIds = drawnPile?.hand.slice(0, 2).map((card) => card.cardId) ?? [];
+  await playerSocket.trigger("play_campaign_session_outcome_cards", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+    cardIds: selectedCardIds,
+  });
+  const afterPlay = lastRoomEvent(io, room, "campaign_session_state");
+  const playedPile = (
+    afterPlay?.payload as {
+      outcomePilesByParticipantId: Record<string, { hand: Array<unknown>; deck: Array<unknown>; discard: Array<unknown> }>;
+      transcript: Array<{ text: string }>;
+    }
+  ).outcomePilesByParticipantId["player-1"];
+  assert.equal(playedPile?.hand.length, 2);
+  assert.equal(playedPile?.discard.length, 2);
+  assert.match(
+    afterPlay?.payload && typeof afterPlay.payload === "object"
+      ? String((afterPlay.payload as { transcript: Array<{ text: string }> }).transcript.at(-1)?.text ?? "")
+      : "",
+    /^Bell Runner played: @outcome\//,
+  );
+
+  for (let index = 0; index < 8; index += 1) {
+    await playerSocket.trigger("draw_campaign_session_outcome_card", {
+      campaignSlug: campaign.index.slug,
+      sessionId: session.sessionId,
+      participantId: "player-1",
+    });
+  }
+  const beforeShuffle = lastRoomEvent(io, room, "campaign_session_state");
+  const emptyDeckPile = (
+    beforeShuffle?.payload as {
+      outcomePilesByParticipantId: Record<string, { hand: Array<unknown>; deck: Array<unknown>; discard: Array<unknown> }>;
+    }
+  ).outcomePilesByParticipantId["player-1"];
+  assert.equal(emptyDeckPile?.deck.length, 0);
+  assert.equal(emptyDeckPile?.discard.length, 2);
+
+  await playerSocket.trigger("shuffle_campaign_session_outcome_deck", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+  });
+  const afterShuffle = lastRoomEvent(io, room, "campaign_session_state");
+  const shuffledPile = (
+    afterShuffle?.payload as {
+      outcomePilesByParticipantId: Record<string, { hand: Array<unknown>; deck: Array<unknown>; discard: Array<unknown> }>;
+    }
+  ).outcomePilesByParticipantId["player-1"];
+  assert.equal(shuffledPile?.deck.length, 2);
+  assert.equal(shuffledPile?.discard.length, 0);
 });
 
 test("registerCampaignSocketHandlers supports explicit mocks and emits campaign refresh on character creation", async () => {

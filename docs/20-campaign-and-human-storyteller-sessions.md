@@ -188,12 +188,14 @@ Current player session scope:
 - switch the live transcript to a headerless, footerless `/player/chat` shell so only in-play screens reclaim that vertical room
 - let the live transcript scroll area grow to the remaining viewport height once play starts, so the composer stays on-screen while the transcript absorbs the extra space
 - see the same shared table lanes as the storyteller in a responsive `Table / Chat` split view
+- own a private outcome deck/hand/discard lane under the shared table, with the current player seeing face-up hand cards and other viewers seeing back-face hands and decks
+- draw from the deck, select hand cards, and play them to the discard pile; the play action writes an inline transcript message like `Character played: @outcome/success, @outcome/fumble`
 - remove table cards only from the player's own lane (server-enforced)
 
 Not yet included:
 
 - private messages
-- outcome/deck/discard HUD
+- hand-limit enforcement or broader outcome automation
 - stunt, asset, or effect hand management
 
 ---
@@ -217,6 +219,9 @@ The `Chat` tab currently includes:
 - storyteller table controls to remove any visible table card
 - table card removals animate with a short fade-out when `X` is clicked before the server-authoritative removal lands
 - lane-level and shared `Send Cards` actions that appear when local selection has staged cards
+- per-player outcome decks, hands, and discard piles below the shared table lanes, with the active player seeing front faces and everyone else seeing back faces on the deck and hand
+- discard piles stay face-up for every viewer, including the storyteller
+- a `Play Character` button below the current player's hand when cards are selected, plus deck-click draw and empty-deck shuffle actions
 - a compact image button on the transcript composer that opens the same reusable generate-or-pick modal used by markdown authoring
 - inline rendering for supported component shortcodes pasted into transcript messages
 - inline rendering for markdown images embedded in transcript text
@@ -257,10 +262,16 @@ Socket.IO handles:
 - add mock participant
 - claim/create player character
 - group chat messages
+- draw outcome card from a player deck
+- shuffle a player discard pile back into the deck when the deck is empty
+- play selected outcome cards from a player's hand to the discard pile
 - close session
 - add cards to the shared session table or a specific player lane
 - remove a card entry from the session table (storyteller any lane; player own lane only)
 - broadcast session state updates
+
+Campaign session state now includes `outcomePilesByParticipantId`, keyed by `participantId`.
+Each player pile has a server-seeded 12-card deck, a 3-card opening hand, and an empty discard pile.
 
 Transcript persistence includes:
 
@@ -269,6 +280,7 @@ Transcript persistence includes:
 - mock added
 - player character claimed/created
 - group messages stored as raw transcript text, including plain prose, supported shortcodes, and standard markdown image syntax
+- played outcome cards stored as raw transcript text using the same supported shortcode format
 - session closed
 
 Transcript presentation includes:
@@ -293,5 +305,5 @@ Realtime stability note:
 - No campaign-level dedicated storyteller assignment outside sessions
 - No private messaging
 - No separate GM workspace
-- No outcome hand/deck/discard HUD yet (table-only slice)
+- No hand-limit enforcement or broader outcome automation yet
 - No AI-runtime coupling to the campaign session flow yet

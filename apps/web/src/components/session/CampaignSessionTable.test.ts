@@ -21,6 +21,14 @@ test("CampaignSessionTable supports seat-owned lanes, send actions, and role-awa
   assert.match(source, /canStackReference/);
   assert.match(source, /isSceneReference/);
   assert.match(source, /compactSceneCardSlotClassName/);
+  assert.match(source, /onDrawOutcomeCard\?: \(participantId: string\) => void/);
+  assert.match(source, /onShuffleOutcomeDeck\?: \(participantId: string\) => void/);
+  assert.match(source, /onPlayOutcomeCards\?: \(participantId: string, cardIds: string\[\]\) => void/);
+  assert.match(source, /selectedOutcomeCardIds/);
+  assert.match(source, /discardRotationDegrees/);
+  assert.match(source, /Play Character/);
+  assert.match(source, /face="back"/);
+  assert.match(source, /face="front"/);
   assert.match(
     source,
     /slotWidthClassName = isSceneReference\(entry\.card\)\s*\?\s*compactSceneCardSlotClassName\s*:\s*compactCardSlotClassName/,

@@ -65,6 +65,9 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
     claimCharacter,
     createCharacter,
     sendMessage,
+    drawOutcomeCard,
+    shuffleOutcomeDeck,
+    playOutcomeCards,
     removeTableCard,
   } = useCampaignSession({
     campaignSlug,
@@ -365,6 +368,9 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
               session={session}
               viewerRole="player"
               currentParticipantId={identity.participantId}
+              onDrawOutcomeCard={drawOutcomeCard}
+              onShuffleOutcomeDeck={shuffleOutcomeDeck}
+              onPlayOutcomeCards={playOutcomeCards}
               onRemoveEntry={handleRemoveTableCard}
               className="mx-2 sm:mx-3"
             />

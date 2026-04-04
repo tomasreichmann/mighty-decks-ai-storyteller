@@ -6,6 +6,8 @@ import {
   campaignListItemSchema,
   campaignSessionDetailSchema,
   type CampaignSessionParticipant,
+  type CampaignSessionOutcomeCardInstance,
+  type CampaignSessionOutcomePile,
   type CampaignSessionTableCardReference,
   type CampaignSessionTableTarget,
   campaignSessionSummarySchema,
@@ -14,6 +16,10 @@ import {
   type CampaignSessionDetail,
   type CampaignSessionParticipantRole,
 } from "@mighty-decks/spec/campaign";
+import {
+  campaignOutcomeDeckCardSlugs,
+  formatCampaignOutcomeCardPlayMessage,
+} from "@mighty-decks/spec/outcomeDeck";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
 import type {
   AdventureModuleCreateActorRequest,
@@ -68,7 +74,12 @@ const isStoryteller = (
 interface CampaignStoreOptions {
   rootDir: string;
   sourceModuleStore: AdventureModuleStore;
+  outcomeDeckShuffle?: OutcomeDeckShuffle;
 }
+
+type OutcomeDeckShuffle = (
+  cards: readonly CampaignSessionOutcomeCardInstance[],
+) => CampaignSessionOutcomeCardInstance[];
 
 interface StoredCampaignMetadata {
   version: 1;
@@ -100,11 +111,14 @@ export class CampaignStore {
   private readonly rootDir: string;
   private readonly sourceModuleStore: AdventureModuleStore;
   private readonly contentStore: AdventureModuleStore;
+  private readonly outcomeDeckShuffle: OutcomeDeckShuffle;
   private readonly sessionWriteLocks = new Map<string, Promise<void>>();
 
   public constructor(options: CampaignStoreOptions) {
     this.rootDir = options.rootDir;
     this.sourceModuleStore = options.sourceModuleStore;
+    this.outcomeDeckShuffle =
+      options.outcomeDeckShuffle ?? ((cards) => this.shuffleOutcomeCards(cards));
     this.contentStore = new AdventureModuleStore({
       rootDir: options.rootDir,
     });
@@ -220,6 +234,7 @@ export class CampaignStore {
       transcriptEntryCount: 0,
       participants: [],
       claims: [],
+      outcomePilesByParticipantId: {},
       table: [],
       transcript: [
         {
@@ -456,6 +471,127 @@ export class CampaignStore {
         authorDisplayName: participant.displayName,
         authorRole: participant.role,
         text: options.text.trim(),
+        createdAtIso: nowIso,
+      });
+    });
+  }
+
+  public async drawSessionOutcomeCard(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const participant = session.participants.find(
+        (candidate) => candidate.participantId === options.participantId,
+      );
+      if (!participant) {
+        throw new CampaignValidationError("Session participant not found.");
+      }
+      if (participant.role !== "player") {
+        throw new CampaignValidationError("Only players can draw outcome cards.");
+      }
+
+      const pile = this.ensureOutcomePile(session, participant.participantId, nowIso);
+      if (pile.deck.length === 0) {
+        throw new CampaignValidationError(
+          "Outcome deck is empty. Shuffle the discard pile first.",
+        );
+      }
+
+      const drawnCard = pile.deck.pop();
+      if (!drawnCard) {
+        throw new CampaignValidationError(
+          "Outcome deck is empty. Shuffle the discard pile first.",
+        );
+      }
+      pile.hand.push(drawnCard);
+    });
+  }
+
+  public async shuffleSessionOutcomeDeck(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const participant = session.participants.find(
+        (candidate) => candidate.participantId === options.participantId,
+      );
+      if (!participant) {
+        throw new CampaignValidationError("Session participant not found.");
+      }
+      if (participant.role !== "player") {
+        throw new CampaignValidationError("Only players can shuffle outcome decks.");
+      }
+
+      const pile = this.ensureOutcomePile(session, participant.participantId, nowIso);
+      if (pile.deck.length > 0) {
+        throw new CampaignValidationError("Outcome deck still has cards.");
+      }
+      if (pile.discard.length === 0) {
+        throw new CampaignValidationError("No discarded outcome cards to shuffle.");
+      }
+
+      pile.deck = this.outcomeDeckShuffle(pile.discard);
+      pile.discard = [];
+    });
+  }
+
+  public async playSessionOutcomeCards(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    cardIds: readonly string[];
+  }): Promise<CampaignSessionDetail> {
+    const campaign = await this.requireCampaignBySlug(options.campaignSlug);
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const participant = session.participants.find(
+        (candidate) => candidate.participantId === options.participantId,
+      );
+      if (!participant) {
+        throw new CampaignValidationError("Session participant not found.");
+      }
+      if (participant.role !== "player") {
+        throw new CampaignValidationError("Only players can play outcome cards.");
+      }
+
+      const pile = this.ensureOutcomePile(session, participant.participantId, nowIso);
+      const selectedIds = new Set(options.cardIds);
+      if (selectedIds.size !== options.cardIds.length) {
+        throw new CampaignValidationError("Duplicate outcome card selection detected.");
+      }
+
+      const selectedCards = pile.hand.filter((card) => selectedIds.has(card.cardId));
+      if (selectedCards.length !== options.cardIds.length) {
+        throw new CampaignValidationError("One or more selected outcome cards were not found.");
+      }
+
+      pile.hand = pile.hand.filter((card) => !selectedIds.has(card.cardId));
+      pile.discard.push(...selectedCards);
+
+      const claimedActor = session.claims.find(
+        (claim) => claim.participantId === participant.participantId,
+      );
+      const actorTitle =
+        claimedActor &&
+        campaign.actors.find((candidate) => candidate.fragmentId === claimedActor.actorFragmentId)
+          ?.title;
+      const displayName = actorTitle ?? participant.displayName;
+
+      session.transcript.push({
+        entryId: makeId("session-entry"),
+        kind: "group_message",
+        participantId: participant.participantId,
+        authorDisplayName: participant.displayName,
+        authorRole: participant.role,
+        text: formatCampaignOutcomeCardPlayMessage(
+          displayName,
+          selectedCards.map((card) => card.slug),
+        ),
         createdAtIso: nowIso,
       });
     });
@@ -914,13 +1050,124 @@ export class CampaignStore {
   }
 
   private hydrateSession(session: CampaignSessionDetail): CampaignSessionDetail {
+    const hydrated = structuredClone(session);
+    this.normalizeSessionOutcomePiles(hydrated, hydrated.updatedAtIso);
     return campaignSessionDetailSchema.parse({
-      ...session,
-      storytellerCount: countRole(session.participants, "storyteller"),
-      playerCount: countRole(session.participants, "player"),
-      transcriptEntryCount: session.transcript.length,
-      transcriptPreview: summarizeTranscriptText(session.transcript.at(-1)?.text),
+      ...hydrated,
+      storytellerCount: countRole(hydrated.participants, "storyteller"),
+      playerCount: countRole(hydrated.participants, "player"),
+      transcriptEntryCount: hydrated.transcript.length,
+      transcriptPreview: summarizeTranscriptText(hydrated.transcript.at(-1)?.text),
     });
+  }
+
+  private normalizeSessionOutcomePiles(
+    session: CampaignSessionDetail,
+    nowIso: string,
+  ): void {
+    const outcomePilesByParticipantId = {
+      ...session.outcomePilesByParticipantId,
+    };
+
+    for (const participant of session.participants) {
+      if (participant.role !== "player") {
+        continue;
+      }
+
+      const existingPile = outcomePilesByParticipantId[participant.participantId];
+      if (existingPile) {
+        outcomePilesByParticipantId[participant.participantId] = {
+          deck: [...existingPile.deck],
+          hand: [...existingPile.hand],
+          discard: [...existingPile.discard],
+        };
+        continue;
+      }
+
+      outcomePilesByParticipantId[participant.participantId] =
+        this.createStartingOutcomePile(nowIso);
+    }
+
+    session.outcomePilesByParticipantId = outcomePilesByParticipantId;
+  }
+
+  private ensureOutcomePile(
+    session: CampaignSessionDetail,
+    participantId: string,
+    nowIso: string,
+  ): CampaignSessionOutcomePile {
+    const participant = session.participants.find(
+      (candidate) => candidate.participantId === participantId,
+    );
+    if (!participant) {
+      throw new CampaignValidationError("Session participant not found.");
+    }
+    if (participant.role !== "player") {
+      throw new CampaignValidationError("Only players can use outcome cards.");
+    }
+
+    const existingPile = session.outcomePilesByParticipantId[participantId];
+    if (existingPile) {
+      return existingPile;
+    }
+
+    const createdPile = this.createStartingOutcomePile(nowIso);
+    session.outcomePilesByParticipantId = {
+      ...session.outcomePilesByParticipantId,
+      [participantId]: createdPile,
+    };
+    return createdPile;
+  }
+
+  private createStartingOutcomePile(nowIso: string): CampaignSessionOutcomePile {
+    const deck = this.createShuffledOutcomeDeck(nowIso);
+    const openingDraw = deck.splice(-3).reverse();
+    if (openingDraw.length === 3 && openingDraw.every((card) => card.slug === "fumble")) {
+      const restoredDeck = this.outcomeDeckShuffle([...deck, ...openingDraw]);
+      const replacementDraw = restoredDeck.splice(-3).reverse();
+      return {
+        deck: restoredDeck,
+        hand: replacementDraw,
+        discard: [],
+      };
+    }
+
+    return {
+      deck,
+      hand: openingDraw,
+      discard: [],
+    };
+  }
+
+  private createShuffledOutcomeDeck(
+    nowIso: string,
+  ): CampaignSessionOutcomeCardInstance[] {
+    const deck = campaignOutcomeDeckCardSlugs.map((slug) =>
+      this.createOutcomeCardInstance(slug, nowIso),
+    );
+    return this.outcomeDeckShuffle(deck);
+  }
+
+  private createOutcomeCardInstance(
+    slug: CampaignSessionOutcomeCardInstance["slug"],
+    nowIso: string,
+  ): CampaignSessionOutcomeCardInstance {
+    return {
+      cardId: makeId("outcome-card"),
+      slug,
+      createdAtIso: nowIso,
+    };
+  }
+
+  private shuffleOutcomeCards(
+    cards: readonly CampaignSessionOutcomeCardInstance[],
+  ): CampaignSessionOutcomeCardInstance[] {
+    const shuffled = [...cards];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex]!, shuffled[index]!];
+    }
+    return shuffled;
   }
 
   private summarizeSession(session: CampaignSessionDetail) {
