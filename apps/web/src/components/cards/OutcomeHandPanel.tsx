@@ -116,7 +116,7 @@ export const OutcomeHandPanel = ({
             return (
               <div
                 key={slug}
-                className="relative -mx-11 shrink-0 transition-transform duration-300"
+                className="relative -mx-11 shrink-0 transition-transform duration-300 hover:z-30 focus-within:z-30"
                 style={getFanTransformStyle(index, outcomeCardSlugOrder.length)}
               >
                 <button

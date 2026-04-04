@@ -26,3 +26,14 @@ test("CampaignSessionMessageContent can render claimed-character transcript entr
   assert.match(source, /actor\.tacticalRoleSlug/);
   assert.match(source, /actor\.summary \?\? "No summary yet\."./);
 });
+
+test("CampaignSessionMessageContent promotes played-card transcript shortcodes onto a dedicated card row", () => {
+  const source = readFileSync(
+    new URL("./CampaignSessionMessageContent.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /endsWith\("played:"\)/);
+  assert.match(source, /flex flex-wrap items-start gap-2/);
+  assert.match(source, /game_card|encounter_card|quest_card/);
+});

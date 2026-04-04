@@ -1,8 +1,10 @@
 import { useGameCardCatalogContext } from "../lib/gameCardCatalogContext";
+import type { CampaignSessionMessageSegment } from "../lib/campaignSessionMessageSegments";
 import { resolveEncounterCard } from "../lib/markdownEncounterComponents";
 import { resolveGameCard } from "../lib/markdownGameComponents";
 import { resolveQuestCard } from "../lib/markdownQuestComponents";
 import { parseCampaignSessionMessageSegments } from "../lib/campaignSessionMessageSegments";
+import { cn } from "../utils/cn";
 import { ActorCard } from "./cards/ActorCard";
 import { EncounterCardView } from "./adventure-module/EncounterCardView";
 import { GameCardView } from "./adventure-module/GameCardView";
@@ -15,6 +17,65 @@ interface CampaignSessionMessageContentProps {
 
 const normalizeActorTitle = (value: string): string =>
   value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+
+const isRenderableCardSegment = (
+  segment: CampaignSessionMessageSegment,
+): segment is Extract<
+  CampaignSessionMessageSegment,
+  { kind: "game_card" | "encounter_card" | "quest_card" }
+> =>
+  segment.kind === "game_card" ||
+  segment.kind === "encounter_card" ||
+  segment.kind === "quest_card";
+
+const getPlayedCardLayout = (
+  segments: readonly CampaignSessionMessageSegment[],
+):
+  | {
+      prefix: string;
+      cards: Array<
+        Extract<
+          CampaignSessionMessageSegment,
+          { kind: "game_card" | "encounter_card" | "quest_card" }
+        >
+      >;
+    }
+  | null => {
+  if (segments.length < 2) {
+    return null;
+  }
+
+  const [firstSegment, ...remainingSegments] = segments;
+  if (
+    !firstSegment ||
+    firstSegment.kind !== "text" ||
+    !firstSegment.text.trimEnd().endsWith("played:")
+  ) {
+    return null;
+  }
+
+  const cards = remainingSegments.filter(isRenderableCardSegment);
+  if (cards.length === 0) {
+    return null;
+  }
+
+  const onlyCardSeparators = remainingSegments.every((segment) => {
+    if (isRenderableCardSegment(segment)) {
+      return true;
+    }
+
+    return segment.kind === "text" && /^[\s,.;!?]*$/.test(segment.text);
+  });
+
+  if (!onlyCardSeparators) {
+    return null;
+  }
+
+  return {
+    prefix: firstSegment.text.trimEnd(),
+    cards,
+  };
+};
 
 export const CampaignSessionMessageContent = ({
   text,
@@ -56,6 +117,88 @@ export const CampaignSessionMessageContent = ({
     );
   }
 
+  const renderCardSegment = (
+    segment: Extract<
+      CampaignSessionMessageSegment,
+      { kind: "game_card" | "encounter_card" | "quest_card" }
+    >,
+    key: string,
+    block = false,
+  ): JSX.Element => {
+    if (segment.kind === "game_card") {
+      const resolved = resolveGameCard(
+        segment.type,
+        segment.slug,
+        actorsBySlug,
+        countersBySlug,
+        assetsBySlug,
+        segment.modifierSlug,
+      );
+
+      return resolved ? (
+        <div
+          key={key}
+          className={cn(
+            "my-1 max-w-full",
+            block ? "block" : "inline-block align-middle",
+          )}
+        >
+          <GameCardView gameCard={resolved} />
+        </div>
+      ) : (
+        <span key={`${key}-fallback`}>{segment.token}</span>
+      );
+    }
+
+    if (segment.kind === "encounter_card") {
+      const resolved = resolveEncounterCard(segment.slug, encountersBySlug);
+
+      return resolved ? (
+        <div
+          key={key}
+          className={cn(
+            "my-1 max-w-full",
+            block ? "block" : "inline-block align-middle",
+          )}
+        >
+          <EncounterCardView encounter={resolved.encounter} />
+        </div>
+      ) : (
+        <span key={`${key}-fallback`}>{segment.token}</span>
+      );
+    }
+
+    const resolved = resolveQuestCard(segment.slug, questsBySlug);
+
+    return resolved ? (
+      <div
+        key={key}
+        className={cn(
+          "my-1 max-w-full",
+          block ? "block" : "inline-block align-middle",
+        )}
+      >
+        <QuestCardView quest={resolved.quest} />
+      </div>
+    ) : (
+      <span key={`${key}-fallback`}>{segment.token}</span>
+    );
+  };
+
+  const playedCardLayout = getPlayedCardLayout(segments);
+  if (playedCardLayout) {
+    return (
+      <div className="break-words text-inherit">
+        <span className="whitespace-pre-wrap">{playedCardLayout.prefix}</span>
+        <div className="mt-2 flex flex-wrap items-start gap-2">
+          {playedCardLayout.cards.map((segment, index) =>
+            renderCardSegment(segment, `played-card-${index}`, true),
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="whitespace-pre-wrap break-words text-inherit">
       {segments.map((segment, index) => {
@@ -80,56 +223,14 @@ export const CampaignSessionMessageContent = ({
         }
 
         if (segment.kind === "game_card") {
-          const resolved = resolveGameCard(
-            segment.type,
-            segment.slug,
-            actorsBySlug,
-            countersBySlug,
-            assetsBySlug,
-            segment.modifierSlug,
-          );
-
-          return resolved ? (
-            <div
-              key={`game-card-${index}`}
-              className="my-1 inline-block max-w-full align-middle"
-            >
-              <GameCardView gameCard={resolved} />
-            </div>
-          ) : (
-            <span key={`game-card-fallback-${index}`}>{segment.token}</span>
-          );
+          return renderCardSegment(segment, `game-card-${index}`);
         }
 
         if (segment.kind === "encounter_card") {
-          const resolved = resolveEncounterCard(segment.slug, encountersBySlug);
-
-          return resolved ? (
-            <div
-              key={`encounter-card-${index}`}
-              className="my-1 inline-block max-w-full align-middle"
-            >
-              <EncounterCardView encounter={resolved.encounter} />
-            </div>
-          ) : (
-            <span key={`encounter-card-fallback-${index}`}>
-              {segment.token}
-            </span>
-          );
+          return renderCardSegment(segment, `encounter-card-${index}`);
         }
 
-        const resolved = resolveQuestCard(segment.slug, questsBySlug);
-
-        return resolved ? (
-          <div
-            key={`quest-card-${index}`}
-            className="my-1 inline-block max-w-full align-middle"
-          >
-            <QuestCardView quest={resolved.quest} />
-          </div>
-        ) : (
-          <span key={`quest-card-fallback-${index}`}>{segment.token}</span>
-        );
+        return renderCardSegment(segment, `quest-card-${index}`);
       })}
     </div>
   );

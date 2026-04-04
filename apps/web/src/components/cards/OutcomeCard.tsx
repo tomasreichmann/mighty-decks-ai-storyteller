@@ -65,6 +65,9 @@ interface OutcomeCardProps {
   onSelect?: (card: OutcomeCardType) => void;
 }
 
+const outcomeBackfaceBackgroundUri = "/backgrounds/card-backface.png";
+const outcomeBackfaceIconUri = "/types/outcome.png";
+
 const OutcomeCardBack = ({
   className,
 }: {
@@ -73,17 +76,43 @@ const OutcomeCardBack = ({
   <article
     aria-label="Outcome card back"
     className={cn(
-      "relative aspect-[204/332] w-[204px] max-w-full overflow-hidden rounded-[0.6rem] border-[2px] border-kac-blood-dark/55 bg-[linear-gradient(135deg,_#2a333f_0%,_#18202a_52%,_#0f151c_100%)] shadow-[2px_2px_0_0_#121b23]",
+      "relative aspect-[204/332] w-[204px] max-w-full overflow-hidden rounded-[0.6rem] shadow-[2px_2px_0_0_#121b23]",
       className,
     )}
   >
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,_rgba(255,255,255,0.16),_transparent_46%),repeating-linear-gradient(135deg,_rgba(255,255,255,0.08)_0_12px,_rgba(255,255,255,0.02)_12px_24px)] opacity-95" />
-    <div className="absolute inset-[10%] rounded-[0.55rem] border border-kac-bone-light/20" />
-    <div className="absolute inset-0 flex items-center justify-center">
-      <span className="font-md-heading text-[44px] font-bold leading-none text-kac-bone-light/70">
-        ◎
-      </span>
-    </div>
+    <svg
+      viewBox="0 0 204 332"
+      className="h-full w-full"
+      role="img"
+      aria-label="Outcome card back"
+    >
+      <image
+        href={outcomeBackfaceBackgroundUri}
+        x="0"
+        y="0"
+        width="204"
+        height="332"
+        preserveAspectRatio="xMidYMid slice"
+      />
+      <image
+        href={outcomeBackfaceIconUri}
+        x="0"
+        y="50"
+        width="204"
+        height="166"
+        preserveAspectRatio="xMidYMid meet"
+      />
+      <text
+        x="102"
+        y="215"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        className="font-md-heading text-[24px] font-bold leading-none fill-kac-monster-lightest"
+        style={{ textShadow: "0px 2px 0 black" }}
+      >
+        Outcome
+      </text>
+    </svg>
   </article>
 );
 

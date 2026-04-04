@@ -221,7 +221,7 @@ The `Chat` tab currently includes:
 - lane-level and shared `Send Cards` actions that appear when local selection has staged cards
 - per-player outcome decks, hands, and discard piles below the shared table lanes, with the active player seeing front faces and everyone else seeing back faces on the deck and hand
 - discard piles stay face-up for every viewer, including the storyteller
-- a `Play Character` button below the current player's hand when cards are selected, plus deck-click draw and empty-deck shuffle actions
+- a compact `▶` play button below the current player's hand when cards are selected, plus deck-click draw and empty-deck shuffle actions
 - a compact image button on the transcript composer that opens the same reusable generate-or-pick modal used by markdown authoring
 - inline rendering for supported component shortcodes pasted into transcript messages
 - inline rendering for markdown images embedded in transcript text

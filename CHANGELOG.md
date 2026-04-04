@@ -31,6 +31,14 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add hidden `/styleguide/session-chat-player` and `/styleguide/session-chat-storyteller` labs with responsive session-chat table mocks for reviewing desktop split layouts, collapsed mobile chat state, and role-specific discard affordances before wiring live rules UI.
 
 ### Changed
+
+- Swap the campaign-session outcome action label from `Play Character` to `▶` and keep the control accessible with an `aria-label`.
+- Center the campaign session table outcome hand on a width that scales with card count, and double the horizontal spacing between the hand and the deck/discard piles while keeping the gentler vertical arc.
+- Raise hovered outcome hand cards above neighboring fan cards so every card in the player hand stays readable in the chat session view.
+- Apply the same hovered stacking fix to the campaign session player table hand, widen the fan spacing, and make the hand responsive so the live route fits without internal scrollbars or clipping.
+
+- Rebuild the shared `OutcomeCard` back face as a minimal inline SVG that uses the repo's `card-backface` texture plus the outcome type icon, and move the label below the ornament in the very-light green monster-lightest tone to better match the original backface treatment.
+- Adjust campaign-session outcome piles so live hands use a stronger overlapping fan, pile captions are removed, and played-card transcript entries render their cards on a dedicated line below the `played:` text.
 - Split campaign player session routes so `/campaign/.../player` stays on the usual page shell for claim/create while `/campaign/.../player/chat` becomes the headerless live transcript surface.
 - Reused the compact shortcode copy component across the Rules asset, effect, stunt, and outcome reference pages so shortcode copying matches Adventure Module and storyteller detail views.
 
