@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Add a `pnpm -C apps/server smoke:campaign-flow` integration smoke test that can run locally or against a live Render deployment, covering Adventure Module creation, authored actor/counter/asset/location/encounter/quest creation, campaign creation, session creation, player/storyteller joins, and cleanup.
 - Add shared `ToggleButton` and `ButtonRadioGroup` primitives for straight-edged grouped option controls, with active/inactive states, six material color variants, and `s|m|l` sizing.
 - Add a shared `RockerSwitch` primitive for perspective-tilted binary controls with accent-lit active state and an optional tucked-under `Label` tag.
 - Add configurable AI text provider (`AI_TEXT_PROVIDER` env var) supporting `openrouter` (default, API-based) and `claude_cli` (local CLI). Set `AI_TEXT_PROVIDER=claude_cli` in `.env.local` to use Claude CLI for all text completions without an API key. New env vars: `CLAUDE_CLI_MODEL`, `CLAUDE_CLI_MAX_CONCURRENT`.
@@ -32,6 +33,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Add true delete endpoints for Adventure Modules, Campaigns, and Campaign Sessions so smoke tests and live-environment cleanup can remove created records.
 - Keep the campaign-session outcome action icon-only, but update its accessible label and title to `Play an Outcome card`.
 - Center the global route loading fallback, restyle `Loading...` as a `Label`, and place the existing pending indicator above it.
 - Center the campaign session table outcome hand on a width that scales with card count, and double the horizontal spacing between the hand and the deck/discard piles while keeping the gentler vertical arc.

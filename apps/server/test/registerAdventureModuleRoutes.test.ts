@@ -775,4 +775,32 @@ test("registerAdventureModuleRoutes supports module CRUD and preview", async (t)
   };
   assert.equal(clonePayload.index.title, "Route Clone");
   assert.notEqual(clonePayload.index.moduleId, moduleId);
+
+  const forbiddenDeleteResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}`,
+    headers: {
+      [CREATOR_HEADER]: "creator-b",
+    },
+  });
+  assert.equal(forbiddenDeleteResponse.statusCode, 403);
+
+  const deleteModuleResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/adventure-modules/${moduleId}`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(deleteModuleResponse.statusCode, 200);
+  assert.equal(deleteModuleResponse.json().deleted, true);
+
+  const getAfterDeleteResponse = await app.inject({
+    method: "GET",
+    url: `/api/adventure-modules/${moduleId}`,
+    headers: {
+      [CREATOR_HEADER]: "creator-a",
+    },
+  });
+  assert.equal(getAfterDeleteResponse.statusCode, 404);
 });

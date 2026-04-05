@@ -253,6 +253,8 @@ REST handles:
 - campaign list/read/create
 - campaign updates mirroring module authoring
 - session create/list/read
+- campaign delete
+- session delete
 
 Socket.IO handles:
 
@@ -269,6 +271,17 @@ Socket.IO handles:
 - add cards to the shared session table or a specific player lane
 - remove a card entry from the session table (storyteller any lane; player own lane only)
 - broadcast session state updates
+
+Cleanup endpoints:
+
+- `DELETE /api/campaigns/:campaignId`
+- `DELETE /api/campaigns/:campaignId/sessions/:sessionId`
+
+Smoke-test workflow:
+
+- `pnpm -C apps/server smoke:campaign-flow` boots a temporary local Fastify plus Socket.IO harness and exercises module authoring, campaign creation, session creation, session joins, and cleanup.
+- `SMOKE_BASE_URL=https://<your-service>.onrender.com pnpm -C apps/server smoke:campaign-flow` runs the same smoke path against a live Render deployment.
+- The smoke path uses timestamped names so retries do not collide, then deletes the created session, campaign, and Adventure Module during cleanup.
 
 Campaign session state now includes `outcomePilesByParticipantId`, keyed by `participantId`.
 Each player pile has a server-seeded 12-card deck, a 3-card opening hand, and an empty discard pile.

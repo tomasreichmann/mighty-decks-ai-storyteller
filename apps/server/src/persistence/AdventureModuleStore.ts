@@ -2409,6 +2409,17 @@ export class AdventureModuleStore {
     });
   }
 
+  public async deleteModule(options: {
+    moduleId: string;
+    creatorToken?: string;
+  }): Promise<void> {
+    await this.withModuleWriteLock(options.moduleId, async () => {
+      const loaded = await this.requireStoredModule(options.moduleId);
+      this.assertOwnership(loaded.system, options.creatorToken);
+      await rm(loaded.moduleDir, { recursive: true, force: true });
+    });
+  }
+
   private async withModuleWriteLock<T>(
     moduleId: string,
     operation: () => Promise<T>,

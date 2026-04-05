@@ -128,6 +128,32 @@ test("registerCampaignRoutes supports campaign CRUD and session creation", async
     (getSessionResponse.json() as { sessionId: string }).sessionId,
     createdSession.sessionId,
   );
+
+  const deleteSessionResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/campaigns/${created.campaignId}/sessions/${createdSession.sessionId}`,
+  });
+  assert.equal(deleteSessionResponse.statusCode, 200);
+  assert.equal(deleteSessionResponse.json().deleted, true);
+
+  const getDeletedSessionResponse = await app.inject({
+    method: "GET",
+    url: `/api/campaigns/by-slug/${encodeURIComponent(created.index.slug)}/sessions/${createdSession.sessionId}`,
+  });
+  assert.equal(getDeletedSessionResponse.statusCode, 404);
+
+  const deleteCampaignResponse = await app.inject({
+    method: "DELETE",
+    url: `/api/campaigns/${created.campaignId}`,
+  });
+  assert.equal(deleteCampaignResponse.statusCode, 200);
+  assert.equal(deleteCampaignResponse.json().deleted, true);
+
+  const getDeletedCampaignResponse = await app.inject({
+    method: "GET",
+    url: `/api/campaigns/by-slug/${encodeURIComponent(created.index.slug)}`,
+  });
+  assert.equal(getDeletedCampaignResponse.statusCode, 404);
 });
 
 test("registerCampaignRoutes keeps campaign metadata when updating actors", async (t) => {

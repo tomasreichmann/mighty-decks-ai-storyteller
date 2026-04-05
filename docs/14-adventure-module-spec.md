@@ -376,6 +376,7 @@ The current implementation adds typed actor, counter, asset, location, encounter
 - `POST /api/adventure-modules/:moduleId/quests`
 - `PUT /api/adventure-modules/:moduleId/quests/:questSlug`
 - `DELETE /api/adventure-modules/:moduleId/quests/:questSlug`
+- `DELETE /api/adventure-modules/:moduleId`
 
 These endpoints:
 
@@ -389,6 +390,7 @@ These endpoints:
 - create encounter fragments with module-scoped slugs derived from the saved encounter title and persist typed encounter metadata alongside fragment references
 - create quest fragments with module-scoped slugs derived from the saved quest title, persist typed quest metadata alongside fragment references, and seed a minimal valid quest graph automatically
 - reject deleting the last quest and clean up linked map pins and component opportunities when a quest is deleted
+- allow the owning creator token to delete the full authored Adventure Module for smoke-test and authoring cleanup workflows
 - return resolved `AdventureModuleDetail` payloads including joined `locations`, `encounters`, `quests`, `actors`, `counters`, and `assets`
 
 Legacy module compatibility:

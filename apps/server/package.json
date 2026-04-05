@@ -15,7 +15,9 @@
     "pretypecheck": "pnpm run prepare:spec",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "pretest": "pnpm run prepare:spec",
-    "test": "node scripts/run-tests.mjs"
+    "test": "node scripts/run-tests.mjs",
+    "presmoke:campaign-flow": "pnpm run prepare:spec",
+    "smoke:campaign-flow": "tsx --test test/campaignFlow.smoke.test.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.1.0",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "socket.io-client": "^4.8.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

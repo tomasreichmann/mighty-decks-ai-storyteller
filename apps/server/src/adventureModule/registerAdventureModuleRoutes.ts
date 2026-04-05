@@ -11,6 +11,7 @@ import {
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
+  adventureModuleDeleteResponseSchema,
   adventureModuleErrorSchema,
   adventureModuleGetResponseSchema,
   adventureModuleListResponseSchema,
@@ -183,6 +184,20 @@ export const registerAdventureModuleRoutes = (
       return sendError(reply, 404, "Adventure module not found.");
     }
     return reply.send(adventureModuleGetResponseSchema.parse(moduleDetail));
+  });
+
+  app.delete("/api/adventure-modules/:moduleId", async (request, reply) => {
+    const creatorToken = parseCreatorToken(request);
+    const { moduleId = "" } = request.params as { moduleId?: string };
+    try {
+      await options.store.deleteModule({
+        moduleId,
+        creatorToken,
+      });
+      return reply.send(adventureModuleDeleteResponseSchema.parse({ deleted: true }));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
   });
 
   app.put("/api/adventure-modules/:moduleId/index", async (request, reply) => {

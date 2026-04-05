@@ -701,6 +701,38 @@ export class CampaignStore {
     });
   }
 
+  public async deleteSession(options: {
+    campaignId: string;
+    sessionId: string;
+  }): Promise<void> {
+    await this.withSessionWriteLock(options.campaignId, async () => {
+      const sessions = await this.readCampaignSessions(options.campaignId);
+      const existingSession = sessions.find(
+        (session) => session.sessionId === options.sessionId,
+      );
+      if (!existingSession) {
+        throw new CampaignSessionNotFoundError("Campaign session not found.");
+      }
+      await this.writeCampaignSessions(
+        options.campaignId,
+        sessions.filter((session) => session.sessionId !== options.sessionId),
+      );
+      await this.touchCampaignMetadata(options.campaignId, new Date().toISOString());
+    });
+  }
+
+  public async deleteCampaign(options: {
+    campaignId: string;
+  }): Promise<void> {
+    await this.withSessionWriteLock(options.campaignId, async () => {
+      await this.requireCampaign(options.campaignId);
+      await this.contentStore.deleteModule({
+        moduleId: options.campaignId,
+        creatorToken: sharedCreatorToken,
+      });
+    });
+  }
+
   public async updateIndex(options: {
     campaignId: string;
     index: AdventureModuleIndex;

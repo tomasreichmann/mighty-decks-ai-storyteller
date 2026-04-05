@@ -377,6 +377,11 @@ export type CampaignGetResponse = z.infer<typeof campaignGetResponseSchema>;
 export const campaignCreateResponseSchema = campaignDetailSchema;
 export type CampaignCreateResponse = z.infer<typeof campaignCreateResponseSchema>;
 
+export const campaignDeleteResponseSchema = z.object({
+  deleted: z.literal(true),
+});
+export type CampaignDeleteResponse = z.infer<typeof campaignDeleteResponseSchema>;
+
 export const campaignListSessionsResponseSchema = z.object({
   sessions: z.array(campaignSessionSummarySchema).max(200),
 });
@@ -386,3 +391,10 @@ export type CampaignListSessionsResponse = z.infer<
 
 export const campaignSessionResponseSchema = campaignSessionDetailSchema;
 export type CampaignSessionResponse = z.infer<typeof campaignSessionResponseSchema>;
+
+export const campaignDeleteSessionResponseSchema = z.object({
+  deleted: z.literal(true),
+});
+export type CampaignDeleteSessionResponse = z.infer<
+  typeof campaignDeleteSessionResponseSchema
+>;

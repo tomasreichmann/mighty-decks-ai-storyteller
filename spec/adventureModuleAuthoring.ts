@@ -507,6 +507,13 @@ export type AdventureModuleCreateResponse = z.infer<
   typeof adventureModuleCreateResponseSchema
 >;
 
+export const adventureModuleDeleteResponseSchema = z.object({
+  deleted: z.literal(true),
+});
+export type AdventureModuleDeleteResponse = z.infer<
+  typeof adventureModuleDeleteResponseSchema
+>;
+
 export const adventureModuleUpdateIndexRequestSchema = z.object({
   index: adventureModuleIndexSchema,
 });

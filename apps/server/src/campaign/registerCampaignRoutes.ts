@@ -5,6 +5,8 @@ import {
   campaignCreateRequestSchema,
   campaignCreateResponseSchema,
   campaignCreateSessionRequestSchema,
+  campaignDeleteResponseSchema,
+  campaignDeleteSessionResponseSchema,
   campaignErrorSchema,
   campaignGetResponseSchema,
   campaignListResponseSchema,
@@ -43,6 +45,9 @@ interface RegisterCampaignRoutesOptions {
 
 const campaignIdParamsSchema = z.object({
   campaignId: z.string().min(1).max(120),
+});
+const campaignDeleteSessionParamsSchema = campaignIdParamsSchema.extend({
+  sessionId: z.string().min(1).max(120),
 });
 const entitySlugSchema = z
   .string()
@@ -130,6 +135,18 @@ export const registerCampaignRoutes = (
         return sendError(reply, 404, "Campaign not found.");
       }
       return reply.send(campaignGetResponseSchema.parse(campaign));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.delete("/api/campaigns/:campaignId", async (request, reply) => {
+    try {
+      const params = campaignIdParamsSchema.parse(request.params ?? {});
+      await options.store.deleteCampaign({
+        campaignId: params.campaignId,
+      });
+      return reply.send(campaignDeleteResponseSchema.parse({ deleted: true }));
     } catch (error) {
       return sendKnownError(reply, error);
     }
@@ -510,6 +527,19 @@ export const registerCampaignRoutes = (
       });
       notifyCampaignUpdated(options, campaign.index.slug, created.updatedAtIso);
       return reply.code(201).send(campaignSessionResponseSchema.parse(created));
+    } catch (error) {
+      return sendKnownError(reply, error);
+    }
+  });
+
+  app.delete("/api/campaigns/:campaignId/sessions/:sessionId", async (request, reply) => {
+    try {
+      const params = campaignDeleteSessionParamsSchema.parse(request.params ?? {});
+      await options.store.deleteSession({
+        campaignId: params.campaignId,
+        sessionId: params.sessionId,
+      });
+      return reply.send(campaignDeleteSessionResponseSchema.parse({ deleted: true }));
     } catch (error) {
       return sendKnownError(reply, error);
     }

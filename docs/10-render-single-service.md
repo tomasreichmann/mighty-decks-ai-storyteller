@@ -56,3 +56,4 @@ After deploy:
 - `https://<your-service>.onrender.com/health`
 - open `https://<your-service>.onrender.com/`
 - join an adventure and submit an action
+- run `SMOKE_BASE_URL=https://<your-service>.onrender.com pnpm -C apps/server smoke:campaign-flow` to verify the authored-module -> campaign -> session-join flow and automatic cleanup against the live service
