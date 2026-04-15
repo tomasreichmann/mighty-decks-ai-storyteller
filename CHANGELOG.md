@@ -43,7 +43,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Tighten the Adventure Module and Campaign authoring headers so the editable title field shrinks to a five-character minimum, the URI is removed, and the overall title treatment reads smaller and more compact.
 - Remove slug IDs from the Adventure Module markdown insert dropdown labels so the toolbar stays more compact.
 - Unify Adventure Module and Campaign list pages around a shared cover-led story tile shell with explicit in-card buttons, visible module author/tag metadata, and visible campaign source-module context.
-- Replace the Adventure Module markdown item picker for custom cards, encounters, quests, and custom assets with a compact two-line dropdown that keeps the title in the trigger and shows the slug on a muted second line in the open menu.
+- Keep the Adventure Module markdown item picker for custom cards, encounters, quests, and custom assets on the native browser `<select>` so it is not clipped by the editor shell, expose the selected/item slug through the native `title` tooltip, and let the insert controls wrap cleanly on narrow screens instead of forcing horizontal clipping.
 - Extract the shared module/campaign authoring shell into reusable authoring helpers, a shared header, a shared common-tab renderer, and campaign-only session tab components so the route files stay smaller without changing autosave or entity workflows.
 - Add true delete endpoints for Adventure Modules, Campaigns, and Campaign Sessions so smoke tests and live-environment cleanup can remove created records.
 - Keep the campaign-session outcome action icon-only, but update its accessible label and title to `Play an Outcome card`.

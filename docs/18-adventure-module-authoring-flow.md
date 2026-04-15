@@ -181,7 +181,7 @@ Behavior:
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
 - The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
-- The custom item picker for authored cards, custom assets, encounters, and quests uses a compact dropdown: the closed trigger shows the selected title, and the open menu shows `title` plus a muted second-line bare slug.
+- The custom item picker for authored cards, custom assets, encounters, and quests uses the native browser select so the editor shell cannot clip the menu; the selected item and each option carry the bare slug in their `title` tooltip, and the insert-control row wraps on narrow screens instead of overflowing horizontally.
 - Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Player text must remain spoiler-safe at publish validation.
 
@@ -201,7 +201,7 @@ Behavior:
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
 - The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
-- The custom item picker for authored cards, custom assets, encounters, and quests uses the same compact two-line dropdown treatment as `Player Info`, keeping slugs visible without widening the toolbar.
+- The custom item picker for authored cards, custom assets, encounters, and quests uses the same native-select-plus-slug-tooltip treatment as `Player Info`, keeping the toolbar compact without reintroducing clipped custom menus or horizontal overflow on narrow screens.
 - Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Storyteller text can include spoilers.
 

@@ -42,9 +42,11 @@
   background: #ead9bd;
   padding-right: 5rem;
   display: flex;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.2rem;
-  overflow-x: auto;
+  overflow-x: visible;
+  overflow-y: visible;
 }
 
 .editorRoot :global([role="toolbar"] button) {

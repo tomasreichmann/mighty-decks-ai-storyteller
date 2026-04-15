@@ -38,17 +38,19 @@ test("AdventureModuleMarkdownField exposes Quest insertion with canonical QuestC
   assert.match(source, /createQuestCardJsx/);
 });
 
-test("AdventureModuleMarkdownField uses a compact dropdown picker for card items with visible slug context", () => {
+test("AdventureModuleMarkdownField uses the native item select and carries slug context in option titles", () => {
   const source = readFileSync(
     new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(source, /CompactOptionPicker/);
-  assert.match(source, /CompactOptionPickerItem/);
-  assert.match(source, /secondaryLabel:\s*option\.slug/);
-  assert.doesNotMatch(source, /aria-label="Insert card"[\s\S]*<select/);
-  assert.doesNotMatch(source, /aria-label="Insert custom asset"[\s\S]*<select/);
+  assert.match(
+    source,
+    /aria-label=\{insertType === "CustomAsset" \? "Insert custom asset" : "Insert card"\}/,
+  );
+  assert.match(source, /title=\{option\.slug\}/);
+  assert.match(source, /title=\{selectedInsertOption\?\.slug \?\? ""\}/);
+  assert.doesNotMatch(source, /CompactOptionPicker/);
 });
 
 test("AdventureModuleMarkdownField enables standard markdown image tooling and reusable image modal insertion", () => {
@@ -61,4 +63,28 @@ test("AdventureModuleMarkdownField enables standard markdown image tooling and r
   assert.match(source, /<InsertImage \/>/);
   assert.match(source, /MarkdownImageInsertButton/);
   assert.doesNotMatch(source, /GeneratedMarkdownImageInsertPanel/);
+});
+
+test("AdventureModuleMarkdownField makes the insert controls wrap cleanly on narrow viewports", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
+    "utf8",
+  );
+  const styles = readFileSync(
+    new URL("./AdventureModulePlayerInfoTabPanel.module.css", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(
+    source,
+    /className="[^"]*w-full[^"]*max-w-full[^"]*flex-wrap[^"]*sm:w-auto[^"]*sm:flex-nowrap/,
+  );
+  assert.match(
+    source,
+    /className="[^"]*min-w-0[^"]*flex-1[^"]*sm:min-w-\[11rem\][^"]*sm:flex-none/,
+  );
+  assert.match(
+    styles,
+    /\.editorRoot :global\(\[role="toolbar"\]\) \{[\s\S]*flex-wrap: wrap;[\s\S]*overflow-x: visible;/,
+  );
 });

@@ -41,10 +41,6 @@ import {
 } from "../../lib/workflowLabApi";
 import { assetBaseCardsByGroup, assetModifierCards } from "../../data/assetCards";
 import { Button } from "../common/Button";
-import {
-  CompactOptionPicker,
-  type CompactOptionPickerItem,
-} from "../common/CompactOptionPicker";
 import { MarkdownImageInsertButton } from "../MarkdownImageInsertButton";
 import { ContextMenu, type ContextMenuRow } from "../common/ContextMenu";
 import type { DropdownTriggerRenderProps } from "../common/Dropdown";
@@ -220,7 +216,6 @@ interface CreateEditorPluginsArgs {
   insertType: ToolbarInsertType;
   insertSlug: string;
   insertOptions: (GameCardOption | EncounterCardOption | QuestCardOption)[];
-  insertOptionItems: CompactOptionPickerItem[];
   genericAssetBaseSlug: string;
   genericAssetModifierSlug: string;
   insertDisabled: boolean;
@@ -270,7 +265,7 @@ const questCardJsxDescriptor: JsxComponentDescriptor = {
 const renderToolbarInsertControls = ({
   insertType,
   insertSlug,
-  insertOptionItems,
+  insertOptions,
   genericAssetBaseSlug,
   genericAssetModifierSlug,
   insertDisabled,
@@ -281,94 +276,98 @@ const renderToolbarInsertControls = ({
   onGenericAssetModifierSlugChange,
   onInsert,
 }: CreateEditorPluginsArgs): JSX.Element => (
-  <span className="ml-1 inline-flex items-center gap-1 border-l-2 border-kac-iron-dark/30 pl-2">
-    <select
-      aria-label="Insert card type"
-      value={insertType}
-      onChange={(event) =>
-        onInsertTypeChange(event.target.value as ToolbarInsertType)
-      }
-      disabled={insertDisabled}
-      className="h-7 min-w-[6.6rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <option value="OutcomeCard">Outcome</option>
-      <option value="EffectCard">Effect</option>
-      <option value="StuntCard">Stunt</option>
-      <option value="ActorCard">Actor</option>
-      <option value="CounterCard">Counter</option>
-      <option value="EncounterCard">Encounter</option>
-      <option value="QuestCard">Quest</option>
-      <option value="GenericAsset">Generic Asset</option>
-      <option value="CustomAsset">Custom Asset</option>
-    </select>
-    {insertType === "GenericAsset" ? (
-      <>
+  (() => {
+    const selectedInsertOption =
+      insertOptions.find((option) => option.slug === insertSlug) ?? null;
+
+    return (
+      <span className="mt-1 flex w-full max-w-full flex-wrap items-center gap-1 border-t-2 border-kac-iron-dark/30 pt-1 sm:ml-1 sm:mt-0 sm:w-auto sm:flex-nowrap sm:border-l-2 sm:border-t-0 sm:pl-2">
         <select
-          aria-label="Generic asset modifier"
-          value={genericAssetModifierSlug}
+          aria-label="Insert card type"
+          value={insertType}
           onChange={(event) =>
-            onGenericAssetModifierSlugChange(event.target.value)
+            onInsertTypeChange(event.target.value as ToolbarInsertType)
           }
           disabled={insertDisabled}
-          className="h-7 min-w-[8rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-7 max-w-full shrink-0 min-w-[6.6rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <option value="">-</option>
-          {assetModifierCards.map((modifier) => (
-            <option key={modifier.slug} value={modifier.slug}>
-              {modifier.title}
-            </option>
-          ))}
+          <option value="OutcomeCard">Outcome</option>
+          <option value="EffectCard">Effect</option>
+          <option value="StuntCard">Stunt</option>
+          <option value="ActorCard">Actor</option>
+          <option value="CounterCard">Counter</option>
+          <option value="EncounterCard">Encounter</option>
+          <option value="QuestCard">Quest</option>
+          <option value="GenericAsset">Generic Asset</option>
+          <option value="CustomAsset">Custom Asset</option>
         </select>
-        <select
-          aria-label="Generic asset base"
-          value={genericAssetBaseSlug}
-          onChange={(event) =>
-            onGenericAssetBaseSlugChange(event.target.value as AssetBaseSlug)
-          }
-          disabled={insertDisabled}
-          className="h-7 min-w-[11rem] max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {(["Asset Base", "Asset Medieval"] as const).map((groupLabel) => (
-            <optgroup key={groupLabel} label={groupLabel}>
-              {assetBaseCardsByGroup[groupLabel].map((baseAsset) => (
-                <option key={baseAsset.slug} value={baseAsset.slug}>
-                  {baseAsset.title}
+        {insertType === "GenericAsset" ? (
+          <>
+            <select
+              aria-label="Generic asset modifier"
+              value={genericAssetModifierSlug}
+              onChange={(event) =>
+                onGenericAssetModifierSlugChange(event.target.value)
+              }
+              disabled={insertDisabled}
+              className="h-7 max-w-full shrink-0 min-w-[8rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="">-</option>
+              {assetModifierCards.map((modifier) => (
+                <option key={modifier.slug} value={modifier.slug}>
+                  {modifier.title}
                 </option>
               ))}
-            </optgroup>
-          ))}
-        </select>
-      </>
-    ) : insertType === "CustomAsset" ? (
-      <CompactOptionPicker
-        ariaLabel="Insert custom asset"
-        value={insertSlug}
-        items={insertOptionItems}
-        emptyLabel="No custom assets"
-        disabled={insertDisabled}
-        onChange={onInsertSlugChange}
-      />
-    ) : (
-      <CompactOptionPicker
-        ariaLabel="Insert card"
-        value={insertSlug}
-        items={insertOptionItems}
-        emptyLabel="No cards"
-        disabled={insertDisabled}
-        onChange={onInsertSlugChange}
-      />
-    )}
-    <Button
-      variant="solid"
-      color="gold"
-      size="sm"
-      disabled={insertButtonDisabled}
-      className="h-7 px-2 text-xs"
-      onClick={onInsert}
-    >
-      Insert
-    </Button>
-  </span>
+            </select>
+            <select
+              aria-label="Generic asset base"
+              value={genericAssetBaseSlug}
+              onChange={(event) =>
+                onGenericAssetBaseSlugChange(event.target.value as AssetBaseSlug)
+              }
+              disabled={insertDisabled}
+              className="h-7 min-w-0 flex-1 sm:min-w-[11rem] sm:flex-none sm:max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {(["Asset Base", "Asset Medieval"] as const).map((groupLabel) => (
+                <optgroup key={groupLabel} label={groupLabel}>
+                  {assetBaseCardsByGroup[groupLabel].map((baseAsset) => (
+                    <option key={baseAsset.slug} value={baseAsset.slug}>
+                      {baseAsset.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </>
+        ) : (
+          <select
+            aria-label={insertType === "CustomAsset" ? "Insert custom asset" : "Insert card"}
+            value={insertSlug}
+            title={selectedInsertOption?.slug ?? ""}
+            onChange={(event) => onInsertSlugChange(event.target.value)}
+            disabled={insertDisabled}
+            className="h-7 min-w-0 flex-1 sm:min-w-[11rem] sm:flex-none sm:max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {insertOptions.map((option) => (
+              <option key={option.slug} value={option.slug} title={option.slug}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        )}
+        <Button
+          variant="solid"
+          color="gold"
+          size="sm"
+          disabled={insertButtonDisabled}
+          className="h-7 shrink-0 px-2 text-xs"
+          onClick={onInsert}
+        >
+          Insert
+        </Button>
+      </span>
+    );
+  })()
 );
 
 const createEditorPlugins = (toolbarArgs: CreateEditorPluginsArgs) => [
@@ -1081,15 +1080,6 @@ export const AdventureModuleMarkdownField = ({
       : insertType === "QuestCard"
         ? questCardOptions
         : gameCardOptionsByType[resolvedInsertType];
-  const insertOptionItems = useMemo<CompactOptionPickerItem[]>(
-    () =>
-      insertOptions.map((option) => ({
-        value: option.slug,
-        label: option.label,
-        secondaryLabel: option.slug,
-      })),
-    [insertOptions],
-  );
   const insertHasChoices =
     insertType === "GenericAsset"
       ? genericAssetBaseOptions.length > 0
@@ -1166,7 +1156,6 @@ export const AdventureModuleMarkdownField = ({
         insertType,
         insertSlug,
         insertOptions,
-        insertOptionItems,
         genericAssetBaseSlug,
         genericAssetModifierSlug,
         insertDisabled: insertControlsDisabled,
@@ -1195,7 +1184,6 @@ export const AdventureModuleMarkdownField = ({
       handleInsertFromToolbar,
       insertControlsDisabled,
       insertDisabled,
-      insertOptionItems,
       insertOptions,
       insertSlug,
       insertType,
