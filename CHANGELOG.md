@@ -42,6 +42,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Move the Adventure Module `Create Campaign` CTA onto the desktop title row while keeping the tablet/mobile version beside the collapsed section dropdown.
 - Move the campaign-detail `Create Session` action onto the desktop title row with the same highlighted CTA treatment as `Create Campaign`, while keeping the tablet/mobile version beside the collapsed section dropdown.
 - Tighten the Adventure Module and Campaign authoring headers so the editable title field shrinks to a five-character minimum, the URI is removed, and the overall title treatment reads smaller and more compact.
+- Keep the Adventure Module and Campaign autosave badge pinned below the editable title in all header states instead of moving it between the title row and the section nav.
 - Remove slug IDs from the Adventure Module markdown insert dropdown labels so the toolbar stays more compact.
 - Unify Adventure Module and Campaign list pages around a shared cover-led story tile shell with explicit in-card buttons, visible module author/tag metadata, and visible campaign source-module context.
 - Keep the Adventure Module markdown item picker for custom cards, encounters, quests, and custom assets on the native browser `<select>` so it is not clipped by the editor shell, expose the selected/item slug through the native `title` tooltip, and let the insert controls wrap cleanly on narrow screens instead of forcing horizontal clipping.

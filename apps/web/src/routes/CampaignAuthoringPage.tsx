@@ -3488,13 +3488,11 @@ export const CampaignAuthoringPage = (): JSX.Element => {
               {creatingSession ? "Creating Session..." : "Create Session"}
             </CTAButton>
           }
-          loadingTrailingContent={
-            <div className="flex shrink-0 items-center gap-2">
-              <AutosaveStatusBadge
-                status={autosaveStatus}
-                message={autosaveMessage}
-              />
-            </div>
+          titleSupportingContent={
+            <AutosaveStatusBadge
+              status={autosaveStatus}
+              message={autosaveMessage}
+            />
           }
           navTabs={tabItems}
           moduleSlug={moduleDetail?.index.slug}
@@ -3512,12 +3510,6 @@ export const CampaignAuthoringPage = (): JSX.Element => {
             >
               {creatingSession ? "Creating Session..." : "Create Session"}
             </CTAButton>
-          }
-          navTrailingContent={
-            <AutosaveStatusBadge
-              status={autosaveStatus}
-              message={autosaveMessage}
-            />
           }
         />
       )}

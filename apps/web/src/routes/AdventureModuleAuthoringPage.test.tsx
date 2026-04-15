@@ -25,29 +25,11 @@ test("AdventureModuleAuthoringPage uses AdventureModuleTabNav as the responsive 
   assert.doesNotMatch(source, /<AdventureModuleSectionMenu/);
   assert.match(
     source,
-    /<SharedAuthoringHeader[\s\S]*navLeadingContent=\{[\s\S]*<CTAButton[\s\S]*Create Campaign/,
+    /<SharedAuthoringHeader[\s\S]*titleSupportingContent=\{[\s\S]*<AutosaveStatusBadge/,
   );
-  assert.match(
-    source,
-    /<SharedAuthoringHeader[\s\S]*navTrailingContent=\{[\s\S]*<AutosaveStatusBadge/,
-  );
+  assert.doesNotMatch(source, /<SharedAuthoringHeader[\s\S]*loadingTrailingContent=/);
+  assert.doesNotMatch(source, /<SharedAuthoringHeader[\s\S]*navTrailingContent=/);
   assert.match(source, /showMobileMenu/);
-});
-
-test("AdventureModuleAuthoringPage keeps Create Campaign in the desktop title row and the narrow nav row", () => {
-  const source = readFileSync(
-    new URL("./AdventureModuleAuthoringPage.tsx", import.meta.url),
-    "utf8",
-  );
-
-  assert.match(
-    source,
-    /<SharedAuthoringHeader[\s\S]*titleRowTrailingContent=\{[\s\S]*containerClassName=\"hidden lg:inline-flex\"[\s\S]*Create Campaign/,
-  );
-  assert.match(
-    source,
-    /<SharedAuthoringHeader[\s\S]*navLeadingContent=\{[\s\S]*containerClassName=\"lg:hidden\"[\s\S]*Create Campaign/,
-  );
 });
 
 test("AdventureModuleAuthoringPage imports shared authoring foundation modules instead of keeping all helpers inline", () => {

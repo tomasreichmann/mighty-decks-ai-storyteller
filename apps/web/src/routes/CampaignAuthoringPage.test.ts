@@ -71,15 +71,15 @@ test("CampaignAuthoringPage uses AdventureModuleTabNav as the non-session header
   assert.doesNotMatch(source, /<AdventureModuleSectionMenu/);
   assert.match(
     source,
-    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*titleRowTrailingContent=\{[\s\S]*<CTAButton[\s\S]*containerClassName="hidden lg:inline-flex"[\s\S]*Create Session/,
+    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*titleSupportingContent=\{[\s\S]*<AutosaveStatusBadge/,
   );
-  assert.match(
+  assert.doesNotMatch(
     source,
-    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*navLeadingContent=\{[\s\S]*<CTAButton[\s\S]*containerClassName="lg:hidden"[\s\S]*Create Session/,
+    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*loadingTrailingContent=/,
   );
-  assert.match(
+  assert.doesNotMatch(
     source,
-    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*navTrailingContent=\{[\s\S]*<AutosaveStatusBadge/,
+    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*navTrailingContent=/,
   );
   assert.match(
     source,
@@ -87,16 +87,12 @@ test("CampaignAuthoringPage uses AdventureModuleTabNav as the non-session header
   );
 });
 
-test("CampaignAuthoringPage uses a compact full-width shell in storyteller session mode", () => {
+test("CampaignAuthoringPage switches from the shared authoring header to session-specific content in storyteller session mode", () => {
   const source = readFileSync(
     new URL("./CampaignAuthoringPage.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(
-    source,
-    /storytellerSessionMode\s*\?\s*"[^"]*min-h-full[^"]*w-full[^"]*max-w-none[^"]*flex-1[^"]*px-4 py-4 sm:px-6 lg:px-8[^"]*"/,
-  );
   assert.match(source, /storytellerSessionMode \? null : \(\s*<SharedAuthoringHeader/);
   assert.match(
     source,

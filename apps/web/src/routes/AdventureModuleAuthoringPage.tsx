@@ -3034,13 +3034,11 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
             {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
           </CTAButton>
         }
-        loadingTrailingContent={
-          <div className="flex shrink-0 items-center gap-2">
-            <AutosaveStatusBadge
-              status={autosaveStatus}
-              message={autosaveMessage}
-            />
-          </div>
+        titleSupportingContent={
+          <AutosaveStatusBadge
+            status={autosaveStatus}
+            message={autosaveMessage}
+          />
         }
         navTabs={TAB_ITEMS}
         moduleSlug={moduleDetail?.index.slug}
@@ -3056,12 +3054,6 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
           >
             {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
           </CTAButton>
-        }
-        navTrailingContent={
-          <AutosaveStatusBadge
-            status={autosaveStatus}
-            message={autosaveMessage}
-          />
         }
       />
 

@@ -15,9 +15,8 @@ interface SharedAuthoringHeaderProps {
   onTitleChange: (nextValue: string) => void;
   onTitleBlur: () => void;
   titleRowTrailingContent?: ReactNode;
-  loadingTrailingContent?: ReactNode;
+  titleSupportingContent?: ReactNode;
   navLeadingContent?: ReactNode;
-  navTrailingContent?: ReactNode;
   navTabs: AdventureModuleTabItem[];
   moduleSlug?: string;
   showMobileMenu?: boolean;
@@ -37,56 +36,62 @@ export const SharedAuthoringHeader = ({
   onTitleChange,
   onTitleBlur,
   titleRowTrailingContent,
-  loadingTrailingContent,
+  titleSupportingContent,
   navLeadingContent,
-  navTrailingContent,
   navTabs,
   moduleSlug,
   showMobileMenu = false,
   buildTabPath,
 }: SharedAuthoringHeaderProps): JSX.Element => {
   return (
-    <header className="stack gap-3">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0 flex items-baseline gap-x-2">
-          {editable ? (
-            <input
-              type="text"
-              aria-label={titleAriaLabel}
-              maxLength={120}
-              size={titleInputSize}
-              value={title}
-              onChange={(event) => {
-                onTitleChange(event.target.value);
-              }}
-              onBlur={onTitleBlur}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") {
-                  return;
-                }
-                event.currentTarget.blur();
-              }}
-              className={titleInputClassName}
-            />
-          ) : (
-            <Heading
-              variant="h1"
-              color="iron"
-              className="relative z-0 text-[1.75rem] leading-none sm:text-[2.2rem] sm:leading-none"
-              highlightProps={{
-                color: "gold",
-                lineHeight: 8,
-                brushHeight: 6,
-                lineOffsets: [0, 8, 14, 20],
-                className:
-                  "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
-              }}
-            >
-              {detailLoaded ? title : emptyTitle}
-            </Heading>
-          )}
+    <header className="flex flex-row flex-wrap gap-3">
+      <div className="flex-1 flex flex-col">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 flex items-baseline gap-x-2">
+            {editable ? (
+              <input
+                type="text"
+                aria-label={titleAriaLabel}
+                maxLength={120}
+                size={titleInputSize}
+                value={title}
+                onChange={(event) => {
+                  onTitleChange(event.target.value);
+                }}
+                onBlur={onTitleBlur}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") {
+                    return;
+                  }
+                  event.currentTarget.blur();
+                }}
+                className={titleInputClassName}
+              />
+            ) : (
+              <Heading
+                variant="h1"
+                color="iron"
+                className="relative z-0 text-[1.75rem] leading-none sm:text-[2.2rem] sm:leading-none"
+                highlightProps={{
+                  color: "gold",
+                  lineHeight: 8,
+                  brushHeight: 6,
+                  lineOffsets: [0, 8, 14, 20],
+                  className:
+                    "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
+                }}
+              >
+                {detailLoaded ? title : emptyTitle}
+              </Heading>
+            )}
+          </div>
+          {detailLoaded ? titleRowTrailingContent : null}
         </div>
-        {detailLoaded ? titleRowTrailingContent : loadingTrailingContent}
+        {titleSupportingContent ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {titleSupportingContent}
+          </div>
+        ) : null}
       </div>
       {detailLoaded && moduleSlug ? (
         <AdventureModuleTabNav
@@ -95,7 +100,6 @@ export const SharedAuthoringHeader = ({
           buildTabPath={buildTabPath}
           showMobileMenu={showMobileMenu}
           leadingContent={navLeadingContent}
-          trailingContent={navTrailingContent}
         />
       ) : null}
     </header>
