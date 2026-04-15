@@ -198,6 +198,7 @@ If you are editing files under `spec/` directly while using split commands, reru
    - include changes that matter to players, playtest operators, or future contributors
    - skip pure internal refactors unless they change behavior, fix a bug, or clarify important docs
 8. If docs are missing or stale for the change you are making, fix them before considering the task complete.
+9. Style-only changes usually do not need new tests; avoid brittle class-name or DOM-structure assertions for layout, typography, spacing, or color tweaks unless the behavior itself changed.
 
 ---
 

@@ -38,7 +38,7 @@ export const CampaignSessionSelectionStrip = ({
         {entries.map((entry) => (
           <article
             key={entry.id}
-            className="relative min-w-[8.5rem] max-w-[14rem] rounded border-2 border-kac-iron/40 bg-kac-bone-light/70 px-2 py-1.5 shadow-[1px_1px_0_0_#121b23]"
+            className="flex min-w-[8.5rem] max-w-[14rem] items-start gap-2 rounded border-2 border-kac-iron/40 bg-kac-bone-light/70 px-2 py-1.5 shadow-[1px_1px_0_0_#121b23]"
           >
             <Button
               variant="circle"
@@ -46,14 +46,18 @@ export const CampaignSessionSelectionStrip = ({
               size="sm"
               aria-label={`Remove ${entry.label}`}
               title={`Remove ${entry.label}`}
-              className="!absolute !right-1 !top-1 !h-5 !w-5 !border-x-[2px] !border-y-[2px] !shadow-none hover:!shadow-none active:!shadow-none disabled:!shadow-none text-[0.7rem]"
+              className="!h-5 !w-5 !shrink-0 !border-x-[2px] !border-y-[2px] !shadow-none hover:!shadow-none active:!shadow-none disabled:!shadow-none text-[0.7rem]"
               onClick={() => {
                 onRemoveEntry(entry.id);
               }}
             >
               x
             </Button>
-            <Text variant="note" color="iron" className="pr-5 text-[0.7rem]">
+            <Text
+              variant="note"
+              color="iron"
+              className="min-w-0 flex-1 break-words text-[0.7rem]"
+            >
               {entry.label}
             </Text>
           </article>

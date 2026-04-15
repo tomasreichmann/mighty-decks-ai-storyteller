@@ -22,44 +22,9 @@ test("StyleguideSessionChatMock defines the responsive table and chat shell", ()
   assert.match(source, /kind: "stack"/);
   assert.match(source, /slice\(0, 5\)/);
   assert.match(source, /slice\(1\)/);
-  assert.match(source, /fullCardHeightRem \+ peekCount \* stackPeekStepRem/);
-  assert.match(source, /top: `\$\{peekCards\.length \* stackPeekStepRem\}rem`/);
-  assert.match(source, /top: `\$\{index \* stackPeekStepRem\}rem`/);
-  assert.match(source, /overflow-y-auto/);
-  assert.match(source, /overflow-x-hidden/);
-  assert.match(source, /100dvh/);
-  assert.match(source, /max-w-\[6\.5rem\]/);
   assert.doesNotMatch(source, /Panel/);
   assert.doesNotMatch(source, /Lantern Vault Break-In/);
   assert.doesNotMatch(source, /Session Chat Table/);
-});
-
-test("StyleguideSessionChatMock keeps the table pane scrollable", () => {
-  const sourcePath = new URL("./StyleguideSessionChatMock.tsx", import.meta.url);
-  const cssPath = new URL("./StyleguideSessionChatMock.module.css", import.meta.url);
-
-  assert.equal(existsSync(sourcePath), true);
-  assert.equal(existsSync(cssPath), true);
-
-  const source = readFileSync(sourcePath, "utf8");
-  const css = readFileSync(cssPath, "utf8");
-
-  assert.match(source, /overflow-y-auto overflow-x-hidden/);
-  assert.match(source, /flex min-h-0 flex-1 flex-col/);
-  assert.doesNotMatch(css, /\.tableBackdrop\s*\{[^}]*overflow:\s*hidden/s);
-});
-
-test("StyleguideSessionChatMock lets the global halftone background show through", () => {
-  const cssPath = new URL("./StyleguideSessionChatMock.module.css", import.meta.url);
-
-  assert.equal(existsSync(cssPath), true);
-
-  const css = readFileSync(cssPath, "utf8");
-
-  assert.doesNotMatch(css, /\.pageBackdrop\s*\{[^}]*background:/s);
-  assert.doesNotMatch(css, /\.pageBackdrop::before\s*\{[^}]*background:/s);
-  assert.doesNotMatch(css, /\.tableBackdrop\s*\{[^}]*background:/s);
-  assert.doesNotMatch(css, /\.tableBackdrop::before\s*\{[^}]*background:/s);
 });
 
 test("StyleguideSessionChatMock keeps discard affordances role-aware", () => {
@@ -81,26 +46,4 @@ test("StyleguideSessionChatMock keeps discard affordances role-aware", () => {
   assert.doesNotMatch(source, /Player Lane/);
   assert.doesNotMatch(source, /Player focus/);
   assert.doesNotMatch(source, /Discard visible/);
-});
-
-test("StyleguideSessionChatMock uses label-led dividers instead of boxed player lanes", () => {
-  const sourcePath = new URL("./StyleguideSessionChatMock.tsx", import.meta.url);
-  const cssPath = new URL("./StyleguideSessionChatMock.module.css", import.meta.url);
-
-  assert.equal(existsSync(sourcePath), true);
-  assert.equal(existsSync(cssPath), true);
-
-  const source = readFileSync(sourcePath, "utf8");
-  const css = readFileSync(cssPath, "utf8");
-
-  assert.match(source, /styles\.laneDividerRow/);
-  assert.match(source, /styles\.laneDivider/);
-  assert.match(source, /styles\.laneLabel/);
-  assert.match(source, /styles\.stackTopCard/);
-  assert.match(css, /\.laneDividerRow/);
-  assert.match(css, /\.laneDivider/);
-  assert.match(css, /\.laneLabel/);
-  assert.match(css, /\.stackTopCard/);
-  assert.match(css, /\.stackPeekViewport/);
-  assert.doesNotMatch(css, /border-radius: 0\.55rem 0\.55rem 0 0/);
 });

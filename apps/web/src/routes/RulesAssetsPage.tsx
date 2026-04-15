@@ -31,10 +31,12 @@ interface RulesAssetsContentProps {
     slug: string;
     modifierSlug?: AssetModifierSlug;
   }) => void;
+  showHeader?: boolean;
 }
 
 export const RulesAssetsContent = ({
   onAddAssetCard,
+  showHeader = true,
 }: RulesAssetsContentProps): JSX.Element => {
   const [modifierEnabled, setModifierEnabled] = useState(false);
   const [selectedModifierSlug, setSelectedModifierSlug] = useState<
@@ -44,17 +46,19 @@ export const RulesAssetsContent = ({
 
   return (
     <div className="stack gap-6">
-      <div className="stack gap-1">
-        <Text variant="h3" color="iron">
-          Asset Cards
-        </Text>
-        <Text variant="body" color="iron-light" className="text-sm">
-          Copy each <code>@asset/&lt;slug&gt;</code> shortcode into Adventure
-          Module markdown editors. When Modifier is enabled, copied shortcodes
-          use <code>@asset/&lt;slug&gt;/&lt;modifier-slug&gt;</code> and normalize
-          into stored GameCard embeds with <code>modifierSlug</code>.
-        </Text>
-      </div>
+      {showHeader ? (
+        <div className="stack gap-1">
+          <Text variant="h3" color="iron">
+            Asset Cards
+          </Text>
+          <Text variant="body" color="iron-light" className="text-sm">
+            Copy each <code>@asset/&lt;slug&gt;</code> shortcode into Adventure
+            Module markdown editors. When Modifier is enabled, copied shortcodes
+            use <code>@asset/&lt;slug&gt;/&lt;modifier-slug&gt;</code> and normalize
+            into stored GameCard embeds with <code>modifierSlug</code>.
+          </Text>
+        </div>
+      ) : null}
 
       <div className="stack gap-3 rounded border-2 border-kac-iron/40 bg-kac-bone-light/60 px-4 py-3">
         <label className="inline-flex items-center gap-2 font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron">

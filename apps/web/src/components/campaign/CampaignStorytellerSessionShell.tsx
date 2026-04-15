@@ -324,7 +324,10 @@ export const CampaignStorytellerSessionShell = ({
           ) : activeTab === "stunts" ? (
             <RulesStuntsContent onAddStuntCard={addCardToTableSelection} />
           ) : activeTab === "static-assets" ? (
-            <RulesAssetsContent onAddAssetCard={addCardToTableSelection} />
+            <RulesAssetsContent
+              showHeader={false}
+              onAddAssetCard={addCardToTableSelection}
+            />
           ) : activeTab === "chat" ? (
             <CampaignStorytellerSessionTabContent
               campaign={detail}

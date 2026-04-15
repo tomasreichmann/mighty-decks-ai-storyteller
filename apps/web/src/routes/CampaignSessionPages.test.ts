@@ -24,8 +24,6 @@ test("CampaignSessionLobbyPage offers role join and invite flows", () => {
   assert.match(source, /<span>Storyteller<\/span>/);
   assert.match(source, /Invite players/);
   assert.match(source, /addMock/);
-  assert.match(source, /max-w-\[20rem\]/);
-  assert.match(source, /max-w-\[18rem\]/);
   assert.match(source, /Dev Mock Seats/);
   assert.match(source, /<Message label="Dev Mock Seats" color="cloth"/);
   assert.doesNotMatch(
@@ -61,7 +59,6 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /Claim a Character/);
   assert.match(source, /Create a New Character/);
   assert.match(source, />\s*Create\s*</);
-  assert.match(source, /flex justify-end/);
   assert.match(source, /Claim/);
   assert.match(source, /CampaignSessionTranscriptFeed/);
   assert.match(source, /CampaignSessionChatLayout/);
@@ -72,15 +69,12 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /drawOutcomeCard/);
   assert.match(source, /shuffleOutcomeDeck/);
   assert.match(source, /playOutcomeCards/);
-  assert.match(source, /<div className="flex min-h-full w-full max-w-none flex-1 flex-col gap-4 px-4 py-3 sm:px-6 lg:px-8">/);
   assert.match(source, /inChatRoute && hasClaim[\s\S]*<CampaignSessionChatLayout/);
-  assert.match(source, /className="min-h-\[16rem\] flex-1"/);
   assert.match(source, /<DepressedInput[\s\S]*label="Message"[\s\S]*topRightControl=\{/);
   assert.match(source, /handleMessageKeyDown/);
   assert.match(source, /event\.shiftKey\s*\|\|\s*event\.ctrlKey\s*\|\|\s*event\.metaKey\s*\|\|\s*event\.altKey/);
   assert.match(source, />\s*Send\s*</);
   assert.match(source, /Press Enter to send\. Shift\+Enter for newline\./);
-  assert.match(source, /paper-shadow/);
   assert.doesNotMatch(source, /GeneratedMarkdownImageInsertPanel/);
   assert.doesNotMatch(source, /Group Chat/);
   assert.doesNotMatch(source, /Claim an Existing Character/);

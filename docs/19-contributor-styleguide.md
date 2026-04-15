@@ -59,3 +59,4 @@ Use it alongside `AGENTS.md` and `README.md`. If instructions conflict, `AGENTS.
 - `pnpm dev`
 - `pnpm -C apps/server dev`
 - `pnpm -C apps/web dev --host`
+- Style-only changes usually do not need new automated tests; avoid brittle class-name or DOM-structure assertions unless the change also affects behavior or a public contract.

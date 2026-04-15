@@ -10,6 +10,7 @@ test("rules routes expose reusable content components for storyteller session ta
   const effects = read("./RulesEffectsPage.tsx");
   const stunts = read("./RulesStuntsPage.tsx");
   const assets = read("./RulesAssetsPage.tsx");
+  const storytellerShell = read("../components/campaign/CampaignStorytellerSessionShell.tsx");
 
   assert.match(outcomes, /export const RulesOutcomesContent/);
   assert.match(outcomes, /export const RulesOutcomesPage[\s\S]*<RulesOutcomesContent \/>/);
@@ -19,4 +20,10 @@ test("rules routes expose reusable content components for storyteller session ta
   assert.match(stunts, /export const RulesStuntsPage[\s\S]*<RulesStuntsContent \/>/);
   assert.match(assets, /export const RulesAssetsContent/);
   assert.match(assets, /export const RulesAssetsPage[\s\S]*<RulesAssetsContent \/>/);
+  assert.match(assets, /showHeader\?: boolean/);
+  assert.match(assets, /showHeader \? \(/);
+  assert.match(
+    storytellerShell,
+    /<RulesAssetsContent[\s\S]*showHeader=\{false\}[\s\S]*onAddAssetCard=\{addCardToTableSelection\}/,
+  );
 });

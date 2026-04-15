@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Clarify contributor guidance so style-only changes do not need brittle class-name or DOM-structure tests; prefer manual or visual verification unless behavior or contracts change.
 - Refactor Adventure Module and Campaign authoring so the route files are thin shells over a shared context-plus-reducer authoring store with extracted screen/session shells, shared autosave orchestration, and optimistic edit saves.
 - Add a `Create Campaign` handoff CTA to the campaign list header, and add shared `Copy Author Token` header actions to both the campaign and adventure module list pages using the generalized `ShortcodeField` clipboard control.
 - Switch the repo-local Exiles import and module/campaign authoring CLIs to machine-readable JSON stdout envelopes so external agents can discover context, read schemas, and apply structured edits without scraping human-oriented terminal text.
@@ -148,7 +149,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Polish landscape scene-card framing by moving the top-right icon deeper into the corner overlay, making title chips and bottom description strips hug their text more tightly, and replacing the box-shadow artifact with a shifted rounded shadow rectangle behind the card.
 - Refine landscape scene-card title styling by removing the title-chip border and using lighter hue-matched label text colors over the dark translucent title gradient.
 - Apply the title gradient as a true top-left corner overlay of the full landscape card surface (instead of a text-frame fill), while keeping the title text layered above it.
-- Remove circular `X` button shadows on table/selection card controls so the remove affordance no longer visually overlaps nearby card title text.
+- Move the selection chip remove button into the flex flow so long labels no longer overlap the click target.
+- Hide the Asset Cards heading and asset shortcode guidance in the storyteller session static-assets tab while keeping the standalone rules page copy intact.
 
 ### Docs
 

@@ -177,6 +177,7 @@ Read [AGENTS.md](AGENTS.md) before making changes. The working contract for this
 - do not expose debug-only data in player-visible payloads
 - when changing `spec/`, make sure both server and web still compile against it
 - update relevant docs and `CHANGELOG.md` in the same change when behavior, routes, env vars, deployment, or workflow expectations change
+- style-only changes usually do not need new tests; avoid brittle class-name or DOM-structure assertions unless the change also affects behavior or a public contract
 
 Useful verification commands before handing off a change:
 
