@@ -5,12 +5,14 @@ interface InputDescriptionHintProps {
   description: string;
   className?: string;
   placement?: "right" | "bottom";
+  tooltipClassName?: string;
 }
 
 export const InputDescriptionHint = ({
   description,
   className = "",
   placement = "right",
+  tooltipClassName = "z-50",
 }: InputDescriptionHintProps): JSX.Element => {
   const [pinned, setPinned] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -86,12 +88,13 @@ export const InputDescriptionHint = ({
           id={tooltipId}
           role="tooltip"
           className={cn(
-            "absolute z-50 w-72 max-w-[calc(100vw-2rem)] rounded-sm border-2 border-kac-iron-dark",
+            "absolute w-72 max-w-[calc(100vw-2rem)] rounded-sm border-2 border-kac-iron-dark",
             placement === "bottom"
               ? "left-0 top-full mt-2"
               : "left-full top-1/2 ml-2 -translate-y-1/2",
             "bg-[linear-gradient(179deg,var(--tw-gradient-stops))] from-kac-steel-light to-[#f7f9fc]",
             "px-3 py-2 text-xs font-ui leading-snug text-kac-iron shadow-[3px_3px_0_0_#121b23]",
+            tooltipClassName,
           )}
         >
           {description}

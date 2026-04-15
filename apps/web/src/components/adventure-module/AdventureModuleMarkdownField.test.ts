@@ -88,3 +88,18 @@ test("AdventureModuleMarkdownField makes the insert controls wrap cleanly on nar
     /\.editorRoot :global\(\[role="toolbar"\]\) \{[\s\S]*flex-wrap: wrap;[\s\S]*overflow-x: visible;/,
   );
 });
+
+test("AdventureModuleMarkdownField keeps its label and tag chrome below modal dialogs", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
+    "utf8",
+  );
+  const styles = readFileSync(
+    new URL("./AdventureModulePlayerInfoTabPanel.module.css", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /className="-translate-y-1 z-20"/);
+  assert.match(source, /tooltipClassName="z-20"/);
+  assert.match(styles, /\.fieldLabelRow \{[\s\S]*z-index: 20;/);
+});

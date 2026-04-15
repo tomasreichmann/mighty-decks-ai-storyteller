@@ -6,7 +6,7 @@
 
 .fieldLabelRow {
   position: relative;
-  z-index: 40;
+  z-index: 20;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;

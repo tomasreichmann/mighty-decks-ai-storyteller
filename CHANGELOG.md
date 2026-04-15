@@ -113,6 +113,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Lower the Adventure Module markdown-field label, tag row, and description-hint stacking so they no longer sit above the generated-image modal when it opens over an editor.
 - Raise the Adventure Module mobile section dropdown above markdown editor context tags so the open menu is no longer covered by tag chips on narrow layouts.
 - Remove the duplicate standalone section menu from non-session campaign detail routes so desktop shows only the full tab rail, while tablet/mobile use the shared header dropdown collapse.
 - Split the `EntityList` authoring surface into its own lazy-loaded chunk so the campaign and adventure-module authoring pages stop pulling it into the main route bundle.

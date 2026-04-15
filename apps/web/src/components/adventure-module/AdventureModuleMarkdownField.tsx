@@ -1266,7 +1266,8 @@ export const AdventureModuleMarkdownField = ({
           </Label>
           <InputDescriptionHint
             description={description}
-            className="-translate-y-1 z-50"
+            className="-translate-y-1 z-20"
+            tooltipClassName="z-20"
           />
         </div>
         <Tags
