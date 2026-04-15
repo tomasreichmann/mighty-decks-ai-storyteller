@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "../common/Button";
+import {
+  Button,
+  type ButtonColors,
+  type ButtonVariant,
+} from "../common/Button";
 import { Message } from "../common/Message";
 import { Text } from "../common/Text";
 
@@ -8,6 +12,13 @@ interface ShortcodeFieldProps {
   className?: string;
   onAddToSelection?: () => void;
   addButtonLabel?: string;
+  showShortcode?: boolean;
+  copyLabel?: string;
+  copiedLabel?: string;
+  copyButtonText?: string | null;
+  copiedButtonText?: string | null;
+  copyButtonVariant?: ButtonVariant;
+  copyButtonColor?: ButtonColors;
 }
 
 const copyToClipboard = async (value: string): Promise<void> => {
@@ -35,6 +46,13 @@ export const ShortcodeField = ({
   className = "",
   onAddToSelection,
   addButtonLabel = "Add to table selection",
+  showShortcode = true,
+  copyLabel = "Copy shortcode",
+  copiedLabel = "Copied shortcode",
+  copyButtonText = null,
+  copiedButtonText = null,
+  copyButtonVariant = "circle",
+  copyButtonColor = "cloth",
 }: ShortcodeFieldProps): JSX.Element => {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -63,27 +81,43 @@ export const ShortcodeField = ({
     }
   }, [shortcode]);
 
+  const copyButtonLabel = copied ? copiedLabel : copyLabel;
+  const copyButtonTone = copied ? "monster" : copyButtonColor;
+  const copyButtonSize = copyButtonVariant === "circle" ? "sm" : "md";
+  const compactRowClassName =
+    "inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 self-center";
+  const buttonOnlyRowClassName =
+    "inline-flex max-w-full flex-wrap items-center justify-start gap-2";
+  const copyButtonChildren =
+    copyButtonText === null ? (
+      <span aria-hidden="true">{copied ? "OK" : "📋"}</span>
+    ) : (
+      <span>{copied ? (copiedButtonText ?? copyButtonText) : copyButtonText}</span>
+    );
+
   return (
     <div className={`stack gap-2 min-w-0 ${className}`.trim()}>
-      <div className="inline-flex max-w-full items-center justify-center gap-1.5 self-center">
-        <Text
-          variant="note"
-          color="iron"
-          className="text-sm font-semibold !opacity-100"
-        >
-          <code>{shortcode}</code>
-        </Text>
+      <div className={showShortcode ? compactRowClassName : buttonOnlyRowClassName}>
+        {showShortcode ? (
+          <Text
+            variant="note"
+            color="iron"
+            className="min-w-0 break-all text-center text-sm font-semibold !opacity-100"
+          >
+            <code>{shortcode}</code>
+          </Text>
+        ) : null}
         <Button
-          variant="circle"
-          color={copied ? "monster" : "cloth"}
-          size="sm"
-          aria-label={copied ? "Copied shortcode" : "Copy shortcode"}
-          title={copied ? "Copied shortcode" : "Copy shortcode"}
+          variant={copyButtonVariant}
+          color={copyButtonTone}
+          size={copyButtonSize}
+          aria-label={copyButtonLabel}
+          title={copyButtonLabel}
           onClick={() => {
             void handleCopy();
           }}
         >
-          <span aria-hidden="true">{copied ? "OK" : "📋"}</span>
+          {copyButtonChildren}
         </Button>
         {onAddToSelection ? (
           <Button

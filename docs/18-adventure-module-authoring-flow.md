@@ -77,7 +77,7 @@ User sees a list with:
 
 - author-owned modules first, each rendered as a shared cover-led story tile with visible author, tags, ownership/status pills, and explicit `Open Module` plus `Create Campaign` actions.
 - non-owned published modules after author-owned entries.
-- primary action: `Create Module`.
+- header actions: `Create Module` and `Copy Author Token`.
 
 From this page:
 
@@ -85,6 +85,7 @@ From this page:
 - `Open Module` redirects to `/adventure-module/:slug/player-info`.
 - `Create Campaign` creates a campaign fork from that module and redirects to `/campaign/:slug/base`.
 - `Create Module` redirects to `/adventure-module/new`.
+- `Copy Author Token` copies the locally stored author token so CLI and API authoring flows can target the same owned content.
 
 ### 4.2 New Adventure Module
 
@@ -514,8 +515,13 @@ Repo-local automation:
 - Legacy imports currently use a repo-local CLI instead of a public REST endpoint: `pnpm -C apps/server import:adventure-module -- [--source-dir <path>] [--public-dir <path>] [--creator-token <token>]`.
 - The Exiles import defaults to `C:\\Projects\\mighty-decks\\src\\data\\encounters\\exiles-of-the-hungry-void` when `--source-dir` is omitted, then normalizes legacy MDX into the current Adventure Module schema.
 - Imported still images are copied into `AdventureArtifactStore` and rewritten to `/api/adventure-artifacts/...` URLs; the imported module body stays markdown-first and does not preserve legacy widget components.
-- Prompt-based actor authoring currently uses a repo-local CLI instead of a REST endpoint: `pnpm -C apps/server author:module -- add-actor --module <module-slug> --prompt <text> [--creator-token <token>]`.
-- The actor CLI loads the module, runs the `adventure_module_actor_from_prompt` workflow with current module context plus existing actor titles, creates the actor, and then immediately applies the generated typed fields.
+- Adventure Module authoring now also has a JSON-first repo-local CLI: `pnpm -C apps/server author:module -- <command>`.
+- Discovery-first commands are `capabilities`, `schema`, and `catalog`; they return one JSON document on stdout for agents that need to inspect the current contract before mutating content.
+- Top-level module commands are `capabilities`, `schema`, `catalog`, `list`, `get`, `create`, `clone`, `delete`, `update-index`, `update-fragment`, `update-cover-image`, and `preview`.
+- Nested module resources are `actor`, `counter`, `asset`, `location`, `encounter`, and `quest`, each with `list|get|create|update|delete`.
+- Prompt-based actor authoring remains available as a compatibility alias instead of a REST endpoint: `pnpm -C apps/server author:module -- add-actor --module <module-slug> --prompt <text> [--creator-token <token>]`.
+- The actor alias loads the module, runs the `adventure_module_actor_from_prompt` workflow with current module context plus existing actor titles, creates the actor, and then immediately applies the generated typed fields.
+- The CLI exposes shared static catalogs for actor layers, roles, specials, counter icons, asset bases, asset modifiers, module enums, and built-in outcome/effect/stunt shortcodes so external agents know which values to pick.
 
 ---
 

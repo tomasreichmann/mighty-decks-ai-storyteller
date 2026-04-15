@@ -1,0 +1,4 @@
+interface:
+  display_name: "Adventure Authoring CLI"
+  short_description: "Discover and run module/campaign CRUD from JSON-first CLI commands"
+  default_prompt: "Use the repo-local Adventure authoring CLI in this repo. Start with capabilities, schema, or catalog for discovery, prefer slug selectors, prefer --input-file or stdin over --input-json for non-trivial or PowerShell payloads, recover creator tokens from browser localStorage key mighty_decks_adventure_module_creator_token when needed, and parse the CLI JSON envelope even if the surrounding shell wrapper adds extra text."

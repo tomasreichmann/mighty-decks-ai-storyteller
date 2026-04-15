@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CampaignListItem } from "@mighty-decks/spec/campaign";
+import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Button } from "../components/common/Button";
+import { CTAButton } from "../components/common/CTAButton";
 import { DepressedInput } from "../components/common/DepressedInput";
 import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
@@ -8,6 +10,7 @@ import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { CampaignListCard } from "../components/campaign/CampaignListCard";
 import { listCampaigns } from "../lib/campaignApi";
+import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
 
 const PAGE_SIZE = 20;
 
@@ -45,6 +48,7 @@ const compareCampaigns = (
 };
 
 export const CampaignListPage = (): JSX.Element => {
+  const creatorToken = useMemo(() => getAdventureModuleCreatorToken(), []);
   const [campaigns, setCampaigns] = useState<CampaignListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,6 +143,21 @@ export const CampaignListPage = (): JSX.Element => {
             group can open sessions, claim characters, and build an ongoing
             shared story.
           </Text>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <CTAButton color="gold" href="/adventure-module/list">
+            Create Campaign
+          </CTAButton>
+          <ShortcodeField
+            shortcode={creatorToken}
+            showShortcode={false}
+            copyLabel="Copy author token"
+            copiedLabel="Copied author token"
+            copyButtonText="Copy Author Token"
+            copiedButtonText="Author Token Copied"
+            copyButtonVariant="ghost"
+            copyButtonColor="cloth"
+          />
         </div>
       </div>
 

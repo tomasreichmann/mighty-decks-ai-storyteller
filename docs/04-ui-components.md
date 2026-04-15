@@ -177,6 +177,7 @@ Components:
 - `AdventureModuleListPanel`
 - `AdventureModuleCard`
 - shared `StoryTileCard`
+- shared `ShortcodeField` reused for the header-level `Copy Author Token` button
 - `ModuleVisibilityBadge`
 - `CreateAdventureModuleButton`
 
@@ -184,6 +185,7 @@ List rules:
 
 - Author-owned modules render first.
 - Non-author list view includes published modules only.
+- The list header exposes `Create Module` plus `Copy Author Token`.
 - Module cards use explicit in-card `Open Module` and `Create Campaign` actions rather than whole-card click targets.
 - Module cards surface author, tags, ownership/status pills, and cover art inside the shared story-tile shell.
 
@@ -342,11 +344,14 @@ Components:
 
 - page shell via shared layout
 - campaign summary cards as primary surfaces
+- shared `CTAButton` for the header-level `Create Campaign` handoff back to Adventure Module selection
+- shared `ShortcodeField` reused for the header-level `Copy Author Token` button
 - shared `Button`, `Text`, and input primitives for search/actions
 
 Behavior:
 
 - keep one major surface per campaign card
+- keep `Create Campaign` in the page header for now, redirecting to `/adventure-module/list` until a direct in-list creation flow replaces it
 - reuse the same shared `StoryTileCard` shell as the module list, with visible source-module context and explicit `Open Campaign` plus `View Sessions` actions
 - avoid nesting additional framed panels inside campaign cards for metadata rows or action groups
 - rely on spacing, hierarchy, and button grouping before adding extra framed chrome

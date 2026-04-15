@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { AdventureModuleListItem } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { AdventureModuleCard } from "../components/adventure-module/AdventureModuleCard";
+import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Button } from "../components/common/Button";
 import { CTAButton } from "../components/common/CTAButton";
 import { DepressedInput } from "../components/common/DepressedInput";
@@ -46,6 +47,7 @@ const compareModules = (left: AdventureModuleListItem, right: AdventureModuleLis
 
 export const AdventureModuleListPage = (): JSX.Element => {
   const navigate = useNavigate();
+  const creatorToken = useMemo(() => getAdventureModuleCreatorToken(), []);
   const [modules, setModules] = useState<AdventureModuleListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,6 @@ export const AdventureModuleListPage = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const creatorToken = getAdventureModuleCreatorToken();
     let cancelled = false;
     setLoading(true);
 
@@ -83,7 +84,7 @@ export const AdventureModuleListPage = (): JSX.Element => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [creatorToken]);
 
   const normalizedSearchTerm = normalize(searchTerm);
 
@@ -137,12 +138,24 @@ export const AdventureModuleListPage = (): JSX.Element => {
             Browse and start authored adventures.
           </Text>
         </div>
-        <CTAButton
-          color="gold"
-          onClick={() => navigate("/adventure-module/new")}
-        >
-          Create Module
-        </CTAButton>
+        <div className="flex flex-wrap items-center gap-2">
+          <CTAButton
+            color="gold"
+            onClick={() => navigate("/adventure-module/new")}
+          >
+            Create Module
+          </CTAButton>
+          <ShortcodeField
+            shortcode={creatorToken}
+            showShortcode={false}
+            copyLabel="Copy author token"
+            copiedLabel="Copied author token"
+            copyButtonText="Copy Author Token"
+            copiedButtonText="Author Token Copied"
+            copyButtonVariant="ghost"
+            copyButtonColor="cloth"
+          />
+        </div>
       </div>
 
       <div>

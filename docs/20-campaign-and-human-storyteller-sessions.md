@@ -75,6 +75,8 @@ Current behaviors:
 
 - each campaign renders as the same shared cover-led story tile used by Adventure Modules, adapted with campaign-specific metadata
 - cards expose explicit `Open Campaign` and `View Sessions` buttons instead of relying on whole-card click targets
+- the list header exposes `Create Campaign`, which currently redirects to `/adventure-module/list` so the user can choose a source module before forking
+- the list header also exposes `Copy Author Token` for CLI and API authoring workflows
 - source-module context is visible on the card so search matches on the source module have a visible on-screen explanation
 - search matches title, summary, source module title, and slug
 
@@ -86,6 +88,7 @@ Campaigns are created from Adventure Modules only.
 
 Current entry points:
 
+- Campaign list header action: `Create Campaign` (redirects to `/adventure-module/list`)
 - Adventure Module list card action: `Create Campaign`
 - Adventure Module authoring header action: `Create Campaign`
 
@@ -99,6 +102,9 @@ During the copy:
 
 - authored fragments and entity records are copied into campaign persistence
 - any actor marked `isPlayerCharacter: true` is seeded into the campaign as an available player character
+- repo-local JSON-first campaign authoring is also available through `pnpm -C apps/server author:campaign -- <command>`
+- the campaign CLI supports `capabilities`, `schema`, `catalog`, `list`, `get`, `create`, `delete`, `update-index`, `update-fragment`, and `update-cover-image`, plus full CRUD for `actors`, `counters`, `assets`, `locations`, `encounters`, and `quests`
+- campaign creation through the CLI prefers `--source-module <module-slug>` and falls back to `--source-module-id <module-id>`
 
 ---
 

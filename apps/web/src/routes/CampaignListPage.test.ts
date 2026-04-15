@@ -7,7 +7,12 @@ test("CampaignListPage loads campaigns and links into campaign detail", () => {
 
   assert.match(source, /export const CampaignListPage/);
   assert.match(source, /listCampaigns/);
+  assert.match(source, /getAdventureModuleCreatorToken/);
   assert.match(source, /Campaigns/);
+  assert.match(source, /Create Campaign/);
+  assert.match(source, /Copy Author Token/);
+  assert.match(source, /ShortcodeField/);
+  assert.match(source, /\/adventure-module\/list/);
   assert.match(source, /CampaignListCard/);
   assert.match(
     source,

@@ -8,10 +8,14 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Add a `Create Campaign` handoff CTA to the campaign list header, and add shared `Copy Author Token` header actions to both the campaign and adventure module list pages using the generalized `ShortcodeField` clipboard control.
+- Switch the repo-local Exiles import and module/campaign authoring CLIs to machine-readable JSON stdout envelopes so external agents can discover context, read schemas, and apply structured edits without scraping human-oriented terminal text.
 - Web: made campaign and adventure module list tiles open from the full item surface and removed duplicate in-card action buttons.
+- Remove the redundant helper instructions above shared actor, counter, asset, location, encounter, and quest authoring lists so module and campaign authoring open directly into the create action plus searchable grid.
 
 ### Added
 
+- Add JSON-first repo-local authoring CLIs for persisted `Adventure Module` and `Campaign` content, including discovery commands (`capabilities`, `schema`, `catalog`), full CRUD for actors/counters/assets/locations/encounters/quests, and a repo-local `adventure-authoring-cli` skill with `agents/openai.yaml` discovery metadata.
 - Add a `pnpm -C apps/server smoke:campaign-flow` integration smoke test that can run locally or against a live Render deployment, covering Adventure Module creation, authored actor/counter/asset/location/encounter/quest creation, campaign creation, session creation, player/storyteller joins, and cleanup.
 - Add repo-local Adventure Module automation for Exiles porting: `pnpm -C apps/server import:adventure-module` imports legacy Exiles MDX into the typed Adventure Module store, and `pnpm -C apps/server author:module -- add-actor ...` uses a new `adventure_module_actor_from_prompt` workflow to generate typed actors from prompt text.
 - Add shared `ToggleButton` and `ButtonRadioGroup` primitives for straight-edged grouped option controls, with active/inactive states, six material color variants, and `s|m|l` sizing.
@@ -120,6 +124,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Keep Adventure Module location, encounter, and quest scene-card list panels at a consistent authored width so long prerequisites, summaries, and shortcodes wrap inside the panel instead of stretching it wider.
+- Wrap long authored `LocationCard` footer summaries earlier so the handwritten location text stays inside the horizontal scene-card frame.
 - Lower the Adventure Module markdown-field label, tag row, and description-hint stacking so they no longer sit above the generated-image modal when it opens over an editor.
 - Raise the Adventure Module mobile section dropdown above markdown editor context tags so the open menu is no longer covered by tag chips on narrow layouts.
 - Remove the duplicate standalone section menu from non-session campaign detail routes so desktop shows only the full tab rail, while tablet/mobile use the shared header dropdown collapse.
@@ -144,6 +150,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Docs
 
+- Tighten the CLI authoring docs and repo-local authoring skill guidance to prefer `--input-file` or stdin for non-trivial payloads, explain creator-token recovery from browser localStorage, and clarify how to parse the JSON envelope when shell wrappers add extra text.
+- Add CLI authoring docs for external agents, and update the Adventure Module, Campaign, and README docs to point to the new JSON-first module/campaign authoring commands and repo-local discovery skill.
 - Update the UI component docs to describe compact shortcode rows instead of text-based copy buttons in Adventure Module and campaign authoring lists.
 - Update the Adventure Module spec and authoring-flow docs to document repo-local Exiles imports, prompt-driven actor authoring, text-first legacy normalization, and `AdventureArtifactStore` image handling for imported stills.
 - Update the campaign-session route and UI docs to document the headered player claim route plus the headerless `/player/chat` live transcript route.
