@@ -69,8 +69,6 @@ const variantClassMap: Record<ButtonVariant, string> = {
   solid: cn(
     "border-x-[2px] border-y-[2px] border-kac-iron rounded-sm",
     "hover:translate-y-[2px] active:translate-y-[4px] disabled:translate-y-0 ",
-    "rotate-[-2deg] hover:rotate-[0deg] active:rotate-[0deg] disabled:rotate-[-2deg]",
-    "skew-x-[-5deg]",
     "shadow-[3px_3px_0_0_#121b23] hover:shadow-[2px_2px_0_0_#121b23] active:shadow-[1px_1px_0_0_#121b23] disabled:shadow-[3px_3px_0_0_#121b23]",
     "bg-gradient-to-b disabled:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]",
   ),

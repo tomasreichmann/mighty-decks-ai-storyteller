@@ -33,6 +33,15 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Replace the Adventure Module and campaign authoring list copy buttons with a shared compact `ShortcodeField` row, and switch the copy glyph from `C` to `📋`.
+- Restyle the campaign list cards into a cover-art-led story tile with live-status badges, compact metadata tags, and a fluid auto-fit grid so single campaigns no longer feel stranded on the page.
+- Move the campaign card pills into the hero corners, add a dedicated `Campaign` badge, and swap the card's `Open Campaign` action back to a plain primary solid button.
+- Split the shared button language into neutral solid buttons and highlighted CTA buttons, then move the standalone module actions onto the CTA treatment.
+- Collapse Adventure Module tab navigation into a single header dropdown on tablet/mobile so the authoring page no longer renders a standalone duplicate section control beside the tab rail.
+- Lower the Adventure Module tab rail collapse breakpoint so the full tabs show sooner, and keep the small-screen control as a labeled dropdown with a larger rotating caret and ghost-style menu items.
+- Move the Adventure Module `Create Campaign` CTA onto the desktop title row while keeping the tablet/mobile version beside the collapsed section dropdown.
+- Tighten the Adventure Module and Campaign authoring headers so the editable title field shrinks to a five-character minimum, the URI is removed, and the overall title treatment reads smaller and more compact.
+- Remove slug IDs from the Adventure Module markdown insert dropdown labels so the toolbar stays more compact.
 - Add true delete endpoints for Adventure Modules, Campaigns, and Campaign Sessions so smoke tests and live-environment cleanup can remove created records.
 - Keep the campaign-session outcome action icon-only, but update its accessible label and title to `Play an Outcome card`.
 - Center the global route loading fallback, restyle `Loading...` as a `Label`, and place the existing pending indicator above it.
@@ -83,7 +92,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Restyle the player and storyteller Session transcript composers to use the same depressed message-input treatment as the Adventure action composer, while keeping the Session-specific send actions intact.
 - Extend Adventure Module markdown editors and human-session transcript composers with a reusable image button plus modal backed by the existing generated-image UI, and render `![alt](url)` images inline inside shared session transcript messages.
 - Align Session chat composers more closely with the Adventure action field by renaming the draft label to `Message`, switching the action button to `Send`, supporting Enter-to-send with Shift+Enter for newlines, and moving storyteller `End Session` into the lower-left composer row.
-- Remove the player session page-shell header/title chrome for more transcript room, and restyle storyteller live-session navigation so the home-link logo sits before the tab rail, the autosave badge follows it, and tablet/mobile collapse the tab buttons into a burger menu.
+- Remove the player session page-shell header/title chrome for more transcript room, and restyle storyteller live-session navigation so the home-link logo sits before the tab rail, the autosave badge follows it, and tablet/mobile collapse the tab buttons into a labeled dropdown.
 - Reduce the vertical shell padding on player and storyteller live-session chat routes so more of the viewport is available to the transcript and composer.
 - Restyle the campaign authoring `Sessions` list items to use the shared `Message` framing so archived/live session rows match the broader campaign shell language.
 - Extend the shared `Button` component with `href` support and switch the campaign `Sessions` list actions to real links so lobby and storyteller views can be opened in separate browser tabs.
@@ -101,6 +110,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Raise the Adventure Module mobile section dropdown above markdown editor context tags so the open menu is no longer covered by tag chips on narrow layouts.
+- Remove the duplicate standalone section menu from non-session campaign detail routes so desktop shows only the full tab rail, while tablet/mobile use the shared header dropdown collapse.
 - Split the `EntityList` authoring surface into its own lazy-loaded chunk so the campaign and adventure-module authoring pages stop pulling it into the main route bundle.
 - Move storyteller live-session routes onto the same headerless shell as the player session route so the global site header no longer steals vertical space above session chat.
 - Align Session chat keyboard submission with the shared Adventure action composer so only plain Enter sends, while Shift+Enter and other modifier-enter combinations stay available for multiline editing.
@@ -122,6 +133,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Docs
 
+- Update the UI component docs to describe compact shortcode rows instead of text-based copy buttons in Adventure Module and campaign authoring lists.
 - Update the campaign-session route and UI docs to document the headered player claim route plus the headerless `/player/chat` live transcript route.
 - Update the campaign-session and event/state docs to describe per-player outcome piles, draw/shuffle/play session events, and the new chat logging format for played outcome cards.
 - Update the shared UI and style-system docs to document the new grouped toggle/radio button primitives and their non-tilted alignment rules.
@@ -142,6 +154,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Update the component/style docs and hidden styleguide to document the shared CTA highlight button and reusable connection-status pill patterns.
 - Update campaign session docs to note that supported component shortcodes now render inline inside shared transcript messages.
 - Update the authoring, UI, event-model, and campaign-session docs to describe the reusable image button-plus-modal flow in MDX editors and session composers, plus inline markdown image rendering inside session transcripts.
+- Update Adventure Module authoring docs to describe the responsive header dropdown that now replaces the standalone collapsed section menu on tablet/mobile widths.
 
 ## [0.1.0] - 2026-03-13
 

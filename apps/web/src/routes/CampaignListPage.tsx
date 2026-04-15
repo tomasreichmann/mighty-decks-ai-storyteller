@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import type { CampaignListItem } from "@mighty-decks/spec/campaign";
 import { Button } from "../components/common/Button";
 import { DepressedInput } from "../components/common/DepressedInput";
@@ -7,24 +6,12 @@ import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
+import { CampaignListCard } from "../components/campaign/CampaignListCard";
 import { listCampaigns } from "../lib/campaignApi";
 
 const PAGE_SIZE = 20;
-const FALLBACK_IMAGE_URL = "/sample-scene-image.png";
 
 const normalize = (value: string): string => value.trim().toLowerCase();
-
-const formatDate = (value: string): string => {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-  return parsed.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
 
 const matchesSearch = (
   campaign: CampaignListItem,
@@ -178,57 +165,9 @@ export const CampaignListPage = (): JSX.Element => {
         </Panel>
       ) : visibleCampaigns.length > 0 ? (
         <>
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 lg:[grid-template-columns:repeat(auto-fit,minmax(20rem,30rem))]">
             {visibleCampaigns.map((campaign) => (
-              <Panel
-                key={campaign.campaignId}
-                className="h-full"
-                contentClassName="stack gap-3 h-full"
-              >
-                <div className="flex gap-4">
-                  <img
-                    src={campaign.coverImageUrl ?? FALLBACK_IMAGE_URL}
-                    alt={`${campaign.title} cover`}
-                    className="h-28 w-24 shrink-0 rounded-sm border-2 border-kac-iron object-cover shadow-[2px_2px_0_0_#121b23]"
-                  />
-                  <div className="stack gap-1">
-                    <Text variant="h3" color="iron">
-                      {campaign.title}
-                    </Text>
-                    <Text variant="body" color="iron-light" className="text-sm">
-                      {campaign.summary}
-                    </Text>
-                    <Text variant="note" color="steel-dark" className="text-xs">
-                      Source Module: {campaign.sourceModuleTitle}
-                    </Text>
-                    <Text variant="note" color="steel-dark" className="text-xs">
-                      Active sessions: {campaign.activeSessionCount}
-                    </Text>
-                    <Text variant="note" color="steel-dark" className="text-xs">
-                      Total sessions: {campaign.sessionCount}
-                    </Text>
-                    <Text variant="note" color="steel-dark" className="text-xs">
-                      Updated: {formatDate(campaign.updatedAtIso)}
-                    </Text>
-                  </div>
-                </div>
-                <div className="mt-auto flex flex-wrap items-center gap-2">
-                  <Link
-                    to={`/campaign/${encodeURIComponent(campaign.slug)}/base`}
-                    className="no-underline"
-                  >
-                    <Button color="gold">Open Campaign</Button>
-                  </Link>
-                  <Link
-                    to={`/campaign/${encodeURIComponent(campaign.slug)}/sessions`}
-                    className="no-underline"
-                  >
-                    <Button variant="ghost" color="cloth">
-                      View Sessions
-                    </Button>
-                  </Link>
-                </div>
-              </Panel>
+              <CampaignListCard key={campaign.campaignId} campaign={campaign} />
             ))}
           </div>
 

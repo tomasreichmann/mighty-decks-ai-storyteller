@@ -218,7 +218,7 @@ Shared shell components:
 - `AdventureModuleAuthoringHeader`
 - `AdventureModuleTabNav`
   - supports optional leading/trailing slot content for session-specific chrome such as a home-link logo and autosave badge
-  - collapses to a burger-triggered vertical menu on tablet/mobile breakpoints while keeping the full button rail on desktop
+  - collapses to a labeled vertical dropdown on tablet/mobile breakpoints while keeping the full button rail on desktop
 - `AutosaveStatusBadge`
 - `PublishModuleButton`
 - `AuthoringTabContentHost`
@@ -228,12 +228,12 @@ Tabs:
 - `base`: `ModuleBaseTabPanel` with `SmartInput` for premise transforms
 - `player-info`: `AdventureModulePlayerInfoTabPanel` with dual MDXEditor fields (`Player Summary`, `Player Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` and `QuestCard` embeds, and autosave
 - `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` and `QuestCard` embeds, and autosave
-- `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, shortcode copy, and delete actions
-- `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, shortcode copy, and delete actions
-- `assets`: `AdventureModuleAssetsTabPanel` showing searchable custom `AssetCard` entries, legacy `Reauthor required` states, `Create Asset`, shortcode copy, and delete actions
-- `locations`: `AdventureModuleLocationsTabPanel` showing searchable location cards, title-image previews, `Create Location`, shortcode copy, and delete actions
-- `encounters`: `AdventureModuleEncountersTabPanel` showing searchable `EncounterCard` entries, `Create Encounter`, canonical embed copy, and delete actions
-- `quests`: `AdventureModuleQuestsTabPanel` showing searchable `QuestCard` entries, `Create Quest`, shortcode copy, and delete actions
+- `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, compact shortcode rows, and delete actions
+- `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, compact shortcode rows, and delete actions
+- `assets`: `AdventureModuleAssetsTabPanel` showing searchable custom `AssetCard` entries, legacy `Reauthor required` states, `Create Asset`, compact shortcode rows, and delete actions
+- `locations`: `AdventureModuleLocationsTabPanel` showing searchable location cards, title-image previews, `Create Location`, compact shortcode rows, and delete actions
+- `encounters`: `AdventureModuleEncountersTabPanel` showing searchable `EncounterCard` entries, `Create Encounter`, compact shortcode rows, and delete actions
+- `quests`: `AdventureModuleQuestsTabPanel` showing searchable `QuestCard` entries, `Create Quest`, compact shortcode rows, and delete actions
 
 List-tab row actions:
 
@@ -329,7 +329,7 @@ Behavior:
 - `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image generation/paste controls, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, title-image generation/paste controls, and markdown script authoring.
 - `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, title-image generation/paste controls, markdown brief authoring, and slug-driven route updates after saves.
-- actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and `Copy Shortcode`
+- actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and a clipboard copy button
 
 ---
 
@@ -425,7 +425,7 @@ Behavior:
 - make the `chat` tab feel like a purpose-built live session surface, not another generic stacked panel page
 - reserve heavy framed panels for the primary transcript surface and avoid framing every inner subsection
 - keep player and storyteller transcript composers aligned on the same compact image-trigger-plus-modal flow so both roles can share generated images through the same raw-text transcript model
-- reuse the same entity editor components as Adventure Module authoring so shortcode copy rows appear in storyteller detail tabs too
+- reuse the same entity editor components as Adventure Module authoring so compact shortcode rows appear in storyteller detail tabs too
 
 ---
 
@@ -794,11 +794,11 @@ Behavior:
 
 Located in `apps/web/src/components/common/`:
 
-- `Button` (project variants/sizes; use for all actions)
+- `Button` (project variants/sizes; neutral default for standard and grouped actions)
 - `ToggleButton` (straight-edged active/inactive option button for grouped controls)
 - `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label`)
 - `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton`)
-- `CTAButton` (shared high-emphasis button with hover highlight underlay)
+- `CTAButton` (shared high-emphasis solo CTA with hover highlight underlay)
 - `Section`
 - `Panel`
 - `Text`

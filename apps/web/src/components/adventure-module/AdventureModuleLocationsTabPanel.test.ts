@@ -11,5 +11,7 @@ test("AdventureModuleLocationsTabPanel exposes location delete affordance and sh
   assert.match(source, /Delete \$\{location\.title\}/);
   assert.match(source, /<LocationCardView location=\{location\} \/>/);
   assert.match(source, /@location\/\$\{location\.locationSlug\}/);
+  assert.match(source, /ShortcodeField/);
+  assert.doesNotMatch(source, /Copy Shortcode/);
   assert.doesNotMatch(source, /No summary yet\./);
 });

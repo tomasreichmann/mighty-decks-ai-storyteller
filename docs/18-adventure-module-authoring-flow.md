@@ -115,8 +115,10 @@ Route: `/adventure-module/:slug/:tab`
 
 Shell behavior:
 
-- Top area shows module name, slug, ownership state, and autosave status.
+- Top area shows the module name and autosave status, with read-only ownership messaging rendered as a separate inline notice when needed.
 - Header also exposes `Create Campaign` so authors can fork the current module into a campaign without leaving the page.
+- On desktop, `Create Campaign` sits on the right side of the title row while the full tab rail stays on its own row below.
+- On tablet-sized layouts and narrower, the tab rail collapses into a section dropdown in the same header row, immediately after `Create Campaign`.
 - Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
 - `Player Info` is editable in this step (`player summary` + `player info text`).
@@ -213,7 +215,7 @@ List behavior:
 
 - The tab renders a searchable grid of layered `ActorCard` entries resolved from module actor fragments.
 - Each actor card shows title, summary, and stable shortcode text.
-- `Copy Shortcode` copies `@actor/<actor-slug>` for manual insertion in markdown source mode.
+- The compact `ShortcodeField` row copies `@actor/<actor-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the actor immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-card rendering.
 - Clicking a card navigates to `/adventure-module/:slug/actors/:entityId`.
 
@@ -232,7 +234,7 @@ List behavior:
 
 - The tab renders a searchable grid of interactive `CounterCard` entries resolved from module counter records, including inline controls for shared current and max values.
 - Each counter card shows title, description, stable shortcode text, and shared `+` and `-` controls.
-- `Copy Shortcode` copies `@counter/<counter-slug>` for manual insertion in markdown source mode.
+- The compact `ShortcodeField` row copies `@counter/<counter-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the counter immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-card rendering.
 - Clicking a card navigates to `/adventure-module/:slug/counters/:entityId`.
 
@@ -251,7 +253,7 @@ List behavior:
 
 - The tab renders a searchable grid of location entries resolved from module location fragments plus `locationDetails` metadata.
 - Each location card uses the shared horizontal `LocationCard` frame, with the location summary shown once in the card footer and a stable shortcode shown below the card.
-- `Copy Shortcode` copies `@location/<location-slug>` for manual insertion in markdown source mode.
+- The compact `ShortcodeField` row copies `@location/<location-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the location immediately after confirmation.
 - Clicking a card navigates to `/adventure-module/:slug/locations/:entityId`.
 
@@ -270,7 +272,7 @@ List behavior:
 
 - The tab renders a searchable grid of encounter entries resolved from module encounter fragments plus `encounterDetails` metadata.
 - Each encounter card uses the shared horizontal `EncounterCard` frame, with the encounter summary shown once in the card footer, a shortcode shown below the card, and prerequisites shown as supporting metadata.
-- `Copy Shortcode` copies `@encounter/<encounter-slug>` for manual insertion in markdown source mode.
+- The compact `ShortcodeField` row copies `@encounter/<encounter-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the encounter immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-embed rendering.
 - Clicking a card navigates to `/adventure-module/:slug/encounters/:entityId`.
 
@@ -289,7 +291,7 @@ List behavior:
 
 - The tab renders a searchable grid of quest entries resolved from module quest fragments plus `questDetails` metadata.
 - Each quest card uses the shared horizontal `QuestCard` frame with a gold title chip, scroll icon medallion, summary footer, and shortcode shown below the card.
-- `Copy Shortcode` copies `@quest/<quest-slug>` for manual insertion in markdown source mode.
+- The compact `ShortcodeField` row copies `@quest/<quest-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the quest immediately after confirmation, rejects deleting the last quest, and leaves existing markdown embeds untouched so they fall back to invalid-embed rendering.
 - Clicking a card navigates to `/adventure-module/:slug/quests/:entityId`.
 
@@ -309,7 +311,7 @@ List behavior:
 - The tab renders a searchable grid of module asset entries resolved from module asset fragments.
 - Each asset card shows title, summary, and stable shortcode text.
 - Legacy layered module assets are marked `Reauthor required` until they are rewritten as custom assets.
-- `Copy Shortcode` copies `@asset/<asset-slug>` for manual insertion in markdown source mode.
+- The compact `ShortcodeField` row copies `@asset/<asset-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the asset immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-card rendering.
 - Clicking a card navigates to `/adventure-module/:slug/assets/:entityId`.
 
@@ -521,6 +523,7 @@ UX behavior checks:
 - Name creates slug and slug uniqueness is enforced globally.
 - Create redirects to module authoring base tab.
 - Tab navigation keeps module context.
+- Tablet and narrower widths collapse the section tabs into the header dropdown without rendering a second standalone section control.
 - Create entity redirects to entity edit route.
 - Debounced autosave saves field updates and reports status.
 - Actor cards open the actor editor, location cards open the location editor, encounter cards open the encounter editor, counter cards open the counter editor, asset cards open the asset editor, and actor/counter/asset shortcodes normalize to canonical `<GameCard />` source without mutating inline or fenced code blocks.

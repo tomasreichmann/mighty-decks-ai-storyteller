@@ -64,7 +64,7 @@ export const ShortcodeField = ({
   }, [shortcode]);
 
   return (
-    <div className={`stack gap-2 ${className}`.trim()}>
+    <div className={`stack gap-2 min-w-0 ${className}`.trim()}>
       <div className="inline-flex max-w-full items-center justify-center gap-1.5 self-center">
         <Text
           variant="note"
@@ -83,7 +83,7 @@ export const ShortcodeField = ({
             void handleCopy();
           }}
         >
-          <span aria-hidden="true">{copied ? "OK" : "C"}</span>
+          <span aria-hidden="true">{copied ? "OK" : "📋"}</span>
         </Button>
         {onAddToSelection ? (
           <Button

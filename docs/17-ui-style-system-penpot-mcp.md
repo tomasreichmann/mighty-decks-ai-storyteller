@@ -177,6 +177,11 @@ Canonical contracts are defined for:
 - `Toggle`
 - `DepressedInput`
 
+Button contract note:
+
+- `Button` solid is the neutral default for standard and grouped actions.
+- `CTAButton` owns the skewed, highlighted solo-action treatment.
+
 Source of truth for variant maps:
 
 - `docs/ux-design/penpot-mcp-tokens.current.json` -> `components`.

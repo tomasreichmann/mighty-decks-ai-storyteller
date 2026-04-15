@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { AdventureModuleListItem } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { AdventureModuleCard } from "../components/adventure-module/AdventureModuleCard";
 import { Button } from "../components/common/Button";
+import { CTAButton } from "../components/common/CTAButton";
 import { DepressedInput } from "../components/common/DepressedInput";
 import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
@@ -167,9 +168,12 @@ export const AdventureModuleListPage = (): JSX.Element => {
             Browse and start authored adventures.
           </Text>
         </div>
-        <Button color="gold" onClick={() => navigate("/adventure-module/new")}>
+        <CTAButton
+          color="gold"
+          onClick={() => navigate("/adventure-module/new")}
+        >
           Create Module
-        </Button>
+        </CTAButton>
       </div>
 
       <div>
@@ -216,8 +220,7 @@ export const AdventureModuleListPage = (): JSX.Element => {
                     tags={module.tags}
                   />
                 </Link>
-                <Button
-                  variant="ghost"
+                <CTAButton
                   color="gold"
                   disabled={creatingCampaignModuleId === module.moduleId}
                   onClick={() => {
@@ -227,7 +230,7 @@ export const AdventureModuleListPage = (): JSX.Element => {
                   {creatingCampaignModuleId === module.moduleId
                     ? "Creating Campaign..."
                     : "Create Campaign"}
-                </Button>
+                </CTAButton>
               </div>
             ))}
           </div>

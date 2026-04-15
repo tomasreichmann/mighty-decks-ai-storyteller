@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { AdventureModuleResolvedEncounter } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
@@ -6,6 +6,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
 import { EncounterCardView } from "./EncounterCardView";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleEncountersTabPanelProps {
   encounters: AdventureModuleResolvedEncounter[];
@@ -18,26 +19,6 @@ interface AdventureModuleEncountersTabPanelProps {
   onAddEncounterCardToSelection?: (encounterSlug: string) => void;
 }
 
-const copyToClipboard = async (value: string): Promise<void> => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
-
-  const textArea = document.createElement("textarea");
-  textArea.value = value;
-  textArea.setAttribute("readonly", "true");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  document.body.append(textArea);
-  textArea.select();
-  const copied = document.execCommand("copy");
-  textArea.remove();
-  if (!copied) {
-    throw new Error("Clipboard copy failed.");
-  }
-};
-
 export const AdventureModuleEncountersTabPanel = ({
   encounters,
   editable,
@@ -49,10 +30,6 @@ export const AdventureModuleEncountersTabPanel = ({
   onAddEncounterCardToSelection,
 }: AdventureModuleEncountersTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedEncounterSlug, setCopiedEncounterSlug] = useState<string | null>(
-    null,
-  );
-  const [copyError, setCopyError] = useState<string | null>(null);
 
   const filteredEncounters = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
@@ -65,28 +42,6 @@ export const AdventureModuleEncountersTabPanel = ({
       return haystack.includes(normalizedSearch);
     });
   }, [encounters, searchTerm]);
-
-  useEffect(() => {
-    if (!copiedEncounterSlug) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setCopiedEncounterSlug(null);
-    }, 1600);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [copiedEncounterSlug]);
-
-  const handleCopyEmbed = useCallback(async (encounterSlug: string) => {
-    try {
-      await copyToClipboard(`@encounter/${encounterSlug}`);
-      setCopiedEncounterSlug(encounterSlug);
-      setCopyError(null);
-    } catch {
-      setCopyError(`Could not copy @encounter/${encounterSlug}.`);
-    }
-  }, []);
 
   const handleDelete = useCallback(
     (encounterSlug: string, title: string): void => {
@@ -128,11 +83,6 @@ export const AdventureModuleEncountersTabPanel = ({
           {createError}
         </Message>
       ) : null}
-      {copyError ? (
-        <Message label="Copy failed" color="blood">
-          {copyError}
-        </Message>
-      ) : null}
 
       {filteredEncounters.length === 0 ? (
         <Panel>
@@ -156,83 +106,49 @@ export const AdventureModuleEncountersTabPanel = ({
                 onClick={() => onOpenEncounter(encounter.encounterSlug)}
               >
                 <EncounterCardView encounter={encounter} />
-                <div className="stack gap-1">
-                  <Text variant="note" color="steel-dark">
-                    {`@encounter/${encounter.encounterSlug}`}
-                  </Text>
-                  <Text variant="body" color="iron-light" className="text-sm">
-                    {encounter.prerequisites.trim().length > 0
-                      ? `Prerequisites: ${encounter.prerequisites}`
-                      : "No prerequisites yet."}
-                  </Text>
-                </div>
+                <Text variant="body" color="iron-light" className="text-sm">
+                  {encounter.prerequisites.trim().length > 0
+                    ? `Prerequisites: ${encounter.prerequisites}`
+                    : "No prerequisites yet."}
+                </Text>
               </button>
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <ShortcodeField
+                  shortcode={`@encounter/${encounter.encounterSlug}`}
+                  onAddToSelection={
+                    onAddEncounterCardToSelection
+                      ? () => onAddEncounterCardToSelection(encounter.encounterSlug)
+                      : undefined
+                  }
+                />
+                {onDeleteEncounter ? (
                   <Button
-                    variant="ghost"
-                    color="cloth"
+                    variant="circle"
+                    color="blood"
                     size="sm"
+                    aria-label={`Delete ${encounter.title}`}
+                    title={`Delete ${encounter.title}`}
+                    disabled={!editable}
                     onClick={() => {
-                      void handleCopyEmbed(encounter.encounterSlug);
+                      handleDelete(encounter.encounterSlug, encounter.title);
                     }}
                   >
-                    Copy Shortcode
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-3.5 w-3.5 fill-none stroke-current"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M6 6l1 14h10l1-14" />
+                      <path d="M10 10v7" />
+                      <path d="M14 10v7" />
+                    </svg>
                   </Button>
-                  {onAddEncounterCardToSelection ? (
-                    <Button
-                      variant="circle"
-                      color="gold"
-                      size="sm"
-                      aria-label={`Add ${encounter.title} to table selection`}
-                      title={`Add ${encounter.title} to table selection`}
-                      onClick={() => {
-                        onAddEncounterCardToSelection(encounter.encounterSlug);
-                      }}
-                    >
-                      +
-                    </Button>
-                  ) : null}
-                  {onDeleteEncounter ? (
-                    <Button
-                      variant="circle"
-                      color="blood"
-                      size="sm"
-                      aria-label={`Delete ${encounter.title}`}
-                      title={`Delete ${encounter.title}`}
-                      disabled={!editable}
-                      onClick={() => {
-                        handleDelete(encounter.encounterSlug, encounter.title);
-                      }}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-3.5 w-3.5 fill-none stroke-current"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M8 6V4h8v2" />
-                        <path d="M6 6l1 14h10l1-14" />
-                        <path d="M10 10v7" />
-                        <path d="M14 10v7" />
-                      </svg>
-                    </Button>
-                  ) : null}
-                </div>
-                <Text
-                  variant="note"
-                  color="monster"
-                  className={
-                    copiedEncounterSlug === encounter.encounterSlug
-                      ? "opacity-100"
-                      : "opacity-0"
-                  }
-                >
-                  Copied
-                </Text>
+                ) : null}
               </div>
             </Panel>
           ))}

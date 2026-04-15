@@ -1,4 +1,4 @@
-import {
+import React, {
   type ReactNode,
   useCallback,
   useEffect,
@@ -8,6 +8,8 @@ import {
   useState,
 } from "react";
 import { cn } from "../../utils/cn";
+
+void React;
 
 export type DropdownDirection = "top" | "bottom" | "left" | "right";
 export type DropdownAlign = "start" | "center" | "end";

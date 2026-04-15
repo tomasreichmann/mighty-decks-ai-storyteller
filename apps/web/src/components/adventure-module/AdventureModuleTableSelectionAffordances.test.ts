@@ -20,10 +20,17 @@ test("authoring list tab panels expose optional + affordances next to shortcode 
   assert.match(encounters, /onAddEncounterCardToSelection\?: \(encounterSlug: string\) => void/);
   assert.match(quests, /onAddQuestCardToSelection\?: \(questSlug: string\) => void/);
 
-  assert.match(actors, /Copy Shortcode[\s\S]*\+/);
-  assert.match(counters, /Copy Shortcode[\s\S]*\+/);
-  assert.match(assets, /Copy Shortcode[\s\S]*\+/);
-  assert.match(locations, /Copy Shortcode[\s\S]*\+/);
-  assert.match(encounters, /Copy Shortcode[\s\S]*\+/);
-  assert.match(quests, /Copy Shortcode[\s\S]*\+/);
+  assert.match(actors, /ShortcodeField/);
+  assert.match(counters, /ShortcodeField/);
+  assert.match(assets, /ShortcodeField/);
+  assert.match(locations, /ShortcodeField/);
+  assert.match(encounters, /ShortcodeField/);
+  assert.match(quests, /ShortcodeField/);
+
+  assert.doesNotMatch(actors, /Copy Shortcode/);
+  assert.doesNotMatch(counters, /Copy Shortcode/);
+  assert.doesNotMatch(assets, /Copy Shortcode/);
+  assert.doesNotMatch(locations, /Copy Shortcode/);
+  assert.doesNotMatch(encounters, /Copy Shortcode/);
+  assert.doesNotMatch(quests, /Copy Shortcode/);
 });

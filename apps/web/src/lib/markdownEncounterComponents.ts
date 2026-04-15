@@ -18,7 +18,7 @@ export const createEncounterCardOption = (
 ): EncounterCardOption => ({
   slug: encounter.encounterSlug,
   jsx: createEncounterCardJsx(encounter.encounterSlug),
-  label: `${encounter.title} (${encounter.encounterSlug})`,
+  label: encounter.title,
 });
 
 export const buildEncounterCardOptions = (

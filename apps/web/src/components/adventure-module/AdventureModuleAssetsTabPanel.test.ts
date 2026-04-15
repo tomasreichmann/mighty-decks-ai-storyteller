@@ -9,4 +9,6 @@ test("AdventureModuleAssetsTabPanel includes asset delete affordance markup", ()
   );
 
   assert.match(source, /Delete \$\{asset\.title\}/);
+  assert.match(source, /ShortcodeField/);
+  assert.doesNotMatch(source, /Copy Shortcode/);
 });

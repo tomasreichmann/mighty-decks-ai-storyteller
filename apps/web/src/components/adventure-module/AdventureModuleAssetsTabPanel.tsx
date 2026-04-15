@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { AdventureModuleResolvedAsset } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
@@ -6,6 +6,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
 import { AssetCard } from "../cards/AssetCard";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleAssetsTabPanelProps {
   assets: AdventureModuleResolvedAsset[];
@@ -18,26 +19,6 @@ interface AdventureModuleAssetsTabPanelProps {
   onAddAssetCardToSelection?: (assetSlug: string) => void;
 }
 
-const copyToClipboard = async (value: string): Promise<void> => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
-
-  const textArea = document.createElement("textarea");
-  textArea.value = value;
-  textArea.setAttribute("readonly", "true");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  document.body.append(textArea);
-  textArea.select();
-  const copied = document.execCommand("copy");
-  textArea.remove();
-  if (!copied) {
-    throw new Error("Clipboard copy failed.");
-  }
-};
-
 export const AdventureModuleAssetsTabPanel = ({
   assets,
   editable,
@@ -49,8 +30,6 @@ export const AdventureModuleAssetsTabPanel = ({
   onAddAssetCardToSelection,
 }: AdventureModuleAssetsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedAssetSlug, setCopiedAssetSlug] = useState<string | null>(null);
-  const [copyError, setCopyError] = useState<string | null>(null);
 
   const filteredAssets = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
@@ -63,28 +42,6 @@ export const AdventureModuleAssetsTabPanel = ({
       return haystack.includes(normalizedSearch);
     });
   }, [assets, searchTerm]);
-
-  useEffect(() => {
-    if (!copiedAssetSlug) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setCopiedAssetSlug(null);
-    }, 1600);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [copiedAssetSlug]);
-
-  const handleCopyShortcode = useCallback(async (assetSlug: string) => {
-    try {
-      await copyToClipboard(`@asset/${assetSlug}`);
-      setCopiedAssetSlug(assetSlug);
-      setCopyError(null);
-    } catch {
-      setCopyError(`Could not copy @asset/${assetSlug}.`);
-    }
-  }, []);
 
   const handleDelete = useCallback(
     (assetSlug: string, title: string): void => {
@@ -123,11 +80,6 @@ export const AdventureModuleAssetsTabPanel = ({
       {createError ? (
         <Message label="Create failed" color="blood">
           {createError}
-        </Message>
-      ) : null}
-      {copyError ? (
-        <Message label="Copy failed" color="blood">
-          {copyError}
         </Message>
       ) : null}
 
@@ -178,73 +130,45 @@ export const AdventureModuleAssetsTabPanel = ({
                       ? "Reauthor required before this asset can render in markdown."
                       : (asset.summary ?? "No summary yet.")}
                   </Text>
-                  <Text variant="note" color="steel-dark">
-                    {`@asset/${asset.assetSlug}`}
-                  </Text>
                 </div>
               </button>
               <div className="mt-auto flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <ShortcodeField
+                  shortcode={`@asset/${asset.assetSlug}`}
+                  onAddToSelection={
+                    onAddAssetCardToSelection
+                      ? () => onAddAssetCardToSelection(asset.assetSlug)
+                      : undefined
+                  }
+                />
+                {onDeleteAsset ? (
                   <Button
-                    variant="ghost"
-                    color="cloth"
+                    variant="circle"
+                    color="blood"
                     size="sm"
+                    aria-label={`Delete ${asset.title}`}
+                    title={`Delete ${asset.title}`}
+                    disabled={!editable}
                     onClick={() => {
-                      void handleCopyShortcode(asset.assetSlug);
+                      handleDelete(asset.assetSlug, asset.title);
                     }}
                   >
-                    Copy Shortcode
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-3.5 w-3.5 fill-none stroke-current"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M6 6l1 14h10l1-14" />
+                      <path d="M10 10v7" />
+                      <path d="M14 10v7" />
+                    </svg>
                   </Button>
-                  {onAddAssetCardToSelection ? (
-                    <Button
-                      variant="circle"
-                      color="gold"
-                      size="sm"
-                      aria-label={`Add ${asset.title} to table selection`}
-                      title={`Add ${asset.title} to table selection`}
-                      onClick={() => {
-                        onAddAssetCardToSelection(asset.assetSlug);
-                      }}
-                    >
-                      +
-                    </Button>
-                  ) : null}
-                  {onDeleteAsset ? (
-                    <Button
-                      variant="circle"
-                      color="blood"
-                      size="sm"
-                      aria-label={`Delete ${asset.title}`}
-                      title={`Delete ${asset.title}`}
-                      disabled={!editable}
-                      onClick={() => {
-                        handleDelete(asset.assetSlug, asset.title);
-                      }}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-3.5 w-3.5 fill-none stroke-current"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M8 6V4h8v2" />
-                        <path d="M6 6l1 14h10l1-14" />
-                        <path d="M10 10v7" />
-                        <path d="M14 10v7" />
-                      </svg>
-                    </Button>
-                  ) : null}
-                </div>
-                <Text
-                  variant="note"
-                  color="monster"
-                  className={copiedAssetSlug === asset.assetSlug ? "opacity-100" : "opacity-0"}
-                >
-                  Copied
-                </Text>
+                ) : null}
               </div>
             </Panel>
           ))}

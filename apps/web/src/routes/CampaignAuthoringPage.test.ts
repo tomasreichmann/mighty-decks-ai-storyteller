@@ -85,6 +85,27 @@ test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => 
   assert.doesNotMatch(source, /<Panel\s+key=\{session\.sessionId\}/);
 });
 
+test("CampaignAuthoringPage uses AdventureModuleTabNav as the non-session header control and keeps storyteller session nav separate", () => {
+  const source = readFileSync(
+    new URL("./CampaignAuthoringPage.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.doesNotMatch(source, /<AdventureModuleSectionMenu/);
+  assert.match(
+    source,
+    /storytellerSessionMode \? null : \([\s\S]*<AdventureModuleTabNav[\s\S]*leadingContent=\{[\s\S]*<Button[\s\S]*Create Session/,
+  );
+  assert.match(
+    source,
+    /storytellerSessionMode \? null : \([\s\S]*<AdventureModuleTabNav[\s\S]*trailingContent=\{[\s\S]*<AutosaveStatusBadge/,
+  );
+  assert.match(
+    source,
+    /storytellerSessionMode \? \(\s*<AdventureModuleTabNav[\s\S]*showMobileMenu=\{storytellerSessionMode\}/,
+  );
+});
+
 test("CampaignAuthoringPage uses a compact full-width shell in storyteller session mode", () => {
   const source = readFileSync(
     new URL("./CampaignAuthoringPage.tsx", import.meta.url),

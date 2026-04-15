@@ -167,7 +167,7 @@ const toOption = (
   jsx: createGameCardJsx(type, slug, {
     modifierSlug: options.modifierSlug,
   }),
-  label: `${title} (${slug})`,
+  label: title,
 });
 
 export const gameCardTypeLabel: Record<GameCardType, string> = {

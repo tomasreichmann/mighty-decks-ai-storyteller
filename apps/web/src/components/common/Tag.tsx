@@ -43,8 +43,8 @@ interface TagProps extends PropsWithChildren {
 }
 
 const sizeClassMap: Record<NonNullable<TagProps["size"]>, string> = {
-  sm: "px-2 py-0.5 text-[10px]/none",
-  md: "px-2.5 py-1 text-xs/none",
+  sm: "px-2 pt-1.5 pb-1 text-[10px]/none",
+  md: "px-2.5 pt-2 pb-1.5 text-xs/none",
 };
 
 export const Tag = ({

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { AdventureModuleResolvedLocation } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
@@ -6,6 +6,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
 import { LocationCardView } from "./LocationCardView";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleLocationsTabPanelProps {
   locations: AdventureModuleResolvedLocation[];
@@ -18,26 +19,6 @@ interface AdventureModuleLocationsTabPanelProps {
   onAddLocationCardToSelection?: (locationSlug: string) => void;
 }
 
-const copyToClipboard = async (value: string): Promise<void> => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
-
-  const textArea = document.createElement("textarea");
-  textArea.value = value;
-  textArea.setAttribute("readonly", "true");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  document.body.append(textArea);
-  textArea.select();
-  const copied = document.execCommand("copy");
-  textArea.remove();
-  if (!copied) {
-    throw new Error("Clipboard copy failed.");
-  }
-};
-
 export const AdventureModuleLocationsTabPanel = ({
   locations,
   editable,
@@ -49,10 +30,6 @@ export const AdventureModuleLocationsTabPanel = ({
   onAddLocationCardToSelection,
 }: AdventureModuleLocationsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedLocationSlug, setCopiedLocationSlug] = useState<string | null>(
-    null,
-  );
-  const [copyError, setCopyError] = useState<string | null>(null);
 
   const filteredLocations = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
@@ -65,28 +42,6 @@ export const AdventureModuleLocationsTabPanel = ({
       return haystack.includes(normalizedSearch);
     });
   }, [locations, searchTerm]);
-
-  useEffect(() => {
-    if (!copiedLocationSlug) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setCopiedLocationSlug(null);
-    }, 1600);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [copiedLocationSlug]);
-
-  const handleCopyShortcode = useCallback(async (locationSlug: string) => {
-    try {
-      await copyToClipboard(`@location/${locationSlug}`);
-      setCopiedLocationSlug(locationSlug);
-      setCopyError(null);
-    } catch {
-      setCopyError(`Could not copy @location/${locationSlug}.`);
-    }
-  }, []);
 
   const handleDelete = useCallback(
     (locationSlug: string, title: string): void => {
@@ -128,11 +83,6 @@ export const AdventureModuleLocationsTabPanel = ({
           {createError}
         </Message>
       ) : null}
-      {copyError ? (
-        <Message label="Copy failed" color="blood">
-          {copyError}
-        </Message>
-      ) : null}
 
       {filteredLocations.length === 0 ? (
         <Panel>
@@ -156,78 +106,44 @@ export const AdventureModuleLocationsTabPanel = ({
                 onClick={() => onOpenLocation(location.locationSlug)}
               >
                 <LocationCardView location={location} />
-                <div className="stack gap-1">
-                  <Text variant="note" color="steel-dark">
-                    {`@location/${location.locationSlug}`}
-                  </Text>
-                </div>
               </button>
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <ShortcodeField
+                  shortcode={`@location/${location.locationSlug}`}
+                  onAddToSelection={
+                    onAddLocationCardToSelection
+                      ? () => onAddLocationCardToSelection(location.locationSlug)
+                      : undefined
+                  }
+                />
+                {onDeleteLocation ? (
                   <Button
-                    variant="ghost"
-                    color="cloth"
+                    variant="circle"
+                    color="blood"
                     size="sm"
+                    aria-label={`Delete ${location.title}`}
+                    title={`Delete ${location.title}`}
+                    disabled={!editable}
                     onClick={() => {
-                      void handleCopyShortcode(location.locationSlug);
+                      handleDelete(location.locationSlug, location.title);
                     }}
                   >
-                    Copy Shortcode
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-3.5 w-3.5 fill-none stroke-current"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M6 6l1 14h10l1-14" />
+                      <path d="M10 10v7" />
+                      <path d="M14 10v7" />
+                    </svg>
                   </Button>
-                  {onAddLocationCardToSelection ? (
-                    <Button
-                      variant="circle"
-                      color="gold"
-                      size="sm"
-                      aria-label={`Add ${location.title} to table selection`}
-                      title={`Add ${location.title} to table selection`}
-                      onClick={() => {
-                        onAddLocationCardToSelection(location.locationSlug);
-                      }}
-                    >
-                      +
-                    </Button>
-                  ) : null}
-                  {onDeleteLocation ? (
-                    <Button
-                      variant="circle"
-                      color="blood"
-                      size="sm"
-                      aria-label={`Delete ${location.title}`}
-                      title={`Delete ${location.title}`}
-                      disabled={!editable}
-                      onClick={() => {
-                        handleDelete(location.locationSlug, location.title);
-                      }}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-3.5 w-3.5 fill-none stroke-current"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M8 6V4h8v2" />
-                        <path d="M6 6l1 14h10l1-14" />
-                        <path d="M10 10v7" />
-                        <path d="M14 10v7" />
-                      </svg>
-                    </Button>
-                  ) : null}
-                </div>
-                <Text
-                  variant="note"
-                  color="monster"
-                  className={
-                    copiedLocationSlug === location.locationSlug
-                      ? "opacity-100"
-                      : "opacity-0"
-                  }
-                >
-                  Copied
-                </Text>
+                ) : null}
               </div>
             </Panel>
           ))}

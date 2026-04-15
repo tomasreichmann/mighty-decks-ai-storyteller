@@ -151,6 +151,12 @@ const TAB_LABELS: Record<CampaignTab, string> = {
   "static-assets": "Static Assets",
 };
 
+const resolveCompactTitleInputSize = (title: string): number => {
+  const trimmedLength = title.trim().length;
+
+  return Math.min(Math.max(trimmedLength + 1, 5), 32);
+};
+
 const formatSessionCreatedAt = (createdAtIso: string): string => {
   const parsed = new Date(createdAtIso);
   if (Number.isNaN(parsed.getTime())) {
@@ -4139,60 +4145,79 @@ export const CampaignAuthoringPage = (): JSX.Element => {
       }
     >
       {storytellerSessionMode ? null : (
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            {!editable ? (
-              <Text variant="h2" color="iron">
-                {moduleDetail?.index.title ?? "Campaign"}
-              </Text>
-            ) : (
-              <input
-                type="text"
-                aria-label="Campaign title"
-                maxLength={120}
-                value={baseForm.title}
-                onChange={(event) => {
-                  setBaseValidationMessage(null);
-                  setBaseForm((current) => ({
-                    ...current,
-                    title: event.target.value,
-                  }));
-                  setBaseDirty(true);
-                }}
-                onBlur={handleBaseFieldBlur}
-                onKeyDown={(event) => {
-                  if (event.key !== "Enter") {
-                    return;
-                  }
-                  event.currentTarget.blur();
-                }}
-                className="m-0 w-full appearance-none border-0 bg-transparent p-0 font-heading text-3xl/none font-bold tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-4xl/none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
-              />
-            )}
-            <Text variant="body" color="iron-light" className="text-sm">
-              {moduleDetail?.index.slug
-                ? `/${moduleDetail.index.slug}`
-                : "Campaign Authoring"}
-            </Text>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {moduleDetail ? (
-              <Button
-                variant="ghost"
-                color="gold"
-                disabled={creatingSession}
-                onClick={() => {
-                  void handleCreateSession();
-                }}
-              >
-                {creatingSession ? "Creating Session..." : "Create Session"}
-              </Button>
+        <header className="stack gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex items-baseline gap-x-2">
+              {!editable ? (
+                <Text
+                  variant="h2"
+                  color="iron"
+                  className="text-[1.75rem] leading-none sm:text-[2.2rem] sm:leading-none"
+                >
+                  {moduleDetail?.index.title ?? "Campaign"}
+                </Text>
+              ) : (
+                <input
+                  type="text"
+                  aria-label="Campaign title"
+                  maxLength={120}
+                  size={resolveCompactTitleInputSize(baseForm.title)}
+                  value={baseForm.title}
+                  onChange={(event) => {
+                    setBaseValidationMessage(null);
+                    setBaseForm((current) => ({
+                      ...current,
+                      title: event.target.value,
+                    }));
+                    setBaseDirty(true);
+                  }}
+                  onBlur={handleBaseFieldBlur}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter") {
+                      return;
+                    }
+                    event.currentTarget.blur();
+                  }}
+                  className="m-0 max-w-full appearance-none border-0 bg-transparent p-0 font-heading text-[1.75rem] font-bold leading-none tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-[2.2rem] sm:leading-none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
+                />
+              )}
+            </div>
+            {!moduleDetail ? (
+              <div className="flex shrink-0 items-center gap-2">
+                <AutosaveStatusBadge
+                  status={autosaveStatus}
+                  message={autosaveMessage}
+                />
+              </div>
             ) : null}
-            <AutosaveStatusBadge
-              status={autosaveStatus}
-              message={autosaveMessage}
-            />
           </div>
+          {moduleDetail ? (
+            <AdventureModuleTabNav
+              moduleSlug={moduleDetail.index.slug}
+              tabs={tabItems}
+              buildTabPath={(moduleSlug, tabId) =>
+                buildCampaignRoute(moduleSlug, tabId as CampaignTab)
+              }
+              leadingContent={
+                <Button
+                  variant="ghost"
+                  color="gold"
+                  disabled={creatingSession}
+                  onClick={() => {
+                    void handleCreateSession();
+                  }}
+                >
+                  {creatingSession ? "Creating Session..." : "Create Session"}
+                </Button>
+              }
+              trailingContent={
+                <AutosaveStatusBadge
+                  status={autosaveStatus}
+                  message={autosaveMessage}
+                />
+              }
+            />
+          ) : null}
         </header>
       )}
 
@@ -4218,14 +4243,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
             </Message>
           ) : null}
 
-          <AdventureModuleTabNav
-            moduleSlug={moduleDetail.index.slug}
-            tabs={tabItems}
-            buildTabPath={(moduleSlug, tabId) =>
-              buildCampaignRoute(moduleSlug, tabId as CampaignTab)
-            }
-            leadingContent={
-              storytellerSessionMode ? (
+          {storytellerSessionMode ? (
+            <AdventureModuleTabNav
+              moduleSlug={moduleDetail.index.slug}
+              tabs={tabItems}
+              buildTabPath={(moduleSlug, tabId) =>
+                buildCampaignRoute(moduleSlug, tabId as CampaignTab)
+              }
+              showMobileMenu={storytellerSessionMode}
+              leadingContent={
                 <NavLink
                   to="/"
                   aria-label="Go to home page"
@@ -4239,17 +4265,15 @@ export const CampaignAuthoringPage = (): JSX.Element => {
                     decoding="async"
                   />
                 </NavLink>
-              ) : undefined
-            }
-            trailingContent={
-              storytellerSessionMode ? (
+              }
+              trailingContent={
                 <AutosaveStatusBadge
                   status={autosaveStatus}
                   message={autosaveMessage}
                 />
-              ) : undefined
-            }
-          />
+              }
+            />
+          ) : null}
 
           {storytellerSessionMode && tableSelection.length > 0 ? (
             <CampaignSessionSelectionStrip

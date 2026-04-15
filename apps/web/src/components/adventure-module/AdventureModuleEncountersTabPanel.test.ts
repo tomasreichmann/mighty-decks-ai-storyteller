@@ -10,6 +10,7 @@ test("AdventureModuleEncountersTabPanel exposes encounter delete affordance and 
 
   assert.match(source, /Delete \$\{encounter\.title\}/);
   assert.match(source, /<EncounterCardView encounter=\{encounter\} \/>/);
-  assert.match(source, /@encounter\/\$\{encounterSlug\}/);
-  assert.match(source, /Copy Shortcode/);
+  assert.match(source, /shortcode=\{\`@encounter\/\$\{encounter\.encounterSlug\}\`\}/);
+  assert.match(source, /ShortcodeField/);
+  assert.doesNotMatch(source, /Copy Shortcode/);
 });

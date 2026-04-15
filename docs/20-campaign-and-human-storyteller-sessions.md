@@ -98,6 +98,7 @@ Current behaviors:
 - autosave for campaign fields and entity editors
 - `Sessions` tab with historical and active session summaries
 - header `Create Session` action
+- tablet and narrower campaign-detail layouts collapse the shared section tabs into a header dropdown beside `Create Session`, while desktop keeps only the full tab rail
 - route-preserving entity editing like the module authoring flow
 
 Live refresh:
@@ -227,7 +228,7 @@ The `Chat` tab currently includes:
 - inline rendering for markdown images embedded in transcript text
 - the same shared session transcript presenter used by the player view, so wrapper styling and participant/system message treatment stay in sync
 - close-session action
-- a compact session-nav row where the Mighty Decks logo links home, `Chat` stays first in the tab order, the autosave indicator sits immediately after the tab rail, and tablet/mobile use a burger menu instead of the full button group
+- a compact session-nav row where the Mighty Decks logo links home, `Chat` stays first in the tab order, the autosave indicator sits immediately after the tab rail, and tablet/mobile use a labeled dropdown instead of the full button group
 
 The storyteller stays inside the same campaign-backed entity editors while the session is live.
 

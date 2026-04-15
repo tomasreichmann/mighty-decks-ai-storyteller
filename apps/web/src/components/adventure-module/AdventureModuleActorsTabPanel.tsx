@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
@@ -6,6 +6,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
 import { ActorCard } from "../cards/ActorCard";
+import { ShortcodeField } from "./ShortcodeField";
 
 interface AdventureModuleActorsTabPanelProps {
   actors: AdventureModuleResolvedActor[];
@@ -18,26 +19,6 @@ interface AdventureModuleActorsTabPanelProps {
   onAddActorCardToSelection?: (actorSlug: string) => void;
 }
 
-const copyToClipboard = async (value: string): Promise<void> => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
-
-  const textArea = document.createElement("textarea");
-  textArea.value = value;
-  textArea.setAttribute("readonly", "true");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  document.body.append(textArea);
-  textArea.select();
-  const copied = document.execCommand("copy");
-  textArea.remove();
-  if (!copied) {
-    throw new Error("Clipboard copy failed.");
-  }
-};
-
 export const AdventureModuleActorsTabPanel = ({
   actors,
   editable,
@@ -49,8 +30,6 @@ export const AdventureModuleActorsTabPanel = ({
   onAddActorCardToSelection,
 }: AdventureModuleActorsTabPanelProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedActorSlug, setCopiedActorSlug] = useState<string | null>(null);
-  const [copyError, setCopyError] = useState<string | null>(null);
 
   const filteredActors = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
@@ -62,28 +41,6 @@ export const AdventureModuleActorsTabPanel = ({
       return haystack.includes(normalizedSearch);
     });
   }, [actors, searchTerm]);
-
-  useEffect(() => {
-    if (!copiedActorSlug) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setCopiedActorSlug(null);
-    }, 1600);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [copiedActorSlug]);
-
-  const handleCopyShortcode = useCallback(async (actorSlug: string) => {
-    try {
-      await copyToClipboard(`@actor/${actorSlug}`);
-      setCopiedActorSlug(actorSlug);
-      setCopyError(null);
-    } catch {
-      setCopyError(`Could not copy @actor/${actorSlug}.`);
-    }
-  }, []);
 
   const handleDelete = useCallback(
     (actorSlug: string, title: string): void => {
@@ -124,11 +81,6 @@ export const AdventureModuleActorsTabPanel = ({
           {createError}
         </Message>
       ) : null}
-      {copyError ? (
-        <Message label="Copy failed" color="blood">
-          {copyError}
-        </Message>
-      ) : null}
 
       {filteredActors.length === 0 ? (
         <Panel>
@@ -164,73 +116,45 @@ export const AdventureModuleActorsTabPanel = ({
                   <Text variant="body" color="iron-light" className="text-sm">
                     {actor.summary ?? "No summary yet."}
                   </Text>
-                  <Text variant="note" color="steel-dark">
-                    {`@actor/${actor.actorSlug}`}
-                  </Text>
                 </div>
               </button>
               <div className="mt-auto flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <ShortcodeField
+                  shortcode={`@actor/${actor.actorSlug}`}
+                  onAddToSelection={
+                    onAddActorCardToSelection
+                      ? () => onAddActorCardToSelection(actor.actorSlug)
+                      : undefined
+                  }
+                />
+                {onDeleteActor ? (
                   <Button
-                    variant="ghost"
-                    color="cloth"
+                    variant="circle"
+                    color="blood"
                     size="sm"
+                    aria-label={`Delete ${actor.title}`}
+                    title={`Delete ${actor.title}`}
+                    disabled={!editable}
                     onClick={() => {
-                      void handleCopyShortcode(actor.actorSlug);
+                      handleDelete(actor.actorSlug, actor.title);
                     }}
                   >
-                    Copy Shortcode
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-3.5 w-3.5 fill-none stroke-current"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M6 6l1 14h10l1-14" />
+                      <path d="M10 10v7" />
+                      <path d="M14 10v7" />
+                    </svg>
                   </Button>
-                  {onAddActorCardToSelection ? (
-                    <Button
-                      variant="circle"
-                      color="gold"
-                      size="sm"
-                      aria-label={`Add ${actor.title} to table selection`}
-                      title={`Add ${actor.title} to table selection`}
-                      onClick={() => {
-                        onAddActorCardToSelection(actor.actorSlug);
-                      }}
-                    >
-                      +
-                    </Button>
-                  ) : null}
-                  {onDeleteActor ? (
-                    <Button
-                      variant="circle"
-                      color="blood"
-                      size="sm"
-                      aria-label={`Delete ${actor.title}`}
-                      title={`Delete ${actor.title}`}
-                      disabled={!editable}
-                      onClick={() => {
-                        handleDelete(actor.actorSlug, actor.title);
-                      }}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-3.5 w-3.5 fill-none stroke-current"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M8 6V4h8v2" />
-                        <path d="M6 6l1 14h10l1-14" />
-                        <path d="M10 10v7" />
-                        <path d="M14 10v7" />
-                      </svg>
-                    </Button>
-                  ) : null}
-                </div>
-                <Text
-                  variant="note"
-                  color="monster"
-                  className={copiedActorSlug === actor.actorSlug ? "opacity-100" : "opacity-0"}
-                >
-                  Copied
-                </Text>
+                ) : null}
               </div>
             </Panel>
           ))}

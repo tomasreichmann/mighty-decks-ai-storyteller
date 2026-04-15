@@ -22,7 +22,7 @@ test("ShortcodeField renders shortcode text with compact copy feedback", () => {
   assert.match(source, /onAddToSelection\?: \(\) => void/);
   assert.match(source, /addButtonLabel = "Add to table selection"/);
   assert.match(source, /onAddToSelection \?/);
-  assert.match(source, />\s*\+\s*</);
+  assert.match(source, /copied \? "OK" : "📋"/);
   assert.doesNotMatch(source, /Copy Shortcode/);
   assert.doesNotMatch(source, />\s*Shortcode\s*</);
 });

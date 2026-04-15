@@ -8,7 +8,9 @@ test("CampaignListPage loads campaigns and links into campaign detail", () => {
   assert.match(source, /export const CampaignListPage/);
   assert.match(source, /listCampaigns/);
   assert.match(source, /Campaigns/);
-  assert.match(source, /activeSessionCount/);
-  assert.match(source, /Source Module/);
-  assert.match(source, /\/campaign\/\$\{encodeURIComponent\(campaign\.slug\)\}\/base/);
+  assert.match(source, /CampaignListCard/);
+  assert.match(
+    source,
+    /repeat\(auto-fit,minmax\(20rem,30rem\)\)/,
+  );
 });

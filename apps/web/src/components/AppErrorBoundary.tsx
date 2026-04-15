@@ -37,7 +37,7 @@ export class AppErrorBoundary extends Component<
     }
 
     return (
-      <main className="app-shell py-8">
+      <main className="app-shell flex min-h-[100dvh] items-center py-8">
         <Message color="curse" label="App crashed while rendering">
           <Text variant="body" color="curse">
             This usually means a runtime error in the web app. Please share the

@@ -5,6 +5,7 @@ import { ImageCard } from "../common/ImageCard";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
+import { ShortcodeField } from "./ShortcodeField";
 
 export type EntityListTab =
   | "actors"
@@ -49,26 +50,6 @@ const TrashIcon = (): JSX.Element => (
   </svg>
 );
 
-const copyToClipboard = async (value: string): Promise<void> => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
-
-  const textArea = document.createElement("textarea");
-  textArea.value = value;
-  textArea.setAttribute("readonly", "true");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  document.body.append(textArea);
-  textArea.select();
-  const copied = document.execCommand("copy");
-  textArea.remove();
-  if (!copied) {
-    throw new Error("Clipboard copy failed.");
-  }
-};
-
 export const EntityList = ({
   tab,
   tabLabel,
@@ -79,8 +60,6 @@ export const EntityList = ({
 }: EntityListProps): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-  const [copyError, setCopyError] = useState<string | null>(null);
   const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
 
   const normalizedSearchTerm = normalize(searchTerm);
@@ -100,20 +79,6 @@ export const EntityList = ({
     setCurrentPage(1);
   }, [normalizedSearchTerm]);
 
-  useEffect(() => {
-    if (!copiedSlug) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      setCopiedSlug(null);
-    }, 1500);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [copiedSlug]);
-
   const pageCount = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
 
   useEffect(() => {
@@ -123,20 +88,6 @@ export const EntityList = ({
   const effectivePage = Math.min(currentPage, pageCount);
   const pageStart = (effectivePage - 1) * PAGE_SIZE;
   const visibleItems = filteredItems.slice(pageStart, pageStart + PAGE_SIZE);
-
-  const handleCopyCode = useCallback(
-    async (slug: string): Promise<void> => {
-      const code = `@${tab}/${slug}`;
-      try {
-        await copyToClipboard(code);
-        setCopiedSlug(slug);
-        setCopyError(null);
-      } catch {
-        setCopyError(`Could not copy ${code}.`);
-      }
-    },
-    [tab],
-  );
   const handleDeleteRequest = useCallback((title: string): void => {
     if (!window.confirm(`Delete "${title}"?`)) {
       return;
@@ -169,11 +120,6 @@ export const EntityList = ({
         placeholder={`Search ${tabLabel.toLowerCase()} by title, description, or slug...`}
       />
 
-      {copyError ? (
-        <Message label="Copy failed" color="blood">
-          {copyError}
-        </Message>
-      ) : null}
       {deleteNotice ? (
         <Message label="Delete placeholder" color="bone">
           {deleteNotice}
@@ -216,43 +162,22 @@ export const EntityList = ({
                     <Text variant="body" color="iron-light" className="text-sm">
                       {item.description}
                     </Text>
-                    <Text variant="note" color="steel-dark">
-                      {referenceCode}
-                    </Text>
                   </div>
                   <div className="mt-auto flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        color="cloth"
-                        size="sm"
-                        onClick={() => {
-                          void handleCopyCode(item.slug);
-                        }}
-                      >
-                        Copy Code
-                      </Button>
-                      <Button
-                        variant="circle"
-                        color="blood"
-                        size="sm"
-                        aria-label={`Delete ${item.title}`}
-                        title={`Delete ${item.title}`}
-                        disabled={!editable}
-                        onClick={() => {
-                          handleDeleteRequest(item.title);
-                        }}
-                      >
-                        <TrashIcon />
-                      </Button>
-                    </div>
-                    <Text
-                      variant="note"
-                      color="monster"
-                      className={copiedSlug === item.slug ? "opacity-100" : "opacity-0"}
+                    <ShortcodeField shortcode={referenceCode} />
+                    <Button
+                      variant="circle"
+                      color="blood"
+                      size="sm"
+                      aria-label={`Delete ${item.title}`}
+                      title={`Delete ${item.title}`}
+                      disabled={!editable}
+                      onClick={() => {
+                        handleDeleteRequest(item.title);
+                      }}
                     >
-                      Copied
-                    </Text>
+                      <TrashIcon />
+                    </Button>
                   </div>
                 </Panel>
               );

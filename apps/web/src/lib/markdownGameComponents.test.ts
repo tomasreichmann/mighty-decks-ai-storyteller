@@ -22,6 +22,16 @@ test("markdownGameComponents only offers custom module assets in insert options"
   );
 });
 
+test("markdownGameComponents uses compact insert labels without slugs", () => {
+  const source = readFileSync(
+    new URL("./markdownGameComponents.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /label:\s*title,/);
+  assert.doesNotMatch(source, /label:\s*`\\$\{title\} \\(\\$\{slug\}\\)`/);
+});
+
 test("markdownGameComponents resolves modifier-bearing asset shortcodes as built-in assets", () => {
   const source = readFileSync(
     new URL("./markdownGameComponents.ts", import.meta.url),
@@ -45,5 +55,31 @@ test("markdownGameComponents rejects unknown modifier-bearing asset shortcodes",
   assert.match(
     source,
     /if \(!assetModifierCardsBySlug\.has\(normalizedModifierSlug as AssetModifierSlug\)\) \{\s*return null;\s*\}/,
+  );
+});
+
+test("markdownEncounterComponents uses compact insert labels without slugs", () => {
+  const source = readFileSync(
+    new URL("./markdownEncounterComponents.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /label:\s*encounter\.title,/);
+  assert.doesNotMatch(
+    source,
+    /label:\s*`\\$\{encounter\.title\} \\(\\$\{encounter\.encounterSlug\}\\)`/,
+  );
+});
+
+test("markdownQuestComponents uses compact insert labels without slugs", () => {
+  const source = readFileSync(
+    new URL("./markdownQuestComponents.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /label:\s*quest\.title,/);
+  assert.doesNotMatch(
+    source,
+    /label:\s*`\\$\{quest\.title\} \\(\\$\{quest\.questSlug\}\\)`/,
   );
 });

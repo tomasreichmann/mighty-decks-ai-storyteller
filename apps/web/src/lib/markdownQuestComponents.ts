@@ -18,7 +18,7 @@ export const createQuestCardOption = (
 ): QuestCardOption => ({
   slug: quest.questSlug,
   jsx: createQuestCardJsx(quest.questSlug),
-  label: `${quest.title} (${quest.questSlug})`,
+  label: quest.title,
 });
 
 export const buildQuestCardOptions = (

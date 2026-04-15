@@ -2,10 +2,10 @@ import { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { AdventureModuleDetail } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { AdventureModuleIndex } from "@mighty-decks/spec/adventureModule";
+import { CTAButton } from "../components/common/CTAButton";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
-import { Button } from "../components/common/Button";
 import { Heading } from "../components/common/Heading";
 import { AdventureModuleActorEditor } from "../components/adventure-module/AdventureModuleActorEditor";
 import { AdventureModuleActorsTabPanel } from "../components/adventure-module/AdventureModuleActorsTabPanel";
@@ -95,6 +95,12 @@ const TAB_ITEMS: AdventureModuleTabItem[] = AUTHORING_TABS.map((tab) => ({
   id: tab,
   label: TAB_LABELS[tab],
 }));
+
+const resolveCompactTitleInputSize = (title: string): number => {
+  const trimmedLength = title.trim().length;
+
+  return Math.min(Math.max(trimmedLength + 1, 5), 32);
+};
 
 const isAuthoringTab = (value: string | undefined): value is AuthoringTab =>
   Boolean(value && AUTHORING_TABS.includes(value as AuthoringTab));
@@ -3789,75 +3795,96 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
 
   return (
     <div className="app-shell stack py-8 gap-4">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          {editable ? (
-            <input
-              type="text"
-              aria-label="Module title"
-              maxLength={120}
-              value={baseForm.title}
-              onChange={(event) => {
-                setBaseValidationMessage(null);
-                setBaseForm((current) => ({
-                  ...current,
-                  title: event.target.value,
-                }));
-                setBaseDirty(true);
-              }}
-              onBlur={handleBaseFieldBlur}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") {
-                  return;
-                }
-                event.currentTarget.blur();
-              }}
-              className="m-0 w-full appearance-none border-0 bg-transparent p-0 font-heading text-[2.4rem] font-bold leading-none tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-[3.4rem] sm:leading-none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
-            />
-          ) : (
-            <Heading
-              variant="h1"
-              color="iron"
-              className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
-              highlightProps={{
-                color: "gold",
-                lineHeight: 8,
-                brushHeight: 6,
-                lineOffsets: [0, 8, 14, 20],
-                className:
-                  "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
-              }}
-            >
-              {moduleDetail?.index.title ?? "Adventure Module"}
-            </Heading>
-          )}
-          <Text
-            variant="body"
-            color="iron-light"
-            className="relative z-10 mt-3 text-sm"
-          >
-            {moduleDetail?.index.slug
-              ? `/${moduleDetail.index.slug}`
-              : "Authoring"}
-          </Text>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+      <header className="stack gap-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 flex items-baseline gap-x-2">
+            {editable ? (
+              <input
+                type="text"
+                aria-label="Module title"
+                maxLength={120}
+                size={resolveCompactTitleInputSize(baseForm.title)}
+                value={baseForm.title}
+                onChange={(event) => {
+                  setBaseValidationMessage(null);
+                  setBaseForm((current) => ({
+                    ...current,
+                    title: event.target.value,
+                  }));
+                  setBaseDirty(true);
+                }}
+                onBlur={handleBaseFieldBlur}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") {
+                    return;
+                  }
+                  event.currentTarget.blur();
+                }}
+                className="m-0 max-w-full appearance-none border-0 bg-transparent p-0 font-heading text-[1.75rem] font-bold leading-none tracking-tight text-kac-iron shadow-none outline-none ring-0 transition sm:text-[2.2rem] sm:leading-none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40"
+              />
+            ) : (
+              <Heading
+                variant="h1"
+                color="iron"
+                className="relative z-0 text-[1.75rem] leading-none sm:text-[2.2rem] sm:leading-none"
+                highlightProps={{
+                  color: "gold",
+                  lineHeight: 8,
+                  brushHeight: 6,
+                  lineOffsets: [0, 8, 14, 20],
+                  className:
+                    "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
+                }}
+              >
+                {moduleDetail?.index.title ?? "Adventure Module"}
+              </Heading>
+            )}
+          </div>
           {moduleDetail ? (
-            <Button
+            <CTAButton
               color="gold"
+              containerClassName="hidden lg:inline-flex"
               disabled={creatingCampaign}
               onClick={() => {
                 void handleCreateCampaign();
               }}
             >
               {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
-            </Button>
-          ) : null}
-          <AutosaveStatusBadge
-            status={autosaveStatus}
-            message={autosaveMessage}
-          />
+            </CTAButton>
+          ) : (
+            <div className="flex shrink-0 items-center gap-2">
+              <AutosaveStatusBadge
+                status={autosaveStatus}
+                message={autosaveMessage}
+              />
+            </div>
+          )}
         </div>
+        {moduleDetail ? (
+          <AdventureModuleTabNav
+            moduleSlug={moduleDetail.index.slug}
+            tabs={TAB_ITEMS}
+            showMobileMenu
+            leadingContent={
+              <CTAButton
+                color="gold"
+                containerClassName="lg:hidden"
+                disabled={creatingCampaign}
+                onClick={() => {
+                  void handleCreateCampaign();
+                }}
+              >
+                {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
+              </CTAButton>
+            }
+            trailingContent={
+              <AutosaveStatusBadge
+                status={autosaveStatus}
+                message={autosaveMessage}
+              />
+            }
+          />
+        ) : null}
       </header>
 
       {error ? (
@@ -3881,11 +3908,6 @@ export const AdventureModuleAuthoringPage = (): JSX.Element => {
               You can view this module, but only its author can edit.
             </Message>
           ) : null}
-
-          <AdventureModuleTabNav
-            moduleSlug={moduleDetail.index.slug}
-            tabs={TAB_ITEMS}
-          />
 
           {entityId ? (
             activeTab === "actors" ? (
