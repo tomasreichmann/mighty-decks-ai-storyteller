@@ -75,17 +75,16 @@ Route: `/adventure-module/list`
 
 User sees a list with:
 
-- author-owned modules first, each with `Edit` and `Delete` (archive) actions.
+- author-owned modules first, each rendered as a shared cover-led story tile with visible author, tags, ownership/status pills, and explicit `Open Module` plus `Create Campaign` actions.
 - non-owned published modules after author-owned entries.
-- primary action: `Create a new Adventure Module`.
+- primary action: `Create Module`.
 
 From this page:
 
-- Module cards are clickable and open `/adventure-module/:slug/player-info`.
-- `Edit` actions redirect to `/adventure-module/:slug/player-info`.
+- Module cards are not whole-card links; explicit `Open Module` and `Create Campaign` buttons carry the primary actions.
+- `Open Module` redirects to `/adventure-module/:slug/player-info`.
 - `Create Campaign` creates a campaign fork from that module and redirects to `/campaign/:slug/base`.
-- `Delete` opens archive confirmation and transitions status to `archived`.
-- `Create a new Adventure Module` redirects to `/adventure-module/new`.
+- `Create Module` redirects to `/adventure-module/new`.
 
 ### 4.2 New Adventure Module
 
@@ -119,6 +118,7 @@ Shell behavior:
 - Header also exposes `Create Campaign` so authors can fork the current module into a campaign without leaving the page.
 - On desktop, `Create Campaign` sits on the right side of the title row while the full tab rail stays on its own row below.
 - On tablet-sized layouts and narrower, the tab rail collapses into a section dropdown in the same header row, immediately after `Create Campaign`.
+- The route now delegates its shared title-row and common tab rendering through extracted `SharedAuthoringHeader` and `CommonAuthoringTabContent` components so module and campaign authoring stay aligned.
 - Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
 - `Player Info` is editable in this step (`player summary` + `player info text`).
@@ -181,6 +181,7 @@ Behavior:
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
 - The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
+- The custom item picker for authored cards, custom assets, encounters, and quests uses a compact dropdown: the closed trigger shows the selected title, and the open menu shows `title` plus a muted second-line bare slug.
 - Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Player text must remain spoiler-safe at publish validation.
 
@@ -200,6 +201,7 @@ Behavior:
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
 - The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
+- The custom item picker for authored cards, custom assets, encounters, and quests uses the same compact two-line dropdown treatment as `Player Info`, keeping slugs visible without widening the toolbar.
 - Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Storyteller text can include spoilers.
 

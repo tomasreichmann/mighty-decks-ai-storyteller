@@ -1,16 +1,14 @@
-import { ImageCard } from "../common/ImageCard";
-import { Label } from "../common/Label";
-import { Panel } from "../common/Panel";
+import type { AdventureModuleListItem } from "@mighty-decks/spec/adventureModuleAuthoring";
+import { Button } from "../common/Button";
+import { StoryTileCard } from "../common/StoryTileCard";
+import { Tag } from "../common/Tag";
 import { Text } from "../common/Text";
 import { resolveServerUrl } from "../../lib/socket";
 
 interface AdventureModuleCardProps {
-  moduleId: string;
-  name: string;
-  imageUrl: string;
-  author: string;
-  createdAtIso: string;
-  tags?: string[];
+  module: AdventureModuleListItem;
+  creatingCampaign?: boolean;
+  onCreateCampaign: () => void;
 }
 
 const formatDate = (value: string): string => {
@@ -40,43 +38,102 @@ const resolveCardImageUrl = (imageUrl: string): string => {
   return imageUrl;
 };
 
+const resolveStatusTone = (
+  status: AdventureModuleListItem["status"],
+): "cloth" | "monster" | "steel" => {
+  switch (status) {
+    case "published":
+      return "monster";
+    case "archived":
+      return "steel";
+    case "draft":
+    default:
+      return "cloth";
+  }
+};
+
+const formatStatusLabel = (
+  status: AdventureModuleListItem["status"],
+): string => {
+  switch (status) {
+    case "published":
+      return "Published";
+    case "archived":
+      return "Archived";
+    case "draft":
+    default:
+      return "Draft";
+  }
+};
+
 export const AdventureModuleCard = ({
-  moduleId,
-  name,
-  imageUrl,
-  author,
-  createdAtIso,
-  tags = [],
+  module,
+  creatingCampaign = false,
+  onCreateCampaign,
 }: AdventureModuleCardProps): JSX.Element => {
   return (
-    <Panel className="w-full max-w-[336px]" contentClassName="stack gap-3 items-center">
-      <ImageCard
-        imageUrl={resolveCardImageUrl(imageUrl)}
-        imageAlt={`${name} module cover`}
-        label={name}
-      />
-
-      <div className="w-full stack gap-1">
-        <Text variant="body" color="iron" className="text-sm">
-          <span className="font-bold">Author:</span> {author}
-        </Text>
-        <Text variant="body" color="iron-light" className="text-xs">
-          <span className="font-bold">Created:</span> {formatDate(createdAtIso)}
-        </Text>
-        <Text variant="note" color="steel-dark" className="text-[11px] break-all">
-          ID: {moduleId}
-        </Text>
-      </div>
-
-      {tags.length > 0 ? (
-        <div className="flex w-full flex-wrap gap-2">
-          {tags.map((tag) => (
-            <Label key={tag} variant="cloth" rotate={false} className="text-[10px]">
-              {tag}
-            </Label>
-          ))}
-        </div>
-      ) : null}
-    </Panel>
+    <StoryTileCard
+      title={module.title}
+      imageUrl={resolveCardImageUrl(module.coverImageUrl ?? "/sample-scene-image.png")}
+      imageAlt={`${module.title} module cover`}
+      imageLoading="lazy"
+      imageDecoding="async"
+      topMeta={
+        <>
+          {module.ownedByRequester ? (
+            <Tag tone="gold" size="sm">
+              Mine
+            </Tag>
+          ) : null}
+          <Tag tone={resolveStatusTone(module.status)} size="sm">
+            {formatStatusLabel(module.status)}
+          </Tag>
+          <Tag tone="steel" size="sm">
+            Created {formatDate(module.createdAtIso)}
+          </Tag>
+        </>
+      }
+      kindBadge={
+        <Tag tone="bone" size="sm">
+          Module
+        </Tag>
+      }
+      summary={module.summary}
+      supportingContent={
+        <>
+          <Text variant="note" color="steel-dark" className="text-xs">
+            By {module.authorLabel}
+          </Text>
+          {module.tags.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {module.tags.map((tag) => (
+                <Tag key={tag} tone="cloth" size="sm">
+                  {tag}
+                </Tag>
+              ))}
+            </div>
+          ) : null}
+        </>
+      }
+      actions={
+        <>
+          <Button
+            href={`/adventure-module/${encodeURIComponent(module.slug)}/player-info`}
+            color="cloth"
+            size="sm"
+          >
+            Open Module
+          </Button>
+          <Button
+            color="gold"
+            size="sm"
+            disabled={creatingCampaign}
+            onClick={onCreateCampaign}
+          >
+            {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
+          </Button>
+        </>
+      }
+    />
   );
 };

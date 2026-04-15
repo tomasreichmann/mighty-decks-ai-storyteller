@@ -175,17 +175,17 @@ Components:
 
 - `AdventureModuleListHeader`
 - `AdventureModuleListPanel`
-- `AdventureModuleListItemCard`
+- `AdventureModuleCard`
+- shared `StoryTileCard`
 - `ModuleVisibilityBadge`
-- `ArchiveModuleDialog`
 - `CreateAdventureModuleButton`
 
 List rules:
 
 - Author-owned modules render first.
 - Non-author list view includes published modules only.
-- Row actions for author-owned modules: `Edit`, `Delete` (archive).
-- Module cards are clickable and open `/adventure-module/:slug/player-info`.
+- Module cards use explicit in-card `Open Module` and `Create Campaign` actions rather than whole-card click targets.
+- Module cards surface author, tags, ownership/status pills, and cover art inside the shared story-tile shell.
 
 ---
 
@@ -215,13 +215,14 @@ Post-MVP authoring shell route for tabbed editing.
 
 Shared shell components:
 
-- `AdventureModuleAuthoringHeader`
+- `SharedAuthoringHeader`
 - `AdventureModuleTabNav`
   - supports optional leading/trailing slot content for session-specific chrome such as a home-link logo and autosave badge
   - collapses to a labeled vertical dropdown on tablet/mobile breakpoints while keeping the full button rail on desktop
 - `AutosaveStatusBadge`
 - `PublishModuleButton`
-- `AuthoringTabContentHost`
+- `CommonAuthoringTabContent`
+- shared authoring helpers in `lib/authoring/sharedAuthoring`
 
 Tabs:
 
@@ -346,6 +347,7 @@ Components:
 Behavior:
 
 - keep one major surface per campaign card
+- reuse the same shared `StoryTileCard` shell as the module list, with visible source-module context and explicit `Open Campaign` plus `View Sessions` actions
 - avoid nesting additional framed panels inside campaign cards for metadata rows or action groups
 - rely on spacing, hierarchy, and button grouping before adding extra framed chrome
 
@@ -415,9 +417,11 @@ Storyteller campaign-session route.
 
 Components:
 
-- campaign shell for authoring tabs
+- campaign shell for authoring tabs via `SharedAuthoringHeader` and `CommonAuthoringTabContent`
 - dedicated live transcript tab for `chat`
 - lighter roster rail/sidebar for live play
+- `CampaignSessionsTabContent`
+- `CampaignStorytellerSessionTabContent`
 
 Behavior:
 

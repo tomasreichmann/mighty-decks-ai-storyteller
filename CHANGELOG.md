@@ -42,6 +42,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Move the Adventure Module `Create Campaign` CTA onto the desktop title row while keeping the tablet/mobile version beside the collapsed section dropdown.
 - Tighten the Adventure Module and Campaign authoring headers so the editable title field shrinks to a five-character minimum, the URI is removed, and the overall title treatment reads smaller and more compact.
 - Remove slug IDs from the Adventure Module markdown insert dropdown labels so the toolbar stays more compact.
+- Unify Adventure Module and Campaign list pages around a shared cover-led story tile shell with explicit in-card buttons, visible module author/tag metadata, and visible campaign source-module context.
+- Replace the Adventure Module markdown item picker for custom cards, encounters, quests, and custom assets with a compact two-line dropdown that keeps the title in the trigger and shows the slug on a muted second line in the open menu.
+- Extract the shared module/campaign authoring shell into reusable authoring helpers, a shared header, a shared common-tab renderer, and campaign-only session tab components so the route files stay smaller without changing autosave or entity workflows.
 - Add true delete endpoints for Adventure Modules, Campaigns, and Campaign Sessions so smoke tests and live-environment cleanup can remove created records.
 - Keep the campaign-session outcome action icon-only, but update its accessible label and title to `Play an Outcome card`.
 - Center the global route loading fallback, restyle `Loading...` as a `Label`, and place the existing pending indicator above it.
@@ -155,6 +158,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Update campaign session docs to note that supported component shortcodes now render inline inside shared transcript messages.
 - Update the authoring, UI, event-model, and campaign-session docs to describe the reusable image button-plus-modal flow in MDX editors and session composers, plus inline markdown image rendering inside session transcripts.
 - Update Adventure Module authoring docs to describe the responsive header dropdown that now replaces the standalone collapsed section menu on tablet/mobile widths.
+- Update the Adventure Module, Campaign, and shared UI docs to describe the unified story-tile cards, the two-line markdown item picker, and the extracted shared authoring foundation.
 
 ## [0.1.0] - 2026-03-13
 

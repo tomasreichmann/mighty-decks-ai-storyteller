@@ -67,7 +67,20 @@ Storyteller session tabs:
 
 ---
 
-## 3. Campaign Creation
+## 3. Campaign List
+
+Route: `/campaign/list`
+
+Current behaviors:
+
+- each campaign renders as the same shared cover-led story tile used by Adventure Modules, adapted with campaign-specific metadata
+- cards expose explicit `Open Campaign` and `View Sessions` buttons instead of relying on whole-card click targets
+- source-module context is visible on the card so search matches on the source module have a visible on-screen explanation
+- search matches title, summary, source module title, and slug
+
+---
+
+## 4. Campaign Creation
 
 Campaigns are created from Adventure Modules only.
 
@@ -89,7 +102,7 @@ During the copy:
 
 ---
 
-## 4. Campaign Detail
+## 5. Campaign Detail
 
 Campaign detail intentionally reuses the Adventure Module authoring shell with campaign-backed APIs.
 
@@ -100,6 +113,8 @@ Current behaviors:
 - header `Create Session` action
 - tablet and narrower campaign-detail layouts collapse the shared section tabs into a header dropdown beside `Create Session`, while desktop keeps only the full tab rail
 - route-preserving entity editing like the module authoring flow
+- the route now shares extracted authoring infrastructure with Adventure Module authoring, including shared tab metadata, validators/mappers, `SharedAuthoringHeader`, and `CommonAuthoringTabContent`
+- campaign-only live-session surfaces stay campaign-local through dedicated extracted session tab components instead of bloating the shared shell
 
 Live refresh:
 
@@ -111,7 +126,7 @@ This slice is refresh-based, not CRDT/live-typing collaboration.
 
 ---
 
-## 5. Session Lifecycle
+## 6. Session Lifecycle
 
 Session statuses:
 
@@ -132,7 +147,7 @@ Closing behavior:
 
 ---
 
-## 6. Session Lobby Flow
+## 7. Session Lobby Flow
 
 Route: `/campaign/:campaignSlug/session/:sessionId`
 
@@ -154,7 +169,7 @@ This allows one person to test activation, chat, and session closure without nee
 
 ---
 
-## 7. Player Flow
+## 8. Player Flow
 
 Claim route: `/campaign/:campaignSlug/session/:sessionId/player`
 
@@ -201,7 +216,7 @@ Not yet included:
 
 ---
 
-## 8. Storyteller Flow
+## 9. Storyteller Flow
 
 Route: `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab`
 
@@ -247,7 +262,7 @@ Current UX direction:
 
 ---
 
-## 9. Realtime Contract
+## 10. Realtime Contract
 
 REST handles:
 
@@ -313,7 +328,7 @@ Realtime stability note:
 
 ---
 
-## 10. Known Limits In This Slice
+## 11. Known Limits In This Slice
 
 - No account-backed ownership or permissions
 - No campaign-level dedicated storyteller assignment outside sessions

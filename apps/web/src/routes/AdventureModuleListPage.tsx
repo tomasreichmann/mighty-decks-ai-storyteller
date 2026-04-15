@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { AdventureModuleListItem } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { AdventureModuleCard } from "../components/adventure-module/AdventureModuleCard";
 import { Button } from "../components/common/Button";
@@ -14,8 +14,6 @@ import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
 import { createCampaign } from "../lib/campaignApi";
 
 const PAGE_SIZE = 20;
-const FALLBACK_IMAGE_URL = "/sample-scene-image.png";
-
 const normalize = (value: string): string => value.trim().toLowerCase();
 
 const matchesSearch = (module: AdventureModuleListItem, searchTerm: string): boolean => {
@@ -204,34 +202,16 @@ export const AdventureModuleListPage = (): JSX.Element => {
         </Panel>
       ) : visibleModules.length > 0 ? (
         <>
-          <div className="flex flex-wrap gap-4">
+          <div className="grid gap-4 lg:[grid-template-columns:repeat(auto-fit,minmax(20rem,30rem))]">
             {visibleModules.map((module) => (
-              <div key={module.moduleId} className="stack gap-2">
-                <Link
-                  to={`/adventure-module/${encodeURIComponent(module.slug)}/player-info`}
-                  className="block rounded-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/60"
-                >
-                  <AdventureModuleCard
-                    moduleId={module.moduleId}
-                    name={module.title}
-                    imageUrl={module.coverImageUrl ?? FALLBACK_IMAGE_URL}
-                    author={module.authorLabel}
-                    createdAtIso={module.createdAtIso}
-                    tags={module.tags}
-                  />
-                </Link>
-                <CTAButton
-                  color="gold"
-                  disabled={creatingCampaignModuleId === module.moduleId}
-                  onClick={() => {
-                    void handleCreateCampaign(module);
-                  }}
-                >
-                  {creatingCampaignModuleId === module.moduleId
-                    ? "Creating Campaign..."
-                    : "Create Campaign"}
-                </CTAButton>
-              </div>
+              <AdventureModuleCard
+                key={module.moduleId}
+                module={module}
+                creatingCampaign={creatingCampaignModuleId === module.moduleId}
+                onCreateCampaign={() => {
+                  void handleCreateCampaign(module);
+                }}
+              />
             ))}
           </div>
 

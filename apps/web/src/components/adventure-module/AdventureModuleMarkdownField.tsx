@@ -41,6 +41,10 @@ import {
 } from "../../lib/workflowLabApi";
 import { assetBaseCardsByGroup, assetModifierCards } from "../../data/assetCards";
 import { Button } from "../common/Button";
+import {
+  CompactOptionPicker,
+  type CompactOptionPickerItem,
+} from "../common/CompactOptionPicker";
 import { MarkdownImageInsertButton } from "../MarkdownImageInsertButton";
 import { ContextMenu, type ContextMenuRow } from "../common/ContextMenu";
 import type { DropdownTriggerRenderProps } from "../common/Dropdown";
@@ -216,6 +220,7 @@ interface CreateEditorPluginsArgs {
   insertType: ToolbarInsertType;
   insertSlug: string;
   insertOptions: (GameCardOption | EncounterCardOption | QuestCardOption)[];
+  insertOptionItems: CompactOptionPickerItem[];
   genericAssetBaseSlug: string;
   genericAssetModifierSlug: string;
   insertDisabled: boolean;
@@ -265,7 +270,7 @@ const questCardJsxDescriptor: JsxComponentDescriptor = {
 const renderToolbarInsertControls = ({
   insertType,
   insertSlug,
-  insertOptions,
+  insertOptionItems,
   genericAssetBaseSlug,
   genericAssetModifierSlug,
   insertDisabled,
@@ -335,41 +340,23 @@ const renderToolbarInsertControls = ({
         </select>
       </>
     ) : insertType === "CustomAsset" ? (
-      <select
-        aria-label="Insert custom asset"
+      <CompactOptionPicker
+        ariaLabel="Insert custom asset"
         value={insertSlug}
-        onChange={(event) => onInsertSlugChange(event.target.value)}
+        items={insertOptionItems}
+        emptyLabel="No custom assets"
         disabled={insertDisabled}
-        className="h-7 min-w-[11rem] max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {insertOptions.length > 0 ? (
-          insertOptions.map((option) => (
-            <option key={option.jsx} value={option.slug}>
-              {option.label}
-            </option>
-          ))
-        ) : (
-          <option value="">No custom assets</option>
-        )}
-      </select>
+        onChange={onInsertSlugChange}
+      />
     ) : (
-      <select
-        aria-label="Insert card"
+      <CompactOptionPicker
+        ariaLabel="Insert card"
         value={insertSlug}
-        onChange={(event) => onInsertSlugChange(event.target.value)}
+        items={insertOptionItems}
+        emptyLabel="No cards"
         disabled={insertDisabled}
-        className="h-7 min-w-[11rem] max-w-[14rem] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-1.5 text-xs text-kac-iron font-ui disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {insertOptions.length > 0 ? (
-          insertOptions.map((option) => (
-            <option key={option.jsx} value={option.slug}>
-              {option.label}
-            </option>
-          ))
-        ) : (
-          <option value="">No cards</option>
-        )}
-      </select>
+        onChange={onInsertSlugChange}
+      />
     )}
     <Button
       variant="solid"
@@ -1093,7 +1080,16 @@ export const AdventureModuleMarkdownField = ({
       ? encounterCardOptions
       : insertType === "QuestCard"
         ? questCardOptions
-      : gameCardOptionsByType[resolvedInsertType];
+        : gameCardOptionsByType[resolvedInsertType];
+  const insertOptionItems = useMemo<CompactOptionPickerItem[]>(
+    () =>
+      insertOptions.map((option) => ({
+        value: option.slug,
+        label: option.label,
+        secondaryLabel: option.slug,
+      })),
+    [insertOptions],
+  );
   const insertHasChoices =
     insertType === "GenericAsset"
       ? genericAssetBaseOptions.length > 0
@@ -1170,10 +1166,11 @@ export const AdventureModuleMarkdownField = ({
         insertType,
         insertSlug,
         insertOptions,
-      genericAssetBaseSlug,
-      genericAssetModifierSlug,
-      insertDisabled: insertControlsDisabled,
-      insertButtonDisabled: insertDisabled,
+        insertOptionItems,
+        genericAssetBaseSlug,
+        genericAssetModifierSlug,
+        insertDisabled: insertControlsDisabled,
+        insertButtonDisabled: insertDisabled,
         onInsertTypeChange: (nextType) => {
           setInsertType(nextType);
           setInsertErrorMessage(null);
@@ -1198,6 +1195,7 @@ export const AdventureModuleMarkdownField = ({
       handleInsertFromToolbar,
       insertControlsDisabled,
       insertDisabled,
+      insertOptionItems,
       insertOptions,
       insertSlug,
       insertType,

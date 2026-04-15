@@ -38,6 +38,19 @@ test("AdventureModuleMarkdownField exposes Quest insertion with canonical QuestC
   assert.match(source, /createQuestCardJsx/);
 });
 
+test("AdventureModuleMarkdownField uses a compact dropdown picker for card items with visible slug context", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /CompactOptionPicker/);
+  assert.match(source, /CompactOptionPickerItem/);
+  assert.match(source, /secondaryLabel:\s*option\.slug/);
+  assert.doesNotMatch(source, /aria-label="Insert card"[\s\S]*<select/);
+  assert.doesNotMatch(source, /aria-label="Insert custom asset"[\s\S]*<select/);
+});
+
 test("AdventureModuleMarkdownField enables standard markdown image tooling and reusable image modal insertion", () => {
   const source = readFileSync(
     new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
