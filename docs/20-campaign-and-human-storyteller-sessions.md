@@ -111,7 +111,8 @@ Current behaviors:
 - autosave for campaign fields and entity editors
 - `Sessions` tab with historical and active session summaries
 - header `Create Session` action
-- tablet and narrower campaign-detail layouts collapse the shared section tabs into a header dropdown beside `Create Session`, while desktop keeps only the full tab rail
+- on desktop, `Create Session` sits on the right side of the title row with the same highlighted CTA treatment used by Adventure Module `Create Campaign`
+- tablet and narrower campaign-detail layouts collapse the shared section tabs into a header dropdown beside `Create Session`
 - route-preserving entity editing like the module authoring flow
 - the route now shares extracted authoring infrastructure with Adventure Module authoring, including shared tab metadata, validators/mappers, `SharedAuthoringHeader`, and `CommonAuthoringTabContent`
 - campaign-only live-session surfaces stay campaign-local through dedicated extracted session tab components instead of bloating the shared shell

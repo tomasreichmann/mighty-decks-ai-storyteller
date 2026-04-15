@@ -71,7 +71,11 @@ test("CampaignAuthoringPage uses AdventureModuleTabNav as the non-session header
   assert.doesNotMatch(source, /<AdventureModuleSectionMenu/);
   assert.match(
     source,
-    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*navLeadingContent=\{[\s\S]*<Button[\s\S]*Create Session/,
+    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*titleRowTrailingContent=\{[\s\S]*<CTAButton[\s\S]*containerClassName="hidden lg:inline-flex"[\s\S]*Create Session/,
+  );
+  assert.match(
+    source,
+    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*navLeadingContent=\{[\s\S]*<CTAButton[\s\S]*containerClassName="lg:hidden"[\s\S]*Create Session/,
   );
   assert.match(
     source,

@@ -40,6 +40,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Collapse Adventure Module tab navigation into a single header dropdown on tablet/mobile so the authoring page no longer renders a standalone duplicate section control beside the tab rail.
 - Lower the Adventure Module tab rail collapse breakpoint so the full tabs show sooner, and keep the small-screen control as a labeled dropdown with a larger rotating caret and ghost-style menu items.
 - Move the Adventure Module `Create Campaign` CTA onto the desktop title row while keeping the tablet/mobile version beside the collapsed section dropdown.
+- Move the campaign-detail `Create Session` action onto the desktop title row with the same highlighted CTA treatment as `Create Campaign`, while keeping the tablet/mobile version beside the collapsed section dropdown.
 - Tighten the Adventure Module and Campaign authoring headers so the editable title field shrinks to a five-character minimum, the URI is removed, and the overall title treatment reads smaller and more compact.
 - Remove slug IDs from the Adventure Module markdown insert dropdown labels so the toolbar stays more compact.
 - Unify Adventure Module and Campaign list pages around a shared cover-led story tile shell with explicit in-card buttons, visible module author/tag metadata, and visible campaign source-module context.

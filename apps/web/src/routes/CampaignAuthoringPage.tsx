@@ -16,7 +16,7 @@ import type {
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
-import { Button } from "../components/common/Button";
+import { CTAButton } from "../components/common/CTAButton";
 import { MarkdownImageInsertButton } from "../components/MarkdownImageInsertButton";
 import {
   AutosaveStatusBadge,
@@ -3476,6 +3476,18 @@ export const CampaignAuthoringPage = (): JSX.Element => {
             setBaseDirty(true);
           }}
           onTitleBlur={handleBaseFieldBlur}
+          titleRowTrailingContent={
+            <CTAButton
+              color="gold"
+              containerClassName="hidden lg:inline-flex"
+              disabled={creatingSession}
+              onClick={() => {
+                void handleCreateSession();
+              }}
+            >
+              {creatingSession ? "Creating Session..." : "Create Session"}
+            </CTAButton>
+          }
           loadingTrailingContent={
             <div className="flex shrink-0 items-center gap-2">
               <AutosaveStatusBadge
@@ -3490,16 +3502,16 @@ export const CampaignAuthoringPage = (): JSX.Element => {
             buildCampaignRoute(moduleSlug, tabId as CampaignTab)
           }
           navLeadingContent={
-            <Button
-              variant="ghost"
+            <CTAButton
               color="gold"
+              containerClassName="lg:hidden"
               disabled={creatingSession}
               onClick={() => {
                 void handleCreateSession();
               }}
             >
               {creatingSession ? "Creating Session..." : "Create Session"}
-            </Button>
+            </CTAButton>
           }
           navTrailingContent={
             <AutosaveStatusBadge
