@@ -1,6 +1,13 @@
 import { z } from "zod";
 import type { JsonValue } from "@mighty-decks/spec/workflowLab";
 import type { WorkflowDef, WorkflowModelPreferences } from "../../workflow/types";
+import {
+  ADVENTURE_MODULE_ACTOR_FROM_PROMPT_WORKFLOW_ID,
+  adventureModuleActorFromPromptDefaultInputExample,
+  adventureModuleActorFromPromptDefaultModelOverrides,
+  adventureModuleActorFromPromptInputSchemaJson,
+  createAdventureModuleActorFromPromptWorkflow,
+} from "../../adventureModule/authoring/actorFromPromptWorkflow";
 
 interface WorkflowDefinitionRegistration {
   workflowId: string;
@@ -963,6 +970,13 @@ const isJsonObject = (value: JsonValue): value is Record<string, JsonValue> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 export const createWorkflowDefinitionRegistrations = (): WorkflowDefinitionRegistration[] => [
+  {
+    workflowId: ADVENTURE_MODULE_ACTOR_FROM_PROMPT_WORKFLOW_ID,
+    createDefinition: createAdventureModuleActorFromPromptWorkflow,
+    defaultInputExample: adventureModuleActorFromPromptDefaultInputExample,
+    inputSchemaJson: adventureModuleActorFromPromptInputSchemaJson,
+    defaultModelOverrides: adventureModuleActorFromPromptDefaultModelOverrides,
+  },
   {
     workflowId: "image_from_prose",
     createDefinition: createImageFromProseWorkflow,

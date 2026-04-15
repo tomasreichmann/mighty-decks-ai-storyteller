@@ -265,6 +265,12 @@ Primary artifacts:
 - component opportunity map metadata
 - artifact manifest metadata
 
+Legacy import rules:
+
+- Legacy ports should normalize into the same text-first fragment model instead of preserving custom MDX runtime widgets.
+- Imported still images should be copied into `AdventureArtifactStore` and referenced through `/api/adventure-artifacts/<fileName>` URLs so authored modules remain self-contained inside this repo's storage model.
+- Audio, music, and other non-MVP media may be skipped during import when no current authoring/runtime surface can consume them.
+
 Optional generated artifacts:
 
 - image prompt files

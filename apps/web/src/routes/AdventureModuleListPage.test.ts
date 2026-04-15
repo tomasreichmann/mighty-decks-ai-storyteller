@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-test("AdventureModuleListPage uses explicit in-card module actions instead of a whole-card link", () => {
+test("AdventureModuleListPage lets the module card own the single open action", () => {
   const source = readFileSync(
     new URL("./AdventureModuleListPage.tsx", import.meta.url),
     "utf8",
@@ -10,8 +10,9 @@ test("AdventureModuleListPage uses explicit in-card module actions instead of a 
 
   assert.match(source, /export const AdventureModuleListPage/);
   assert.match(source, /AdventureModuleCard/);
-  assert.match(source, /creatingCampaign=\{creatingCampaignModuleId === module\.moduleId\}/);
-  assert.match(source, /onCreateCampaign=\{\(\) => \{/);
+  assert.doesNotMatch(source, /creatingCampaignModuleId/);
+  assert.doesNotMatch(source, /handleCreateCampaign/);
+  assert.doesNotMatch(source, /Campaign Error/);
   assert.match(
     source,
     /repeat\(auto-fit,minmax\(20rem,30rem\)\)/,

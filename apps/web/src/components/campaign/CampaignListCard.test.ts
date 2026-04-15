@@ -9,9 +9,13 @@ test("CampaignListCard uses a single polished surface for campaign metadata", ()
   );
 
   assert.match(source, /StoryTileCard/);
+  assert.match(
+    source,
+    /href=\{`\/campaign\/\$\{encodeURIComponent\(campaign\.slug\)\}\/base`\}/,
+  );
   assert.match(source, /formatLiveStatus/);
-  assert.match(source, /Open Campaign/);
-  assert.match(source, /View Sessions/);
+  assert.doesNotMatch(source, /Open Campaign/);
+  assert.doesNotMatch(source, /View Sessions/);
   assert.match(source, /<Tag tone="bone" size="sm">\s*Campaign\s*<\/Tag>/);
   assert.match(source, /Source Module/);
   assert.match(source, /resolveServerUrl/);

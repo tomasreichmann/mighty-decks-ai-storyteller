@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { access, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { extname, resolve } from "node:path";
 import { z } from "zod";
 
 interface AdventureArtifactStoreOptions {
@@ -45,6 +45,12 @@ const CONTENT_TYPE_TO_EXTENSION: Record<string, string> = {
   "image/png": ".png",
   "image/webp": ".webp",
 };
+const EXTENSION_TO_CONTENT_TYPE: Record<string, string> = Object.fromEntries(
+  Object.entries(CONTENT_TYPE_TO_EXTENSION).map(([contentType, extension]) => [
+    extension,
+    contentType,
+  ]),
+);
 
 const normalizeContentType = (value: string): string =>
   value.trim().toLowerCase().split(";")[0] ?? value.trim().toLowerCase();
@@ -118,44 +124,25 @@ export class AdventureArtifactStore {
     options: { hint?: string } = {},
   ): Promise<AdventureArtifactRecord> {
     const parsed = parseDataImageUri(dataImageUri);
-    const hash = createHashHex(parsed.buffer);
-    const extension = CONTENT_TYPE_TO_EXTENSION[parsed.contentType] ?? ".bin";
+    return this.persistBuffer(parsed.buffer, parsed.contentType, options);
+  }
 
-    return this.withWriteLock(async () => {
-      const existing = this.index.itemsByHash[hash];
-      if (existing) {
-        const absolutePath = resolve(this.rootDir, existing.fileName);
-        try {
-          await access(absolutePath);
-          return {
-            fileName: existing.fileName,
-            fileUrl: this.buildFileUrl(existing.fileName),
-            contentType: existing.contentType,
-          };
-        } catch {
-          delete this.index.itemsByHash[hash];
-        }
-      }
+  public async persistLocalFile(
+    filePath: string,
+    options: { hint?: string } = {},
+  ): Promise<AdventureArtifactRecord> {
+    const buffer = await readFile(filePath);
+    if (buffer.length === 0) {
+      throw new Error("local image file is empty");
+    }
 
-      const hint = normalizeHint(options.hint);
-      const shortHash = hash.slice(0, 20);
-      const fileName = `${hint}-${shortHash}${extension}`;
-      const absolutePath = resolve(this.rootDir, fileName);
-      await this.writeBufferAtomic(absolutePath, parsed.buffer);
+    const extension = extname(filePath).toLowerCase();
+    const contentType = EXTENSION_TO_CONTENT_TYPE[extension];
+    if (!contentType) {
+      throw new Error(`unsupported local image file extension: ${extension || "<none>"}`);
+    }
 
-      this.index.itemsByHash[hash] = {
-        fileName,
-        contentType: parsed.contentType,
-        createdAtIso: new Date().toISOString(),
-      };
-      await this.persistIndex();
-
-      return {
-        fileName,
-        fileUrl: this.buildFileUrl(fileName),
-        contentType: parsed.contentType,
-      };
-    });
+    return this.persistBuffer(buffer, contentType, options);
   }
 
   public async getFileRecord(fileName: string): Promise<AdventureArtifactRecord | null> {
@@ -190,6 +177,52 @@ export class AdventureArtifactStore {
 
   private buildFileUrl(fileName: string): string {
     return `${this.fileRouteBasePath}/${encodeURIComponent(fileName)}`;
+  }
+
+  private async persistBuffer(
+    buffer: Buffer,
+    contentType: string,
+    options: { hint?: string },
+  ): Promise<AdventureArtifactRecord> {
+    const normalizedContentType = normalizeContentType(contentType);
+    const hash = createHashHex(buffer);
+    const extension = CONTENT_TYPE_TO_EXTENSION[normalizedContentType] ?? ".bin";
+
+    return this.withWriteLock(async () => {
+      const existing = this.index.itemsByHash[hash];
+      if (existing) {
+        const absolutePath = resolve(this.rootDir, existing.fileName);
+        try {
+          await access(absolutePath);
+          return {
+            fileName: existing.fileName,
+            fileUrl: this.buildFileUrl(existing.fileName),
+            contentType: existing.contentType,
+          };
+        } catch {
+          delete this.index.itemsByHash[hash];
+        }
+      }
+
+      const hint = normalizeHint(options.hint);
+      const shortHash = hash.slice(0, 20);
+      const fileName = `${hint}-${shortHash}${extension}`;
+      const absolutePath = resolve(this.rootDir, fileName);
+      await this.writeBufferAtomic(absolutePath, buffer);
+
+      this.index.itemsByHash[hash] = {
+        fileName,
+        contentType: normalizedContentType,
+        createdAtIso: new Date().toISOString(),
+      };
+      await this.persistIndex();
+
+      return {
+        fileName,
+        fileUrl: this.buildFileUrl(fileName),
+        contentType: normalizedContentType,
+      };
+    });
   }
 
   private async readIndexFromDisk(): Promise<PersistedArtifactIndex> {

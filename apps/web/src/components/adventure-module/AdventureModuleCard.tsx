@@ -1,5 +1,4 @@
 import type { AdventureModuleListItem } from "@mighty-decks/spec/adventureModuleAuthoring";
-import { Button } from "../common/Button";
 import { StoryTileCard } from "../common/StoryTileCard";
 import { Tag } from "../common/Tag";
 import { Text } from "../common/Text";
@@ -7,8 +6,6 @@ import { resolveServerUrl } from "../../lib/socket";
 
 interface AdventureModuleCardProps {
   module: AdventureModuleListItem;
-  creatingCampaign?: boolean;
-  onCreateCampaign: () => void;
 }
 
 const formatDate = (value: string): string => {
@@ -68,14 +65,13 @@ const formatStatusLabel = (
 
 export const AdventureModuleCard = ({
   module,
-  creatingCampaign = false,
-  onCreateCampaign,
 }: AdventureModuleCardProps): JSX.Element => {
   return (
     <StoryTileCard
       title={module.title}
       imageUrl={resolveCardImageUrl(module.coverImageUrl ?? "/sample-scene-image.png")}
       imageAlt={`${module.title} module cover`}
+      href={`/adventure-module/${encodeURIComponent(module.slug)}/player-info`}
       imageLoading="lazy"
       imageDecoding="async"
       topMeta={
@@ -113,25 +109,6 @@ export const AdventureModuleCard = ({
               ))}
             </div>
           ) : null}
-        </>
-      }
-      actions={
-        <>
-          <Button
-            href={`/adventure-module/${encodeURIComponent(module.slug)}/player-info`}
-            color="cloth"
-            size="sm"
-          >
-            Open Module
-          </Button>
-          <Button
-            color="gold"
-            size="sm"
-            disabled={creatingCampaign}
-            onClick={onCreateCampaign}
-          >
-            {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
-          </Button>
         </>
       }
     />

@@ -509,6 +509,14 @@ Supported `entityType` values in this flow:
 - `quests`
 - `assets`
 
+Repo-local automation:
+
+- Legacy imports currently use a repo-local CLI instead of a public REST endpoint: `pnpm -C apps/server import:adventure-module -- [--source-dir <path>] [--public-dir <path>] [--creator-token <token>]`.
+- The Exiles import defaults to `C:\\Projects\\mighty-decks\\src\\data\\encounters\\exiles-of-the-hungry-void` when `--source-dir` is omitted, then normalizes legacy MDX into the current Adventure Module schema.
+- Imported still images are copied into `AdventureArtifactStore` and rewritten to `/api/adventure-artifacts/...` URLs; the imported module body stays markdown-first and does not preserve legacy widget components.
+- Prompt-based actor authoring currently uses a repo-local CLI instead of a REST endpoint: `pnpm -C apps/server author:module -- add-actor --module <module-slug> --prompt <text> [--creator-token <token>]`.
+- The actor CLI loads the module, runs the `adventure_module_actor_from_prompt` workflow with current module context plus existing actor titles, creates the actor, and then immediately applies the generated typed fields.
+
 ---
 
 ## 9. Validation and QA Scenarios

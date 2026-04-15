@@ -7,6 +7,8 @@
     "prepare:spec": "pnpm -C ../../spec build",
     "predev": "pnpm run prepare:spec",
     "dev": "tsx watch src/index.ts",
+    "import:adventure-module": "tsx scripts/importAdventureModule.ts",
+    "author:module": "tsx scripts/authorModule.ts",
     "preserve": "pnpm run build",
     "serve": "node dist/index.js",
     "prebuild": "pnpm run prepare:spec",

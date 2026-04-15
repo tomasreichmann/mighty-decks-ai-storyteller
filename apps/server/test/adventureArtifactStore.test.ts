@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -41,4 +42,31 @@ test("rejects malformed data image URI", async () => {
     () => store.persistDataImageUri("data:text/plain;base64,SGVsbG8=", { hint: "bad" }),
     /invalid data image URI|unsupported data image content type/i,
   );
+});
+
+test("persists local image files and deduplicates by payload hash", async () => {
+  const rootDir = mkdtempSync(join(tmpdir(), "mighty-decks-artifacts-"));
+  const sourceDir = mkdtempSync(join(tmpdir(), "mighty-decks-artifacts-source-"));
+  const store = new AdventureArtifactStore({
+    rootDir,
+    fileRouteBasePath: "/api/adventure-artifacts",
+  });
+  await store.initialize();
+
+  const firstPath = join(sourceDir, "ship.png");
+  const secondPath = join(sourceDir, "ship-copy.png");
+  const buffer = Buffer.from(ONE_PIXEL_PNG_BASE64, "base64");
+  await writeFile(firstPath, buffer);
+  await writeFile(secondPath, buffer);
+
+  const first = await store.persistLocalFile(firstPath, { hint: "ship" });
+  const second = await store.persistLocalFile(secondPath, { hint: "ignored" });
+
+  assert.equal(first.fileName, second.fileName);
+  assert.equal(first.fileUrl, second.fileUrl);
+  assert.equal(first.contentType, "image/png");
+
+  const record = await store.getFileRecord(first.fileName);
+  assert.ok(record);
+  assert.equal(record?.contentType, "image/png");
 });

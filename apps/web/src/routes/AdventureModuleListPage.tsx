@@ -11,7 +11,6 @@ import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { listAdventureModules } from "../lib/adventureModuleApi";
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
-import { createCampaign } from "../lib/campaignApi";
 
 const PAGE_SIZE = 20;
 const normalize = (value: string): string => value.trim().toLowerCase();
@@ -50,10 +49,6 @@ export const AdventureModuleListPage = (): JSX.Element => {
   const [modules, setModules] = useState<AdventureModuleListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [campaignError, setCampaignError] = useState<string | null>(null);
-  const [creatingCampaignModuleId, setCreatingCampaignModuleId] = useState<
-    string | null
-  >(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -115,30 +110,6 @@ export const AdventureModuleListPage = (): JSX.Element => {
   const pageStart = (effectivePage - 1) * PAGE_SIZE;
   const visibleModules = sortedAndFilteredModules.slice(pageStart, pageStart + PAGE_SIZE);
 
-  const handleCreateCampaign = async (
-    module: AdventureModuleListItem,
-  ): Promise<void> => {
-    setCampaignError(null);
-    setCreatingCampaignModuleId(module.moduleId);
-
-    try {
-      const campaign = await createCampaign({
-        sourceModuleId: module.moduleId,
-        title: module.title,
-        slug: module.slug,
-      });
-      navigate(`/campaign/${encodeURIComponent(campaign.index.slug)}/base`);
-    } catch (createError) {
-      setCampaignError(
-        createError instanceof Error
-          ? createError.message
-          : "Could not create campaign.",
-      );
-    } finally {
-      setCreatingCampaignModuleId(null);
-    }
-  };
-
   return (
     <div className="app-shell stack py-8 gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -188,11 +159,6 @@ export const AdventureModuleListPage = (): JSX.Element => {
           {error}
         </Message>
       ) : null}
-      {campaignError ? (
-        <Message label="Campaign Error" color="blood">
-          {campaignError}
-        </Message>
-      ) : null}
 
       {loading ? (
         <Panel>
@@ -204,14 +170,7 @@ export const AdventureModuleListPage = (): JSX.Element => {
         <>
           <div className="grid gap-4 lg:[grid-template-columns:repeat(auto-fit,minmax(20rem,30rem))]">
             {visibleModules.map((module) => (
-              <AdventureModuleCard
-                key={module.moduleId}
-                module={module}
-                creatingCampaign={creatingCampaignModuleId === module.moduleId}
-                onCreateCampaign={() => {
-                  void handleCreateCampaign(module);
-                }}
-              />
+              <AdventureModuleCard key={module.moduleId} module={module} />
             ))}
           </div>
 

@@ -1,5 +1,4 @@
 import type { CampaignListItem } from "@mighty-decks/spec/campaign";
-import { Button } from "../common/Button";
 import { StoryTileCard } from "../common/StoryTileCard";
 import { Tag } from "../common/Tag";
 import { Text } from "../common/Text";
@@ -56,6 +55,7 @@ export const CampaignListCard = ({
       title={campaign.title}
       imageUrl={imageUrl}
       imageAlt={`${campaign.title} campaign cover`}
+      href={`/campaign/${encodeURIComponent(campaign.slug)}/base`}
       imageLoading="lazy"
       imageDecoding="async"
       topMeta={
@@ -82,24 +82,6 @@ export const CampaignListCard = ({
           <Text variant="note" color="steel-dark" className="text-xs">
             Source Module: {campaign.sourceModuleTitle}
           </Text>
-        </>
-      }
-      actions={
-        <>
-          <Button
-            href={`/campaign/${encodeURIComponent(campaign.slug)}/sessions`}
-            color="cloth"
-            size="sm"
-          >
-            View Sessions
-          </Button>
-          <Button
-            href={`/campaign/${encodeURIComponent(campaign.slug)}/base`}
-            color="gold"
-            size="sm"
-          >
-            Open Campaign
-          </Button>
         </>
       }
     />

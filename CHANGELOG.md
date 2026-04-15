@@ -6,9 +6,14 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ## [Unreleased]
 
+### Changed
+
+- Web: made campaign and adventure module list tiles open from the full item surface and removed duplicate in-card action buttons.
+
 ### Added
 
 - Add a `pnpm -C apps/server smoke:campaign-flow` integration smoke test that can run locally or against a live Render deployment, covering Adventure Module creation, authored actor/counter/asset/location/encounter/quest creation, campaign creation, session creation, player/storyteller joins, and cleanup.
+- Add repo-local Adventure Module automation for Exiles porting: `pnpm -C apps/server import:adventure-module` imports legacy Exiles MDX into the typed Adventure Module store, and `pnpm -C apps/server author:module -- add-actor ...` uses a new `adventure_module_actor_from_prompt` workflow to generate typed actors from prompt text.
 - Add shared `ToggleButton` and `ButtonRadioGroup` primitives for straight-edged grouped option controls, with active/inactive states, six material color variants, and `s|m|l` sizing.
 - Add a shared `RockerSwitch` primitive for perspective-tilted binary controls with accent-lit active state and an optional tucked-under `Label` tag.
 - Add configurable AI text provider (`AI_TEXT_PROVIDER` env var) supporting `openrouter` (default, API-based) and `claude_cli` (local CLI). Set `AI_TEXT_PROVIDER=claude_cli` in `.env.local` to use Claude CLI for all text completions without an API key. New env vars: `CLAUDE_CLI_MODEL`, `CLAUDE_CLI_MAX_CONCURRENT`.
@@ -140,6 +145,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Docs
 
 - Update the UI component docs to describe compact shortcode rows instead of text-based copy buttons in Adventure Module and campaign authoring lists.
+- Update the Adventure Module spec and authoring-flow docs to document repo-local Exiles imports, prompt-driven actor authoring, text-first legacy normalization, and `AdventureArtifactStore` image handling for imported stills.
 - Update the campaign-session route and UI docs to document the headered player claim route plus the headerless `/player/chat` live transcript route.
 - Update the campaign-session and event/state docs to describe per-player outcome piles, draw/shuffle/play session events, and the new chat logging format for played outcome cards.
 - Update the shared UI and style-system docs to document the new grouped toggle/radio button primitives and their non-tilted alignment rules.
