@@ -1,9 +1,12 @@
+import React from "react";
 import type { AdventureModuleResolvedLocation } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { LocationCard } from "../styleguide/LocationCard";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { resolveServerUrl } from "../../lib/socket";
 import { cn } from "../../utils/cn";
 import { AUTHORED_SCENE_CARD_CLASS } from "./sceneCardSizing";
+
+void React;
 
 interface LocationCardViewProps {
   location: AdventureModuleResolvedLocation;

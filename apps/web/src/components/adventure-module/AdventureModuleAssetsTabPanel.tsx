@@ -55,12 +55,7 @@ export const AdventureModuleAssetsTabPanel = ({
 
   return (
     <div className="stack gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="stack gap-1">
-          <Text variant="body" color="iron-light" className="text-sm">
-            Click an asset to edit its custom card fields and markdown body.
-          </Text>
-        </div>
+      <div className="flex flex-wrap justify-end gap-3">
         <Button
           color="gold"
           onClick={onCreate}

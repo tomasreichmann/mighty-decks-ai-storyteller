@@ -7,6 +7,12 @@ import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
 import { EncounterCardView } from "./EncounterCardView";
 import { ShortcodeField } from "./ShortcodeField";
+import {
+  AUTHORED_SCENE_ACTION_ROW_CLASS,
+  AUTHORED_SCENE_PANEL_BUTTON_CLASS,
+  AUTHORED_SCENE_PANEL_CLASS,
+  AUTHORED_SCENE_PANEL_CONTENT_CLASS,
+} from "./sceneCardSizing";
 
 interface AdventureModuleEncountersTabPanelProps {
   encounters: AdventureModuleResolvedEncounter[];
@@ -55,13 +61,7 @@ export const AdventureModuleEncountersTabPanel = ({
 
   return (
     <div className="stack gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="stack gap-1">
-          <Text variant="body" color="iron-light" className="text-sm">
-            Open an encounter to edit its playable setup, prerequisites, title
-            art, and markdown script.
-          </Text>
-        </div>
+      <div className="flex flex-wrap justify-end gap-3">
         <Button
           color="gold"
           onClick={onCreate}
@@ -97,23 +97,28 @@ export const AdventureModuleEncountersTabPanel = ({
           {filteredEncounters.map((encounter) => (
             <Panel
               key={encounter.fragmentId}
-              className="self-start"
-              contentClassName="stack gap-3"
+              className={AUTHORED_SCENE_PANEL_CLASS}
+              contentClassName={AUTHORED_SCENE_PANEL_CONTENT_CLASS}
             >
               <button
                 type="button"
-                className="stack gap-3 text-left"
+                className={AUTHORED_SCENE_PANEL_BUTTON_CLASS}
                 onClick={() => onOpenEncounter(encounter.encounterSlug)}
               >
                 <EncounterCardView encounter={encounter} />
-                <Text variant="body" color="iron-light" className="text-sm">
+                <Text
+                  variant="body"
+                  color="iron-light"
+                  className="text-sm break-words"
+                >
                   {encounter.prerequisites.trim().length > 0
                     ? `Prerequisites: ${encounter.prerequisites}`
                     : "No prerequisites yet."}
                 </Text>
               </button>
-              <div className="flex items-center justify-between gap-3">
+              <div className={AUTHORED_SCENE_ACTION_ROW_CLASS}>
                 <ShortcodeField
+                  className="flex-1"
                   shortcode={`@encounter/${encounter.encounterSlug}`}
                   onAddToSelection={
                     onAddEncounterCardToSelection

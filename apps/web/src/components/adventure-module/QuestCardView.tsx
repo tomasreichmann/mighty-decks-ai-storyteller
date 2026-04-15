@@ -1,9 +1,12 @@
+import React from "react";
 import type { AdventureModuleResolvedQuest } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { QuestCard } from "../styleguide/QuestCard";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { resolveServerUrl } from "../../lib/socket";
 import { cn } from "../../utils/cn";
 import { AUTHORED_SCENE_CARD_CLASS } from "./sceneCardSizing";
+
+void React;
 
 interface QuestCardViewProps {
   quest: AdventureModuleResolvedQuest;

@@ -60,8 +60,10 @@ test("GameCard renders location content without leaking internal location metada
   );
 
   assert.match(markup, /The Drowned Gate District/);
-  assert.match(markup, /Catwalks groan over dark water channels while the pumps thrum/);
-  assert.match(markup, /beneath the district\./);
+  assert.match(
+    markup,
+    /Catwalks groan over dark water channels while the pumps[\s\S]*thrum beneath the district\./,
+  );
   assert.doesNotMatch(markup, /ImageCard-driven direction/);
   assert.doesNotMatch(markup, /drowned-gate-district/);
   assert.doesNotMatch(markup, /map pins/i);
@@ -91,7 +93,7 @@ test("GameCard renders quest content without leaking the quest slug", () => {
   assert.match(markup, /Recover the Shard/);
   assert.match(
     markup,
-    /Retrieve a stolen lantern shard before rival factions claim it\./,
+    /Retrieve a stolen lantern shard before rival factions[\s\S]*claim it\./,
   );
   assert.doesNotMatch(markup, /recover-the-shard/);
 });

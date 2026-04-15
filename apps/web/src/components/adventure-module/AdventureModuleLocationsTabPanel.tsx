@@ -7,6 +7,12 @@ import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
 import { LocationCardView } from "./LocationCardView";
 import { ShortcodeField } from "./ShortcodeField";
+import {
+  AUTHORED_SCENE_ACTION_ROW_CLASS,
+  AUTHORED_SCENE_PANEL_BUTTON_CLASS,
+  AUTHORED_SCENE_PANEL_CLASS,
+  AUTHORED_SCENE_PANEL_CONTENT_CLASS,
+} from "./sceneCardSizing";
 
 interface AdventureModuleLocationsTabPanelProps {
   locations: AdventureModuleResolvedLocation[];
@@ -55,13 +61,7 @@ export const AdventureModuleLocationsTabPanel = ({
 
   return (
     <div className="stack gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="stack gap-1">
-          <Text variant="body" color="iron-light" className="text-sm">
-            Open a location to edit its flavor text, GM notes, title image, and
-            interactive map pins.
-          </Text>
-        </div>
+      <div className="flex flex-wrap justify-end gap-3">
         <Button
           color="gold"
           onClick={onCreate}
@@ -97,18 +97,19 @@ export const AdventureModuleLocationsTabPanel = ({
           {filteredLocations.map((location) => (
             <Panel
               key={location.fragmentId}
-              className="self-start"
-              contentClassName="stack gap-3"
+              className={AUTHORED_SCENE_PANEL_CLASS}
+              contentClassName={AUTHORED_SCENE_PANEL_CONTENT_CLASS}
             >
               <button
                 type="button"
-                className="stack gap-3 text-left"
+                className={AUTHORED_SCENE_PANEL_BUTTON_CLASS}
                 onClick={() => onOpenLocation(location.locationSlug)}
               >
                 <LocationCardView location={location} />
               </button>
-              <div className="flex items-center justify-between gap-3">
+              <div className={AUTHORED_SCENE_ACTION_ROW_CLASS}>
                 <ShortcodeField
+                  className="flex-1"
                   shortcode={`@location/${location.locationSlug}`}
                   onAddToSelection={
                     onAddLocationCardToSelection

@@ -4,6 +4,7 @@ export * from "./assetCards";
 export * from "./campaign";
 export * from "./campaignEvents";
 export * from "./outcomeDeck";
+export * from "./rulesCards";
 export * from "./counterCards";
 export * from "./adventureModule";
 export * from "./adventureModuleAuthoring";

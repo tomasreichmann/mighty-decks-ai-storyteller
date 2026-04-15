@@ -1,9 +1,12 @@
+import React from "react";
 import type { AdventureModuleResolvedEncounter } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { EncounterCard } from "../styleguide/EncounterCard";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { resolveServerUrl } from "../../lib/socket";
 import { cn } from "../../utils/cn";
 import { AUTHORED_SCENE_CARD_CLASS } from "./sceneCardSizing";
+
+void React;
 
 interface EncounterCardViewProps {
   encounter: AdventureModuleResolvedEncounter;

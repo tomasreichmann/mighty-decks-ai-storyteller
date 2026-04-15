@@ -399,8 +399,24 @@ test("import CLI imports Exiles content into the adventure module store", async 
 
   assert.equal(exitCode, 0);
   assert.equal(stderr, "");
-  assert.match(stdout, /Imported module 'Exiles of the Hungry Void'/);
-  assert.match(stdout, /2 encounters, 2 quests/);
+  const parsed = JSON.parse(stdout) as {
+    ok: boolean;
+    result: {
+      counts: {
+        encounters: number;
+        quests: number;
+      };
+      module: {
+        index: {
+          slug: string;
+        };
+      };
+    };
+  };
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.result.module.index.slug, "exiles-of-the-hungry-void");
+  assert.equal(parsed.result.counts.encounters, 2);
+  assert.equal(parsed.result.counts.quests, 2);
 
   const loaded = await moduleStore.getModuleBySlug(
     "exiles-of-the-hungry-void",

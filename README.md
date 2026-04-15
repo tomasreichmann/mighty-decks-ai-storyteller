@@ -30,6 +30,7 @@ Current route families:
 | AI Storyteller ad hoc sessions | Local multiplayer runtime with lobby, ready gate, pitch vote, narrated scenes, transcripts, async images, and ending flow | Partially implemented | Playable storyteller loop exists, but this is not a complete Mighty Decks runtime and only partial outcome-card related tooling is present |
 | Adventure Module authoring | Module list/create flows, base tab, player info, storyteller info, actors, counters, assets, locations, encounters, quests, markdown embeds, and supporting docs | Partially implemented | Core authoring for the current module entity types exists, including quest fragment editing, but publish/archive and full runtime handoff remain incomplete |
 | Campaigns and human storyteller sessions | Campaign list/detail, module-to-campaign creation, session lobby, player claim/create flow, storyteller campaign shell with chat, and session transcripts | Partially implemented | Group chat, role join, mock participants, and campaign live refresh are implemented; private messaging, card-transfer flows, and AI-coupled campaign runtime are still out of scope |
+| CLI-first persisted authoring | JSON-first module/campaign CRUD, schema discovery, static catalogs, Exiles import, and prompt-based actor alias for agents | Implemented for persisted content | Covers Modules and Campaigns only; live Session socket operations remain out of scope |
 
 The repo should not currently be read as a full implementation of Mighty Decks rules, components, or every planned campaign feature.
 
@@ -195,6 +196,9 @@ pnpm typecheck
 pnpm -C apps/server test
 pnpm -C apps/server dev
 pnpm -C apps/web dev --host
+pnpm -C apps/server author:module -- capabilities
+pnpm -C apps/server author:campaign -- capabilities
+pnpm -C apps/server import:adventure-module -- --creator-token <token>
 ```
 
 ## Further Reading
@@ -208,3 +212,4 @@ pnpm -C apps/web dev --host
 - [docs/15-adventure-use-cases-and-intents.md](docs/15-adventure-use-cases-and-intents.md)
 - [docs/18-adventure-module-authoring-flow.md](docs/18-adventure-module-authoring-flow.md)
 - [docs/20-campaign-and-human-storyteller-sessions.md](docs/20-campaign-and-human-storyteller-sessions.md)
+- [docs/21-cli-authoring-for-agents.md](docs/21-cli-authoring-for-agents.md)

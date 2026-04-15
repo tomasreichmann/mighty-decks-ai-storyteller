@@ -9,6 +9,7 @@
     "dev": "tsx watch src/index.ts",
     "import:adventure-module": "tsx scripts/importAdventureModule.ts",
     "author:module": "tsx scripts/authorModule.ts",
+    "author:campaign": "tsx scripts/authorCampaign.ts",
     "preserve": "pnpm run build",
     "serve": "node dist/index.js",
     "prebuild": "pnpm run prepare:spec",

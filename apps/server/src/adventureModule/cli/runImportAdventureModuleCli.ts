@@ -109,7 +109,6 @@ export const runImportAdventureModuleCli = async (
   dependencies: RunImportAdventureModuleCliDependencies,
 ): Promise<number> => {
   const stdout = dependencies.stdout ?? process.stdout;
-  const stderr = dependencies.stderr ?? process.stderr;
 
   try {
     const parsed = parseImportArgs(args);
@@ -124,13 +123,45 @@ export const runImportAdventureModuleCli = async (
       DEFAULT_EXILES_PUBLIC_DIR;
 
     if (!existsSync(sourceDir)) {
-      stderr.write(`Import failed: source dir not found: ${sourceDir}\n`);
-      stderr.write(`${usageText}\n`);
+      stdout.write(
+        `${JSON.stringify(
+          {
+            ok: false,
+            command: {
+              resource: "module",
+              action: "import",
+            },
+            error: {
+              type: "usage",
+              message: `Import failed: source dir not found: ${sourceDir}`,
+              details: { usage: usageText },
+            },
+          },
+          null,
+          2,
+        )}\n`,
+      );
       return 1;
     }
     if (!existsSync(publicDir)) {
-      stderr.write(`Import failed: public dir not found: ${publicDir}\n`);
-      stderr.write(`${usageText}\n`);
+      stdout.write(
+        `${JSON.stringify(
+          {
+            ok: false,
+            command: {
+              resource: "module",
+              action: "import",
+            },
+            error: {
+              type: "usage",
+              message: `Import failed: public dir not found: ${publicDir}`,
+              details: { usage: usageText },
+            },
+          },
+          null,
+          2,
+        )}\n`,
+      );
       return 1;
     }
 
@@ -148,16 +179,31 @@ export const runImportAdventureModuleCli = async (
     });
 
     stdout.write(
-      `Imported module '${imported.index.title}' as '${imported.index.slug}'.\n`,
+      `${JSON.stringify(
+        {
+          ok: true,
+          command: {
+            resource: "module",
+            action: "import",
+          },
+          result: {
+            module: imported,
+            counts: {
+              locations: imported.locations.length,
+              encounters: imported.encounters.length,
+              quests: imported.quests.length,
+            },
+            path: dependencies.moduleRootDir
+              ? resolve(dependencies.moduleRootDir, imported.index.moduleId)
+              : undefined,
+            sourceDir,
+            publicDir,
+          },
+        },
+        null,
+        2,
+      )}\n`,
     );
-    stdout.write(
-      `Counts: ${imported.locations.length} locations, ${imported.encounters.length} encounters, ${imported.quests.length} quests.\n`,
-    );
-    if (dependencies.moduleRootDir) {
-      stdout.write(
-        `Path: ${resolve(dependencies.moduleRootDir, imported.index.moduleId)}\n`,
-      );
-    }
     return 0;
   } catch (error) {
     const message =
@@ -166,8 +212,24 @@ export const runImportAdventureModuleCli = async (
         : error instanceof Error
           ? error.message
           : String(error);
-    stderr.write(`Import failed: ${message}\n`);
-    stderr.write(`${usageText}\n`);
+    stdout.write(
+      `${JSON.stringify(
+        {
+          ok: false,
+          command: {
+            resource: "module",
+            action: "import",
+          },
+          error: {
+            type: error instanceof z.ZodError ? "validation" : "internal",
+            message: `Import failed: ${message}`,
+            details: { usage: usageText },
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
     return 1;
   }
 };

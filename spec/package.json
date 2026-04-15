@@ -37,6 +37,10 @@
       "types": "./dist/outcomeDeck.d.ts",
       "import": "./dist/outcomeDeck.js"
     },
+    "./rulesCards": {
+      "types": "./dist/rulesCards.d.ts",
+      "import": "./dist/rulesCards.js"
+    },
     "./counterCards": {
       "types": "./dist/counterCards.d.ts",
       "import": "./dist/counterCards.js"

@@ -9,6 +9,7 @@ import {
 } from "../src/adventureModule/authoring/actorFromPromptWorkflow";
 import { runAuthorModuleCli } from "../src/adventureModule/cli/runAuthorModuleCli";
 import { AdventureModuleStore } from "../src/persistence/AdventureModuleStore";
+import { CampaignStore } from "../src/persistence/CampaignStore";
 import { createWorkflowFactory } from "../src/workflow/executor";
 import { runWorkflowToCompletion } from "../src/workflow/runWorkflowToCompletion";
 import { WorkflowRegistry } from "../src/workflow/workflowRegistry";
@@ -75,11 +76,20 @@ const createStubbedWorkflowFactory = () =>
     defaults: executionDefaults,
   });
 
-const createModuleStore = async (): Promise<AdventureModuleStore> => {
-  const rootDir = mkdtempSync(join(tmpdir(), "mighty-decks-module-authoring-cli-"));
-  const store = new AdventureModuleStore({ rootDir });
-  await store.initialize();
-  return store;
+const createStores = async (): Promise<{
+  moduleStore: AdventureModuleStore;
+  campaignStore: CampaignStore;
+}> => {
+  const moduleRoot = mkdtempSync(join(tmpdir(), "mighty-decks-module-authoring-cli-"));
+  const campaignRoot = mkdtempSync(join(tmpdir(), "mighty-decks-campaign-authoring-cli-"));
+  const moduleStore = new AdventureModuleStore({ rootDir: moduleRoot });
+  await moduleStore.initialize();
+  const campaignStore = new CampaignStore({
+    rootDir: campaignRoot,
+    sourceModuleStore: moduleStore,
+  });
+  await campaignStore.initialize();
+  return { moduleStore, campaignStore };
 };
 
 test("registers the actor-from-prompt workflow and produces typed actor output", async () => {
@@ -118,8 +128,8 @@ test("registers the actor-from-prompt workflow and produces typed actor output",
 });
 
 test("author module CLI add-actor creates a typed actor from a prompt", async () => {
-  const store = await createModuleStore();
-  await store.createModule({
+  const { moduleStore, campaignStore } = await createStores();
+  await moduleStore.createModule({
     creatorToken: "token-author",
     title: "Exiles of the Hungry Void",
     slug: "exiles-of-the-hungry-void",
@@ -150,7 +160,8 @@ test("author module CLI add-actor creates a typed actor from a prompt", async ()
       "token-author",
     ],
     {
-      moduleStore: store,
+      moduleStore,
+      campaignStore,
       workflowRegistry,
       workflowFactory,
       stdout: {
@@ -170,10 +181,24 @@ test("author module CLI add-actor creates a typed actor from a prompt", async ()
 
   assert.equal(exitCode, 0);
   assert.equal(stderr, "");
-  assert.match(stdout, /brother-calyx-of-the-last-mouth/);
-  assert.match(stdout, /actors\/brother-calyx-of-the-last-mouth\.mdx/);
+  const parsed = JSON.parse(stdout) as {
+    ok: boolean;
+    command: {
+      alias?: string;
+    };
+    result: {
+      item: {
+        actorSlug: string;
+      };
+      actorPath: string;
+    };
+  };
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.command.alias, "add-actor");
+  assert.equal(parsed.result.item.actorSlug, "brother-calyx-of-the-last-mouth");
+  assert.match(parsed.result.actorPath, /actors\/brother-calyx-of-the-last-mouth\.mdx/);
 
-  const loaded = await store.getModuleBySlug(
+  const loaded = await moduleStore.getModuleBySlug(
     "exiles-of-the-hungry-void",
     "token-author",
   );
