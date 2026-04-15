@@ -2,132 +2,51 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-test("CampaignAuthoringPage uses campaign APIs instead of module APIs", () => {
+const readRouteSource = (): string =>
+  readFileSync(new URL("./CampaignAuthoringPage.tsx", import.meta.url), "utf8");
+
+test("CampaignAuthoringPage stays under 1000 lines", () => {
+  const lineCount = readRouteSource().split(/\r?\n/).length;
+
+  assert.ok(
+    lineCount < 1000,
+    `expected CampaignAuthoringPage.tsx to stay under 1000 lines, got ${lineCount}`,
+  );
+});
+
+test("CampaignAuthoringPage is a thin mode switch between authoring and storyteller session shells", () => {
+  const source = readRouteSource();
+
+  assert.match(source, /CampaignAuthoringScreen/);
+  assert.match(source, /CampaignStorytellerSessionShell/);
+  assert.match(source, /AuthoringProvider/);
+  assert.doesNotMatch(source, /<CommonAuthoringTabContent/);
+  assert.doesNotMatch(source, /createCampaignSession/);
+  assert.doesNotMatch(source, /useCampaignSession/);
+});
+
+test("CampaignAuthoringPage keeps campaign session routes but moves live session orchestration out of the route file", () => {
   const source = readFileSync(
     new URL("./CampaignAuthoringPage.tsx", import.meta.url),
     "utf8",
   );
 
   assert.match(source, /export const CampaignAuthoringPage/);
-  assert.match(source, /getCampaignBySlug/);
-  assert.match(source, /createCampaignSession/);
-  assert.match(source, /updateCampaignIndex/);
-  assert.match(source, /updateCampaignActor/);
-  assert.match(source, /updateCampaignLocation/);
+  assert.match(source, /campaignSlug/);
+  assert.match(source, /sessionId/);
+  assert.match(source, /CampaignAuthoringScreen/);
+  assert.match(source, /CampaignStorytellerSessionShell/);
+  assert.doesNotMatch(source, /watchCampaign/);
 });
 
-test("CampaignAuthoringPage includes Sessions and storyteller Chat tabs", () => {
+test("CampaignAuthoringPage no longer keeps storyteller chat and session tab internals inline", () => {
   const source = readFileSync(
     new URL("./CampaignAuthoringPage.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(
-    source,
-    /const STORYTELLER_SESSION_TABS = \[[\s\S]*"chat"[\s\S]*"outcomes"[\s\S]*"effects"[\s\S]*"stunts"[\s\S]*"actors"[\s\S]*"static-assets"[\s\S]*"assets"[\s\S]*\] as const;/,
-  );
-  assert.match(source, /"sessions"/);
-  assert.match(source, /sessions: "Sessions"/);
-  assert.match(source, /"chat"/);
-  assert.match(source, /chat: "Chat"/);
-  assert.match(source, /outcomes: "Outcomes"/);
-  assert.match(source, /effects: "Effects"/);
-  assert.match(source, /stunts: "Stunts"/);
-  assert.match(source, /"static-assets": "Static Assets"/);
-  assert.match(source, /storytellerSessionMode && tabId === "assets"\s*\?\s*"Custom Assets"/);
-  assert.match(source, /Create Session/);
-  assert.match(source, /createCampaignSession/);
-  assert.match(source, /campaignUpdatedAtIso/);
-  assert.match(source, /CampaignSessionsTabContent/);
-  assert.match(source, /CampaignStorytellerSessionTabContent/);
-  assert.match(source, /handleSendStorytellerMessage/);
-  assert.match(source, /handleCloseStorytellerSession/);
-  assert.match(source, /handleSendSelectionToTarget/);
-  assert.match(source, /CampaignSessionSelectionStrip/);
-  assert.match(
-    source,
-    /storytellerSessionMode && tableSelection\.length > 0 \? \(\s*<CampaignSessionSelectionStrip/,
-  );
-  assert.match(source, /sessionRealtime\.addTableCards/);
-  assert.match(source, /sessionRealtime\.removeTableCard/);
-  assert.match(source, /MarkdownImageInsertButton/);
-  assert.match(source, /messageInputTopRightControl=\{/);
-  assert.match(source, /tableSelectionCount=\{tableSelection\.length\}/);
-  assert.match(source, /storytellerSessionMode \? \(\s*<AdventureModuleTabNav[\s\S]*leadingContent=\{/);
-  assert.match(source, /storytellerSessionMode \? \(\s*<AdventureModuleTabNav[\s\S]*to="\/"[\s\S]*mighty-decks-ai-storyteller-logo\.png/);
-  assert.match(source, /storytellerSessionMode \? \(\s*<AdventureModuleTabNav[\s\S]*trailingContent=\{[\s\S]*<AutosaveStatusBadge/);
-  assert.match(source, /handleStorytellerMessageKeyDown/);
-  assert.match(source, /event\.shiftKey\s*\|\|\s*event\.ctrlKey\s*\|\|\s*event\.metaKey\s*\|\|\s*event\.altKey/);
-  assert.doesNotMatch(source, /GeneratedMarkdownImageInsertPanel/);
-  assert.doesNotMatch(source, /Send to Group Chat/);
-});
-
-test("CampaignAuthoringPage uses AdventureModuleTabNav as the non-session header control and keeps storyteller session nav separate", () => {
-  const source = readFileSync(
-    new URL("./CampaignAuthoringPage.tsx", import.meta.url),
-    "utf8",
-  );
-
-  assert.doesNotMatch(source, /<AdventureModuleSectionMenu/);
-  assert.match(
-    source,
-    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*titleSupportingContent=\{[\s\S]*<AutosaveStatusBadge/,
-  );
-  assert.doesNotMatch(
-    source,
-    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*loadingTrailingContent=/,
-  );
-  assert.doesNotMatch(
-    source,
-    /storytellerSessionMode \? null : \([\s\S]*<SharedAuthoringHeader[\s\S]*navTrailingContent=/,
-  );
-  assert.match(
-    source,
-    /storytellerSessionMode \? \(\s*<AdventureModuleTabNav[\s\S]*showMobileMenu=\{storytellerSessionMode\}/,
-  );
-});
-
-test("CampaignAuthoringPage switches from the shared authoring header to session-specific content in storyteller session mode", () => {
-  const source = readFileSync(
-    new URL("./CampaignAuthoringPage.tsx", import.meta.url),
-    "utf8",
-  );
-
-  assert.match(source, /storytellerSessionMode \? null : \(\s*<SharedAuthoringHeader/);
-  assert.match(
-    source,
-    /CampaignStorytellerSessionTabContent/,
-  );
-  assert.match(
-    source,
-    /CampaignSessionsTabContent/,
-  );
-  assert.match(
-    source,
-    /CampaignStorytellerSessionTabContent[\s\S]*onCloseSession=\{/,
-  );
-  assert.match(source, /activeTab === "chat" \? \(\s*storytellerSessionTabContent/);
-});
-
-test("CampaignAuthoringPage watches campaign updates outside active sessions", () => {
-  const source = readFileSync(
-    new URL("./CampaignAuthoringPage.tsx", import.meta.url),
-    "utf8",
-  );
-
-  assert.match(source, /watchCampaign/);
-  assert.match(source, /unwatchCampaign/);
-});
-
-test("CampaignAuthoringPage imports shared authoring foundation while keeping session features campaign-local", () => {
-  const source = readFileSync(
-    new URL("./CampaignAuthoringPage.tsx", import.meta.url),
-    "utf8",
-  );
-
-  assert.match(source, /SharedAuthoringHeader/);
-  assert.match(source, /CommonAuthoringTabContent/);
-  assert.match(source, /\.\.\/lib\/authoring\//);
-  assert.match(source, /CampaignSessionsTabContent/);
-  assert.match(source, /CampaignStorytellerSessionTabContent/);
+  assert.doesNotMatch(source, /CampaignSessionSelectionStrip/);
+  assert.doesNotMatch(source, /CampaignStorytellerSessionTabContent/);
+  assert.doesNotMatch(source, /MarkdownImageInsertButton/);
+  assert.doesNotMatch(source, /tableSelection/);
 });

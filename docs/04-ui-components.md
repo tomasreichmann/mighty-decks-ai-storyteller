@@ -224,7 +224,16 @@ Shared shell components:
 - `AutosaveStatusBadge`
 - `PublishModuleButton`
 - `CommonAuthoringTabContent`
-- shared authoring helpers in `lib/authoring/sharedAuthoring`
+- `AuthoringProvider` plus `AdventureModuleAuthoringScreen` as the thin route shell
+- shared authoring helpers in `lib/authoring/sharedAuthoring*`
+- shared authoring store modules in `lib/authoring/store/*`
+
+Architecture notes:
+
+- the route should stay thin and only provide params, navigation, and the creator token to `AuthoringProvider`
+- shared draft state, dirty tracking, optimistic autosave, and create/delete flows live in the shared authoring reducer/provider layer
+- `CommonAuthoringTabContent` reads from authoring context instead of receiving large prop bags from the route
+- tab and editor-specific validation clearing, blur-save, and optional session-only selection actions should stay co-located with the shared tab/editor surfaces rather than in the route file
 
 Tabs:
 
@@ -422,7 +431,8 @@ Storyteller campaign-session route.
 
 Components:
 
-- campaign shell for authoring tabs via `SharedAuthoringHeader` and `CommonAuthoringTabContent`
+- `CampaignStorytellerSessionShell` as the thin session-mode shell
+- campaign shell for shared authoring tabs via `AuthoringProvider`, `SharedAuthoringHeader`, and `CommonAuthoringTabContent`
 - dedicated live transcript tab for `chat`
 - lighter roster rail/sidebar for live play
 - `CampaignSessionsTabContent`
@@ -431,6 +441,7 @@ Components:
 Behavior:
 
 - keep storyteller inside the campaign shell overall
+- keep realtime session concerns (`useCampaignSession`, chat draft, staged table selection, live selection send/remove actions) inside `CampaignStorytellerSessionShell`, outside the shared authoring reducer
 - make the `chat` tab feel like a purpose-built live session surface, not another generic stacked panel page
 - reserve heavy framed panels for the primary transcript surface and avoid framing every inner subsection
 - keep player and storyteller transcript composers aligned on the same compact image-trigger-plus-modal flow so both roles can share generated images through the same raw-text transcript model

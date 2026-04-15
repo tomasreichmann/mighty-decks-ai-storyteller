@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Refactor Adventure Module and Campaign authoring so the route files are thin shells over a shared context-plus-reducer authoring store with extracted screen/session shells, shared autosave orchestration, and optimistic edit saves.
 - Add a `Create Campaign` handoff CTA to the campaign list header, and add shared `Copy Author Token` header actions to both the campaign and adventure module list pages using the generalized `ShortcodeField` clipboard control.
 - Switch the repo-local Exiles import and module/campaign authoring CLIs to machine-readable JSON stdout envelopes so external agents can discover context, read schemas, and apply structured edits without scraping human-oriented terminal text.
 - Web: made campaign and adventure module list tiles open from the full item surface and removed duplicate in-card action buttons.
@@ -124,6 +125,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Normalize shared rules-card text decoding so the `/rules/outcomes`, `/rules/effects`, and `/rules/stunts` pages no longer render mojibake or replacement characters in card copy.
 - Keep Adventure Module location, encounter, and quest scene-card list panels at a consistent authored width so long prerequisites, summaries, and shortcodes wrap inside the panel instead of stretching it wider.
 - Wrap long authored `LocationCard` footer summaries earlier so the handwritten location text stays inside the horizontal scene-card frame.
 - Lower the Adventure Module markdown-field label, tag row, and description-hint stacking so they no longer sit above the generated-image modal when it opens over an editor.
@@ -150,6 +152,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Docs
 
+- Update the UI component docs to describe the thin authoring-route shells, shared `AuthoringProvider` store, and extracted storyteller session shell used by module and campaign authoring.
 - Tighten the CLI authoring docs and repo-local authoring skill guidance to prefer `--input-file` or stdin for non-trivial payloads, explain creator-token recovery from browser localStorage, and clarify how to parse the JSON envelope when shell wrappers add extra text.
 - Add CLI authoring docs for external agents, and update the Adventure Module, Campaign, and README docs to point to the new JSON-first module/campaign authoring commands and repo-local discovery skill.
 - Update the UI component docs to describe compact shortcode rows instead of text-based copy buttons in Adventure Module and campaign authoring lists.

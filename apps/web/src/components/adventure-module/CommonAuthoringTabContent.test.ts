@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-test("CommonAuthoringTabContent centralizes shared authoring tab panels and editors", () => {
+test("CommonAuthoringTabContent centralizes shared authoring tab panels and editors through authoring context hooks", () => {
   const source = readFileSync(
     new URL("./CommonAuthoringTabContent.tsx", import.meta.url),
     "utf8",
@@ -25,4 +25,7 @@ test("CommonAuthoringTabContent centralizes shared authoring tab panels and edit
   assert.match(source, /AdventureModuleAssetEditor/);
   assert.match(source, /AdventureModuleTabPlaceholder/);
   assert.match(source, /buildMissingEntityDescription/);
+  assert.match(source, /useAuthoringContext/);
+  assert.doesNotMatch(source, /baseTabPanelProps/);
+  assert.doesNotMatch(source, /assetEditorProps/);
 });
