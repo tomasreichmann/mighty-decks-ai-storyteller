@@ -116,7 +116,7 @@ export const AdventureModuleListPage = (): JSX.Element => {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Heading
-            variant="h1"
+            level="h1"
             color="iron"
             className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
             highlightProps={{

@@ -8,14 +8,29 @@ const styleguideSectionItems = [
     activePaths: ["/styleguide"],
   },
   {
+    to: "/styleguide/typography",
+    label: "Typography",
+    activePaths: ["/styleguide/typography"],
+  },
+  {
+    to: "/styleguide/inputs",
+    label: "Inputs",
+    activePaths: ["/styleguide/inputs"],
+  },
+  {
+    to: "/styleguide/buttons",
+    label: "Buttons",
+    activePaths: ["/styleguide/buttons"],
+  },
+  {
+    to: "/styleguide/panel",
+    label: "Panel",
+    activePaths: ["/styleguide/panel"],
+  },
+  {
     to: "/styleguide/cards",
     label: "Cards",
-    activePaths: [
-      "/styleguide/cards",
-      "/styleguide/location-card",
-      "/styleguide/encounter-card",
-      "/styleguide/quest-card",
-    ],
+    activePaths: ["/styleguide/cards"],
   },
   {
     to: "/styleguide/tags",

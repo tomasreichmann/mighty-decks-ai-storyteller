@@ -10,7 +10,7 @@ import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
 const toggleColors = ["gold", "fire", "monster", "cloth", "bone", "curse"] as const;
-const toggleSizes = ["s", "m", "l"] as const;
+const toggleSizes = ["sm", "md", "lg"] as const;
 
 export const StyleguideControlsPage = (): JSX.Element => {
   const [activeColor, setActiveColor] =
@@ -24,11 +24,11 @@ export const StyleguideControlsPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label variant="gold" className="self-start">
+        <Label color="gold" className="self-start">
           Grouped Controls
         </Label>
         <Heading
-          variant="h1"
+          level="h1"
           color="iron"
           className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
           highlightProps={{
@@ -81,7 +81,7 @@ export const StyleguideControlsPage = (): JSX.Element => {
               label: color,
               value: color,
             }))}
-            size="m"
+            size="md"
             value={activeColor}
           />
         </div>
@@ -150,7 +150,7 @@ export const StyleguideControlsPage = (): JSX.Element => {
           <RockerSwitch
             active={rockerReadyActive}
             color="monster"
-            size="l"
+            size="lg"
             label="Ready"
             inactiveText="Safe"
             activeText="Armed"

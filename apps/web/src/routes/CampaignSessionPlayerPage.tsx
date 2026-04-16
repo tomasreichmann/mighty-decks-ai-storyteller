@@ -395,7 +395,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
                 <DepressedInput
                   multiline
                   label="Message"
-                  labelColor="gold"
+                  color="gold"
                   rows={4}
                   value={messageText}
                   onChange={(event) => setMessageText(event.target.value)}

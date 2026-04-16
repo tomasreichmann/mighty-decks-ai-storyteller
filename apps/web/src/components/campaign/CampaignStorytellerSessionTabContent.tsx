@@ -84,7 +84,7 @@ export const CampaignStorytellerSessionTabContent = ({
               <DepressedInput
                 multiline
                 label="Message"
-                labelColor="gold"
+                color="gold"
                 rows={4}
                 value={chatDraft}
                 onChange={(event) => onChatDraftChange(event.target.value)}

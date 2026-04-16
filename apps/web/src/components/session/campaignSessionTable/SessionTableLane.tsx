@@ -28,7 +28,7 @@ const LaneHeader = ({
   <div className={cn(styles.laneDividerRow, headerClassName)}>
     <div className={styles.laneDivider} />
     <div className="relative z-10 flex items-center justify-between gap-2">
-      <Label variant={variant} rotate={false} className={styles.laneLabel}>
+      <Label color={variant} rotate={false} className={styles.laneLabel}>
         {label}
       </Label>
       {showSendButton && onSend ? (

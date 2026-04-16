@@ -69,7 +69,7 @@ export const SharedAuthoringHeader = ({
               />
             ) : (
               <Heading
-                variant="h1"
+                level="h1"
                 color="iron"
                 className="relative z-0 text-[1.75rem] leading-none sm:text-[2.2rem] sm:leading-none"
                 highlightProps={{

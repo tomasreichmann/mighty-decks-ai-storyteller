@@ -15,7 +15,7 @@ export const RulesLayoutPage = (): JSX.Element => {
     <div className="app-shell stack py-8 gap-4">
       <div>
         <Heading
-          variant="h1"
+          level="h1"
           color="iron"
           className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
           highlightProps={{

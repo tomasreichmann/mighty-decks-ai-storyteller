@@ -61,7 +61,7 @@ const activeSurfaceClassMap: Record<ToggleButtonColor, string> = {
 };
 
 export const buttonRadioGroupRailClassName =
-  "inline-flex w-fit max-w-full items-stretch overflow-hidden rounded-[0.45rem] border-2 border-kac-iron/75 bg-kac-bone-light shadow-[4px_4px_0_0_#121b23]";
+  "button-radio-group inline-flex w-fit max-w-full items-stretch overflow-hidden rounded-[0.45rem] border-2 border-kac-iron/75 bg-kac-bone-light shadow-[4px_4px_0_0_#121b23]";
 
 export const getButtonRadioGroupCapClassName = (
   color: ToggleButtonColor,
@@ -114,7 +114,7 @@ export const ButtonRadioGroup = <Value extends string = string>({
   name,
   onValueChange,
   options,
-  size = "m",
+  size = "md",
   value,
 }: ButtonRadioGroupProps<Value>): JSX.Element => {
   return (
@@ -128,35 +128,35 @@ export const ButtonRadioGroup = <Value extends string = string>({
         className={getButtonRadioGroupCapClassName(color, "left")}
       />
       <div className="flex min-w-0 flex-wrap items-stretch pl-px pt-px">
-      {options.map((option) => {
-        const isActive = option.value === value;
+        {options.map((option) => {
+          const isActive = option.value === value;
 
-        return (
-          <ToggleButton
-            key={option.value}
-            active={isActive}
-            aria-checked={isActive}
-            color={color}
-            className={getButtonRadioGroupSegmentClassName({
-              active: isActive,
-              color,
-              disabled: option.disabled,
-            })}
-            disabled={option.disabled}
-            name={name}
-            onClick={() => {
-              if (!option.disabled && !isActive) {
-                onValueChange(option.value);
-              }
-            }}
-            role="radio"
-            size={size}
-            tabIndex={isActive ? 0 : -1}
-          >
-            {option.label}
-          </ToggleButton>
-        );
-      })}
+          return (
+            <ToggleButton
+              key={option.value}
+              active={isActive}
+              aria-checked={isActive}
+              color={color}
+              className={getButtonRadioGroupSegmentClassName({
+                active: isActive,
+                color,
+                disabled: option.disabled,
+              })}
+              disabled={option.disabled}
+              name={name}
+              onClick={() => {
+                if (!option.disabled && !isActive) {
+                  onValueChange(option.value);
+                }
+              }}
+              role="radio"
+              size={size}
+              tabIndex={isActive ? 0 : -1}
+            >
+              {option.label}
+            </ToggleButton>
+          );
+        })}
       </div>
       <span
         aria-hidden="true"

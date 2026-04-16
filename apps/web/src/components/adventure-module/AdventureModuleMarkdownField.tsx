@@ -1261,7 +1261,7 @@ export const AdventureModuleMarkdownField = ({
     <div className={styles.fieldShell}>
       <div className={styles.fieldLabelRow}>
         <div className={styles.fieldLabelMain}>
-          <Label variant="gold" className="-mb-2 -ml-1 relative self-start z-20">
+          <Label color="gold" className="-mb-2 -ml-1 relative self-start z-20">
             {label}
           </Label>
           <InputDescriptionHint

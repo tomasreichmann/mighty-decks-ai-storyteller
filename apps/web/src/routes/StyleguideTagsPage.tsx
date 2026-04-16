@@ -10,12 +10,16 @@ import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
 const tagPalette = [
-  "cloth",
   "gold",
-  "bone",
   "fire",
-  "monster",
+  "blood",
+  "bone",
   "steel",
+  "skin",
+  "cloth",
+  "curse",
+  "monster",
+  "iron",
 ] as const;
 
 const connectionStates = [
@@ -35,11 +39,11 @@ export const StyleguideTagsPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label variant="cloth" className="self-start">
+        <Label color="cloth" className="self-start">
           Tag Family
         </Label>
         <Heading
-          variant="h1"
+          level="h1"
           color="iron"
           className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
           highlightProps={{
@@ -91,7 +95,12 @@ export const StyleguideTagsPage = (): JSX.Element => {
         </div>
       </Panel>
 
-      <Panel as="section" tone="cloth" contentClassName="stack gap-4">
+      <Panel
+        as="section"
+        tone="cloth"
+        className="relative z-20"
+        contentClassName="stack gap-4 pb-8"
+      >
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Editable Tags

@@ -20,7 +20,7 @@ export const CTAButton = ({
   ...props
 }: CTAButtonProps): JSX.Element => {
   return (
-    <div className={cn("relative inline-flex w-fit group", containerClassName)}>
+    <div className={cn("cta-button relative inline-flex w-fit group", containerClassName)}>
       <Button
         className={cn(
           "relative z-10 rotate-[-2deg] skew-x-[-5deg] hover:rotate-[0deg] active:rotate-[0deg] disabled:rotate-[-2deg]",

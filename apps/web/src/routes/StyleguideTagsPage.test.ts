@@ -13,5 +13,11 @@ test("StyleguideTagsPage showcases the shared tag family together", () => {
   assert.match(source, /ConnectionStatusPill/);
   assert.match(source, /styleguide-tags-page/);
   assert.match(source, /Tag Tone/);
+  assert.match(source, /"blood"/);
+  assert.match(source, /"steel"/);
+  assert.match(source, /"skin"/);
+  assert.match(source, /"curse"/);
+  assert.match(source, /"iron"/);
   assert.match(source, /Connection Status/);
+  assert.match(source, /relative z-20/);
 });

@@ -89,6 +89,9 @@ Usage rule:
 - Headings and stickers use `md-heading` family.
 - Body and controls use `md-body` family.
 - Use `Text` primitive variants instead of reauthoring type classes in route components.
+- Use `Heading` for semantic title blocks, `Label` for sticker/tag surfaces, and the shared `sm`/`md`/`lg` control ladder for `Button`, `TextField`, `TextArea`, `DepressedInput`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup`.
+- `Label` tone coverage now includes `gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, and `monster`; validate the full sticker palette in `/styleguide/typography` and `/styleguide/tags`.
+- `Heading` highlight accent color is allowed to vary by section tone instead of staying fixed to one highlight color across the app.
 
 ## 4. Semantic Alias Map
 
@@ -137,6 +140,7 @@ Surface rules:
 
 - Use Panel gradients (`bone`, `gold`, `cloth`, `fire`) for framed containers.
 - Use Message gradients for semantic callouts.
+- Treat `Panel` as the heavyweight framed surface and validate its density and tone choices in `/styleguide/panel` before reusing it broadly.
 
 Border rules:
 
@@ -169,11 +173,14 @@ Canonical contracts are defined for:
 - `ButtonRadioGroup`
 - `CTAButton`
 - `Panel`
+- `Heading`
 - `Text`
 - `Label`
 - `Message`
 - `Tag`
 - `ConnectionStatusPill`
+- `TextField`
+- `TextArea`
 - `Toggle`
 - `DepressedInput`
 
@@ -183,10 +190,13 @@ Tag family note:
 - `Tags` composes `Tag` for editable chip rows instead of reimplementing the shell.
 - `ConnectionStatusPill` composes `Tag` for live status readouts and a leading dot.
 
-Button contract note:
+Primitive API notes:
 
 - `Button` solid is the neutral default for standard and grouped actions.
 - `CTAButton` owns the skewed, highlighted solo-action treatment.
+- `Label` uses `color` and `size` props rather than dynamic text-class composition.
+- `Heading` uses `level` instead of a variant prop so the semantic title level is explicit at the call site.
+- Shared field and control shells use the same `sm`/`md`/`lg` size ladder so rows with adjacent controls can match height.
 
 Source of truth for variant maps:
 
@@ -231,7 +241,7 @@ Grouped-control note:
 - Use `ToggleButton` and `ButtonRadioGroup` for compact stateful choices that need to sit side-by-side.
 - These controls intentionally avoid the main `Button` solid variant's tilt and skew so grouped rows stay aligned and readable.
 - Emphasis should come from accent color and depth changes between inactive and active states, not from irregular rotation.
-- Use `RockerSwitch` when a binary choice should feel more toy-like or mechanical than a flat toggle button. It can carry an optional left-side `Label` that sits slightly underneath the switch like a tucked tag.
+- Use `RockerSwitch` when a binary choice should feel more toy-like or mechanical than a flat toggle button. It can carry an optional left-side `Label` that uses the same shared size ladder and sits slightly underneath the switch like a tucked tag.
 
 Each pattern in payload includes:
 
@@ -251,13 +261,10 @@ Tracked implementation drifts:
 
 1. Button taxonomy mismatch (`solid|ghost|circle` vs docs naming).
 2. Undefined `AdventureHeader` color classes.
-3. Heading composition duplicated outside `Heading` primitive.
-4. Input style fork (`DepressedInput` vs `TextField/TextArea`).
-5. Dynamic class composition risk in `Label`.
 6. `Panel` disabled pseudo behavior mismatch.
 7. `Text` h1 transform class syntax risk.
 8. Penpot token payload does not yet encode the Page nav's per-route background art assignments.
-9. Grouped toggle controls currently live beside, not inside, the original `Button` variant taxonomy.
+9. Grouped toggle controls remain a separate control family from the main `Button` variant taxonomy by design.
 
 Canonical decision policy:
 

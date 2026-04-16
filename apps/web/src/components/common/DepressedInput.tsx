@@ -2,11 +2,13 @@ import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "rea
 import { cn } from "../../utils/cn";
 import { Label, LabelVariant } from "./Label";
 import { InputDescriptionHint } from "./InputDescriptionHint";
+import { componentSurfaceSizeClassMap, type ComponentSize } from "./componentSizing";
 import styles from "./DepressedInput.module.css";
 
 interface BaseDepressedInputProps {
   label: string;
-  labelColor?: LabelVariant;
+  color?: LabelVariant;
+  size?: ComponentSize;
   id?: string;
   className?: string;
   controlClassName?: string;
@@ -17,7 +19,7 @@ interface BaseDepressedInputProps {
 }
 
 type DepressedSingleLineInputProps = BaseDepressedInputProps &
-  Omit<InputHTMLAttributes<HTMLInputElement>, "className" | "id"> & {
+  Omit<InputHTMLAttributes<HTMLInputElement>, "className" | "id" | "size"> & {
     multiline?: false;
   };
 
@@ -31,7 +33,9 @@ export type DepressedInputProps =
   | DepressedMultiLineInputProps;
 
 const inputBaseClassName =
-  "inputFocusHighlight relative w-full border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-3 py-2 text-kac-iron outline-none transition duration-100 font-ui";
+  "inputFocusHighlight relative w-full border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] text-kac-iron outline-none transition duration-100 font-ui";
+
+const sizeClassMap: Record<ComponentSize, string> = componentSurfaceSizeClassMap;
 
 const inputDepthClassName =
   "shadow-[inset_2px_2px_0_0_#9f8a6d,inset_-2px_-2px_0_0_#fff7e6]";
@@ -89,8 +93,9 @@ const buildCharacterCountLabel = (
 export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
   const {
     label,
+    color = "gold",
+    size = "md",
     id,
-    labelColor,
     className = "",
     controlClassName = "",
     showCharCount = false,
@@ -103,19 +108,22 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
   const inputId = id ?? fallbackId;
 
   const labelClassName = cn(
-    "flex flex-col gap-1 text-sm text-kac-iron-light",
+    "depressed-input flex flex-col gap-1 text-sm text-kac-iron-light",
     className,
   );
   const controlClasses = cn(
     inputBaseClassName,
     inputDepthClassName,
     inputStateClassName,
+    sizeClassMap[size],
     controlClassName,
   );
 
   const labelElement = (
     <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">
-      <Label variant={labelColor}>{label}</Label>
+      <Label color={color} size={size}>
+        {label}
+      </Label>
       {description ? (
         <InputDescriptionHint
           description={description}
@@ -129,6 +137,8 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
     const {
       multiline,
       label: _ignoredLabel,
+      color: _ignoredColor,
+      size: _ignoredSize,
       id: _ignoredId,
       className: _ignoredClassName,
       controlClassName: _ignoredControlClassName,
@@ -180,6 +190,8 @@ export const DepressedInput = (props: DepressedInputProps): JSX.Element => {
 
   const {
     label: _ignoredLabel,
+    color: _ignoredColor,
+    size: _ignoredSize,
     id: _ignoredId,
     className: _ignoredClassName,
     controlClassName: _ignoredControlClassName,

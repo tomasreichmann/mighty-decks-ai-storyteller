@@ -8,6 +8,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Standardize `Label`, `Heading`, `Button`, `TextField`, `TextArea`, `DepressedInput`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` around shared `size`/`color` naming and aligned heights so adjacent controls line up cleanly.
+- Split `/styleguide` into typography, inputs, buttons, cards, tags, controls, and session-chat labs with a shared secondary nav.
+- Add a dedicated `/styleguide/panel` lab, collapse the cards entry into a single gallery page, and expand the typography/tag color coverage to include the missing sticker and chip tones.
+- Tighten the inputs lab so button rows stay aligned with the shared field height ladder and frame `DepressedInput` as the inset style variant.
 - Clarify contributor guidance so style-only changes do not need brittle class-name or DOM-structure tests; prefer manual or visual verification unless behavior or contracts change.
 - Rework the hidden `/styleguide` playground into an overview plus scoped `Cards`, `Tags`, `Controls`, and `Session Chat` pages with a shared secondary nav.
 - Make `Tag` the reusable chip shell for read-only labels, editable tag rows, and connection status pills.
@@ -17,6 +21,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Switch the repo-local Exiles import and module/campaign authoring CLIs to machine-readable JSON stdout envelopes so external agents can discover context, read schemas, and apply structured edits without scraping human-oriented terminal text.
 - Web: made campaign and adventure module list tiles open from the full item surface and removed duplicate in-card action buttons.
 - Remove the redundant helper instructions above shared actor, counter, asset, location, encounter, and quest authoring lists so module and campaign authoring open directly into the create action plus searchable grid.
+
+### Docs
+
+- Document the new styleguide labs, shared primitive API conventions, and root class-name naming rule in the UI component and contributor docs.
 
 ### Added
 
@@ -129,6 +137,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Raise the editable tag dropdown above the next panel frame on the styleguide tags page.
 - Normalize shared rules-card text decoding so the `/rules/outcomes`, `/rules/effects`, and `/rules/stunts` pages no longer render mojibake or replacement characters in card copy.
 - Keep Adventure Module location, encounter, and quest scene-card list panels at a consistent authored width so long prerequisites, summaries, and shortcodes wrap inside the panel instead of stretching it wider.
 - Wrap long authored `LocationCard` footer summaries earlier so the handwritten location text stays inside the horizontal scene-card frame.
@@ -157,6 +166,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Docs
 
+- Document the new panel lab, cards gallery shape, expanded typography/tag palette, and input/button alignment guidance in the UI component and style-system docs.
 - Update the UI component docs to describe the thin authoring-route shells, shared `AuthoringProvider` store, and extracted storyteller session shell used by module and campaign authoring.
 - Tighten the CLI authoring docs and repo-local authoring skill guidance to prefer `--input-file` or stdin for non-trivial payloads, explain creator-token recovery from browser localStorage, and clarify how to parse the JSON envelope when shell wrappers add extra text.
 - Add CLI authoring docs for external agents, and update the Adventure Module, Campaign, and README docs to point to the new JSON-first module/campaign authoring commands and repo-local discovery skill.

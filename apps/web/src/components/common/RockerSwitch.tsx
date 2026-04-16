@@ -10,7 +10,7 @@ export type RockerSwitchColor =
   | "bone"
   | "curse";
 
-export type RockerSwitchSize = "s" | "m" | "l";
+export type RockerSwitchSize = "sm" | "md" | "lg";
 
 export interface RockerSwitchProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -24,15 +24,15 @@ export interface RockerSwitchProps
 }
 
 const sizeClassMap: Record<RockerSwitchSize, string> = {
-  s: "min-h-8 min-w-[4.5rem] px-3 py-1.5 text-xs",
-  m: "min-h-10 min-w-[5.5rem] px-4 py-2 text-sm",
-  l: "min-h-12 min-w-[6.5rem] px-5 py-2.5 text-base",
+  sm: "min-h-8 min-w-[4.5rem] px-3 py-1.5 text-xs",
+  md: "min-h-10 min-w-[5.5rem] px-4 py-2 text-sm",
+  lg: "min-h-12 min-w-[6.5rem] px-5 py-2.5 text-base",
 };
 
 const labelOffsetClassMap: Record<RockerSwitchSize, string> = {
-  s: "self-center translate-y-[0.08rem] -mr-2",
-  m: "self-center translate-y-[0.1rem] -mr-2.5",
-  l: "self-center translate-y-[0.14rem] -mr-3",
+  sm: "self-center translate-y-[0.08rem] -mr-2",
+  md: "self-center translate-y-[0.1rem] -mr-2.5",
+  lg: "self-center translate-y-[0.14rem] -mr-3",
 };
 
 const inactiveColorClassMap: Record<RockerSwitchColor, string> = {
@@ -95,7 +95,7 @@ export const RockerSwitch = forwardRef<HTMLButtonElement, RockerSwitchProps>(
       labelVariant,
       activeText,
       inactiveText,
-      size = "m",
+      size = "md",
       type = "button",
       ...props
     },
@@ -106,11 +106,12 @@ export const RockerSwitch = forwardRef<HTMLButtonElement, RockerSwitchProps>(
       activeText !== undefined || inactiveText !== undefined;
 
     return (
-      <div className="inline-flex items-center">
+      <div className="rocker-switch inline-flex items-center">
         {label ? (
           <div className={cn("relative z-0 shrink-0", labelOffsetClassMap[size])}>
             <Label
-              variant={labelVariant ?? labelVariantByColor[color]}
+              color={labelVariant ?? labelVariantByColor[color]}
+              size={size}
               rotate={false}
               className="pr-4 -mr-2 shadow-none"
             >

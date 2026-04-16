@@ -604,7 +604,7 @@ const LaneHeader = ({
   return (
     <div className={cn(styles.laneDividerRow, className)}>
       <div className={styles.laneDivider} />
-      <Label variant={variant} rotate={false} className={styles.laneLabel}>
+      <Label color={variant} rotate={false} className={styles.laneLabel}>
         {label}
       </Label>
     </div>
@@ -703,7 +703,7 @@ const ChatRail = ({ viewerRole }: ChatRailProps): JSX.Element => {
   return (
     <section className={cn("flex min-h-0 flex-col gap-3", styles.chatRail)}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label variant={viewerRole === "player" ? "fire" : "gold"} rotate={false}>
+        <Label color={viewerRole === "player" ? "fire" : "gold"} rotate={false}>
           Chat
         </Label>
         <div className="flex flex-wrap gap-2">
@@ -725,7 +725,7 @@ const ChatRail = ({ viewerRole }: ChatRailProps): JSX.Element => {
           multiline
           readOnly
           label="Message"
-          labelColor={viewerRole === "player" ? "fire" : "gold"}
+          color={viewerRole === "player" ? "fire" : "gold"}
           rows={4}
           value={draftText}
           placeholder="Share your next move..."

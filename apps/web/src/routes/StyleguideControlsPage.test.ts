@@ -12,4 +12,6 @@ test("StyleguideControlsPage groups the toggle and rocker controls", () => {
   assert.match(source, /ButtonRadioGroup/);
   assert.match(source, /RockerSwitch/);
   assert.match(source, /styleguide-controls-page/);
+  assert.match(source, /size="md"/);
+  assert.doesNotMatch(source, /size="m"/);
 });

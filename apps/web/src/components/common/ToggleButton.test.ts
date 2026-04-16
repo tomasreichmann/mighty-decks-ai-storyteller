@@ -11,7 +11,8 @@ test("ToggleButton exposes an active state API", () => {
     source,
     /"gold"[\s\S]*"fire"[\s\S]*"monster"[\s\S]*"cloth"[\s\S]*"bone"[\s\S]*"curse"/,
   );
-  assert.match(source, /"s" \| "m" \| "l"/);
+  assert.match(source, /"sm" \| "md" \| "lg"/);
+  assert.doesNotMatch(source, /"s" \| "m" \| "l"/);
 });
 
 test("ButtonRadioGroup renders accessible radio-group semantics", () => {

@@ -32,7 +32,7 @@ export const ImageCard = ({
       />
 
       <div className="pointer-events-none absolute -bottom-2 -right-2 z-10">
-        <Label variant={labelVariant} className="max-w-[230px] text-right leading-tight">
+        <Label color={labelVariant} className="max-w-[230px] text-right leading-tight">
           {label}
         </Label>
       </div>

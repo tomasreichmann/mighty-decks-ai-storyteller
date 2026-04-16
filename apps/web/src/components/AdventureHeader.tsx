@@ -170,7 +170,7 @@ export const AdventureHeader = ({
   return (
     <>
       <Section className="flex flex-wrap items-center relative paper-shadow gap-x-4 gap-y-2">
-        <Label rotate variant="gold">
+        <Label rotate color="gold">
           Adventure {phase}
         </Label>
         <Text as="span" variant="emphasised" color="iron">

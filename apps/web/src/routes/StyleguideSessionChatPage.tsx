@@ -12,11 +12,11 @@ export const StyleguideSessionChatPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label variant="fire" className="self-start">
+        <Label color="fire" className="self-start">
           Session Chat Labs
         </Label>
         <Heading
-          variant="h1"
+          level="h1"
           color="iron"
           className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
           highlightProps={{

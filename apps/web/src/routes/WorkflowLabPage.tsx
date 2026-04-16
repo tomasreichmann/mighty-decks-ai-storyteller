@@ -492,8 +492,7 @@ export const WorkflowLabPage = (): JSX.Element => {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <Heading
-              as="h1"
-              variant="h1"
+              level="h1"
               color="iron"
               className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
               highlightProps={{
@@ -628,7 +627,7 @@ export const WorkflowLabPage = (): JSX.Element => {
               <RockerSwitch
                 active={includeDependents}
                 color="cloth"
-                size="s"
+                size="sm"
                 label="Include Dependents"
                 inactiveText="Disabled"
                 activeText="Enabled"

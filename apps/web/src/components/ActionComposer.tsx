@@ -74,7 +74,7 @@ export const ActionComposer = ({
           <DepressedInput
             multiline
             label={metagameEnabled ? "Ask a Storyteller" : "Your action"}
-            labelColor={metagameEnabled ? "curse" : "gold"}
+            color={metagameEnabled ? "curse" : "gold"}
             rows={3}
             placeholder={
               metagameEnabled

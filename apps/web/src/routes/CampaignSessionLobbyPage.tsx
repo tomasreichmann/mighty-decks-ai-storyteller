@@ -214,7 +214,7 @@ export const CampaignSessionLobbyPage = (): JSX.Element => {
                   value: "storyteller",
                 },
               ]}
-              size="m"
+              size="md"
               value={selectedRole}
             />
           </div>

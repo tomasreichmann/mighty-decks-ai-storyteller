@@ -113,8 +113,7 @@ export const ImageGenerator = (): JSX.Element => {
     <div className="app-shell stack py-6 gap-4">
       <Section className="stack gap-2 paper-shadow">
         <Heading
-          as="h1"
-          variant="h1"
+          level="h1"
           color="iron"
           className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
           highlightProps={{
@@ -268,7 +267,7 @@ export const ImageGenerator = (): JSX.Element => {
           <RockerSwitch
             active={useCache}
             color="gold"
-            size="s"
+            size="sm"
             label="Use Cache"
             inactiveText="Disabled"
             activeText="Enabled"

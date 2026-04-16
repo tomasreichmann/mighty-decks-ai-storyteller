@@ -36,11 +36,11 @@ export const StyleguideLocationCardPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label variant="gold" className="self-start">
+        <Label color="gold" className="self-start">
           Single Direction
         </Label>
         <Heading
-          variant="h1"
+          level="h1"
           color="iron"
           className="text-[2.2rem] sm:text-[3.2rem]"
           highlightProps={{ color: "monster-light" }}

@@ -1,22 +1,35 @@
 import { PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
 import { Highlight, HighlightProps } from "./Highlight";
-import { Text, type TextProps } from "./Text";
+import { Text, type TextColor, type TextVariant } from "./Text";
 
-export type HeadingProps = PropsWithChildren &
-  Partial<TextProps> & { highlightProps?: Partial<HighlightProps> };
+export type HeadingLevel = "h1" | "h2" | "h3";
+
+export interface HeadingProps extends PropsWithChildren {
+  level?: HeadingLevel;
+  color?: TextColor;
+  className?: string;
+  highlightProps?: Partial<HighlightProps>;
+}
+
+const headingVariantMap: Record<HeadingLevel, TextVariant> = {
+  h1: "h1",
+  h2: "h2",
+  h3: "h3",
+};
 
 export const Heading = ({
+  level = "h2",
   highlightProps = {},
+  color = "iron",
   className,
   children,
-  ...textProps
 }: HeadingProps): JSX.Element => {
   return (
     <Text
-      variant="h2"
-      className={cn("-mb-2 relative", className)}
-      {...textProps}
+      variant={headingVariantMap[level]}
+      color={color}
+      className={cn("heading -mb-2 relative", className)}
     >
       <span className="relative inline-block">
         <span className="inline-block relative rotate-[-2deg]">{children}</span>

@@ -24,7 +24,7 @@ export const LandingPage = (): JSX.Element => {
 
       <div className="flex flex-col min-w-0 gap-4 mt-4 max-w-3xl mx-auto">
         <Heading
-          variant="h2"
+          level="h2"
           color="iron-light"
           className="text-center font-md-title tracking-normal rotate-[-2deg] skew-x-[-10deg] mb-2"
           highlightProps={{ color: "monster-light" }}

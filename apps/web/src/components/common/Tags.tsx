@@ -252,7 +252,7 @@ export const Tags = ({
     <div className={cn("tags stack gap-1", className)}>
       {showLabel ? (
         <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">
-          <Label variant={labelColor}>{label}</Label>
+          <Label color={labelColor}>{label}</Label>
           {description ? (
             <InputDescriptionHint
               description={description}

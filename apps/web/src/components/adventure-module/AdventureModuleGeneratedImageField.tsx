@@ -510,7 +510,7 @@ export const AdventureModuleGeneratedImageField = ({
 
       <div className="relative z-40 flex min-h-6 flex-col items-stretch gap-2 md:flex-row md:items-start md:justify-between">
         <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">
-          <Label variant="gold">{promptLabel}</Label>
+          <Label color="gold">{promptLabel}</Label>
           <InputDescriptionHint description={contextDescription} className="-translate-y-1 z-50" />
         </div>
         {contextTagOptions.length > 0 ? (

@@ -267,7 +267,7 @@ export const CharacterSetupForm = ({
           />
         ) : null}
         <Panel className="relative">
-          <Label variant="cloth" className="absolute -top-2 -left-2">
+          <Label color="cloth" className="absolute -top-2 -left-2">
             Saved Presets
           </Label>
           <Button

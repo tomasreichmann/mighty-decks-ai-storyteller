@@ -78,9 +78,8 @@ export const LandingHero = (): JSX.Element => {
   return (
     <Section className="stack items-center text-center gap-5">
       <Heading
-        variant="h1"
+        level="h1"
         color="iron"
-        as="h1"
         className="mt-4 mb-8 mx-auto max-w-2xl font-md-title !leading-[0.8] rotate-[-2deg] skew-x-[-10deg]"
         highlightProps={{
           animate: "once",
@@ -114,7 +113,7 @@ export const LandingHero = (): JSX.Element => {
                 >
                   <div className="relative z-10 flex h-full items-end justify-end p-3">
                     <Label
-                      variant={
+                      color={
                         index < landingProcessSteps.length - 1
                           ? "bone"
                           : "monster"

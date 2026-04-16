@@ -88,7 +88,7 @@ export const Text = ({
 
   return (
     <Component
-      className={cn(variantClassMap[variant], colorClassMap[color], className)}
+      className={cn("text", variantClassMap[variant], colorClassMap[color], className)}
     >
       {children}
     </Component>

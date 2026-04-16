@@ -26,7 +26,7 @@ export const CampaignSessionSelectionStrip = ({
   return (
     <section className={`stack gap-2 ${className ?? ""}`.trim()}>
       <div className="flex items-center gap-2">
-        <Label variant="gold" rotate={false} className="shrink-0">
+        <Label color="gold" rotate={false} className="shrink-0">
           Selection
         </Label>
         <InputDescriptionHint

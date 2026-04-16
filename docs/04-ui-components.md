@@ -42,10 +42,12 @@ When creating a new route/view (or a major new panel in an existing view), prefe
 - Use `Section` for semantic grouped content blocks.
 - Use `Panel` for framed/surface containers instead of custom bordered `div`s.
 - Use `Text` / `Heading` for typography instead of styling raw `h*` / `p` tags repeatedly.
+- Use `Heading` for semantic section and page titles; use `Text` for body copy and supporting text.
 - Use `Button` for actions (including icon-only/circle variants) instead of styled `button`s.
-- Use `Label` for badge-like headings/tags.
+- Use `Label` for badge-like headings, tags, and compact status chips.
 - Use `Message` for alert/status/informational callouts instead of custom callout wrappers.
-- Use `DepressedInput`, `TextField`, `TextArea`, and `Toggle` for form controls before creating one-off input styles.
+- Use `TextField`, `TextArea`, and `DepressedInput` for form controls before creating one-off input styles.
+- Use `Button`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` for button-like controls that need aligned heights or grouped states.
 
 ### `div` is still allowed, but only for these roles
 
@@ -484,6 +486,10 @@ Components:
 
 - `StyleguideIndexPage`
 - `StyleguideSectionNav`
+- `StyleguideTypographyPage`
+- `StyleguideInputsPage`
+- `StyleguideButtonsPage`
+- `StyleguidePanelPage`
 - `StyleguideCardsPage`
 - `StyleguideTagsPage`
 - `StyleguideControlsPage`
@@ -503,8 +509,81 @@ Behavior:
 
 - direct-route accessible but intentionally unlinked from the public app flows
 - `/styleguide` is now the overview and secondary-nav hub for the styleguide labs
-- the overview links to `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
-- the detailed card and session-chat pages remain available as deeper drill-down pages
+- the overview links to `/styleguide/typography`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
+- the cards page is the primary gallery entry point; the detail routes remain direct drill-down pages for internal inspection but are not surfaced in the main styleguide nav
+
+---
+
+### `/styleguide/typography`
+
+Hidden internal overview for typography and sticker-style labels.
+
+Components:
+
+- `StyleguideTypographyPage`
+- `Heading`
+- `Text`
+- `Label`
+
+Behavior:
+
+- showcases the shared `Heading`, `Text`, and `Label` APIs together so contributors can validate hierarchy, colors, and the shared size ladder in one place
+- keeps semantic heading usage and sticker/tag usage scoped to a dedicated page
+- includes the full `Label` palette and the `Small` / `Medium` / `Large` size ladder so chips can be checked across the same surface
+- uses different heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
+
+---
+
+### `/styleguide/inputs`
+
+Hidden internal overview for input primitives and their aligned action rows.
+
+Components:
+
+- `StyleguideInputsPage`
+- `TextField`
+- `TextArea`
+- `DepressedInput`
+- `Button`
+
+Behavior:
+
+- groups the shared input primitives beside matching buttons so contributors can confirm height alignment before they reuse a control in a feature surface
+- keeps the standard input shells and depressed input shells in one page for API validation
+- treats `DepressedInput` as the inset input style variant and validates button/input rows side by side so adjacent controls can share a height baseline
+
+---
+
+### `/styleguide/buttons`
+
+Hidden internal overview for the shared button family.
+
+Components:
+
+- `StyleguideButtonsPage`
+- `Button`
+- `CTAButton`
+
+Behavior:
+
+- isolates the standard and high-emphasis button APIs so contributors can compare size and color behavior without the rest of the styleguide chrome
+- keeps the button family scoped to one page before it is reused in routes or labs
+
+---
+
+### `/styleguide/panel`
+
+Hidden internal overview for the heavy framed surface.
+
+Components:
+
+- `StyleguidePanelPage`
+- `Panel`
+
+Behavior:
+
+- showcases `Panel` as the heavyweight framed surface for major route blocks and summary panels
+- keeps framed surfaces separate from the lighter body, field, and chip labs so contributors can judge when a frame is actually warranted
 
 ---
 
@@ -516,12 +595,12 @@ Components:
 
 - `StyleguideCardsPage`
 - `StyleguideSectionNav`
-- `GameCard` detail pages for location, encounter, and quest
+- `GameCard` gallery directions for location, encounter, and quest
 
 Behavior:
 
-- groups the card labs into one page for scoped contributor work
-- links to `/styleguide/location-card`, `/styleguide/encounter-card`, and `/styleguide/quest-card`
+- groups the supported card directions into one gallery page for scoped contributor work
+- keeps the detailed card routes as hidden drill-downs rather than first-class styleguide sections
 
 ---
 
@@ -540,6 +619,7 @@ Behavior:
 
 - showcases the shared chip primitive, the editable tag field, and the connection status pill together
 - keeps tag-like surfaces together so styling stays consistent across read-only and editable cases
+- covers the full sticker/chip palette used in the repo, including `gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, and `monster`
 
 ---
 
@@ -899,22 +979,22 @@ Behavior:
 
 Located in `apps/web/src/components/common/`:
 
-- `Button` (project variants/sizes; neutral default for standard and grouped actions)
-- `ToggleButton` (straight-edged active/inactive option button for grouped controls)
-- `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label`)
-- `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton`)
+- `Button` (project variants/sizes; neutral default for standard and grouped actions with the shared `sm`/`md`/`lg` height ladder)
+- `ToggleButton` (straight-edged active/inactive option button for grouped controls using the shared `sm`/`md`/`lg` height ladder)
+- `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label` and the shared `sm`/`md`/`lg` height ladder)
+- `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton` and the shared `sm`/`md`/`lg` height ladder)
 - `CTAButton` (shared high-emphasis solo CTA with hover highlight underlay)
 - `Section`
 - `Panel`
 - `Text`
-- `Heading`
-- `Label`
+- `Heading` (semantic page/section heading wrapper around `Text`)
+- `Label` (sticker/chip shell for badge-like headings, tags, and compact status pills)
 - `Message`
 - `Tag`
 - `ConnectionStatusPill`
-- `TextField`
-- `TextArea`
-- `DepressedInput`
+- `TextField` (standard single-line field with the shared `sm`/`md`/`lg` size ladder)
+- `TextArea` (multiline field with the shared `sm`/`md`/`lg` size ladder)
+- `DepressedInput` (depressed shell input with the shared `sm`/`md`/`lg` size ladder)
 - `Toggle`
 - `Highlight` (decorative text accent; use via `Heading` where possible)
 - `ImageBackground` (for image-backed UI blocks)
@@ -926,7 +1006,8 @@ Recent routes/components already follow this in many places:
 - `WorkflowLabPage` uses `Panel` + `Button` for nearly all surfaced UI blocks/actions
 - `ImageGenerator` uses `Section`/`Panel` + `Heading`/`Text` + `Button`
 - `AdventureHeader`, `NarratedSceneCard`, `GenericVotePanel`, `ReadyGatePanel`, `TranscriptFeed` rely on shared primitives instead of one-off shells
-- `/styleguide` now includes a grouped-control lab for `ToggleButton`, `ButtonRadioGroup`, and `RockerSwitch` covering active state, palette variants, size comparisons, and alternate switch styling
+- `/styleguide` now includes focused typography, inputs, buttons, cards, tags, controls, and session-chat labs so contributors can validate one API family at a time
+- the shared `Button`, `TextField`, `TextArea`, `DepressedInput`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` shells all use the common `sm`/`md`/`lg` size ladder so adjacent controls can match height
 
 New views should follow these patterns by default rather than introducing custom framed boxes or custom typography wrappers.
 

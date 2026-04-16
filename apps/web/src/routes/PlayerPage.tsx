@@ -240,7 +240,7 @@ export const PlayerPage = (): JSX.Element => {
             onClick={() => setShowPlayerDebugDetails(true)}
             className="self-start bg-transparent p-0 text-left"
           >
-            <Label variant="curse">Player Debug</Label>
+            <Label color="curse">Player Debug</Label>
           </button>
         )
       ) : null}

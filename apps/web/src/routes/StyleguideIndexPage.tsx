@@ -7,12 +7,44 @@ import { StyleguideSectionNav } from "../components/styleguide/StyleguideSection
 
 const overviewSections = [
   {
+    title: "Typography",
+    tone: "gold" as const,
+    description:
+      "Validate the Label, Text, and Heading APIs before you touch the rest of the component surface.",
+    href: "/styleguide/typography",
+    buttonLabel: "Open Typography Lab",
+  },
+  {
+    title: "Inputs",
+    tone: "cloth" as const,
+    description:
+      "Check TextField, TextArea, and DepressedInput side by side with matching button heights.",
+    href: "/styleguide/inputs",
+    buttonLabel: "Open Inputs Lab",
+  },
+  {
+    title: "Buttons",
+    tone: "fire" as const,
+    description:
+      "Review the shared Button API and the CTAButton wrapper in one focused view.",
+    href: "/styleguide/buttons",
+    buttonLabel: "Open Buttons Lab",
+  },
+  {
+    title: "Panel",
+    tone: "bone" as const,
+    description:
+      "Validate the heavyweight framed surface before you reach for it in the rest of the app.",
+    href: "/styleguide/panel",
+    buttonLabel: "Open Panel Lab",
+  },
+  {
     title: "Cards",
     tone: "bone" as const,
     description:
-      "Jump into the card family, then open the detailed location, encounter, or quest pages when you need the visual deep dive.",
+      "Review the card gallery in one place when you want to compare the supported location, encounter, and quest directions.",
     href: "/styleguide/cards",
-    buttonLabel: "Open Card Labs",
+    buttonLabel: "Open Card Gallery",
   },
   {
     title: "Tags",
@@ -24,7 +56,7 @@ const overviewSections = [
   },
   {
     title: "Controls",
-    tone: "gold" as const,
+    tone: "cloth" as const,
     description:
       "Keep the grouped toggle controls and rocker switches scoped to a single page.",
     href: "/styleguide/controls",
@@ -46,11 +78,11 @@ export const StyleguideIndexPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label variant="gold" className="self-start">
+        <Label color="gold" className="self-start">
           Styleguide
         </Label>
         <Heading
-          variant="h1"
+          level="h1"
           color="iron"
           className="relative z-0 text-[2.4rem] leading-none sm:text-[3.4rem] sm:leading-none"
           highlightProps={{
@@ -66,8 +98,9 @@ export const StyleguideIndexPage = (): JSX.Element => {
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
           Hidden component playground for scoped iteration. Use the navigation
-          to jump between card labs, tag surfaces, grouped controls, and the
-          session chat mock family.
+          to jump between typography, input, button, panel, card, tag, grouped
+          control, or session chat labs before you move into broader feature
+          work.
         </Text>
       </div>
 
@@ -99,8 +132,9 @@ export const StyleguideIndexPage = (): JSX.Element => {
           What moved where
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          The old all-in-one landing page now lives on these scoped subpages, so
-          contributors can open only the lab they are working on.
+          The old all-in-one landing page now lives on scoped subpages, so
+          contributors can open only the lab they are working on and validate
+          the API they care about without extra noise.
         </Text>
       </Panel>
     </div>

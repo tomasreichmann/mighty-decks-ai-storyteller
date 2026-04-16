@@ -47,7 +47,7 @@ export type ButtonColors =
   | "monster-light"
   | "monster-lightest"
   | "monster-dark";
-type ButtonSize = "sm" | "md" | "lg";
+export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonBaseProps {
   variant?: ButtonVariant;
@@ -79,9 +79,9 @@ const variantClassMap: Record<ButtonVariant, string> = {
 };
 
 const sizeClassMap: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-xs rounded-sm",
-  md: "px-4 py-2 text-sm",
-  lg: "px-5 py-2.5 text-base",
+  sm: "min-h-8 px-3 py-1.5 text-xs rounded-sm",
+  md: "min-h-10 px-4 py-2 text-sm",
+  lg: "min-h-12 px-5 py-2.5 text-base",
 };
 
 const circleSizeClassMap: Record<ButtonSize, string> = {
@@ -212,7 +212,7 @@ export const Button = forwardRef<HTMLElement, ButtonProps>((rawProps, ref) => {
       variant === "circle" ? circleSizeClassMap[size] : sizeClassMap[size];
 
     const classes = cn(
-      "inline-flex select-none items-center justify-center",
+      "button inline-flex select-none items-center justify-center",
       "font-ui font-bold uppercase tracking-[0.08em] transition duration-100",
       "hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50",
       "disabled:cursor-not-allowed disabled:brightness-100 disabled:saturate-50 disabled:contrast-75 disabled:brightness-75",

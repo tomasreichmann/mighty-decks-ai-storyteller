@@ -242,15 +242,15 @@ export const Message = ({
   return (
     <Component
       style={highlightStyle}
-        className={cn(
-          "min-w-0 max-w-full px-2 py-2 pr-4",
-          highlighted ? styles.messageHighlight : "shadow-[4px_4px_0_0_#121b23]",
-          "rounded-sm",
-          tone.container,
-          className,
-        )}
-      >
-      <div className="stack min-w-0 items-baseline gap-2 relative pt-4">
+      className={cn(
+        "message min-w-0 max-w-full px-2 py-2 pr-4",
+        highlighted ? styles.messageHighlight : "shadow-[4px_4px_0_0_#121b23]",
+        "rounded-sm",
+        tone.container,
+        className,
+      )}
+    >
+      <div className="message__content stack min-w-0 items-baseline gap-2 relative pt-4">
         {label ? (
           onLabelClick ? (
             <button
@@ -262,7 +262,7 @@ export const Message = ({
               )}
             >
               <Label
-                variant={labelVariant ?? tone.defaultLabelVariant}
+                color={labelVariant ?? tone.defaultLabelVariant}
                 rotate={rotateLabel}
                 className="cursor-pointer"
               >
@@ -271,7 +271,7 @@ export const Message = ({
             </button>
           ) : (
             <Label
-              variant={labelVariant ?? tone.defaultLabelVariant}
+              color={labelVariant ?? tone.defaultLabelVariant}
               rotate={rotateLabel}
               className={cn(
                 "relative -mt-8 -left-3 whitespace-nowrap",

@@ -1,51 +1,60 @@
 import React from "react";
 import { PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
+import { componentLabelSizeClassMap, type ComponentSize } from "./componentSizing";
 
 void React;
 
-export type LabelVariant =
+export type LabelColor =
   | "gold"
   | "fire"
+  | "blood"
   | "bone"
+  | "steel"
   | "skin"
   | "cloth"
   | "curse"
   | "monster";
 
-const labelToneClassMap: Record<LabelVariant, string> = {
+export type LabelVariant = LabelColor;
+
+const labelToneClassMap: Record<LabelColor, string> = {
   gold: "bg-kac-gold text-kac-iron",
   fire: "bg-kac-fire-light text-kac-iron-dark",
+  blood: "bg-kac-blood-light text-kac-iron-dark",
   bone: "bg-kac-bone-light text-kac-iron-dark",
+  steel: "bg-kac-steel-light text-kac-iron-dark",
   skin: "bg-kac-skin text-kac-iron-dark",
   cloth: "bg-kac-cloth-light text-kac-iron-dark",
   curse: "bg-kac-curse-light text-kac-iron-dark",
   monster: "bg-kac-monster-light text-kac-iron-dark",
 };
 
+const labelSizeClassMap: Record<ComponentSize, string> = componentLabelSizeClassMap;
+
 interface LabelProps extends PropsWithChildren {
-  variant?: LabelVariant;
-  size?: "sm" | "md" | "lg";
+  color?: LabelColor;
+  size?: ComponentSize;
   rotate?: boolean;
   className?: string;
 }
 
 export const Label = ({
-  variant = "gold",
+  color = "gold",
+  size = "md",
   rotate = true,
-  size,
   className = "",
   children,
 }: LabelProps): JSX.Element => {
   return (
     <span
       className={cn(
-        "inline-flex items-center border-2 border-kac-iron px-2 pt-1.5 pb-1",
+        "label inline-flex items-center border-2 border-kac-iron",
+        labelSizeClassMap[size],
         "font-heading text-xs/none font-bold uppercase tracking-wide",
         "shadow-[3px_3px_0_0_#121b23]",
         rotate && "-rotate-[1.5deg]",
-        size ? "text-" + size + "/[0.8]" : "",
-        labelToneClassMap[variant],
+        labelToneClassMap[color],
         className,
       )}
     >

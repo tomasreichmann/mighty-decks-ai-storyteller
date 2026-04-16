@@ -17,3 +17,12 @@ test("Button solid variant stays neutral while CTAButton owns the skewed solo st
   assert.doesNotMatch(source, /rotate-\[-2deg\]/);
   assert.doesNotMatch(source, /skew-x-\[-5deg\]/);
 });
+
+test("Button exposes a shared sm md lg size ladder with stable heights", () => {
+  const source = readFileSync(new URL("./Button.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /ButtonSize = "sm" \| "md" \| "lg"/);
+  assert.match(source, /sm:[\s\S]*min-h-8/);
+  assert.match(source, /md:[\s\S]*min-h-10/);
+  assert.match(source, /lg:[\s\S]*min-h-12/);
+});

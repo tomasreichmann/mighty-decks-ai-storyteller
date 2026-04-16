@@ -72,6 +72,20 @@ const ScreenPage = lazy(async () => ({
 const StyleguideIndexPage = lazy(async () => ({
   default: (await import("./routes/StyleguideIndexPage")).StyleguideIndexPage,
 }));
+const StyleguideTypographyPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideTypographyPage"))
+    .StyleguideTypographyPage,
+}));
+const StyleguideInputsPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideInputsPage")).StyleguideInputsPage,
+}));
+const StyleguideButtonsPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideButtonsPage"))
+    .StyleguideButtonsPage,
+}));
+const StyleguidePanelPage = lazy(async () => ({
+  default: (await import("./routes/StyleguidePanelPage")).StyleguidePanelPage,
+}));
 const StyleguideCardsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideCardsPage")).StyleguideCardsPage,
 }));
@@ -182,7 +196,7 @@ const RouteLoadingFallback = (): JSX.Element => (
       className="flex flex-col items-center gap-4 text-center"
     >
 
-      <Label variant="gold" size="lg" rotate={false}>
+      <Label color="gold" size="lg" rotate={false}>
         <PendingIndicator
           label="Loading"
           color="gold-dark"
@@ -219,6 +233,10 @@ export const App = (): JSX.Element => {
           <Route path="/workflow-lab" element={<WorkflowLabPage />} />
           <Route path="/workflow-lab/:workflowId" element={<WorkflowLabPage />} />
           <Route path="/styleguide" element={<StyleguideIndexPage />} />
+          <Route path="/styleguide/typography" element={<StyleguideTypographyPage />} />
+          <Route path="/styleguide/inputs" element={<StyleguideInputsPage />} />
+          <Route path="/styleguide/buttons" element={<StyleguideButtonsPage />} />
+          <Route path="/styleguide/panel" element={<StyleguidePanelPage />} />
           <Route path="/styleguide/cards" element={<StyleguideCardsPage />} />
           <Route path="/styleguide/tags" element={<StyleguideTagsPage />} />
           <Route path="/styleguide/controls" element={<StyleguideControlsPage />} />
