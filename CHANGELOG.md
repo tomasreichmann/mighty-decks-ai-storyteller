@@ -9,6 +9,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Changed
 
 - Web: replace the Adventure Module title, location, encounter, and quest inline image generator blocks with framed image pickers that open the shared generate-or-pick dialog from a top-right trigger button.
+- Web: in the shared generate-or-pick image dialog, replace the selected image URL text field with a depressed input plus inline trash clear button, and add drag-and-drop raw image upload that saves external images on the server.
 - Web: add raw-image selection mode to the shared image dialog so image fields can reuse the same modal without inserting markdown.
 - Narrow the Adventure Module, Campaign, and authoring entity list search bars into a shared compact depressed search field, and normalize their card grids to a mobile 1-column, tablet 2-column, desktop 3-column layout.
 - Replace the empty counters panel shell with a neutral `Message` state so the "no counters yet" view feels lighter and less framed.

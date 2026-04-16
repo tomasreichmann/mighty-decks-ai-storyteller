@@ -120,6 +120,7 @@ Shell behavior:
 - On desktop, `Create Campaign` sits on the right side of the title row while the full tab rail stays on its own row below.
 - On tablet-sized layouts and narrower, the tab rail collapses into a section dropdown in the same header row, immediately after `Create Campaign`.
 - Framed image pickers reopen with the current saved image already selected, so cover art and entity art can be reused or regenerated in place.
+- The shared dialog inside those pickers uses a depressed `Selected Image URL` field, an inline trash clear button, and a drag-and-drop upload area that stores external images on the server before reusing the saved URL.
 - The route now delegates its shared title-row and common tab rendering through extracted `SharedAuthoringHeader` and `CommonAuthoringTabContent` components so module and campaign authoring stay aligned.
 - Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
@@ -166,6 +167,7 @@ Behavior:
 - `Lookup Existing` works with or without a typed prompt.
 - With a prompt, the current model remains the primary match and same-prompt images from other models appear in a separate gallery.
 - Without a prompt, the image picker dialog can restore the saved image by file name and browse every stored image group for the provider.
+- The same dialog also accepts dropped external image files, saves them through the server artifact store, and keeps the uploaded artifact selected in the field.
 
 ### 5.2 Player Info Tab (`/player-info`)
 

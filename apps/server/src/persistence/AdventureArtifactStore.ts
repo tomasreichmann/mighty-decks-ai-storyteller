@@ -55,6 +55,15 @@ const EXTENSION_TO_CONTENT_TYPE: Record<string, string> = Object.fromEntries(
 const normalizeContentType = (value: string): string =>
   value.trim().toLowerCase().split(";")[0] ?? value.trim().toLowerCase();
 
+const assertSupportedContentType = (contentType: string): string => {
+  const normalizedContentType = normalizeContentType(contentType);
+  if (!(normalizedContentType in CONTENT_TYPE_TO_EXTENSION)) {
+    throw new Error(`unsupported image content type: ${normalizedContentType}`);
+  }
+
+  return normalizedContentType;
+};
+
 const createHashHex = (value: Buffer): string =>
   createHash("sha256").update(value).digest("hex");
 
@@ -124,7 +133,7 @@ export class AdventureArtifactStore {
     options: { hint?: string } = {},
   ): Promise<AdventureArtifactRecord> {
     const parsed = parseDataImageUri(dataImageUri);
-    return this.persistBuffer(parsed.buffer, parsed.contentType, options);
+    return this.persistImageBuffer(parsed.buffer, parsed.contentType, options);
   }
 
   public async persistLocalFile(
@@ -142,7 +151,23 @@ export class AdventureArtifactStore {
       throw new Error(`unsupported local image file extension: ${extension || "<none>"}`);
     }
 
-    return this.persistBuffer(buffer, contentType, options);
+    return this.persistImageBuffer(buffer, contentType, options);
+  }
+
+  public async persistImageBuffer(
+    buffer: Buffer,
+    contentType: string,
+    options: { hint?: string } = {},
+  ): Promise<AdventureArtifactRecord> {
+    if (buffer.length === 0) {
+      throw new Error("image buffer is empty");
+    }
+
+    return this.persistBuffer(
+      buffer,
+      assertSupportedContentType(contentType),
+      options,
+    );
   }
 
   public async getFileRecord(fileName: string): Promise<AdventureArtifactRecord | null> {
@@ -184,7 +209,7 @@ export class AdventureArtifactStore {
     contentType: string,
     options: { hint?: string },
   ): Promise<AdventureArtifactRecord> {
-    const normalizedContentType = normalizeContentType(contentType);
+    const normalizedContentType = assertSupportedContentType(contentType);
     const hash = createHashHex(buffer);
     const extension = CONTENT_TYPE_TO_EXTENSION[normalizedContentType] ?? ".bin";
 

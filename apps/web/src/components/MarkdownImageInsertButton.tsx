@@ -203,7 +203,7 @@ export const MarkdownImageInsertButton = ({
                   pendingLabel="Generating image..."
                   generateLabel={generateLabel}
                   valueFieldLabel="Selected Image URL"
-                  valueFieldDescription="Paste an existing image URL or pick one from the generated batch below."
+                  valueFieldDescription="Paste an existing image URL, drop an external image, or pick one from the generated batch below."
                   onChange={(nextValue) => {
                     setSelectedImageUrl(nextValue);
                     setErrorMessage(null);

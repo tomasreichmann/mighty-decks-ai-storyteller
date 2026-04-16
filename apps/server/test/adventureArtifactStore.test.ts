@@ -70,3 +70,28 @@ test("persists local image files and deduplicates by payload hash", async () => 
   assert.ok(record);
   assert.equal(record?.contentType, "image/png");
 });
+
+test("persists raw image buffers and deduplicates by payload hash", async () => {
+  const rootDir = mkdtempSync(join(tmpdir(), "mighty-decks-artifacts-"));
+  const store = new AdventureArtifactStore({
+    rootDir,
+    fileRouteBasePath: "/api/adventure-artifacts",
+  });
+  await store.initialize();
+
+  const buffer = Buffer.from(ONE_PIXEL_PNG_BASE64, "base64");
+  const first = await store.persistImageBuffer(buffer, "image/png", {
+    hint: "drop-zone",
+  });
+  const second = await store.persistImageBuffer(buffer, "image/png", {
+    hint: "different-hint",
+  });
+
+  assert.equal(first.fileName, second.fileName);
+  assert.equal(first.fileUrl, second.fileUrl);
+  assert.ok(first.fileName.endsWith(".png"));
+
+  const record = await store.getFileRecord(first.fileName);
+  assert.ok(record);
+  assert.equal(record?.contentType, "image/png");
+});

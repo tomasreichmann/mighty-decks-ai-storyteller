@@ -5,15 +5,17 @@ import type {
   ImageModelSummary,
 } from "@mighty-decks/spec/imageGeneration";
 import { useImageGeneration } from "../../hooks/useImageGeneration";
+import { uploadAdventureArtifactImage } from "../../lib/adventureArtifactApi";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
+import { cn } from "../../utils/cn";
 import { Button } from "../common/Button";
+import { DepressedInput } from "../common/DepressedInput";
 import { InputDescriptionHint } from "../common/InputDescriptionHint";
 import { Label } from "../common/Label";
 import { Message } from "../common/Message";
 import { SmartInput } from "../common/SmartInput";
 import { Tags } from "../common/Tags";
 import { Text } from "../common/Text";
-import { TextField } from "../common/TextField";
 import { GeneratedImage, type ImageGeneration } from "../GeneratedImage";
 
 const PROMPT_MAX_LENGTH = 4000;
@@ -187,12 +189,17 @@ export const AdventureModuleGeneratedImageField = ({
   ]);
   const [preferredModelInitialized, setPreferredModelInitialized] =
     useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [isDropActive, setIsDropActive] = useState(false);
   const [crossModelGroups, setCrossModelGroups] = useState<
     GeneratedImageGroup[]
   >([]);
   const [loadingCrossModel, setLoadingCrossModel] = useState(false);
   const lastAutoSelectedImageUrlRef = useRef<string>("");
   const autoLookupDoneRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dragDepthRef = useRef(0);
   const {
     sortedModels,
     selectedModelId,
@@ -247,6 +254,10 @@ export const AdventureModuleGeneratedImageField = ({
     setContextTags([...defaultContextTags]);
     setPrompt("");
     clearError();
+    setUploadError(null);
+    setUploadingImage(false);
+    setIsDropActive(false);
+    dragDepthRef.current = 0;
     setCrossModelGroups([]);
     autoLookupDoneRef.current = false;
     lastAutoSelectedImageUrlRef.current = normalizeImageUrl(value);
@@ -475,38 +486,184 @@ export const AdventureModuleGeneratedImageField = ({
     return activeImage ? toDisplayImage(activeImage, `${label} preview`) : null;
   }, [activeImage, label, value]);
 
+  const openFilePicker = (): void => {
+    if (disabled || uploadingImage) {
+      return;
+    }
+
+    setUploadError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (file: File): Promise<void> => {
+    if (disabled || uploadingImage) {
+      return;
+    }
+
+    setUploadingImage(true);
+    setUploadError(null);
+    try {
+      const artifact = await uploadAdventureArtifactImage(file, {
+        hint: file.name,
+      });
+      lastAutoSelectedImageUrlRef.current = normalizeImageUrl(
+        artifact.fileUrl,
+      );
+      onChange(artifact.fileUrl);
+      onBlur?.();
+    } catch (error) {
+      setUploadError(
+        error instanceof Error
+          ? error.message
+          : "Could not upload the image. Try another file.",
+      );
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleFileSelection = async (
+    files: FileList | File[] | null,
+  ): Promise<void> => {
+    const file = files?.[0];
+    if (!file) {
+      return;
+    }
+
+    await handleFileUpload(file);
+  };
+
+  const clearDropDepth = (): void => {
+    dragDepthRef.current = 0;
+    setIsDropActive(false);
+  };
+
   return (
     <div className="stack gap-3">
-      <TextField
-        label={valueFieldLabel ?? `${label} URL`}
-        description={
-          valueFieldDescription ??
-          "Paste an existing image URL or pick one from the generated batch below."
-        }
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
-        onBlur={onBlur}
-        disabled={disabled}
-        maxLength={500}
-        placeholder="https://..."
-      />
+      <div className="flex items-end gap-2">
+        <DepressedInput
+          label={valueFieldLabel ?? "Selected Image URL"}
+          description={
+            valueFieldDescription ??
+            "Paste an existing image URL, drop an image, or pick one from the generated batch below."
+          }
+          value={value}
+          onChange={(event) => {
+            setUploadError(null);
+            onChange(event.target.value);
+          }}
+          onBlur={onBlur}
+          disabled={disabled}
+          maxLength={500}
+          placeholder="https://..."
+          className="min-w-0 flex-1"
+        />
 
-      <div className="flex flex-wrap gap-2">
         <Button
-          variant="ghost"
-          color="cloth"
+          variant="circle"
+          color="blood"
           size="sm"
           onClick={() => {
+            setUploadError(null);
             onChange("");
             onBlur?.();
           }}
           disabled={disabled || normalizeImageUrl(value).length === 0}
+          aria-label="Clear image"
+          title="Clear image"
+          className="shrink-0"
         >
-          Clear Image
+          <span aria-hidden="true">🗑</span>
         </Button>
       </div>
+
+      <div
+        className={cn(
+          "group flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed px-4 py-4 text-center transition",
+          disabled || uploadingImage
+            ? "cursor-not-allowed border-kac-iron/30 bg-kac-bone-light/50 opacity-70"
+            : isDropActive
+              ? "border-kac-gold-dark bg-kac-gold-light/35"
+              : "border-kac-iron/45 bg-kac-bone-light/65 hover:border-kac-gold-dark/70 hover:bg-kac-bone-light",
+        )}
+        role="button"
+        tabIndex={disabled || uploadingImage ? -1 : 0}
+        aria-disabled={disabled || uploadingImage}
+        onClick={openFilePicker}
+        onDragEnter={(event) => {
+          if (disabled || uploadingImage) {
+            return;
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          dragDepthRef.current += 1;
+          setIsDropActive(true);
+        }}
+        onDragOver={(event) => {
+          if (disabled || uploadingImage) {
+            return;
+          }
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+        }}
+        onDragLeave={(event) => {
+          if (disabled || uploadingImage) {
+            return;
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+          if (dragDepthRef.current === 0) {
+            setIsDropActive(false);
+          }
+        }}
+        onDrop={(event) => {
+          if (disabled || uploadingImage) {
+            return;
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          clearDropDepth();
+          void handleFileSelection(event.dataTransfer.files);
+        }}
+        onKeyDown={(event) => {
+          if (disabled || uploadingImage) {
+            return;
+          }
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openFilePicker();
+          }
+        }}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+          onChange={(event) => {
+            void handleFileSelection(event.currentTarget.files);
+            event.currentTarget.value = "";
+          }}
+        />
+
+        <Text variant="note" color="iron" className="text-sm !opacity-100">
+          {uploadingImage
+            ? "Uploading image..."
+            : "Drop an external image here or click to browse."}
+        </Text>
+        <Text variant="note" color="iron-light" className="text-xs !opacity-100">
+          Dropped images are saved on the server and can be reused in this field.
+        </Text>
+      </div>
+
+      {uploadError ? (
+        <Text variant="note" color="blood" className="text-sm !opacity-100">
+          {uploadError}
+        </Text>
+      ) : null}
 
       <div className="relative z-40 flex min-h-6 flex-col items-stretch gap-2 md:flex-row md:items-start md:justify-between">
         <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">

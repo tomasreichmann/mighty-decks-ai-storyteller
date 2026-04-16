@@ -9,7 +9,6 @@ import type {
   CampaignServerToClientEvents,
 } from "@mighty-decks/spec/campaignEvents";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
-import { isSafeFileName } from "./image/ImageNaming";
 import { ClaudeCliClient } from "./ai/ClaudeCliClient";
 import { OpenRouterClient } from "./ai/OpenRouterClient";
 import type { TextCompletionClient } from "./ai/OpenRouterClient";
@@ -31,6 +30,7 @@ import { ImageGenerationService } from "./image/ImageGenerationService";
 import { ImageStore } from "./image/ImageStore";
 import { LeonardoClient } from "./image/LeonardoClient";
 import { registerImageRoutes } from "./image/registerImageRoutes";
+import { registerAdventureArtifactRoutes } from "./adventureArtifacts/registerAdventureArtifactRoutes";
 import { AdventureArtifactStore } from "./persistence/AdventureArtifactStore";
 import { AdventureModuleStore } from "./persistence/AdventureModuleStore";
 import { AdventureSnapshotStore } from "./persistence/AdventureSnapshotStore";
@@ -189,6 +189,9 @@ registerSocketHandlers(io, manager, {
 });
 registerCampaignSocketHandlers(io, campaignStore);
 registerImageRoutes(app, imageGenerationService);
+registerAdventureArtifactRoutes(app, {
+  store: adventureArtifactStore,
+});
 const workflowFactory = createWorkflowFactory({
   adapters: createWorkflowAdapters({
     openRouterClient,
@@ -227,27 +230,6 @@ registerCampaignRoutes(app, {
       updatedAtIso,
     });
   },
-});
-
-app.get("/api/adventure-artifacts/:fileName", async (request, reply) => {
-  const params = request.params as { fileName?: string };
-  const fileName = params.fileName ?? "";
-  if (!isSafeFileName(fileName)) {
-    return reply.code(400).send({
-      message: "Invalid file name.",
-    });
-  }
-
-  const record = await adventureArtifactStore.getFileRecord(fileName);
-  if (!record) {
-    return reply.code(404).send({
-      message: "Adventure artifact not found.",
-    });
-  }
-
-  const body = await readFile(adventureArtifactStore.resolveAbsolutePath(fileName));
-  reply.type(record.contentType);
-  return reply.send(body);
 });
 
 app.get("/health", async () => {

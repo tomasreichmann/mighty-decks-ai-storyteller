@@ -348,6 +348,7 @@ Behavior:
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, a framed title-image picker that opens the shared image dialog with the current image preselected, and markdown script authoring.
 - `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, a framed title-image picker that opens the shared image dialog with the current image preselected, markdown brief authoring, and slug-driven route updates after saves.
 - actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and a clipboard copy button
+- the shared image dialog uses a depressed `Selected Image URL` field with an inline trash clear button and a raw-image drop zone that uploads external images to the server before reusing them in the picker
 
 ---
 
