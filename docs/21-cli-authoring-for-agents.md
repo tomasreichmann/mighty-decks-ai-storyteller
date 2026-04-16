@@ -213,6 +213,8 @@ Import Exiles from the legacy folder:
 pnpm -C apps/server import:adventure-module -- --creator-token author-token
 ```
 
+That importer copies legacy stills into `AdventureArtifactStore`, promotes the curated Exiles actor and asset cards, and rewrites named prose references to canonical `GameCard` embeds while preserving the markdown-first module body.
+
 ---
 
 ## 8. Repo-Local Agent Discovery

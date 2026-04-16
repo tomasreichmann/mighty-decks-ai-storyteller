@@ -11,5 +11,7 @@ test("StyleguideQuestCardPage renders the quest card direction", () => {
   assert.match(source, /Recover the Shard/);
   assert.match(source, /QuestCard direction/);
   assert.match(source, /scroll icon medallion/);
+  assert.match(source, /StyleguideSectionNav/);
+  assert.match(source, /styleguide-quest-card-page/);
   assert.match(source, /<GameCard type="quest" quest=\{sampleQuest\} \/>/);
 });

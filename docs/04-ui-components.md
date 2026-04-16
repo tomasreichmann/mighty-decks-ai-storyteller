@@ -483,16 +483,96 @@ Hidden internal route for component iteration and design comparison work.
 Components:
 
 - `StyleguideIndexPage`
+- `StyleguideSectionNav`
+- `StyleguideCardsPage`
+- `StyleguideTagsPage`
+- `StyleguideControlsPage`
+- `StyleguideSessionChatPage`
 - `GameCard` (location, encounter, and quest variants, internal)
 - `LocationCard` (styleguide-local image treatment)
 - `EncounterCard` (styleguide-local image treatment)
 - `QuestCard` (styleguide-local image treatment)
+- `Tag`
+- `Tags`
+- `ConnectionStatusPill`
+- `ToggleButton`
+- `ButtonRadioGroup`
+- `RockerSwitch`
 
 Behavior:
 
 - direct-route accessible but intentionally unlinked from the public app flows
-- lists available component labs for contributor use
-- currently links to `/styleguide/location-card`, `/styleguide/encounter-card`, `/styleguide/quest-card`, `/styleguide/session-chat-player`, and `/styleguide/session-chat-storyteller`
+- `/styleguide` is now the overview and secondary-nav hub for the styleguide labs
+- the overview links to `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
+- the detailed card and session-chat pages remain available as deeper drill-down pages
+
+---
+
+### `/styleguide/cards`
+
+Hidden internal overview for the card lab family.
+
+Components:
+
+- `StyleguideCardsPage`
+- `StyleguideSectionNav`
+- `GameCard` detail pages for location, encounter, and quest
+
+Behavior:
+
+- groups the card labs into one page for scoped contributor work
+- links to `/styleguide/location-card`, `/styleguide/encounter-card`, and `/styleguide/quest-card`
+
+---
+
+### `/styleguide/tags`
+
+Hidden internal overview for the shared chip family.
+
+Components:
+
+- `StyleguideTagsPage`
+- `Tag`
+- `Tags`
+- `ConnectionStatusPill`
+
+Behavior:
+
+- showcases the shared chip primitive, the editable tag field, and the connection status pill together
+- keeps tag-like surfaces together so styling stays consistent across read-only and editable cases
+
+---
+
+### `/styleguide/controls`
+
+Hidden internal overview for grouped controls and rocker switches.
+
+Components:
+
+- `StyleguideControlsPage`
+- `ToggleButton`
+- `ButtonRadioGroup`
+- `RockerSwitch`
+
+Behavior:
+
+- groups the control lab onto one page so grouped state can be reviewed without unrelated styleguide surfaces
+- keeps the toggle, radio, and rocker variants scoped to the same controls page
+
+---
+
+### `/styleguide/session-chat`
+
+Hidden internal overview for the session chat lab family.
+
+Components:
+
+- `StyleguideSessionChatPage`
+
+Behavior:
+
+- groups the full-screen session chat labs behind one landing page
+- links to `/styleguide/session-chat-player` and `/styleguide/session-chat-storyteller`
 
 ---
 
@@ -509,6 +589,7 @@ Components:
 Behavior:
 
 - single-card design preview
+- reachable from `/styleguide/cards` and shown with the shared styleguide secondary navigation
 - title, `Location` badge, and full-width scene-description strip are owned by `LocationCard`, not `ImageCard`
 - the shared scene frame is rendered as horizontal SVG (`viewBox 332x204`) so the same vector card treatment carries into authoring lists, transcript embeds, and session table previews
 - no markdown `GameCard` pipeline integration in this slice
@@ -529,6 +610,7 @@ Components:
 Behavior:
 
 - single-card design preview
+- reachable from `/styleguide/cards` and shown with the shared styleguide secondary navigation
 - title, `Encounter` badge, and full-width scene-description strip are owned by `EncounterCard`
 - the shared scene frame is rendered as horizontal SVG (`viewBox 332x204`) so the same vector card treatment carries into authoring lists, transcript embeds, and session table previews
 - prerequisites remain in the editor/detail surface rather than on the compact card
@@ -549,6 +631,7 @@ Components:
 Behavior:
 
 - single-card design preview
+- reachable from `/styleguide/cards` and shown with the shared styleguide secondary navigation
 - title, `Quest` framing, and full-width summary strip are owned by `QuestCard`
 - the shared scene frame is rendered as horizontal SVG (`viewBox 332x204`) so the same vector card treatment carries into authoring lists, transcript embeds, and session table previews
 - quest graph details remain in authoring/detail surfaces rather than on the compact card
@@ -571,6 +654,7 @@ Behavior:
 
 - desktop renders `Table` left at roughly two-thirds width and `Chat` right at roughly one-third width
 - mobile collapses to a single-pane `Chat` state with a visible `Table` / `Chat` switch that stays non-interactive in the styleguide
+- reachable from `/styleguide/session-chat`
 - player route highlights the current player's lane and shows discard affordances only on that player's own table cards
 - milestone 1 focuses on visible table cards only: stunts, effects, assets, and counters
 
@@ -591,6 +675,7 @@ Behavior:
 
 - desktop renders the same `Table` / `Chat` split as the player mock
 - mobile collapses to the same single-pane `Chat` state with a visible non-interactive switch
+- reachable from `/styleguide/session-chat`
 - storyteller route keeps all lanes equally visible and shows discard affordances on every player and shared table card
 - discarded cards render in a faded state so visual cleanup can be reviewed without adding interactivity
 

@@ -49,6 +49,7 @@ Use it alongside `AGENTS.md` and `README.md`. If instructions conflict, `AGENTS.
 - Use short inline comments for invariants, recovery paths, tricky effects, or non-obvious control flow.
 - Use JSDoc for helpers with contract-like behavior worth documenting, such as inputs, outputs, fallback behavior, or subtle constraints.
 - Do not leave tool- or agent-branded notes in checked-in code.
+- When a component renders a root element with a `className`, start the class list with a component-name token in kebab-case so the root is easy to search and visually identify in code review.
 
 ---
 

@@ -177,6 +177,12 @@ Canonical contracts are defined for:
 - `Toggle`
 - `DepressedInput`
 
+Tag family note:
+
+- `Tag` is the shared chip shell for read-only labels and status pills.
+- `Tags` composes `Tag` for editable chip rows instead of reimplementing the shell.
+- `ConnectionStatusPill` composes `Tag` for live status readouts and a leading dot.
+
 Button contract note:
 
 - `Button` solid is the neutral default for standard and grouped actions.

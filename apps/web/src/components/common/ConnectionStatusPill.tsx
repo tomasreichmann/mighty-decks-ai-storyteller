@@ -53,14 +53,29 @@ export const ConnectionStatusPill = ({
   const meta = statusToneMap[status];
 
   return (
-    <Tag tone={meta.tone} size="md" className={className}>
-      <span className="inline-flex items-center gap-1.5">
-        <span className={cn("h-2.5 w-2.5 rounded-full", meta.dotClassName)} />
-        <span>{label}</span>
-        <span className="normal-case tracking-normal opacity-80">
-          {detail ?? meta.statusLabel}
+    <span
+      className={cn("connection-status-pill inline-flex items-center", className)}
+    >
+      <Tag
+        tone={meta.tone}
+        size="md"
+        leading={
+          <span
+            aria-hidden="true"
+            className={cn(
+              "connection-status-pill__dot h-2.5 w-2.5 rounded-full",
+              meta.dotClassName,
+            )}
+          />
+        }
+      >
+        <span className="connection-status-pill__content inline-flex items-baseline gap-1.5">
+          <span>{label}</span>
+          <span className="connection-status-pill__detail normal-case tracking-normal opacity-80">
+            {detail ?? meta.statusLabel}
+          </span>
         </span>
-      </span>
-    </Tag>
+      </Tag>
+    </span>
   );
 };

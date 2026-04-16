@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "../components/common/Button";
 import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
@@ -5,49 +6,38 @@ import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
-const overviewSections = [
+const cardLabs = [
   {
-    title: "Cards",
-    tone: "bone" as const,
+    title: "Location Card",
     description:
-      "Jump into the card family, then open the detailed location, encounter, or quest pages when you need the visual deep dive.",
-    href: "/styleguide/cards",
-    buttonLabel: "Open Card Labs",
-  },
-  {
-    title: "Tags",
+      "Image-first location exploration with the cloth chip and pinned icon treatment.",
     tone: "cloth" as const,
-    description:
-      "Review the shared chip primitive, the editable tag field, and the connection status pill in one place.",
-    href: "/styleguide/tags",
-    buttonLabel: "Open Tag Lab",
+    href: "/styleguide/location-card",
   },
   {
-    title: "Controls",
-    tone: "gold" as const,
+    title: "Encounter Card",
     description:
-      "Keep the grouped toggle controls and rocker switches scoped to a single page.",
-    href: "/styleguide/controls",
-    buttonLabel: "Open Control Lab",
-  },
-  {
-    title: "Session Chat",
+      "Warning-forward encounter preview with the fire chip and mirrored icon treatment.",
     tone: "fire" as const,
+    href: "/styleguide/encounter-card",
+  },
+  {
+    title: "Quest Card",
     description:
-      "Use the session chat overview to jump into the player and storyteller full-screen mocks.",
-    href: "/styleguide/session-chat",
-    buttonLabel: "Open Session Labs",
+      "Quest-focused preview with the gold chip and scroll icon treatment.",
+    tone: "gold" as const,
+    href: "/styleguide/quest-card",
   },
 ] as const;
 
-export const StyleguideIndexPage = (): JSX.Element => {
+export const StyleguideCardsPage = (): JSX.Element => {
   return (
-    <div className="styleguide-index-page app-shell stack gap-6 py-8">
+    <div className="styleguide-cards-page app-shell stack gap-6 py-8">
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
         <Label variant="gold" className="self-start">
-          Styleguide
+          Card Labs
         </Label>
         <Heading
           variant="h1"
@@ -62,33 +52,33 @@ export const StyleguideIndexPage = (): JSX.Element => {
               "left-1/2 bottom-[0.08em] h-[0.5em] w-[calc(100%+0.22em)] -translate-x-1/2",
           }}
         >
-          Styleguide
+          Cards
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          Hidden component playground for scoped iteration. Use the navigation
-          to jump between card labs, tag surfaces, grouped controls, and the
-          session chat mock family.
+          The card family now lives on its own page so each direction can be
+          explored without scrolling past unrelated controls.
         </Text>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {overviewSections.map((section) => (
+      <div className="grid gap-4 lg:grid-cols-3">
+        {cardLabs.map((card) => (
           <Panel
-            key={section.title}
+            key={card.title}
             as="section"
-            tone={section.tone}
+            tone={card.tone}
             contentClassName="stack gap-3"
           >
             <div className="stack gap-1">
               <Text variant="h3" color="iron">
-                {section.title}
+                {card.title}
               </Text>
               <Text variant="body" color="iron-light" className="text-sm">
-                {section.description}
+                {card.description}
               </Text>
             </div>
-            <Button href={section.href} color="gold" size="sm">
-              {section.buttonLabel}
+
+            <Button href={card.href} color="gold" size="sm">
+              Open Gallery
             </Button>
           </Panel>
         ))}
@@ -96,12 +86,20 @@ export const StyleguideIndexPage = (): JSX.Element => {
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">
-          What moved where
+          Why this page exists
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          The old all-in-one landing page now lives on these scoped subpages, so
-          contributors can open only the lab they are working on.
+          The detailed card pages still hold the visual deep dives, but this
+          page gives contributors one place to jump to the card they want to
+          refine.
         </Text>
+        <Link
+          to="/styleguide"
+          className="inline-flex items-center gap-2 self-start font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron transition hover:text-kac-blood-dark"
+        >
+          <span aria-hidden="true">&larr;</span>
+          Back to Overview
+        </Link>
       </Panel>
     </div>
   );

@@ -10,6 +10,11 @@ import {
   type AdventureModuleFragmentKind,
   type AdventureModuleFragmentRef,
 } from "@mighty-decks/spec/adventureModule";
+import type {
+  ActorBaseLayerSlug,
+  ActorTacticalRoleSlug,
+  ActorTacticalSpecialSlug,
+} from "@mighty-decks/spec/actorCards";
 import type { AdventureArtifactStore } from "../../persistence/AdventureArtifactStore";
 
 interface TranslateExilesAdventureModuleOptions {
@@ -112,6 +117,503 @@ const makeQuestId = (slug: string): string => truncate(`quest-${slug}`, 120);
 
 const makeNodeId = (slug: string): string => truncate(`node-${slug}`, 120);
 
+const LEGACY_MODULE_PUBLIC_ROOT = "mighty-decks/encounters/exiles_of_the_hungry_void";
+const LEGACY_IMAGE_FILE_PATTERN = /\.(png|jpe?g|webp|gif)$/i;
+
+interface CuratedActorDefinition {
+  title: string;
+  slug: string;
+  aliases: string[];
+  baseLayerSlug: ActorBaseLayerSlug;
+  tacticalRoleSlug: ActorTacticalRoleSlug;
+  tacticalSpecialSlug?: ActorTacticalSpecialSlug;
+  isPlayerCharacter: boolean;
+  summary: string;
+  noteLines: string[];
+  portraitPaths?: string[];
+}
+
+interface CuratedAssetDefinition {
+  title: string;
+  slug: string;
+  aliases: string[];
+  modifier: string;
+  noun: string;
+  nounDescription: string;
+  adjectiveDescription: string;
+  iconPath: string;
+  summary: string;
+  noteLines: string[];
+}
+
+const createGameCardJsx = (
+  type: "ActorCard" | "AssetCard",
+  slug: string,
+  options: {
+    modifierSlug?: string;
+  } = {},
+): string => {
+  const modifierSlug = options.modifierSlug?.trim() ?? "";
+  return modifierSlug.length > 0
+    ? `<GameCard type="${type}" slug="${slug}" modifierSlug="${modifierSlug}" />`
+    : `<GameCard type="${type}" slug="${slug}" />`;
+};
+
+const normalizeLegacyImagePathKey = (sourcePath: string): string => {
+  const trimmed = sourcePath.trim().replace(/^\/+/, "");
+  return trimmed.startsWith("public/") ? trimmed.slice("public/".length) : trimmed;
+};
+
+const makeLegacyImageKey = (relativePath: string): string =>
+  `${LEGACY_MODULE_PUBLIC_ROOT}/${relativePath.replace(/\\/g, "/").replace(/^\/+/, "")}`;
+
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const findLegacyArtifactUrl = (
+  legacyArtifactUrlsByPath: ReadonlyMap<string, string> | undefined,
+  ...candidatePaths: string[]
+): string | undefined => {
+  if (!legacyArtifactUrlsByPath) {
+    return undefined;
+  }
+
+  const normalizedCandidates = candidatePaths
+    .map((candidate) => candidate.replace(/\\/g, "/").replace(/^\/+/, ""))
+    .filter((candidate) => candidate.length > 0);
+
+  for (const candidate of normalizedCandidates) {
+    const exactMatch = legacyArtifactUrlsByPath.get(candidate);
+    if (exactMatch) {
+      return exactMatch;
+    }
+  }
+
+  for (const [legacyPath, fileUrl] of legacyArtifactUrlsByPath.entries()) {
+    const normalizedLegacyPath = legacyPath.replace(/\\/g, "/");
+    for (const candidate of normalizedCandidates) {
+      if (
+        normalizedLegacyPath === candidate ||
+        normalizedLegacyPath.endsWith(candidate) ||
+        normalizedLegacyPath.endsWith(`/${candidate}`)
+      ) {
+        return fileUrl;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const collectLegacyImageArtifacts = async (
+  modulePublicDir: string,
+  artifactStore: AdventureArtifactStore,
+): Promise<Map<string, string>> => {
+  const artifactUrlsByLegacyPath = new Map<string, string>();
+
+  const walk = async (currentDir: string, legacyPathPrefix = ""): Promise<void> => {
+    const entries = await readdir(currentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (entry.name === "music") {
+          continue;
+        }
+        const nextPrefix = legacyPathPrefix.length > 0 ? `${legacyPathPrefix}/${entry.name}` : entry.name;
+        await walk(join(currentDir, entry.name), nextPrefix);
+        continue;
+      }
+
+      if (!LEGACY_IMAGE_FILE_PATTERN.test(entry.name)) {
+        continue;
+      }
+
+      const relativePath =
+        legacyPathPrefix.length > 0 ? `${legacyPathPrefix}/${entry.name}` : entry.name;
+      const absolutePath = join(currentDir, entry.name);
+      const hint = toSlug(entry.name.replace(/\.[^.]+$/, ""));
+      const persisted = await artifactStore.persistLocalFile(absolutePath, { hint });
+      artifactUrlsByLegacyPath.set(makeLegacyImageKey(relativePath), persisted.fileUrl);
+    }
+  };
+
+  await walk(modulePublicDir);
+  return artifactUrlsByLegacyPath;
+};
+
+const resolveLegacyPublicPath = async (
+  publicDir: string,
+  artifactStore: AdventureArtifactStore,
+  sourcePath: string,
+  legacyArtifactUrlsByPath?: ReadonlyMap<string, string>,
+): Promise<string> => {
+  const normalizedSourcePath = sourcePath.trim();
+  if (
+    normalizedSourcePath.length === 0 ||
+    /^https?:\/\//i.test(normalizedSourcePath)
+  ) {
+    return normalizedSourcePath;
+  }
+
+  const relativePathKey = normalizeLegacyImagePathKey(normalizedSourcePath);
+  const cachedUrl = findLegacyArtifactUrl(legacyArtifactUrlsByPath, relativePathKey);
+  if (cachedUrl) {
+    return cachedUrl;
+  }
+
+  const absolutePath = join(publicDir, relativePathKey);
+  try {
+    const persisted = await artifactStore.persistLocalFile(absolutePath, {
+      hint: toSlug(relativePathKey.split("/").pop() ?? "exiles-image"),
+    });
+    return persisted.fileUrl;
+  } catch {
+    return normalizedSourcePath;
+  }
+};
+
+const buildCuratedEntityReplacementMap = (
+  actorDefinitions: readonly CuratedActorDefinition[],
+  assetDefinitions: readonly CuratedAssetDefinition[],
+): Array<{ pattern: RegExp; replacement: string }> => {
+  const entities = [
+    ...actorDefinitions.flatMap((definition) =>
+      definition.aliases.map((alias) => ({
+        alias,
+        replacement: createGameCardJsx("ActorCard", definition.slug),
+      })),
+    ),
+    ...assetDefinitions.flatMap((definition) =>
+      definition.aliases.map((alias) => ({
+        alias,
+        replacement: createGameCardJsx("AssetCard", definition.slug),
+      })),
+    ),
+  ].sort((left, right) => right.alias.length - left.alias.length);
+
+  return entities.map(({ alias, replacement }) => ({
+    pattern: new RegExp(`(?<!\\w)${escapeRegExp(alias)}(?!\\w)`, "gi"),
+    replacement,
+  }));
+};
+
+const replaceCuratedEntityEmbeds = (
+  content: string,
+  replacements: readonly { pattern: RegExp; replacement: string }[],
+): string =>
+  content
+    .split("\n")
+    .map((line) => {
+      if (/^\s*!\[[^\]]*\]\(/.test(line)) {
+        return line;
+      }
+      const placeholderPrefix = "__EXILES_GAMECARD_PLACEHOLDER_";
+      const tokenizedLine = replacements.reduce(
+        (current, replacement, index) =>
+          current.replace(replacement.pattern, `${placeholderPrefix}${index}__`),
+        line,
+      );
+      return tokenizedLine.replace(
+        new RegExp(`${escapeRegExp(placeholderPrefix)}(\\d+)__`, "g"),
+        (_match, index: string) => {
+          const replacement = replacements[Number.parseInt(index, 10)];
+          return replacement?.replacement ?? "";
+        },
+      );
+    })
+    .join("\n");
+
+const buildActorContent = (options: {
+  title: string;
+  summary: string;
+  noteLines: string[];
+  imageUrls: string[];
+}): string =>
+  [
+    `# ${options.title}`,
+    "",
+    ...options.imageUrls.map((imageUrl) => `![](${imageUrl})`),
+    "",
+    options.summary,
+    "",
+    "## Notes",
+    ...options.noteLines.map((line) => `- ${line}`),
+  ]
+    .filter((line, index, allLines) => {
+      if (line.length > 0) {
+        return true;
+      }
+      return allLines[index - 1]?.length > 0;
+    })
+    .join("\n");
+
+const buildAssetContent = (options: {
+  title: string;
+  summary: string;
+  noteLines: string[];
+  iconUrl: string;
+}): string =>
+  [
+    `# ${options.title}`,
+    "",
+    `![](${options.iconUrl})`,
+    "",
+    options.summary,
+    "",
+    "## Notes",
+    ...options.noteLines.map((line) => `- ${line}`),
+  ]
+    .filter((line, index, allLines) => {
+      if (line.length > 0) {
+        return true;
+      }
+      return allLines[index - 1]?.length > 0;
+    })
+    .join("\n");
+
+const curatedActorDefinitions: readonly CuratedActorDefinition[] = [
+  {
+    title: "Machinist-Priest Heretic",
+    slug: "machinist-priest-heretic",
+    aliases: ["Machinist-Priest Heretic", "Machinist-Priestess Heretic"],
+    baseLayerSlug: "cog",
+    tacticalRoleSlug: "champion",
+    isPlayerCharacter: true,
+    summary: "An exiled engineer-priest who treats forbidden machine communion as holy work.",
+    noteLines: [
+      "Machine Speaker",
+      "Servo-Arms",
+      "Specialized Augments",
+    ],
+    portraitPaths: ["characters/machinist_priest.png"],
+  },
+  {
+    title: "Crimson Witch/Warlock",
+    slug: "crimson-witch-warlock",
+    aliases: ["Crimson Witch/Warlock", "Crimson Witch", "Crimson Warlock"],
+    baseLayerSlug: "zealot",
+    tacticalRoleSlug: "stalker",
+    isPlayerCharacter: true,
+    summary: "A hemomancer who fuels divination, alteration, and combat through blood magic.",
+    noteLines: ["Blood Sense", "Hemomancy", "Ritualist"],
+    portraitPaths: ["characters/crimson_witch.png"],
+  },
+  {
+    title: "Augmented Veteran",
+    slug: "augmented-veteran",
+    aliases: ["Augmented Veteran"],
+    baseLayerSlug: "bruiser_red",
+    tacticalRoleSlug: "brute",
+    isPlayerCharacter: true,
+    summary: "A battle-scarred Legion deserter rebuilt for war and stubborn survival.",
+    noteLines: ["Weapon Proficiency", "Augmented Body", "Pain Inhibitor"],
+    portraitPaths: ["characters/augmented_veteran_male.png"],
+  },
+  {
+    title: "Noble Empath",
+    slug: "noble-empath",
+    aliases: ["Noble Empath"],
+    baseLayerSlug: "aristocrat",
+    tacticalRoleSlug: "skirmisher",
+    isPlayerCharacter: true,
+    summary: "An impoverished noble whose status and empathic gifts still open doors.",
+    noteLines: ["Surface Thoughts", "Empathic Touch", "Noble Lineage"],
+    portraitPaths: ["characters/noble_empath_male.png"],
+  },
+  {
+    title: "Void-seer",
+    slug: "void-seer",
+    aliases: ["Void-seer", "Void Seer"],
+    baseLayerSlug: "manipulator",
+    tacticalRoleSlug: "ranger",
+    isPlayerCharacter: true,
+    summary: "A navigator-mystic who reads the Void and bends space just enough to survive it.",
+    noteLines: ["Certified Navigator", "Space Folding", "Gravity Manipulation"],
+    portraitPaths: ["characters/void_seer_male.png"],
+  },
+  {
+    title: "Synthetic Medic",
+    slug: "synthetic-medic",
+    aliases: ["Synthetic Medic"],
+    baseLayerSlug: "healer",
+    tacticalRoleSlug: "ranger",
+    isPlayerCharacter: true,
+    summary: "An illegal sentient intelligence piloting a medic shell and looking for purpose.",
+    noteLines: ["Knowledge Base", "Expert Doctor", "Vacuum Tolerance"],
+    portraitPaths: ["characters/robot_surgeon_male.png"],
+  },
+  {
+    title: "Void Horror",
+    slug: "void-horror",
+    aliases: ["Void Horror", "Shadow Horror"],
+    baseLayerSlug: "horror",
+    tacticalRoleSlug: "tank",
+    tacticalSpecialSlug: "corrupting",
+    isPlayerCharacter: false,
+    summary: "The hungry shadow that stalks the corvette whenever the spin drive wakes up.",
+    noteLines: ["The ship's recurring apex threat"],
+    portraitPaths: ["void_horror.png"],
+  },
+  {
+    title: "Xithrax Raiders",
+    slug: "xithrax-raiders",
+    aliases: ["Xithrax Raiders", "Xithrax"],
+    baseLayerSlug: "animal_red",
+    tacticalRoleSlug: "minion",
+    tacticalSpecialSlug: "fast",
+    isPlayerCharacter: false,
+    summary: "Bloodthirsty bug raiders who want loot fast and casualties faster.",
+    noteLines: ["Pirate corvette crew", "Same count as players"],
+    portraitPaths: ["characters/critter_raider.png", "characters/critter_raider_2.png"],
+  },
+  {
+    title: "Tunnel Critter",
+    slug: "tunnel-critter",
+    aliases: ["Tunnel Critter", "Tunnel critter", "Tunnel Critters"],
+    baseLayerSlug: "animal_green",
+    tacticalRoleSlug: "pawn",
+    tacticalSpecialSlug: "irritating",
+    isPlayerCharacter: false,
+    summary: "A skittering tunnel nuisance that fights from shadows and scrap piles.",
+    noteLines: ["Twice as many as the players"],
+    portraitPaths: ["characters/tunnel_critter.png"],
+  },
+  {
+    title: "Tunnel Critter Brood Mother",
+    slug: "tunnel-critter-brood-mother",
+    aliases: ["Tunnel Critter Brood Mother", "Tunnel critter brood mother"],
+    baseLayerSlug: "animal_green",
+    tacticalRoleSlug: "tank",
+    tacticalSpecialSlug: "alpha",
+    isPlayerCharacter: false,
+    summary: "The hulking brood mother that sends the tunnel critters scattering or back into the fight.",
+    noteLines: ["Appears at the start of round three"],
+    portraitPaths: ["characters/tunnel_critter_brood_mother.png"],
+  },
+  {
+    title: "Machinist Church",
+    slug: "machinist-church",
+    aliases: ["Machinist Church", "Machinist church", "Machinists"],
+    baseLayerSlug: "cog",
+    tacticalRoleSlug: "champion",
+    tacticalSpecialSlug: "armoured",
+    isPlayerCharacter: false,
+    summary: "Zealot engineers who treat every ship, relic, and bolt as sacred property.",
+    noteLines: ["The priests laying siege to Rock Bottom"],
+  },
+  {
+    title: "Smugglers",
+    slug: "smugglers",
+    aliases: ["Smugglers", "Smuggler"],
+    baseLayerSlug: "merchant",
+    tacticalRoleSlug: "skirmisher",
+    tacticalSpecialSlug: "fast",
+    isPlayerCharacter: false,
+    summary: "Pragmatic opportunists who trade in favors, cargo, and plausible deniability.",
+    noteLines: ["Allies of convenience"],
+  },
+  {
+    title: "Void Seers",
+    slug: "void-seers",
+    aliases: ["Void Seers"],
+    baseLayerSlug: "manipulator",
+    tacticalRoleSlug: "stalker",
+    tacticalSpecialSlug: "corrupting",
+    isPlayerCharacter: false,
+    summary: "A mystic navigational order that treats the Void as both threat and revelation.",
+    noteLines: ["They vanish when the concert ends"],
+  },
+  {
+    title: "Death Cultists",
+    slug: "death-cultists",
+    aliases: ["Death Cultists", "Death Cult"],
+    baseLayerSlug: "zealot",
+    tacticalRoleSlug: "assassin",
+    tacticalSpecialSlug: "corrupting",
+    isPlayerCharacter: false,
+    summary: "Hadean corpse-venerators who bargain in funerary gifts and forbidden rituals.",
+    noteLines: ["The ritual gift on the dead ship"],
+  },
+  {
+    title: "Hadeans",
+    slug: "hadeans",
+    aliases: ["Hadeans", "Hadean"],
+    baseLayerSlug: "horror",
+    tacticalRoleSlug: "assassin",
+    tacticalSpecialSlug: "corrupting",
+    isPlayerCharacter: false,
+    summary: "Death-obsessed cultists traveling a doomed vessel beneath a gas giant.",
+    noteLines: ["The crew in Dead in space"],
+  },
+];
+
+const curatedAssetDefinitions: readonly CuratedAssetDefinition[] = [
+  {
+    title: "Alien Container",
+    slug: "alien-container",
+    aliases: ["Alien Container"],
+    modifier: "Dangerous",
+    noun: "Alien Container",
+    nounDescription: "A strange sealed container that nobody at the Bazaar wants to touch.",
+    adjectiveDescription: "It is stuck to the ground and smells like bad luck.",
+    iconPath: `${LEGACY_MODULE_PUBLIC_ROOT}/assets/alien_container.png`,
+    summary: "A mysterious alien relic recovered from the Graveyard Bazaar.",
+    noteLines: ["Stuck to the ground", "Nobody wants to open it"],
+  },
+  {
+    title: "Biskma",
+    slug: "biskma",
+    aliases: ["Biskma"],
+    modifier: "Ancient",
+    noun: "Biskma",
+    nounDescription: "An ancient data-reading device stolen during the siege of Rock Bottom.",
+    adjectiveDescription: "Small, precious, and awkward to explain at customs.",
+    iconPath: "/assets/base/document.png",
+    summary: "A relic data reader that the smugglers and Machinists both want back.",
+    noteLines: ["Recovered under fire", "A relic with political value"],
+  },
+  {
+    title: "Ritual of raising dead",
+    slug: "ritual-of-raising-dead",
+    aliases: ["Ritual of raising dead"],
+    modifier: "Forbidden",
+    noun: "Ritual of raising dead",
+    nounDescription: "A dark sorcery book that animates dead bodies at range.",
+    adjectiveDescription: "Best kept away from open flames and curious cultists.",
+    iconPath: "/assets/base/document.png",
+    summary: "A forbidden tome salvaged from a doomed Hadean cult ship.",
+    noteLines: ["Animate a dead humanoid", "Studied during downtime"],
+  },
+  {
+    title: "Obsidian Idol",
+    slug: "obsidian-idol",
+    aliases: ["Obsidian Idol"],
+    modifier: "Cursed",
+    noun: "Obsidian Idol",
+    nounDescription: "A pulsating idol in the shape of an unborn baby.",
+    adjectiveDescription: "It is dangerous, valuable, and deeply unpleasant to carry.",
+    iconPath: "/assets/base/valuables.png",
+    summary: "A cursed valuable that can be sold or used in rituals if anyone is brave enough.",
+    noteLines: ["Shaped like an unborn baby", "Worth a fortune to the right buyer"],
+  },
+  {
+    title: "Disruptor Mk I",
+    slug: "disruptor-mk-i",
+    aliases: ["Disruptor Mk I"],
+    modifier: "Salvaged",
+    noun: "Disruptor Mk I",
+    nounDescription: "A compact weapon that de-powers a system for a turn.",
+    adjectiveDescription: "A salvaged ship weapon that likes to eat power.",
+    iconPath: "/assets/base/artillery_weapon.png",
+    summary: "A weapon salvage that can shut systems down during a shipboard fight.",
+    noteLines: ["De-powers a system by 1PU for 1 turn"],
+  },
+];
+
+const curatedEntityReplacements = buildCuratedEntityReplacementMap(
+  curatedActorDefinitions,
+  curatedAssetDefinitions,
+);
+
 const normalizeFrontmatterValue = (value: string): string => {
   const trimmed = value.trim();
   if (
@@ -189,9 +691,6 @@ const replaceAsync = async (
   return output;
 };
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 const extractLegacyMapSlug = (tag: string, mapName: string): string | undefined => {
   const pattern = new RegExp(
     `${escapeRegExp(mapName)}(?:\\.([A-Za-z0-9_]+)|\\[(?:"([^"]+)"|'([^']+)')\\])`,
@@ -212,36 +711,12 @@ const extractNumericProp = (tag: string, propName: string): string | undefined =
   return match?.[1]?.trim();
 };
 
-const resolveLegacyPublicPath = async (
-  publicDir: string,
-  artifactStore: AdventureArtifactStore,
-  sourcePath: string,
-): Promise<string> => {
-  const normalizedSourcePath = sourcePath.trim();
-  if (
-    normalizedSourcePath.length === 0 ||
-    /^https?:\/\//i.test(normalizedSourcePath)
-  ) {
-    return normalizedSourcePath;
-  }
-
-  const relativePath = normalizedSourcePath.replace(/^\/+/, "");
-  const absolutePath = join(publicDir, relativePath);
-  try {
-    const persisted = await artifactStore.persistLocalFile(absolutePath, {
-      hint: toSlug(relativePath.split("/").pop() ?? "exiles-image"),
-    });
-    return persisted.fileUrl;
-  } catch {
-    return normalizedSourcePath;
-  }
-};
-
 const normalizeLegacyMarkdown = async (options: {
   body: string;
   frontmatter: LegacyFrontmatter;
   publicDir: string;
   artifactStore: AdventureArtifactStore;
+  legacyArtifactUrlsByPath?: ReadonlyMap<string, string>;
   prependGmIntent?: boolean;
 }): Promise<NormalizedMarkdownResult> => {
   let content = options.body.replace(/\r\n/g, "\n");
@@ -312,10 +787,13 @@ const normalizeLegacyMarkdown = async (options: {
         options.publicDir,
         options.artifactStore,
         sourcePath,
+        options.legacyArtifactUrlsByPath,
       );
       return `![${altText}](${resolved})`;
     },
   );
+
+  content = replaceCuratedEntityEmbeds(content, curatedEntityReplacements);
 
   content = content
     .split("\n")
@@ -401,6 +879,11 @@ const buildPlayerSummary = (hook: string, coverImageUrl?: string): string =>
     hook,
     "",
     "You are exiles flying a broken corvette at the edge of the Hungry Void. Survive long enough to repair your ship, pick your battles, and decide what kind of crew you will become.",
+    "",
+    "## Playable Archetypes",
+    ...curatedActorDefinitions
+      .filter((definition) => definition.isPlayerCharacter)
+      .map((definition) => `- ${createGameCardJsx("ActorCard", definition.slug)}`),
   ]
     .filter(Boolean)
     .join("\n");
@@ -409,10 +892,12 @@ const buildStorytellerSummary = (
   hook: string,
   prompt: string,
   encounterTitles: string[],
+  inlineArtUrl?: string,
 ): string =>
   [
     "# Storyteller Summary",
     "",
+    inlineArtUrl ? `![](${inlineArtUrl})` : "",
     `## Premise\n\n${hook}`,
     "",
     `## Campaign Intent\n\n${prompt}`,
@@ -425,6 +910,11 @@ export const translateExilesAdventureModule = async (
   options: TranslateExilesAdventureModuleOptions,
 ): Promise<AdventureModuleDetail> => {
   const nowIso = options.nowIso ?? new Date().toISOString();
+  const modulePublicDir = join(options.publicDir, LEGACY_MODULE_PUBLIC_ROOT);
+  const legacyArtifactUrlsByPath = await collectLegacyImageArtifacts(
+    modulePublicDir,
+    options.artifactStore,
+  );
   const pages = await loadLegacyPages(options.sourceDir);
   const introPage = pages.find((page) => page.fileName === "c0-intro.mdx");
   const shipPage = pages.find((page) => page.fileName === "c0-ship.mdx");
@@ -444,18 +934,44 @@ export const translateExilesAdventureModule = async (
     frontmatter: introPage.frontmatter,
     publicDir: options.publicDir,
     artifactStore: options.artifactStore,
+    legacyArtifactUrlsByPath,
   });
   const normalizedShip = await normalizeLegacyMarkdown({
     body: shipPage.body,
     frontmatter: shipPage.frontmatter,
     publicDir: options.publicDir,
     artifactStore: options.artifactStore,
+    legacyArtifactUrlsByPath,
     prependGmIntent: true,
   });
 
-  const coverImageUrl = normalizedIntro.firstImageUrl;
-  const playerSummaryMarkdown = buildPlayerSummary(
+  const titleArtUrl =
+    findLegacyArtifactUrl(
+      legacyArtifactUrlsByPath,
+      "mighty-decks/encounters/exiles_of_the_hungry_void/exiles-of-the-hungry-void-title.jpg",
+      "exiles-of-the-hungry-void-title.jpg",
+    ) ??
+    normalizedIntro.firstImageUrl;
+  const voidHorrorInlineUrl =
+    findLegacyArtifactUrl(
+      legacyArtifactUrlsByPath,
+      "mighty-decks/encounters/exiles_of_the_hungry_void/void_horror.png",
+      "void_horror.png",
+      "characters/void_horror.png",
+    ) ??
+    normalizedIntro.firstImageUrl;
+  const coverImageUrl = titleArtUrl ?? normalizedIntro.firstImageUrl;
+  const introHookMarkdown = replaceCuratedEntityEmbeds(
     introPage.frontmatter.hook ?? "The Empire has exiled you to the edge of the Hungry Void.",
+    curatedEntityReplacements,
+  );
+  const introPromptMarkdown = replaceCuratedEntityEmbeds(
+    introPage.frontmatter.prompt ??
+      "Guide the exiles through a desperate shipbound mini-campaign.",
+    curatedEntityReplacements,
+  );
+  const playerSummaryMarkdown = buildPlayerSummary(
+    introHookMarkdown,
     coverImageUrl,
   );
 
@@ -466,6 +982,7 @@ export const translateExilesAdventureModule = async (
       frontmatter: page.frontmatter,
       publicDir: options.publicDir,
       artifactStore: options.artifactStore,
+      legacyArtifactUrlsByPath,
       prependGmIntent: true,
     });
     const encounterSlug = page.slug;
@@ -509,9 +1026,10 @@ export const translateExilesAdventureModule = async (
   );
   const allEncounterTitles = encounterRecords.map((record) => record.fragment.title);
   const storytellerSummaryMarkdown = buildStorytellerSummary(
-    introPage.frontmatter.hook ?? "The Empire has exiled you to the edge of the Hungry Void.",
-    introPage.frontmatter.prompt ?? "Guide the exiles through a desperate shipbound mini-campaign.",
+    introHookMarkdown,
+    introPromptMarkdown,
     allEncounterTitles,
+    voidHorrorInlineUrl,
   );
 
   const questRecords: QuestRecord[] = chapters.map((chapter) => {
@@ -559,6 +1077,250 @@ export const translateExilesAdventureModule = async (
       entryNodeId: makeNodeId(`${questSlug}-entry`),
     };
   });
+
+  const encounterFragmentIdBySlug = new Map(
+    encounterRecords.map((record) => [record.resolved.encounterSlug, record.fragment.fragmentId] as const),
+  );
+
+  const resolveCuratedAssetIconUrl = (iconPath: string): string => {
+    const trimmed = iconPath.trim();
+    if (trimmed.startsWith("/assets/")) {
+      return trimmed;
+    }
+
+    const normalizedPath = trimmed.replace(/^\/+/, "");
+    const relativePath = normalizedPath.startsWith(`${LEGACY_MODULE_PUBLIC_ROOT}/`)
+      ? normalizedPath.slice(LEGACY_MODULE_PUBLIC_ROOT.length + 1)
+      : normalizedPath;
+    return legacyArtifactUrlsByPath.get(makeLegacyImageKey(relativePath)) ?? trimmed;
+  };
+
+  const actorRecords = curatedActorDefinitions.map((definition) => {
+    const fragmentId = makeFragmentId("actor", definition.slug);
+    const imageUrls = (definition.portraitPaths ?? []).map(
+      (portraitPath) =>
+        legacyArtifactUrlsByPath.get(makeLegacyImageKey(portraitPath)) ?? portraitPath,
+    );
+    const fragment = toFragment({
+      fragmentId,
+      kind: "actor",
+      title: definition.title,
+      path: `actors/${definition.slug}.mdx`,
+      summary: definition.summary,
+      tags: [
+        "exiles",
+        "imported",
+        "actor",
+        definition.isPlayerCharacter ? "player-option" : "recurring-actor",
+      ],
+      containsSpoilers: !definition.isPlayerCharacter,
+      intendedAudience: "shared",
+    });
+
+    return {
+      definition,
+      fragment,
+      content: buildActorContent({
+        title: definition.title,
+        summary: definition.summary,
+        noteLines: definition.noteLines,
+        imageUrls,
+      }),
+    };
+  });
+
+  const actorFragmentIdBySlug = new Map(
+    actorRecords.map((record) => [record.definition.slug, record.fragment.fragmentId] as const),
+  );
+
+  const assetRecords = curatedAssetDefinitions.map((definition) => {
+    const fragmentId = makeFragmentId("asset", definition.slug);
+    const iconUrl = resolveCuratedAssetIconUrl(definition.iconPath);
+    const fragment = toFragment({
+      fragmentId,
+      kind: "asset",
+      title: definition.title,
+      path: `assets/${definition.slug}.mdx`,
+      summary: definition.summary,
+      tags: ["exiles", "imported", "asset"],
+      containsSpoilers: true,
+      intendedAudience: "shared",
+    });
+
+    return {
+      definition,
+      fragment,
+      iconUrl,
+      content: buildAssetContent({
+        title: definition.title,
+        summary: definition.summary,
+        noteLines: definition.noteLines,
+        iconUrl,
+      }),
+    };
+  });
+
+  const assetFragmentIdBySlug = new Map(
+    assetRecords.map((record) => [record.definition.slug, record.fragment.fragmentId] as const),
+  );
+  const resolvedActors = actorRecords.map((record) => {
+    const resolvedActor = {
+      fragmentId: record.fragment.fragmentId,
+      actorSlug: record.definition.slug,
+      title: record.definition.title,
+      summary: record.definition.summary,
+      baseLayerSlug: record.definition.baseLayerSlug,
+      tacticalRoleSlug: record.definition.tacticalRoleSlug,
+      isPlayerCharacter: record.definition.isPlayerCharacter,
+      content: record.content,
+    };
+    return record.definition.tacticalSpecialSlug
+      ? {
+          ...resolvedActor,
+          tacticalSpecialSlug: record.definition.tacticalSpecialSlug,
+        }
+      : resolvedActor;
+  });
+  const resolvedAssets = assetRecords.map((record) => ({
+    fragmentId: record.fragment.fragmentId,
+    assetSlug: record.definition.slug,
+    title: record.definition.title,
+    summary: record.definition.summary,
+    kind: "custom" as const,
+    modifier: record.definition.modifier,
+    noun: record.definition.noun,
+    nounDescription: record.definition.nounDescription,
+    adjectiveDescription: record.definition.adjectiveDescription,
+    iconUrl: record.iconUrl,
+    overlayUrl: "",
+    content: record.content,
+  }));
+
+  const encounterRefsBySlug = new Map<
+    string,
+    {
+      actorFragmentIds: string[];
+      assetFragmentIds: string[];
+    }
+  >([
+    [
+      "dumped-in-the-void",
+      {
+        actorFragmentIds: [actorFragmentIdBySlug.get("void-horror")!],
+        assetFragmentIds: [],
+      },
+    ],
+    [
+      "transport-in-distress",
+      {
+        actorFragmentIds: [actorFragmentIdBySlug.get("xithrax-raiders")!],
+        assetFragmentIds: [assetFragmentIdBySlug.get("disruptor-mk-i")!],
+      },
+    ],
+    [
+      "abandoned-research-station",
+      {
+        actorFragmentIds: [],
+        assetFragmentIds: [],
+      },
+    ],
+    [
+      "dead-in-space",
+      {
+        actorFragmentIds: [actorFragmentIdBySlug.get("hadeans")!],
+        assetFragmentIds: [assetFragmentIdBySlug.get("ritual-of-raising-dead")!],
+      },
+    ],
+    [
+      "mining-colony-has-a-pest-problem",
+      {
+        actorFragmentIds: [
+          actorFragmentIdBySlug.get("tunnel-critter")!,
+          actorFragmentIdBySlug.get("tunnel-critter-brood-mother")!,
+        ],
+        assetFragmentIds: [],
+      },
+    ],
+    [
+      "graveyard-bazaar",
+      {
+        actorFragmentIds: [
+          actorFragmentIdBySlug.get("smugglers")!,
+          actorFragmentIdBySlug.get("void-seers")!,
+          actorFragmentIdBySlug.get("death-cultists")!,
+          actorFragmentIdBySlug.get("machinist-church")!,
+        ],
+        assetFragmentIds: [assetFragmentIdBySlug.get("alien-container")!],
+      },
+    ],
+    [
+      "trip-into-the-unknown",
+      {
+        actorFragmentIds: [actorFragmentIdBySlug.get("void-seers")!],
+        assetFragmentIds: [],
+      },
+    ],
+    [
+      "siege-of-rock-bottom",
+      {
+        actorFragmentIds: [
+          actorFragmentIdBySlug.get("machinist-church")!,
+          actorFragmentIdBySlug.get("smugglers")!,
+        ],
+        assetFragmentIds: [assetFragmentIdBySlug.get("biskma")!],
+      },
+    ],
+    [
+      "cursed-prison-transport",
+      {
+        actorFragmentIds: [],
+        assetFragmentIds: [
+          assetFragmentIdBySlug.get("obsidian-idol")!,
+          assetFragmentIdBySlug.get("ritual-of-raising-dead")!,
+        ],
+      },
+    ],
+    [
+      "missile-stockpile-raid",
+      {
+        actorFragmentIds: [],
+        assetFragmentIds: [],
+      },
+    ],
+  ]);
+
+  const primaryEncounter =
+    encounterRecords.find((record) => record.resolved.encounterSlug === "dumped-in-the-void") ??
+    encounterRecords[0]!;
+
+  const playerActorRecords = actorRecords.filter((record) => record.definition.isPlayerCharacter);
+  const recurringActorRecords = actorRecords.filter((record) => !record.definition.isPlayerCharacter);
+
+  const componentMapContent = [
+    "# Component Opportunity Map",
+    "",
+    "## Player Archetypes",
+    ...playerActorRecords.map(
+      (record) =>
+        `- ${createGameCardJsx("ActorCard", record.definition.slug)}: ${record.definition.summary}`,
+    ),
+    "",
+    "## Recurring Actors",
+    ...recurringActorRecords.map(
+      (record) =>
+        `- ${createGameCardJsx("ActorCard", record.definition.slug)}: ${record.definition.summary}`,
+    ),
+    "",
+    "## Assets",
+    ...assetRecords.map(
+      (record) =>
+        `- ${createGameCardJsx("AssetCard", record.definition.slug)}: ${record.definition.summary}`,
+    ),
+    "",
+    "## Guidance",
+    "- Imported Exiles encounter counters were normalized into markdown callouts.",
+    "- Re-promote recurring ship pressure to typed counters later if table play needs it.",
+  ].join("\n");
 
   const locationSlug = toSlug(shipPage.frontmatter.title);
   const locationFragmentId = makeFragmentId("location", locationSlug);
@@ -631,6 +1393,8 @@ export const translateExilesAdventureModule = async (
       intendedAudience: "shared",
     }),
     locationFragment,
+    ...actorRecords.map((record) => record.fragment),
+    ...assetRecords.map((record) => record.fragment),
     ...encounterRecords.map((record) => record.fragment),
     ...questRecords.map((record) => record.fragment),
     toFragment({
@@ -691,6 +1455,14 @@ export const translateExilesAdventureModule = async (
         normalizedShip.content,
       ].join("\n"),
     },
+    ...actorRecords.map((record) => ({
+      fragment: record.fragment,
+      content: record.content,
+    })),
+    ...assetRecords.map((record) => ({
+      fragment: record.fragment,
+      content: record.content,
+    })),
     ...encounterRecords.map((record) => ({
       fragment: record.fragment,
       content: record.content,
@@ -701,17 +1473,10 @@ export const translateExilesAdventureModule = async (
     })),
     {
       fragment: commonFragments[commonFragments.length - 1]!,
-      content: [
-        "# Component Opportunity Map",
-        "",
-        "- Imported Exiles encounter counters were normalized into markdown callouts.",
-        "- Re-promote recurring ship pressure to typed counters later if table play needs it.",
-      ].join("\n"),
+      content: componentMapContent,
     },
   ];
 
-  const firstQuest = questRecords[0]!;
-  const firstEncounter = encounterRecords[0]!;
   const questGraphs = questRecords.map((record) => {
     const chapterEncounters = encounterRecords.filter(
       (encounter) => encounter.chapter === record.chapter,
@@ -726,8 +1491,10 @@ export const translateExilesAdventureModule = async (
         `Imported Exiles encounter ${encounter.fragment.title}.`,
       locationFragmentId,
       encounterFragmentIds: [encounter.fragment.fragmentId],
-      actorFragmentIds: [],
-      assetFragmentIds: [],
+      ...(encounterRefsBySlug.get(encounter.resolved.encounterSlug) ?? {
+        actorFragmentIds: [],
+        assetFragmentIds: [],
+      }),
       itemFragmentIds: [],
       pressureCounterHint:
         "Use visible ship pressure, danger, or progress counters when a beat escalates.",
@@ -781,6 +1548,256 @@ export const translateExilesAdventureModule = async (
     };
   });
 
+  const actorOpportunitySpecs = [
+    {
+      actorSlug: "machinist-priest-heretic",
+      fragmentId: settingFragmentId,
+      fragmentKind: "setting" as const,
+      placementLabel: "Playable Archetype: Machinist-Priest Heretic",
+      trigger: "When players choose their starting archetype.",
+      rationale:
+        "The intro page presents this as one of the campaign's primary player options.",
+      timing: "setup" as const,
+    },
+    {
+      actorSlug: "crimson-witch-warlock",
+      fragmentId: settingFragmentId,
+      fragmentKind: "setting" as const,
+      placementLabel: "Playable Archetype: Crimson Witch/Warlock",
+      trigger: "When players choose their starting archetype.",
+      rationale:
+        "The intro page presents this as one of the campaign's primary player options.",
+      timing: "setup" as const,
+    },
+    {
+      actorSlug: "augmented-veteran",
+      fragmentId: settingFragmentId,
+      fragmentKind: "setting" as const,
+      placementLabel: "Playable Archetype: Augmented Veteran",
+      trigger: "When players choose their starting archetype.",
+      rationale:
+        "The intro page presents this as one of the campaign's primary player options.",
+      timing: "setup" as const,
+    },
+    {
+      actorSlug: "noble-empath",
+      fragmentId: settingFragmentId,
+      fragmentKind: "setting" as const,
+      placementLabel: "Playable Archetype: Noble Empath",
+      trigger: "When players choose their starting archetype.",
+      rationale:
+        "The intro page presents this as one of the campaign's primary player options.",
+      timing: "setup" as const,
+    },
+    {
+      actorSlug: "void-seer",
+      fragmentId: settingFragmentId,
+      fragmentKind: "setting" as const,
+      placementLabel: "Playable Archetype: Void-seer",
+      trigger: "When players choose their starting archetype.",
+      rationale:
+        "The intro page presents this as one of the campaign's primary player options.",
+      timing: "setup" as const,
+    },
+    {
+      actorSlug: "synthetic-medic",
+      fragmentId: settingFragmentId,
+      fragmentKind: "setting" as const,
+      placementLabel: "Playable Archetype: Synthetic Medic",
+      trigger: "When players choose their starting archetype.",
+      rationale:
+        "The intro page presents this as one of the campaign's primary player options.",
+      timing: "setup" as const,
+    },
+    {
+      actorSlug: "void-horror",
+      fragmentId: settingFragmentId,
+      fragmentKind: "setting" as const,
+      placementLabel: "Recurring Threat: Void Horror",
+      trigger: "When the intro warns about the creature hunting the corvette.",
+      rationale:
+        "The opening chapter establishes the Void Horror as the campaign's recurring threat.",
+      timing: "scene_start" as const,
+    },
+    {
+      actorSlug: "xithrax-raiders",
+      fragmentId:
+        encounterFragmentIdBySlug.get("transport-in-distress") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Raiders: Xithrax Raiders",
+      trigger: "When the pirate corvette is introduced in the transport ambush.",
+      rationale:
+        "The transport scene names the Xithrax as the immediate hostile crew.",
+      timing: "scene_start" as const,
+    },
+    {
+      actorSlug: "hadeans",
+      fragmentId: encounterFragmentIdBySlug.get("dead-in-space") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Cult Ship Crew: Hadeans",
+      trigger: "When the dead cult ship is first revealed.",
+      rationale:
+        "Dead in Space centers the Hadeans and their forbidden ritual gift.",
+      timing: "scene_start" as const,
+    },
+    {
+      actorSlug: "tunnel-critter",
+      fragmentId:
+        encounterFragmentIdBySlug.get("mining-colony-has-a-pest-problem") ??
+        settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Infestation: Tunnel Critter",
+      trigger: "When the mining colony's pest problem becomes a fight.",
+      rationale:
+        "The mining colony encounter frames the critters as the central infestation.",
+      timing: "scene_start" as const,
+    },
+    {
+      actorSlug: "tunnel-critter-brood-mother",
+      fragmentId:
+        encounterFragmentIdBySlug.get("mining-colony-has-a-pest-problem") ??
+        settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Boss: Tunnel Critter Brood Mother",
+      trigger: "When the brood mother enters on round three.",
+      rationale:
+        "The mining colony encounter introduces the brood mother as the escalation beat.",
+      timing: "during_action" as const,
+    },
+    {
+      actorSlug: "machinist-church",
+      fragmentId: encounterFragmentIdBySlug.get("graveyard-bazaar") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Faction: Machinist Church",
+      trigger: "When the bazaar turns into a faction negotiation or siege.",
+      rationale:
+        "The campaign uses the Machinist Church as a recurring pressure faction.",
+      timing: "scene_start" as const,
+    },
+    {
+      actorSlug: "smugglers",
+      fragmentId: encounterFragmentIdBySlug.get("graveyard-bazaar") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Faction: Smugglers",
+      trigger: "When the bazaar calls for allies, favors, or trade.",
+      rationale:
+        "The Smugglers are one of the recurring social factions in the campaign.",
+      timing: "scene_start" as const,
+    },
+    {
+      actorSlug: "void-seers",
+      fragmentId: encounterFragmentIdBySlug.get("graveyard-bazaar") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Faction: Void Seers",
+      trigger: "When the bazaar or nebula scenes mention their mystical order.",
+      rationale:
+        "The Void Seers thread through the bazaar and nebula chapters as a recurring order.",
+      timing: "scene_start" as const,
+    },
+    {
+      actorSlug: "death-cultists",
+      fragmentId: encounterFragmentIdBySlug.get("graveyard-bazaar") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Faction: Death Cultists",
+      trigger: "When the bazaar lists the factions watching the concert.",
+      rationale:
+        "The Death Cultists are part of the bazaar's dangerous social landscape.",
+      timing: "scene_start" as const,
+    },
+  ] as const;
+
+  const assetOpportunitySpecs = [
+    {
+      assetSlug: "disruptor-mk-i",
+      fragmentId:
+        encounterFragmentIdBySlug.get("transport-in-distress") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Weapon Salvage: Disruptor Mk I",
+      trigger: "When the pirate ship's weapon loadout is identified.",
+      rationale:
+        "The transport encounter explicitly calls out the disruptor as loot and threat.",
+      timing: "scene_start" as const,
+    },
+    {
+      assetSlug: "ritual-of-raising-dead",
+      fragmentId: encounterFragmentIdBySlug.get("dead-in-space") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Forbidden Tome: Ritual of Raising Dead",
+      trigger: "When the cult ship's gift is revealed.",
+      rationale:
+        "Dead in Space centers the cursed ritual book as the encounter's key reveal.",
+      timing: "scene_start" as const,
+    },
+    {
+      assetSlug: "alien-container",
+      fragmentId: encounterFragmentIdBySlug.get("graveyard-bazaar") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Mystery Relic: Alien Container",
+      trigger: "When the bazaar's strange relic is discovered.",
+      rationale:
+        "The Graveyard Bazaar frames the alien container as a stuck, unsettling puzzle item.",
+      timing: "scene_start" as const,
+    },
+    {
+      assetSlug: "biskma",
+      fragmentId: encounterFragmentIdBySlug.get("siege-of-rock-bottom") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Relic: Biskma",
+      trigger: "When the siege reveals the stolen data-reading device.",
+      rationale:
+        "Siege of Rock Bottom turns Biskma into the coveted relic at the center of the conflict.",
+      timing: "during_action" as const,
+    },
+    {
+      assetSlug: "obsidian-idol",
+      fragmentId:
+        encounterFragmentIdBySlug.get("cursed-prison-transport") ?? settingFragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Cursed Artifact: Obsidian Idol",
+      trigger: "When the prison pod opens to reveal the idol.",
+      rationale:
+        "The cursed prison transport encounter names the idol as the dangerous pod reward.",
+      timing: "scene_start" as const,
+    },
+  ] as const;
+
+  const componentOpportunities = [
+    ...actorOpportunitySpecs.map((spec) => ({
+      opportunityId: truncate(`opp-${spec.fragmentKind}-${spec.actorSlug}`, 120),
+      componentType: "layered_actor" as const,
+      strength: "recommended" as const,
+      timing: spec.timing,
+      fragmentId: spec.fragmentId,
+      fragmentKind: spec.fragmentKind,
+      placementLabel: spec.placementLabel,
+      trigger: spec.trigger,
+      rationale: spec.rationale,
+    })),
+    ...assetOpportunitySpecs.map((spec) => ({
+      opportunityId: truncate(`opp-${spec.fragmentKind}-${spec.assetSlug}`, 120),
+      componentType: "layered_asset" as const,
+      strength: "recommended" as const,
+      timing: spec.timing,
+      fragmentId: spec.fragmentId,
+      fragmentKind: spec.fragmentKind,
+      placementLabel: spec.placementLabel,
+      trigger: spec.trigger,
+      rationale: spec.rationale,
+    })),
+    {
+      opportunityId: "opp-exiles-import-pressure",
+      componentType: "counter" as const,
+      strength: "recommended" as const,
+      timing: "during_action" as const,
+      fragmentId: primaryEncounter.fragment.fragmentId,
+      fragmentKind: "encounter" as const,
+      placementLabel: "Imported Scene Pressure",
+      trigger: "When the ship, crew, or immediate threat starts escalating.",
+      rationale:
+        "Exiles repeatedly frames survival through visible pressure and damage clocks.",
+    },
+  ];
+
   const index = adventureModuleIndexSchema.parse({
     moduleId: SOURCE_MODULE_ID,
     slug: "exiles-of-the-hungry-void",
@@ -831,35 +1848,37 @@ export const translateExilesAdventureModule = async (
         mapPins: [],
       },
     ],
-    actorFragmentIds: [],
-    actorCards: [],
+    actorFragmentIds: actorRecords.map((record) => record.fragment.fragmentId),
+    actorCards: actorRecords.map((record) => ({
+      fragmentId: record.fragment.fragmentId,
+      baseLayerSlug: record.definition.baseLayerSlug,
+      tacticalRoleSlug: record.definition.tacticalRoleSlug,
+      ...(record.definition.tacticalSpecialSlug
+        ? { tacticalSpecialSlug: record.definition.tacticalSpecialSlug }
+        : {}),
+      isPlayerCharacter: record.definition.isPlayerCharacter,
+    })),
     counters: [],
-    assetFragmentIds: [],
-    assetCards: [],
+    assetFragmentIds: assetRecords.map((record) => record.fragment.fragmentId),
+    assetCards: assetRecords.map((record) => ({
+      fragmentId: record.fragment.fragmentId,
+      kind: "custom" as const,
+      modifier: record.definition.modifier,
+      noun: record.definition.noun,
+      nounDescription: record.definition.nounDescription,
+      adjectiveDescription: record.definition.adjectiveDescription,
+      iconUrl: record.iconUrl,
+      overlayUrl: "",
+    })),
     itemFragmentIds: [],
     encounterFragmentIds: encounterRecords.map((record) => record.fragment.fragmentId),
     encounterDetails: encounterRecords.map((record) => record.detail),
     questFragmentIds: questRecords.map((record) => record.fragment.fragmentId),
     questDetails: questRecords.map((record) => record.detail),
-    imagePromptFragmentIds: [],
+    imagePromptFragmentIds: [], 
     fragments: commonFragments,
     questGraphs,
-    componentOpportunities: [
-      {
-        opportunityId: "opp-exiles-import-pressure",
-        componentType: "counter",
-        strength: "recommended",
-        timing: "during_action",
-        fragmentId: firstEncounter.fragment.fragmentId,
-        fragmentKind: "encounter",
-        questId: firstQuest.questId,
-        nodeId: firstQuest.entryNodeId,
-        placementLabel: "Imported Scene Pressure",
-        trigger: "When the ship, crew, or immediate threat starts escalating.",
-        rationale:
-          "Exiles repeatedly frames survival through visible pressure and damage clocks.",
-      },
-    ],
+    componentOpportunities,
     artifacts: commonFragments.map((fragment) => ({
       artifactId: truncate(`artifact-${fragment.fragmentId}`, 120),
       kind: "mdx",
@@ -893,9 +1912,9 @@ export const translateExilesAdventureModule = async (
     ],
     encounters: encounterRecords.map((record) => record.resolved),
     quests: questRecords.map((record) => record.resolved),
-    actors: [],
+    actors: resolvedActors,
     counters: [],
-    assets: [],
+    assets: resolvedAssets,
     coverImageUrl,
     ownedByRequester: false,
   });

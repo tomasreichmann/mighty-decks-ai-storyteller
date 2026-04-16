@@ -4,6 +4,7 @@ import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { GameCard, StyleguideBackLink } from "../components/styleguide/GameCard";
+import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
 const sampleEncounter: AdventureModuleResolvedEncounter = {
   fragmentId: "frag-encounter-bridge-tribute",
@@ -25,8 +26,9 @@ Get past the bridge before the tax captain closes the gates.
 
 export const StyleguideEncounterCardPage = (): JSX.Element => {
   return (
-    <div className="app-shell stack gap-6 py-8">
+    <div className="styleguide-encounter-card-page app-shell stack gap-6 py-8">
       <StyleguideBackLink />
+      <StyleguideSectionNav />
 
       <div className="stack gap-2">
         <Label variant="fire" className="self-start">

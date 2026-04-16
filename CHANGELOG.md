@@ -9,6 +9,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Changed
 
 - Clarify contributor guidance so style-only changes do not need brittle class-name or DOM-structure tests; prefer manual or visual verification unless behavior or contracts change.
+- Rework the hidden `/styleguide` playground into an overview plus scoped `Cards`, `Tags`, `Controls`, and `Session Chat` pages with a shared secondary nav.
+- Make `Tag` the reusable chip shell for read-only labels, editable tag rows, and connection status pills.
+- Tighten the Exiles legacy importer so it promotes curated actor and asset cards, copies imported stills into `AdventureArtifactStore`, and rewrites named markdown references to canonical `GameCard` embeds.
 - Refactor Adventure Module and Campaign authoring so the route files are thin shells over a shared context-plus-reducer authoring store with extracted screen/session shells, shared autosave orchestration, and optimistic edit saves.
 - Add a `Create Campaign` handoff CTA to the campaign list header, and add shared `Copy Author Token` header actions to both the campaign and adventure module list pages using the generalized `ShortcodeField` clipboard control.
 - Switch the repo-local Exiles import and module/campaign authoring CLIs to machine-readable JSON stdout envelopes so external agents can discover context, read schemas, and apply structured edits without scraping human-oriented terminal text.
@@ -159,6 +162,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Add CLI authoring docs for external agents, and update the Adventure Module, Campaign, and README docs to point to the new JSON-first module/campaign authoring commands and repo-local discovery skill.
 - Update the UI component docs to describe compact shortcode rows instead of text-based copy buttons in Adventure Module and campaign authoring lists.
 - Update the Adventure Module spec and authoring-flow docs to document repo-local Exiles imports, prompt-driven actor authoring, text-first legacy normalization, and `AdventureArtifactStore` image handling for imported stills.
+- Update the Adventure Module authoring-flow and CLI docs to describe the curated Exiles import path, imported stills, and canonical `GameCard` rewrites for named actors and assets.
 - Update the campaign-session route and UI docs to document the headered player claim route plus the headerless `/player/chat` live transcript route.
 - Update the campaign-session and event/state docs to describe per-player outcome piles, draw/shuffle/play session events, and the new chat logging format for played outcome cards.
 - Update the shared UI and style-system docs to document the new grouped toggle/radio button primitives and their non-tilted alignment rules.

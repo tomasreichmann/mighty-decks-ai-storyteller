@@ -5,6 +5,7 @@ import { DepressedInput } from "./DepressedInput";
 import { Dropdown } from "./Dropdown";
 import { InputDescriptionHint } from "./InputDescriptionHint";
 import { Label, type LabelVariant } from "./Label";
+import { Tag, type TagTone } from "./Tag";
 import { Text } from "./Text";
 
 export interface TagOption {
@@ -33,7 +34,7 @@ export interface TagsProps {
   addButtonLabel?: string;
   className?: string;
   labelColor?: LabelVariant;
-  tagVariant?: LabelVariant;
+  tagVariant?: TagTone;
   removeTone?: "blood" | "iron" | "cloth" | "gold" | "monster";
   chrome?: "default" | "borderless";
   showLabel?: boolean;
@@ -44,27 +45,9 @@ export interface TagsProps {
 const normalizeTag = (value: string): string =>
   value.trim().replace(/\s+/g, " ");
 
-const tagToneClassMap: Record<LabelVariant, string> = {
-  gold:
-    "bg-gradient-to-br from-kac-gold-light via-kac-gold to-kac-gold-darker text-kac-iron",
-  fire:
-    "bg-gradient-to-br from-[#ffd1b3] via-kac-fire-light to-kac-fire-dark text-kac-curse-lightest",
-  bone:
-    "bg-gradient-to-br from-[#fff1da] via-kac-bone-light to-kac-bone-darker text-kac-iron-dark",
-  skin:
-    "bg-gradient-to-br from-[#ffe4e8] via-kac-skin-light to-kac-skin-dark text-kac-blood-dark",
-  cloth:
-    "bg-gradient-to-br from-[#7db4ef] via-kac-cloth to-[#173e6b] text-kac-steel-light",
-  curse:
-    "bg-gradient-to-br from-kac-curse-lightest via-kac-curse-light to-kac-curse-dark text-kac-curse-lightest",
-  monster:
-    "bg-gradient-to-br from-kac-monster-lightest via-kac-monster-light to-kac-monster-dark text-kac-iron-dark",
-};
+type RemoveTone = NonNullable<TagsProps["removeTone"]>;
 
-const removeToneClassMap: Record<
-  NonNullable<TagsProps["removeTone"]>,
-  string
-> = {
+const removeToneClassMap: Record<RemoveTone, string> = {
   blood:
     "bg-gradient-to-b from-[#ff8d8d] via-kac-blood-light to-kac-blood-dark text-kac-curse-lightest",
   iron:
@@ -266,7 +249,7 @@ export const Tags = ({
   };
 
   return (
-    <div className={cn("stack gap-1", className)}>
+    <div className={cn("tags stack gap-1", className)}>
       {showLabel ? (
         <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">
           <Label variant={labelColor}>{label}</Label>
@@ -289,46 +272,36 @@ export const Tags = ({
         <div className="stack gap-2">
           <div className="flex flex-wrap items-center gap-2">
             {value.map((tag, index) => (
-              <div
+              <Tag
                 key={`${tag}-${index}`}
-                className={cn(
-                  "relative inline-flex items-stretch overflow-hidden rounded-md",
-                  "border border-kac-iron bg-kac-iron p-px",
-                  "shadow-[0_1px_0_#090f15,0_3px_7px_rgba(0,0,0,0.25)]",
-                )}
+                tone={tagVariant}
+                size="sm"
+                className="tags__tag max-w-full"
+                contentClassName="tags__tag-label max-w-[15rem] truncate"
+                trailing={
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    disabled={disabled}
+                    aria-label={`Remove ${tag}`}
+                    className={cn(
+                      "tags__tag-remove inline-flex h-full min-w-[1.9rem] items-center justify-center border-l border-kac-iron px-1.5",
+                      "font-heading text-sm/none font-bold",
+                      "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]",
+                      "[text-shadow:0_1px_0_rgba(0,0,0,0.35)] transition duration-100",
+                      "hover:brightness-105",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50",
+                      removeToneClassMap[removeTone],
+                      disabled &&
+                        "cursor-not-allowed opacity-60 hover:brightness-100",
+                    )}
+                  >
+                    x
+                  </button>
+                }
               >
-                <span
-                  className={cn(
-                    "inline-flex items-center border border-white/55 px-2.5 py-1",
-                    "font-heading text-xs/none font-bold uppercase tracking-[0.06em]",
-                    "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]",
-                    "[text-shadow:0_1px_0_rgba(0,0,0,0.35)]",
-                    tagToneClassMap[tagVariant],
-                  )}
-                  title={tag}
-                >
-                  <span className="max-w-[15rem] truncate">{tag}</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  disabled={disabled}
-                  aria-label={`Remove ${tag}`}
-                  className={cn(
-                    "inline-flex min-w-[1.9rem] items-center justify-center border-l border-kac-iron px-1.5",
-                    "font-heading text-sm/none font-bold",
-                    "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]",
-                    "[text-shadow:0_1px_0_rgba(0,0,0,0.35)] transition duration-100",
-                    "hover:brightness-105",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50",
-                    removeToneClassMap[removeTone],
-                    disabled &&
-                      "cursor-not-allowed opacity-60 hover:brightness-100",
-                  )}
-                >
-                  x
-                </button>
-              </div>
+                <span title={tag}>{tag}</span>
+              </Tag>
             ))}
 
             <Dropdown

@@ -151,7 +151,7 @@ export const GameCard = (props: GameCardProps): JSX.Element => {
 export const StyleguideBackLink = (): JSX.Element => (
   <Link
     to="/styleguide"
-    className="inline-flex items-center gap-2 font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron transition hover:text-kac-blood-dark"
+    className="styleguide-back-link inline-flex items-center gap-2 font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron transition hover:text-kac-blood-dark"
   >
     <span aria-hidden="true">&#8592;</span>
     Back to Styleguide

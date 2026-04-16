@@ -1,4 +1,4 @@
-import { type PropsWithChildren } from "react";
+import { type PropsWithChildren, type ReactNode } from "react";
 import { cn } from "../../utils/cn";
 
 export type TagTone =
@@ -39,7 +39,10 @@ const tagToneClassMap: Record<TagTone, string> = {
 interface TagProps extends PropsWithChildren {
   tone?: TagTone;
   size?: "sm" | "md";
+  leading?: ReactNode;
+  trailing?: ReactNode;
   className?: string;
+  contentClassName?: string;
 }
 
 const sizeClassMap: Record<NonNullable<TagProps["size"]>, string> = {
@@ -50,30 +53,44 @@ const sizeClassMap: Record<NonNullable<TagProps["size"]>, string> = {
 export const Tag = ({
   tone = "cloth",
   size = "md",
+  leading,
+  trailing,
   className,
+  contentClassName,
   children,
 }: TagProps): JSX.Element => {
   return (
     <span
       className={cn(
-        "inline-flex items-stretch overflow-hidden rounded-md",
+        "tag inline-flex items-stretch overflow-hidden rounded-md",
         "border border-kac-iron",
         "shadow-[0_1px_0_#090f15,0_3px_7px_rgba(0,0,0,0.25)]",
+        tagToneClassMap[tone],
         className,
       )}
     >
+      {leading ? (
+        <span className="tag__leading inline-flex items-center px-2">
+          {leading}
+        </span>
+      ) : null}
       <span
         className={cn(
-          "inline-flex items-center",
+          "tag__content inline-flex items-center",
           "font-heading font-bold uppercase tracking-[0.06em]",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]",
           "[text-shadow:0_1px_0_rgba(0,0,0,0.35)]",
           sizeClassMap[size],
-          tagToneClassMap[tone],
+          contentClassName,
         )}
       >
         {children}
       </span>
+      {trailing ? (
+        <span className="tag__trailing inline-flex items-stretch">
+          {trailing}
+        </span>
+      ) : null}
     </span>
   );
 };

@@ -4,6 +4,7 @@ import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { GameCard, StyleguideBackLink } from "../components/styleguide/GameCard";
+import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
 const sampleQuest: AdventureModuleResolvedQuest = {
   fragmentId: "frag-quest-recover-shard",
@@ -25,8 +26,9 @@ Recover the shard before the floodwall seals the district.
 
 export const StyleguideQuestCardPage = (): JSX.Element => {
   return (
-    <div className="app-shell stack gap-6 py-8">
+    <div className="styleguide-quest-card-page app-shell stack gap-6 py-8">
       <StyleguideBackLink />
+      <StyleguideSectionNav />
 
       <div className="stack gap-2">
         <Label variant="gold" className="self-start">

@@ -72,6 +72,20 @@ const ScreenPage = lazy(async () => ({
 const StyleguideIndexPage = lazy(async () => ({
   default: (await import("./routes/StyleguideIndexPage")).StyleguideIndexPage,
 }));
+const StyleguideCardsPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideCardsPage")).StyleguideCardsPage,
+}));
+const StyleguideTagsPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideTagsPage")).StyleguideTagsPage,
+}));
+const StyleguideControlsPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideControlsPage"))
+    .StyleguideControlsPage,
+}));
+const StyleguideSessionChatPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideSessionChatPage"))
+    .StyleguideSessionChatPage,
+}));
 const StyleguideLocationCardPage = lazy(async () => ({
   default: (await import("./routes/StyleguideLocationCardPage"))
     .StyleguideLocationCardPage,
@@ -205,6 +219,13 @@ export const App = (): JSX.Element => {
           <Route path="/workflow-lab" element={<WorkflowLabPage />} />
           <Route path="/workflow-lab/:workflowId" element={<WorkflowLabPage />} />
           <Route path="/styleguide" element={<StyleguideIndexPage />} />
+          <Route path="/styleguide/cards" element={<StyleguideCardsPage />} />
+          <Route path="/styleguide/tags" element={<StyleguideTagsPage />} />
+          <Route path="/styleguide/controls" element={<StyleguideControlsPage />} />
+          <Route
+            path="/styleguide/session-chat"
+            element={<StyleguideSessionChatPage />}
+          />
           <Route
             path="/styleguide/location-card"
             element={<StyleguideLocationCardPage />}

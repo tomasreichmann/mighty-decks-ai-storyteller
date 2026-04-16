@@ -4,6 +4,7 @@ import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { GameCard, StyleguideBackLink } from "../components/styleguide/GameCard";
+import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
 const sampleLocation: AdventureModuleResolvedLocation = {
   fragmentId: "frag-location-drowned-gate",
@@ -30,8 +31,9 @@ The district floods in pulses whenever the old pumps kick on. Catwalks groan abo
 
 export const StyleguideLocationCardPage = (): JSX.Element => {
   return (
-    <div className="app-shell stack gap-6 py-8">
+    <div className="styleguide-location-card-page app-shell stack gap-6 py-8">
       <StyleguideBackLink />
+      <StyleguideSectionNav />
 
       <div className="stack gap-2">
         <Label variant="gold" className="self-start">
