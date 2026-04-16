@@ -15,4 +15,6 @@ test("AdventureModuleEncounterEditor includes prerequisites, title image, and en
   assert.match(source, /createEncounterCardJsx|EncounterCard/);
   assert.match(source, /ShortcodeField/);
   assert.match(source, /@encounter\/\$\{encounter\.encounterSlug\}/);
+  assert.match(source, /AdventureModuleGeneratedImagePicker/);
+  assert.doesNotMatch(source, /AdventureModuleGeneratedImageField/);
 });

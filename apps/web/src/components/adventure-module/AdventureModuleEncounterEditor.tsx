@@ -13,7 +13,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
-import { AdventureModuleGeneratedImageField } from "./AdventureModuleGeneratedImageField";
+import { AdventureModuleGeneratedImagePicker } from "./AdventureModuleGeneratedImagePicker";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import { ShortcodeField } from "./ShortcodeField";
 
@@ -47,6 +47,7 @@ interface EncounterImageFieldProps {
   editable: boolean;
   identityKey: string;
   resolveContextLines: (selectedContextTags: string[]) => string[];
+  emptyFrameClassName?: string;
   onChange: (nextValue: string) => void;
   onFieldBlur: () => void;
 }
@@ -154,6 +155,7 @@ const EncounterImageField = ({
   editable,
   identityKey,
   resolveContextLines,
+  emptyFrameClassName = "aspect-video min-h-56",
   onChange,
   onFieldBlur,
 }: EncounterImageFieldProps): JSX.Element => {
@@ -164,11 +166,11 @@ const EncounterImageField = ({
           Title Image
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Paste a final image URL or generate encounter key art and pick one.
+          Choose an image or open the dialog to generate encounter key art.
         </Text>
       </div>
 
-      <AdventureModuleGeneratedImageField
+      <AdventureModuleGeneratedImagePicker
         label="Title Image"
         promptLabel="Title Image Prompt"
         promptDescription="Generate a visual key art image for this encounter."
@@ -179,12 +181,10 @@ const EncounterImageField = ({
         defaultContextTags={DEFAULT_ENCOUNTER_IMAGE_CONTEXT_TAGS}
         resolveContextLines={resolveContextLines}
         emptyLabel="No title image selected yet."
-        pendingLabel="Generating title image..."
+        emptyFrameClassName={emptyFrameClassName}
         disabled={!editable}
         identityKey={identityKey}
         value={value ?? ""}
-        valueFieldLabel="Title Image URL"
-        valueFieldDescription="Paste an existing image URL or pick one from the generated batch below."
         onChange={onChange}
         onBlur={onFieldBlur}
       />

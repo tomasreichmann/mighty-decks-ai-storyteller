@@ -13,7 +13,7 @@ import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
-import { AdventureModuleGeneratedImageField } from "./AdventureModuleGeneratedImageField";
+import { AdventureModuleGeneratedImagePicker } from "./AdventureModuleGeneratedImagePicker";
 import {
   AdventureModuleLocationMapEditor,
   type AdventureModuleLocationPinTarget,
@@ -60,6 +60,7 @@ interface LocationImageFieldProps {
   promptDescription: string;
   resolveContextLines: (selectedContextTags: string[]) => string[];
   defaultContextTags: readonly string[];
+  emptyFrameClassName?: string;
   onChange: (nextValue: string) => void;
   onFieldBlur: () => void;
 }
@@ -177,6 +178,7 @@ const LocationImageField = ({
   promptDescription,
   resolveContextLines,
   defaultContextTags,
+  emptyFrameClassName = "aspect-video min-h-56",
   onChange,
   onFieldBlur,
 }: LocationImageFieldProps): JSX.Element => {
@@ -187,11 +189,11 @@ const LocationImageField = ({
           {imageLabel}
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Paste a final image URL or generate options and pick one.
+          Choose an image or open the dialog to generate new options.
         </Text>
       </div>
 
-      <AdventureModuleGeneratedImageField
+      <AdventureModuleGeneratedImagePicker
         label={imageLabel}
         promptLabel={`${imageLabel} Prompt`}
         promptDescription={promptDescription}
@@ -202,12 +204,10 @@ const LocationImageField = ({
         defaultContextTags={defaultContextTags}
         resolveContextLines={resolveContextLines}
         emptyLabel={previewEmptyLabel}
-        pendingLabel={`Generating ${imageLabel.toLocaleLowerCase()}...`}
+        emptyFrameClassName={emptyFrameClassName}
         disabled={!editable}
         identityKey={identityKey}
         value={value ?? ""}
-        valueFieldLabel={`${imageLabel} URL`}
-        valueFieldDescription="Paste an existing image URL or pick one from the generated batch below."
         onChange={onChange}
         onBlur={onFieldBlur}
       />
@@ -320,6 +320,7 @@ export const AdventureModuleLocationEditor = ({
           promptDescription="Generate a visual key art image for this location."
           resolveContextLines={resolveImageContextLines}
           defaultContextTags={DEFAULT_TITLE_IMAGE_CONTEXT_TAGS}
+          emptyFrameClassName="aspect-video min-h-56"
           onChange={onTitleImageUrlChange}
           onFieldBlur={onFieldBlur}
         />
@@ -372,6 +373,7 @@ export const AdventureModuleLocationEditor = ({
           promptDescription="Generate the interactive map image used for pin placement."
           resolveContextLines={resolveImageContextLines}
           defaultContextTags={DEFAULT_MAP_IMAGE_CONTEXT_TAGS}
+          emptyFrameClassName="aspect-square min-h-56"
           onChange={onMapImageUrlChange}
           onFieldBlur={onFieldBlur}
         />

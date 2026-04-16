@@ -119,6 +119,7 @@ Shell behavior:
 - Header also exposes `Create Campaign` so authors can fork the current module into a campaign without leaving the page.
 - On desktop, `Create Campaign` sits on the right side of the title row while the full tab rail stays on its own row below.
 - On tablet-sized layouts and narrower, the tab rail collapses into a section dropdown in the same header row, immediately after `Create Campaign`.
+- Framed image pickers reopen with the current saved image already selected, so cover art and entity art can be reused or regenerated in place.
 - The route now delegates its shared title-row and common tab rendering through extracted `SharedAuthoringHeader` and `CommonAuthoringTabContent` components so module and campaign authoring stay aligned.
 - Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
@@ -147,7 +148,7 @@ Fields:
 - Premise.
 - Have tags.
 - Avoid tags.
-- Cover image URL plus generated-image selection.
+- Cover image frame with dialog-backed image picker.
 
 Behavior:
 
@@ -164,7 +165,7 @@ Behavior:
 - Cover image selection persists through autosave and module-detail reloads because the saved `coverImageUrl` is returned in the authoring detail payload.
 - `Lookup Existing` works with or without a typed prompt.
 - With a prompt, the current model remains the primary match and same-prompt images from other models appear in a separate gallery.
-- Without a prompt, the generated-image picker can restore the saved image by file name and browse every stored image group for the provider.
+- Without a prompt, the image picker dialog can restore the saved image by file name and browse every stored image group for the provider.
 
 ### 5.2 Player Info Tab (`/player-info`)
 
@@ -387,7 +388,7 @@ Asset edit example fields:
 - Noun.
 - Noun description.
 - Adjective description.
-- Icon URL.
+- Icon image frame with dialog-backed image picker.
 - Optional overlay URL.
 - Markdown body with inline asset `GameCard` rendering.
 
@@ -396,6 +397,7 @@ Asset editor behavior:
 - Updates persist through `PUT /api/adventure-modules/:moduleId/assets/:assetSlug`.
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/assets/:assetSlug`.
 - Asset slug is generated from the saved title and updates when the asset name changes.
+- The editor supports icon-image selection and generation through the framed dialog picker, plus optional overlay URL entry and markdown body authoring.
 - The editor shows a live custom `AssetCard` preview with `custom` in the top-right heading and no modifier-side heading.
 - Legacy layered module assets open with blank custom fields plus a migration notice.
 - Legacy layered module assets remain unsupported in normal markdown rendering until the custom fields are saved successfully.
@@ -405,10 +407,10 @@ Location edit example fields:
 
 - Location name.
 - Short summary.
-- Title image URL with generated-image picker.
+- Title image frame with dialog-backed image picker.
 - Introduction markdown body.
 - Description markdown body.
-- Map image URL with generated-image picker.
+- Map image frame with dialog-backed image picker.
 - Interactive map pin list and canvas.
 
 Location editor behavior:
@@ -416,7 +418,7 @@ Location editor behavior:
 - Updates persist through `PUT /api/adventure-modules/:moduleId/locations/:locationSlug`.
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/locations/:locationSlug`.
 - Location slug is generated from the saved title and updates when the location name changes.
-- The editor supports manual image URLs plus generated-image selection for both title image and map image.
+- The editor supports image selection and generation through the framed dialog picker for both title image and map image.
 - Map pins are stored by target `fragmentId`, can be added/removed/moved, exclude the current location from the picker, preview their linked content on hover, and navigate to the linked authoring route on click.
 - The detail surface shows a reusable shortcode row that displays `@location/<location-slug>` and copies it directly to the clipboard.
 
@@ -425,7 +427,7 @@ Encounter edit example fields:
 - Encounter name.
 - Summary.
 - Prerequisites.
-- Title image URL with generated-image picker.
+- Title image frame with dialog-backed image picker.
 - Encounter markdown script with inline `GameCard` rendering and block `EncounterCard` embeds.
 
 Encounter editor behavior:
@@ -433,14 +435,14 @@ Encounter editor behavior:
 - Updates persist through `PUT /api/adventure-modules/:moduleId/encounters/:encounterSlug`.
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/encounters/:encounterSlug`.
 - Encounter slug is generated from the saved title and updates when the encounter name changes.
-- The editor supports title-image generation/paste flows and markdown script authoring.
+- The editor supports title-image selection and generation through the framed dialog picker plus markdown script authoring.
 - The detail surface shows a reusable shortcode row that displays `@encounter/<encounter-slug>` and copies it directly to the clipboard.
 
 Quest edit example fields:
 
 - Quest name.
 - Summary.
-- Title image URL with generated-image picker.
+- Title image frame with dialog-backed image picker.
 - Quest markdown brief with inline `GameCard` rendering and block `QuestCard` embeds.
 
 Quest editor behavior:
@@ -448,7 +450,7 @@ Quest editor behavior:
 - Updates persist through `PUT /api/adventure-modules/:moduleId/quests/:questSlug`.
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/quests/:questSlug`.
 - Quest slug is generated from the saved title and updates when the quest name changes.
-- The editor supports title-image generation/paste flows and markdown brief authoring.
+- The editor supports title-image selection and generation through the framed dialog picker plus markdown brief authoring.
 - Quest graph editing remains out of scope for this step; create/delete operations still maintain valid underlying quest graph records automatically.
 - The detail surface shows a reusable shortcode row that displays `@quest/<quest-slug>` and copies it directly to the clipboard.
 

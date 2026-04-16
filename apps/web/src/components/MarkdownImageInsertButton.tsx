@@ -16,8 +16,9 @@ import { TextField } from "./common/TextField";
 
 export interface MarkdownImageInsertButtonProps {
   identityKey: string;
-  smartContextDocument: SmartInputDocumentContext;
-  currentInputValue: string;
+  smartContextDocument?: SmartInputDocumentContext;
+  currentInputValue?: string;
+  initialImageUrl?: string;
   disabled?: boolean;
   dialogTitle?: string;
   dialogDescription?: string;
@@ -25,6 +26,8 @@ export interface MarkdownImageInsertButtonProps {
   promptDescription: string;
   workflowContextIntro: string;
   imageLabel?: string;
+  contextLabel?: string;
+  contextDescription?: string;
   generateLabel?: string;
   insertButtonLabel?: string;
   buttonAriaLabel?: string;
@@ -32,7 +35,12 @@ export interface MarkdownImageInsertButtonProps {
   buttonColor?: ButtonProps["color"];
   buttonSize?: ButtonProps["size"];
   buttonClassName?: string;
-  onInsertMarkdownSnippet: (snippet: string) => boolean | void;
+  contextTagOptions?: readonly string[];
+  defaultContextTags?: readonly string[];
+  resolveContextLines?: (selectedContextTags: string[]) => string[];
+  hideAltTextField?: boolean;
+  onInsertImageUrl?: (imageUrl: string) => boolean | void;
+  onInsertMarkdownSnippet?: (snippet: string) => boolean | void;
 }
 
 const normalizeInsertResult = (result: boolean | void): boolean =>
@@ -42,6 +50,7 @@ export const MarkdownImageInsertButton = ({
   identityKey,
   smartContextDocument,
   currentInputValue,
+  initialImageUrl,
   disabled = false,
   dialogTitle = "Insert Image Markdown",
   dialogDescription = "Generate or reuse an image, then insert it as standard markdown syntax.",
@@ -49,26 +58,52 @@ export const MarkdownImageInsertButton = ({
   promptDescription,
   workflowContextIntro,
   imageLabel = "Generated Image",
+  contextLabel = "Image Context",
+  contextDescription = "Selected context tags are appended to the prompt used for generation and lookup, while the inserted markdown stays standard `![alt](url)` syntax.",
   generateLabel,
-  insertButtonLabel = "Insert Image Markdown",
+  insertButtonLabel,
   buttonAriaLabel = "Open image tools",
   buttonTitle = "Insert image",
   buttonColor = "bone",
   buttonSize = "sm",
   buttonClassName = "",
+  contextTagOptions = SMART_CONTEXT_TAG_OPTIONS,
+  defaultContextTags = getDefaultSmartContextTags(),
+  resolveContextLines,
+  hideAltTextField = false,
+  onInsertImageUrl,
   onInsertMarkdownSnippet,
 }: MarkdownImageInsertButtonProps): JSX.Element => {
+  const normalizedInitialImageUrl = initialImageUrl?.trim() ?? "";
   const [open, setOpen] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const [selectedImageUrl, setSelectedImageUrl] = useState(
+    normalizedInitialImageUrl,
+  );
   const [altText, setAltText] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const resolvedInsertButtonLabel =
+    insertButtonLabel ??
+    (onInsertImageUrl ? "Use Image" : "Insert Image Markdown");
+  const resolvedContextLines =
+    resolveContextLines ??
+    ((selectedContextTags: string[]) =>
+      smartContextDocument
+        ? resolveSmartContextLines({
+            selectedTags: normalizeSmartContextTags(
+              selectedContextTags,
+              [...SMART_CONTEXT_TAG_OPTIONS],
+            ),
+            context: smartContextDocument,
+            currentInputValue: currentInputValue ?? "",
+          })
+        : []);
 
   useEffect(() => {
     setOpen(false);
-    setSelectedImageUrl("");
+    setSelectedImageUrl(normalizedInitialImageUrl);
     setAltText("");
     setErrorMessage(null);
-  }, [identityKey]);
+  }, [identityKey, normalizedInitialImageUrl]);
 
   useEffect(() => {
     if (!open) {
@@ -104,6 +139,9 @@ export const MarkdownImageInsertButton = ({
         title={buttonTitle}
         disabled={disabled}
         onClick={() => {
+          if (normalizedInitialImageUrl.length > 0) {
+            setSelectedImageUrl(normalizedInitialImageUrl);
+          }
           setOpen(true);
           setErrorMessage(null);
         }}
@@ -152,24 +190,15 @@ export const MarkdownImageInsertButton = ({
                   label={imageLabel}
                   promptLabel={promptLabel}
                   promptDescription={promptDescription}
-                  contextLabel="Image Context"
-                  contextDescription="Selected context tags are appended to the prompt used for generation and lookup, while the inserted markdown stays standard `![alt](url)` syntax."
+                  contextLabel={contextLabel}
+                  contextDescription={contextDescription}
                   workflowContextIntro={workflowContextIntro}
                   value={selectedImageUrl}
                   disabled={disabled}
                   identityKey={identityKey}
-                  contextTagOptions={SMART_CONTEXT_TAG_OPTIONS}
-                  defaultContextTags={getDefaultSmartContextTags()}
-                  resolveContextLines={(selectedContextTags) =>
-                    resolveSmartContextLines({
-                      selectedTags: normalizeSmartContextTags(
-                        selectedContextTags,
-                        [...SMART_CONTEXT_TAG_OPTIONS],
-                      ),
-                      context: smartContextDocument,
-                      currentInputValue,
-                    })
-                  }
+                  contextTagOptions={contextTagOptions}
+                  defaultContextTags={defaultContextTags}
+                  resolveContextLines={resolvedContextLines}
                   emptyLabel="No image selected yet."
                   pendingLabel="Generating image..."
                   generateLabel={generateLabel}
@@ -181,18 +210,20 @@ export const MarkdownImageInsertButton = ({
                   }}
                 />
 
-                <TextField
-                  label="Alt Text"
-                  description="Optional text stored in the markdown image tag."
-                  value={altText}
-                  onChange={(event) => {
-                    setAltText(event.target.value);
-                    setErrorMessage(null);
-                  }}
-                  disabled={disabled}
-                  maxLength={160}
-                  placeholder="Describe the image for readers."
-                />
+                {hideAltTextField ? null : (
+                  <TextField
+                    label="Alt Text"
+                    description="Optional text stored in the markdown image tag."
+                    value={altText}
+                    onChange={(event) => {
+                      setAltText(event.target.value);
+                      setErrorMessage(null);
+                    }}
+                    disabled={disabled}
+                    maxLength={160}
+                    placeholder="Describe the image for readers."
+                  />
+                )}
               </div>
             </div>
 
@@ -211,28 +242,54 @@ export const MarkdownImageInsertButton = ({
                   color="gold"
                   disabled={disabled || selectedImageUrl.trim().length === 0}
                   onClick={() => {
-                    const snippet = buildMarkdownImageSnippet(
-                      selectedImageUrl,
-                      altText,
-                    );
-                    if (snippet.length === 0) {
+                    const normalizedImageUrl = selectedImageUrl.trim();
+                    if (normalizedImageUrl.length === 0) {
                       setErrorMessage(
                         "Select an image before inserting markdown.",
                       );
                       return;
                     }
-                    if (
-                      !normalizeInsertResult(onInsertMarkdownSnippet(snippet))
-                    ) {
+
+                    if (onInsertImageUrl) {
+                      if (
+                        !normalizeInsertResult(
+                          onInsertImageUrl(normalizedImageUrl),
+                        )
+                      ) {
+                        setErrorMessage(
+                          "Could not select the image for this field.",
+                        );
+                        return;
+                      }
+                    } else if (onInsertMarkdownSnippet) {
+                      const snippet = buildMarkdownImageSnippet(
+                        normalizedImageUrl,
+                        altText,
+                      );
+                      if (snippet.length === 0) {
+                        setErrorMessage(
+                          "Select an image before inserting markdown.",
+                        );
+                        return;
+                      }
+                      if (
+                        !normalizeInsertResult(onInsertMarkdownSnippet(snippet))
+                      ) {
+                        setErrorMessage(
+                          "Could not insert the image into this field.",
+                        );
+                        return;
+                      }
+                    } else {
                       setErrorMessage(
-                        "Could not insert the image into this field.",
+                        "No image insertion handler was configured.",
                       );
                       return;
                     }
                     closeModal();
                   }}
                 >
-                  {insertButtonLabel}
+                  {resolvedInsertButtonLabel}
                 </Button>
               </div>
             </div>

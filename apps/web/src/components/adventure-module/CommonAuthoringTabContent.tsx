@@ -539,6 +539,7 @@ export const CommonAuthoringTabContent = ({
       return activeAsset && state.forms.asset ? (
         <AdventureModuleAssetEditor
           asset={{
+            fragmentId: activeAsset.fragmentId,
             assetSlug: activeAsset.assetSlug,
             title: state.forms.asset.title,
             summary: state.forms.asset.summary,

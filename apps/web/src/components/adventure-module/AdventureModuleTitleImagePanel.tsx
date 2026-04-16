@@ -1,18 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { updateAdventureModuleCoverImage } from "../../lib/adventureModuleApi";
-import {
-  AdventureModuleGeneratedImageField,
-  toImagePromptSnippet,
-  toImagePromptTagListSnippet,
-} from "./AdventureModuleGeneratedImageField";
+import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
+import { AdventureModuleGeneratedImagePicker } from "./AdventureModuleGeneratedImagePicker";
 
 const CONTEXT_TAG_OPTIONS = [
   "Module Title",
   "Module Summary",
   "Module Intent",
   "Premise",
-  "Have Tags",
-  "Avoid Tags",
+  "Themes to Include",
+  "Themes to Avoid",
   "Player Summary",
   "Player Info",
   "Storyteller Summary",
@@ -22,10 +19,28 @@ const CONTEXT_TAG_OPTIONS = [
 const DEFAULT_CONTEXT_TAGS: string[] = [
   "Module Title",
   "Premise",
-  "Have Tags",
-  "Avoid Tags",
+  "Themes to Include",
+  "Themes to Avoid",
   "Player Summary",
 ];
+
+const toImagePromptSnippet = (value: string, maxLength: number): string =>
+  toMarkdownPlainTextSnippet(value, maxLength).trim();
+
+const toImagePromptTagListSnippet = (
+  values: string[],
+  maxLength: number,
+): string => {
+  const normalizedValues = values
+    .map((value) => value.replace(/\s+/g, " ").trim())
+    .filter((value) => value.length > 0);
+  if (normalizedValues.length === 0) {
+    return "";
+  }
+
+  return toMarkdownPlainTextSnippet(normalizedValues.join(", "), maxLength)
+    .trim();
+};
 
 interface AdventureModuleTitleImagePanelProps {
   moduleId: string;
@@ -81,17 +96,17 @@ const resolveContextLines = (
         }
         break;
       }
-      case "Have Tags": {
+      case "Themes to Include": {
         const snippet = toImagePromptTagListSnippet(props.haveTags, 260);
         if (snippet.length > 0) {
-          lines.push(`Preferred themes/tropes: ${snippet}`);
+          lines.push(`Themes to include: ${snippet}`);
         }
         break;
       }
-      case "Avoid Tags": {
+      case "Themes to Avoid": {
         const snippet = toImagePromptTagListSnippet(props.avoidTags, 260);
         if (snippet.length > 0) {
-          lines.push(`Avoid these themes/tropes: ${snippet}`);
+          lines.push(`Themes to avoid: ${snippet}`);
         }
         break;
       }
@@ -227,7 +242,7 @@ export const AdventureModuleTitleImagePanel = ({
 
   return (
     <div className="stack gap-3">
-      <AdventureModuleGeneratedImageField
+      <AdventureModuleGeneratedImagePicker
         label="Title Image"
         promptLabel="Title Image Prompt"
         promptDescription="Base text used for title image generation."
@@ -241,9 +256,8 @@ export const AdventureModuleTitleImagePanel = ({
         contextTagOptions={CONTEXT_TAG_OPTIONS}
         defaultContextTags={DEFAULT_CONTEXT_TAGS}
         emptyLabel="No title image selected yet."
-        pendingLabel="Generating title image..."
+        emptyFrameClassName="aspect-video min-h-56"
         generateLabel="Generate Title Image"
-        valueFieldLabel="Title Image URL"
         resolveContextLines={resolveSelectedContextLines}
       />
 

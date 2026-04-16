@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import type {
   AdventureModuleResolvedActor,
   AdventureModuleResolvedAsset,
@@ -6,16 +7,19 @@ import type {
   AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
+import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { AssetCard } from "../cards/AssetCard";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
+import { AdventureModuleGeneratedImagePicker } from "./AdventureModuleGeneratedImagePicker";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import { ShortcodeField } from "./ShortcodeField";
 
 export interface AdventureModuleAssetEditorAsset {
+  fragmentId: string;
   assetSlug: string;
   title: string;
   summary?: string;
@@ -54,6 +58,139 @@ interface AdventureModuleAssetEditorProps {
 }
 
 const MAX_MARKDOWN_LENGTH = 200_000;
+const ASSET_IMAGE_CONTEXT_TAG_OPTIONS = [
+  "Asset Name",
+  "Asset Summary",
+  "Modifier",
+  "Noun",
+  "Noun Description",
+  "Adjective Description",
+  "Asset Markdown",
+  "Module Title",
+  "Module Summary",
+  "Module Intent",
+  "Premise",
+  "Player Summary",
+  "Storyteller Summary",
+] as const;
+const DEFAULT_ASSET_IMAGE_CONTEXT_TAGS = [
+  "Asset Name",
+  "Asset Summary",
+  "Modifier",
+  "Noun",
+  "Asset Markdown",
+] as const;
+
+const toSnippet = (value: string, maxLength: number): string =>
+  toMarkdownPlainTextSnippet(value, maxLength).trim();
+
+const buildAssetImageContextLines = (
+  selectedContextTags: string[],
+  asset: AdventureModuleAssetEditorAsset,
+  smartContextDocument: SmartInputDocumentContext,
+): string[] => {
+  const lines: string[] = [];
+
+  for (const selectedTag of selectedContextTags) {
+    switch (selectedTag) {
+      case "Asset Name": {
+        const snippet = toSnippet(asset.title, 120);
+        if (snippet.length > 0) {
+          lines.push(`Asset name: ${snippet}`);
+        }
+        break;
+      }
+      case "Asset Summary": {
+        const snippet = toSnippet(asset.summary ?? "", 320);
+        if (snippet.length > 0) {
+          lines.push(`Asset summary: ${snippet}`);
+        }
+        break;
+      }
+      case "Modifier": {
+        const snippet = toSnippet(asset.modifier, 120);
+        if (snippet.length > 0) {
+          lines.push(`Modifier: ${snippet}`);
+        }
+        break;
+      }
+      case "Noun": {
+        const snippet = toSnippet(asset.noun, 120);
+        if (snippet.length > 0) {
+          lines.push(`Noun: ${snippet}`);
+        }
+        break;
+      }
+      case "Noun Description": {
+        const snippet = toSnippet(asset.nounDescription, 500);
+        if (snippet.length > 0) {
+          lines.push(`Noun description: ${snippet}`);
+        }
+        break;
+      }
+      case "Adjective Description": {
+        const snippet = toSnippet(asset.adjectiveDescription, 500);
+        if (snippet.length > 0) {
+          lines.push(`Adjective description: ${snippet}`);
+        }
+        break;
+      }
+      case "Asset Markdown": {
+        const snippet = toSnippet(asset.content, 650);
+        if (snippet.length > 0) {
+          lines.push(`Asset brief: ${snippet}`);
+        }
+        break;
+      }
+      case "Module Title": {
+        const snippet = toSnippet(smartContextDocument.moduleTitle, 120);
+        if (snippet.length > 0) {
+          lines.push(`Module title: ${snippet}`);
+        }
+        break;
+      }
+      case "Module Summary": {
+        const snippet = toSnippet(smartContextDocument.moduleSummary, 220);
+        if (snippet.length > 0) {
+          lines.push(`Module summary: ${snippet}`);
+        }
+        break;
+      }
+      case "Module Intent": {
+        const snippet = toSnippet(smartContextDocument.moduleIntent, 220);
+        if (snippet.length > 0) {
+          lines.push(`Module intent: ${snippet}`);
+        }
+        break;
+      }
+      case "Premise": {
+        const snippet = toSnippet(smartContextDocument.premise, 500);
+        if (snippet.length > 0) {
+          lines.push(`Premise: ${snippet}`);
+        }
+        break;
+      }
+      case "Player Summary": {
+        const snippet = toSnippet(smartContextDocument.playerSummary, 450);
+        if (snippet.length > 0) {
+          lines.push(`Player summary: ${snippet}`);
+        }
+        break;
+      }
+      case "Storyteller Summary": {
+        const snippet = toSnippet(smartContextDocument.storytellerSummary, 450);
+        if (snippet.length > 0) {
+          lines.push(`Storyteller summary: ${snippet}`);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  return lines;
+};
 
 export const AdventureModuleAssetEditor = ({
   asset,
@@ -79,6 +216,16 @@ export const AdventureModuleAssetEditor = ({
   onDelete,
   onAddAssetCardToSelection,
 }: AdventureModuleAssetEditorProps): JSX.Element => {
+  const resolveIconContextLines = useCallback(
+    (selectedContextTags: string[]) =>
+      buildAssetImageContextLines(
+        selectedContextTags,
+        asset,
+        smartContextDocument,
+      ),
+    [asset, smartContextDocument],
+  );
+
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
       <Panel contentClassName="stack gap-4">
@@ -186,13 +333,32 @@ export const AdventureModuleAssetEditor = ({
           disabled={!editable}
         />
 
-        <TextField
-          label="Icon URL"
-          maxLength={500}
-          value={asset.iconUrl}
-          onChange={(event) => onIconUrlChange(event.target.value)}
-          onBlur={onFieldBlur}
+        <div className="stack gap-1">
+          <Text variant="h3" color="iron">
+            Icon Image
+          </Text>
+          <Text variant="body" color="iron-light" className="text-sm">
+            Choose an image or open the dialog to generate asset art.
+          </Text>
+        </div>
+
+        <AdventureModuleGeneratedImagePicker
+          label="Icon Image"
+          promptLabel="Icon Image Prompt"
+          promptDescription="Generate a visual image for this asset's icon layer."
+          contextLabel="Icon Image Context"
+          contextDescription="Edit the base prompt text. Selected context tags are appended for generation and lookup, but are not shown in the prompt field."
+          workflowContextIntro="Icon image prompt for custom asset art. Refine wording while preserving a clear silhouette, readable materials, and a compact card-friendly composition."
+          contextTagOptions={ASSET_IMAGE_CONTEXT_TAG_OPTIONS}
+          defaultContextTags={DEFAULT_ASSET_IMAGE_CONTEXT_TAGS}
+          resolveContextLines={resolveIconContextLines}
+          emptyLabel="No icon image selected yet."
+          emptyFrameClassName="aspect-video min-h-48"
           disabled={!editable}
+          identityKey={`${asset.fragmentId}-icon-image`}
+          value={asset.iconUrl}
+          onChange={onIconUrlChange}
+          onBlur={onFieldBlur}
         />
 
         <TextField
@@ -213,11 +379,11 @@ export const AdventureModuleAssetEditor = ({
           selfContextTag="Storyteller Info"
           smartContextDocument={smartContextDocument}
           actors={actors}
-        counters={counters}
-        assets={assets}
-        encounters={encounters}
-        quests={quests}
-        value={asset.content}
+          counters={counters}
+          assets={assets}
+          encounters={encounters}
+          quests={quests}
+          value={asset.content}
           editable={editable}
           maxLength={MAX_MARKDOWN_LENGTH}
           onChange={onContentChange}

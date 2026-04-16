@@ -8,7 +8,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: replace the Adventure Module title, location, encounter, and quest inline image generator blocks with framed image pickers that open the shared generate-or-pick dialog from a top-right trigger button.
+- Web: add raw-image selection mode to the shared image dialog so image fields can reuse the same modal without inserting markdown.
 - Narrow the Adventure Module, Campaign, and authoring entity list search bars into a shared compact depressed search field, and normalize their card grids to a mobile 1-column, tablet 2-column, desktop 3-column layout.
+- Replace the empty counters panel shell with a neutral `Message` state so the "no counters yet" view feels lighter and less framed.
 - Standardize `Label`, `Heading`, `Button`, `TextField`, `TextArea`, `DepressedInput`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` around shared `size`/`color` naming and aligned heights so adjacent controls line up cleanly.
 - Split `/styleguide` into typography, inputs, buttons, cards, tags, controls, and session-chat labs with a shared secondary nav.
 - Add a dedicated `/styleguide/panel` lab, collapse the cards entry into a single gallery page, and expand the typography/tag color coverage to include the missing sticker and chip tones.
@@ -138,6 +141,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: prepopulate the shared generate-or-pick image dialog with the current image URL when it opens from an Adventure Module image picker, so saved title, map, encounter, quest, and asset images stay selected instead of reopening on a blank draft.
+- Web: add the framed generated-image picker to Adventure Module custom asset icon editing so the old plain `Icon URL` text field now opens the same dialog-backed image flow as the other entity image fields.
 - Raise the editable tag dropdown above the next panel frame on the styleguide tags page.
 - Normalize shared rules-card text decoding so the `/rules/outcomes`, `/rules/effects`, and `/rules/stunts` pages no longer render mojibake or replacement characters in card copy.
 - Keep Adventure Module location, encounter, and quest scene-card list panels at a consistent authored width so long prerequisites, summaries, and shortcodes wrap inside the panel instead of stretching it wider.

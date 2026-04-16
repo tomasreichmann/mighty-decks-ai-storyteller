@@ -65,8 +65,8 @@ export const AdventureModuleBaseTabPanel = ({
       />
 
       <Tags
-        label="Have Tags"
-        description="Include motifs and content that should appear in the module."
+        label="Themes to Include"
+        description="Include themes and content that should appear in the module."
         value={haveTags}
         onChange={onHaveChange}
         onBlur={onFieldBlur}
@@ -75,8 +75,8 @@ export const AdventureModuleBaseTabPanel = ({
       />
 
       <Tags
-        label="Avoid Tags"
-        description="Exclude motifs and content that should not appear in the module."
+        label="Themes to Avoid"
+        description="Exclude themes and content that should not appear in the module."
         value={avoidTags}
         onChange={onAvoidChange}
         onBlur={onFieldBlur}

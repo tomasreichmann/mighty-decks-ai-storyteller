@@ -14,4 +14,6 @@ test("AdventureModuleLocationEditor includes introduction, description, and map 
   assert.match(source, /Location slug:/);
   assert.match(source, /ShortcodeField/);
   assert.match(source, /@location\/\$\{location\.locationSlug\}/);
+  assert.match(source, /AdventureModuleGeneratedImagePicker/);
+  assert.doesNotMatch(source, /AdventureModuleGeneratedImageField/);
 });

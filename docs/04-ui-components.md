@@ -246,7 +246,7 @@ Tabs:
 - `player-info`: `AdventureModulePlayerInfoTabPanel` with dual MDXEditor fields (`Player Summary`, `Player Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` and `QuestCard` embeds, and autosave
 - `storyteller-info`: `AdventureModuleStorytellerInfoTabPanel` with dual MDXEditor fields (`Storyteller Summary`, `Storyteller Info Text`) in rich + source modes, inline `GameCard` embeds, block `EncounterCard` and `QuestCard` embeds, and autosave
 - `actors`: `AdventureModuleActorsTabPanel` showing searchable layered `ActorCard` entries, `Create Actor`, compact shortcode rows, and delete actions
-- `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, compact shortcode rows, and delete actions
+- `counters`: `AdventureModuleCountersTabPanel` showing searchable interactive `CounterCard` entries, `Create Counter`, compact shortcode rows, delete actions, and a neutral `Message` empty state when no counters exist
 - `assets`: `AdventureModuleAssetsTabPanel` showing searchable custom `AssetCard` entries, legacy `Reauthor required` states, `Create Asset`, compact shortcode rows, and delete actions
 - `locations`: `AdventureModuleLocationsTabPanel` showing searchable location cards, title-image previews, `Create Location`, compact shortcode rows, and delete actions
 - `encounters`: `AdventureModuleEncountersTabPanel` showing searchable `EncounterCard` entries, `Create Encounter`, compact shortcode rows, and delete actions
@@ -309,7 +309,7 @@ Asset editor baseline fields:
 - noun
 - noun description
 - adjective description
-- icon URL
+- icon image frame with dialog-backed image picker
 - optional overlay URL
 - markdown body with inline `GameCard` embeds
 - live custom `AssetCard` preview
@@ -318,10 +318,10 @@ Location editor baseline fields:
 
 - name
 - short summary
-- title image URL plus generated-image picker
+- title image frame with dialog-backed image picker
 - markdown introduction
 - markdown description
-- map image URL plus generated-image picker
+- map image frame with dialog-backed image picker
 - interactive map pins linking to locations, actors, encounters, and quests
 
 Encounter editor baseline fields:
@@ -329,24 +329,24 @@ Encounter editor baseline fields:
 - name
 - summary
 - prerequisites
-- title image URL plus generated-image picker
+- title image frame with dialog-backed image picker
 - markdown script with inline `GameCard` and block `EncounterCard` embeds
 
 Quest editor baseline fields:
 
 - name
 - summary
-- title image URL plus generated-image picker
+- title image frame with dialog-backed image picker
 - markdown brief with inline `GameCard` and block `QuestCard` embeds
 
 Behavior:
 
 - `/adventure-module/:slug/actors/:entityId` renders a live actor editor with autosave, live layered preview, and actor slug display that regenerates from the saved title.
 - `/adventure-module/:slug/counters/:entityId` renders a live counter editor with autosave and shared current/max value controls.
-- `/adventure-module/:slug/assets/:entityId` renders a live asset editor with autosave, custom asset fields, migration notice support for legacy layered assets, custom preview, and asset slug display that regenerates from the saved title.
-- `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image generation/paste controls, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
-- `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, title-image generation/paste controls, and markdown script authoring.
-- `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, title-image generation/paste controls, markdown brief authoring, and slug-driven route updates after saves.
+- `/adventure-module/:slug/assets/:entityId` renders a live asset editor with autosave, custom asset fields, a framed icon-image picker that opens the shared image dialog with the current image preselected, migration notice support for legacy layered assets, custom preview, and asset slug display that regenerates from the saved title.
+- `/adventure-module/:slug/locations/:entityId` renders a live location editor with autosave, title-image and map-image framed pickers that open the shared image dialog with the current image preselected, markdown introduction/description fields, and an interactive map-pin canvas with hover previews and click-through navigation.
+- `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, a framed title-image picker that opens the shared image dialog with the current image preselected, and markdown script authoring.
+- `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, a framed title-image picker that opens the shared image dialog with the current image preselected, markdown brief authoring, and slug-driven route updates after saves.
 - actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and a clipboard copy button
 
 ---

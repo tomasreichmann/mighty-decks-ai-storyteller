@@ -77,13 +77,14 @@ export const AdventureModuleCountersTabPanel = ({
       ) : null}
 
       {filteredCounters.length === 0 ? (
-        <Panel>
-          <Text variant="body" color="iron-light">
-            {counters.length === 0
-              ? "No counters have been created yet."
-              : "No counters match your search."}
-          </Text>
-        </Panel>
+        <Message
+          label={counters.length === 0 ? "Counters" : "No results"}
+          color="bone"
+        >
+          {counters.length === 0
+            ? "No counters have been created yet."
+            : "No counters match your search."}
+        </Message>
       ) : (
         <ResponsiveCardGrid>
           {filteredCounters.map((counter) => (

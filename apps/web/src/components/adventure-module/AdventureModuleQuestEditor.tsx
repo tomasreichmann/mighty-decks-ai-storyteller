@@ -14,7 +14,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
-import { AdventureModuleGeneratedImageField } from "./AdventureModuleGeneratedImageField";
+import { AdventureModuleGeneratedImagePicker } from "./AdventureModuleGeneratedImagePicker";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import { ShortcodeField } from "./ShortcodeField";
 
@@ -47,6 +47,7 @@ interface QuestImageFieldProps {
   editable: boolean;
   identityKey: string;
   resolveContextLines: (selectedContextTags: string[]) => string[];
+  emptyFrameClassName?: string;
   onChange: (nextValue: string) => void;
   onFieldBlur: () => void;
 }
@@ -146,6 +147,7 @@ const QuestImageField = ({
   editable,
   identityKey,
   resolveContextLines,
+  emptyFrameClassName = "aspect-video min-h-56",
   onChange,
   onFieldBlur,
 }: QuestImageFieldProps): JSX.Element => {
@@ -156,12 +158,11 @@ const QuestImageField = ({
           Title Image
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Paste a final image URL or generate key art that frames the whole
-          quest.
+          Choose an image or open the dialog to generate quest key art.
         </Text>
       </div>
 
-      <AdventureModuleGeneratedImageField
+      <AdventureModuleGeneratedImagePicker
         label="Title Image"
         promptLabel="Title Image Prompt"
         promptDescription="Generate a visual key art image for this quest."
@@ -172,12 +173,10 @@ const QuestImageField = ({
         defaultContextTags={DEFAULT_QUEST_IMAGE_CONTEXT_TAGS}
         resolveContextLines={resolveContextLines}
         emptyLabel="No title image selected yet."
-        pendingLabel="Generating title image..."
+        emptyFrameClassName={emptyFrameClassName}
         disabled={!editable}
         identityKey={identityKey}
         value={value ?? ""}
-        valueFieldLabel="Title Image URL"
-        valueFieldDescription="Paste an existing image URL or pick one from the generated batch below."
         onChange={onChange}
         onBlur={onFieldBlur}
       />
