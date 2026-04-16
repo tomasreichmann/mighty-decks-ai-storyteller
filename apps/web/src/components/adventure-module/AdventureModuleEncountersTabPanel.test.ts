@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 test("AdventureModuleEncountersTabPanel exposes encounter delete affordance and canonical embed copy", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleEncountersTabPanel.tsx",
+    new URL("./AdventureModuleEncountersTabPanel.tsx", import.meta.url),
     "utf8",
   );
 

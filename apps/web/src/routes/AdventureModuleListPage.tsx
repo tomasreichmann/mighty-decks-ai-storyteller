@@ -5,10 +5,11 @@ import { AdventureModuleCard } from "../components/adventure-module/AdventureMod
 import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Button } from "../components/common/Button";
 import { CTAButton } from "../components/common/CTAButton";
-import { DepressedInput } from "../components/common/DepressedInput";
 import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
+import { ResponsiveCardGrid } from "../components/common/ResponsiveCardGrid";
+import { SearchField } from "../components/common/SearchField";
 import { Text } from "../components/common/Text";
 import { listAdventureModules } from "../lib/adventureModuleApi";
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
@@ -158,14 +159,12 @@ export const AdventureModuleListPage = (): JSX.Element => {
         </div>
       </div>
 
-      <div>
-        <DepressedInput
-          label="Search Modules"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Search by title, summary, author, or tag..."
-        />
-      </div>
+      <SearchField
+        label="Search Modules"
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.target.value)}
+        placeholder="Search by title, summary, author, or tag..."
+      />
 
       {error ? (
         <Message label="Error" color="blood">
@@ -181,11 +180,11 @@ export const AdventureModuleListPage = (): JSX.Element => {
         </Panel>
       ) : visibleModules.length > 0 ? (
         <>
-          <div className="grid gap-4 lg:[grid-template-columns:repeat(auto-fit,minmax(20rem,30rem))]">
+          <ResponsiveCardGrid>
             {visibleModules.map((module) => (
               <AdventureModuleCard key={module.moduleId} module={module} />
             ))}
-          </div>
+          </ResponsiveCardGrid>
 
           <div className="flex items-center justify-between gap-3">
             <Button

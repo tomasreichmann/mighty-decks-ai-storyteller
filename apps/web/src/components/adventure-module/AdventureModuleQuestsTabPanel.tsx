@@ -3,8 +3,9 @@ import type { AdventureModuleResolvedQuest } from "@mighty-decks/spec/adventureM
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
+import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
-import { TextField } from "../common/TextField";
 import { QuestCardView } from "./QuestCardView";
 import { ShortcodeField } from "./ShortcodeField";
 import {
@@ -71,7 +72,7 @@ export const AdventureModuleQuestsTabPanel = ({
         </Button>
       </div>
 
-      <TextField
+      <SearchField
         label="Search Quests"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
@@ -93,7 +94,7 @@ export const AdventureModuleQuestsTabPanel = ({
           </Text>
         </Panel>
       ) : (
-        <div className="flex flex-row flex-wrap items-start gap-4">
+        <ResponsiveCardGrid>
           {filteredQuests.map((quest) => (
             <Panel
               key={quest.fragmentId}
@@ -157,7 +158,7 @@ export const AdventureModuleQuestsTabPanel = ({
               </div>
             </Panel>
           ))}
-        </div>
+        </ResponsiveCardGrid>
       )}
     </div>
   );

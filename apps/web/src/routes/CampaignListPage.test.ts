@@ -14,8 +14,6 @@ test("CampaignListPage loads campaigns and links into campaign detail", () => {
   assert.match(source, /ShortcodeField/);
   assert.match(source, /\/adventure-module\/list/);
   assert.match(source, /CampaignListCard/);
-  assert.match(
-    source,
-    /repeat\(auto-fit,minmax\(20rem,30rem\)\)/,
-  );
+  assert.match(source, /SearchField/);
+  assert.match(source, /ResponsiveCardGrid/);
 });

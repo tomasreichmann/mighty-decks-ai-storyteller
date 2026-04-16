@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "../common/Button";
-import { DepressedInput } from "../common/DepressedInput";
 import { ImageCard } from "../common/ImageCard";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
+import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
 import { ShortcodeField } from "./ShortcodeField";
 
@@ -113,7 +114,7 @@ export const EntityList = ({
         </Button>
       </div>
 
-      <DepressedInput
+      <SearchField
         label={`Search ${tabLabel}`}
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
@@ -140,7 +141,7 @@ export const EntityList = ({
         </Panel>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <ResponsiveCardGrid>
             {visibleItems.map((item) => {
               const referenceCode = `@${tab}/${item.slug}`;
               return (
@@ -182,7 +183,7 @@ export const EntityList = ({
                 </Panel>
               );
             })}
-          </div>
+          </ResponsiveCardGrid>
 
           <div className="flex items-center justify-between gap-3">
             <Button

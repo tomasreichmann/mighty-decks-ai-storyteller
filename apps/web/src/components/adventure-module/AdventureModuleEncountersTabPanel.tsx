@@ -3,8 +3,9 @@ import type { AdventureModuleResolvedEncounter } from "@mighty-decks/spec/advent
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
+import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
-import { TextField } from "../common/TextField";
 import { EncounterCardView } from "./EncounterCardView";
 import { ShortcodeField } from "./ShortcodeField";
 import {
@@ -71,7 +72,7 @@ export const AdventureModuleEncountersTabPanel = ({
         </Button>
       </div>
 
-      <TextField
+      <SearchField
         label="Search Encounters"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
@@ -93,7 +94,7 @@ export const AdventureModuleEncountersTabPanel = ({
           </Text>
         </Panel>
       ) : (
-        <div className="flex flex-row flex-wrap items-start gap-4">
+        <ResponsiveCardGrid>
           {filteredEncounters.map((encounter) => (
             <Panel
               key={encounter.fragmentId}
@@ -157,7 +158,7 @@ export const AdventureModuleEncountersTabPanel = ({
               </div>
             </Panel>
           ))}
-        </div>
+        </ResponsiveCardGrid>
       )}
     </div>
   );

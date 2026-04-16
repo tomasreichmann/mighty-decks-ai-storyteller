@@ -3,10 +3,11 @@ import type { CampaignListItem } from "@mighty-decks/spec/campaign";
 import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Button } from "../components/common/Button";
 import { CTAButton } from "../components/common/CTAButton";
-import { DepressedInput } from "../components/common/DepressedInput";
 import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
+import { ResponsiveCardGrid } from "../components/common/ResponsiveCardGrid";
+import { SearchField } from "../components/common/SearchField";
 import { Text } from "../components/common/Text";
 import { CampaignListCard } from "../components/campaign/CampaignListCard";
 import { listCampaigns } from "../lib/campaignApi";
@@ -161,14 +162,12 @@ export const CampaignListPage = (): JSX.Element => {
         </div>
       </div>
 
-      <div>
-        <DepressedInput
-          label="Search Campaigns"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Search by title, summary, source module, or slug..."
-        />
-      </div>
+      <SearchField
+        label="Search Campaigns"
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.target.value)}
+        placeholder="Search by title, summary, source module, or slug..."
+      />
 
       {error ? (
         <Message label="Error" color="blood">
@@ -184,11 +183,11 @@ export const CampaignListPage = (): JSX.Element => {
         </Panel>
       ) : visibleCampaigns.length > 0 ? (
         <>
-          <div className="grid gap-4 lg:[grid-template-columns:repeat(auto-fit,minmax(20rem,30rem))]">
+          <ResponsiveCardGrid>
             {visibleCampaigns.map((campaign) => (
               <CampaignListCard key={campaign.campaignId} campaign={campaign} />
             ))}
-          </div>
+          </ResponsiveCardGrid>
 
           <div className="flex items-center justify-between gap-3">
             <Button

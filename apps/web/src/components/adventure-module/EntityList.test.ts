@@ -8,6 +8,8 @@ test("EntityList reuses the shared shortcode field instead of a text copy button
     "utf8",
   );
 
+  assert.match(source, /SearchField/);
+  assert.match(source, /ResponsiveCardGrid/);
   assert.match(source, /ShortcodeField/);
   assert.match(source, /referenceCode = `@\$\{tab\}\/\$\{item\.slug\}`/);
   assert.doesNotMatch(source, /Copy Code/);

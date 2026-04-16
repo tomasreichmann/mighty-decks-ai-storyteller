@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 test("AdventureModuleLocationsTabPanel exposes location delete affordance and shortcode", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleLocationsTabPanel.tsx",
+    new URL("./AdventureModuleLocationsTabPanel.tsx", import.meta.url),
     "utf8",
   );
 

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 test("AdventureModuleAssetsTabPanel includes asset delete affordance markup", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleAssetsTabPanel.tsx",
+    new URL("./AdventureModuleAssetsTabPanel.tsx", import.meta.url),
     "utf8",
   );
 

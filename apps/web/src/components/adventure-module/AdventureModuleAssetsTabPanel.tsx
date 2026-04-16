@@ -3,8 +3,9 @@ import type { AdventureModuleResolvedAsset } from "@mighty-decks/spec/adventureM
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
+import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
-import { TextField } from "../common/TextField";
 import { AssetCard } from "../cards/AssetCard";
 import { ShortcodeField } from "./ShortcodeField";
 
@@ -65,7 +66,7 @@ export const AdventureModuleAssetsTabPanel = ({
         </Button>
       </div>
 
-      <TextField
+      <SearchField
         label="Search Assets"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
@@ -87,7 +88,7 @@ export const AdventureModuleAssetsTabPanel = ({
           </Text>
         </Panel>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ResponsiveCardGrid>
           {filteredAssets.map((asset) => (
             <Panel
               key={asset.fragmentId}
@@ -167,7 +168,7 @@ export const AdventureModuleAssetsTabPanel = ({
               </div>
             </Panel>
           ))}
-        </div>
+        </ResponsiveCardGrid>
       )}
     </div>
   );

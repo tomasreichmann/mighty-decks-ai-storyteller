@@ -179,6 +179,8 @@ Components:
 - `AdventureModuleListPanel`
 - `AdventureModuleCard`
 - shared `StoryTileCard`
+- shared `SearchField` for the compact depressed search shell
+- shared `ResponsiveCardGrid` for the 1/2/3 responsive card layout
 - shared `ShortcodeField` reused for the header-level `Copy Author Token` button
 - `ModuleVisibilityBadge`
 - `CreateAdventureModuleButton`
@@ -190,6 +192,7 @@ List rules:
 - The list header exposes `Create Module` plus `Copy Author Token`.
 - Module cards use explicit in-card `Open Module` and `Create Campaign` actions rather than whole-card click targets.
 - Module cards surface author, tags, ownership/status pills, and cover art inside the shared story-tile shell.
+- The module grid stays compact at one card on mobile, two on tablet, and three on desktop.
 
 ---
 
@@ -248,6 +251,7 @@ Tabs:
 - `locations`: `AdventureModuleLocationsTabPanel` showing searchable location cards, title-image previews, `Create Location`, compact shortcode rows, and delete actions
 - `encounters`: `AdventureModuleEncountersTabPanel` showing searchable `EncounterCard` entries, `Create Encounter`, compact shortcode rows, and delete actions
 - `quests`: `AdventureModuleQuestsTabPanel` showing searchable `QuestCard` entries, `Create Quest`, compact shortcode rows, and delete actions
+- the searchable entity lists reuse the shared compact depressed search shell and the same mobile/tablet/desktop 1/2/3 card grid
 
 List-tab row actions:
 
@@ -356,6 +360,8 @@ Components:
 - page shell via shared layout
 - campaign summary cards as primary surfaces
 - shared `CTAButton` for the header-level `Create Campaign` handoff back to Adventure Module selection
+- shared `SearchField` for the compact depressed search shell
+- shared `ResponsiveCardGrid` for the 1/2/3 responsive card layout
 - shared `ShortcodeField` reused for the header-level `Copy Author Token` button
 - shared `Button`, `Text`, and input primitives for search/actions
 
@@ -366,6 +372,7 @@ Behavior:
 - reuse the same shared `StoryTileCard` shell as the module list, with visible source-module context and explicit `Open Campaign` plus `View Sessions` actions
 - avoid nesting additional framed panels inside campaign cards for metadata rows or action groups
 - rely on spacing, hierarchy, and button grouping before adding extra framed chrome
+- the campaign grid follows the same one-on-mobile, two-on-tablet, three-on-desktop layout as the module list
 
 ---
 

@@ -4,8 +4,9 @@ import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
+import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
-import { TextField } from "../common/TextField";
 import { CounterCard } from "../cards/CounterCard";
 import { ShortcodeField } from "./ShortcodeField";
 
@@ -62,7 +63,7 @@ export const AdventureModuleCountersTabPanel = ({
         </Button>
       </div>
 
-      <TextField
+      <SearchField
         label="Search Counters"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
@@ -84,7 +85,7 @@ export const AdventureModuleCountersTabPanel = ({
           </Text>
         </Panel>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ResponsiveCardGrid>
           {filteredCounters.map((counter) => (
             <Panel
               key={counter.slug}
@@ -175,7 +176,7 @@ export const AdventureModuleCountersTabPanel = ({
               </div>
             </Panel>
           ))}
-        </div>
+        </ResponsiveCardGrid>
       )}
     </div>
   );

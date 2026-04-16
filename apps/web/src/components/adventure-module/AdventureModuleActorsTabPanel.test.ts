@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 test("AdventureModuleActorsTabPanel includes actor delete affordance markup", () => {
   const source = readFileSync(
-    "apps/web/src/components/adventure-module/AdventureModuleActorsTabPanel.tsx",
+    new URL("./AdventureModuleActorsTabPanel.tsx", import.meta.url),
     "utf8",
   );
 

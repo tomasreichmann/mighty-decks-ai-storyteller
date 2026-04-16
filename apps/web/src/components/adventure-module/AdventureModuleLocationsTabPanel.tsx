@@ -3,8 +3,9 @@ import type { AdventureModuleResolvedLocation } from "@mighty-decks/spec/adventu
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
+import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
-import { TextField } from "../common/TextField";
 import { LocationCardView } from "./LocationCardView";
 import { ShortcodeField } from "./ShortcodeField";
 import {
@@ -71,7 +72,7 @@ export const AdventureModuleLocationsTabPanel = ({
         </Button>
       </div>
 
-      <TextField
+      <SearchField
         label="Search Locations"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
@@ -93,7 +94,7 @@ export const AdventureModuleLocationsTabPanel = ({
           </Text>
         </Panel>
       ) : (
-        <div className="flex flex-row flex-wrap items-start gap-4">
+        <ResponsiveCardGrid>
           {filteredLocations.map((location) => (
             <Panel
               key={location.fragmentId}
@@ -148,7 +149,7 @@ export const AdventureModuleLocationsTabPanel = ({
               </div>
             </Panel>
           ))}
-        </div>
+        </ResponsiveCardGrid>
       )}
     </div>
   );

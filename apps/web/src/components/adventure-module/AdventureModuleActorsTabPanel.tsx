@@ -3,8 +3,9 @@ import type { AdventureModuleResolvedActor } from "@mighty-decks/spec/adventureM
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
+import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
-import { TextField } from "../common/TextField";
 import { ActorCard } from "../cards/ActorCard";
 import { ShortcodeField } from "./ShortcodeField";
 
@@ -64,7 +65,7 @@ export const AdventureModuleActorsTabPanel = ({
         </Button>
       </div>
 
-      <TextField
+      <SearchField
         label="Search Actors"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
@@ -86,7 +87,7 @@ export const AdventureModuleActorsTabPanel = ({
           </Text>
         </Panel>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ResponsiveCardGrid>
           {filteredActors.map((actor) => (
             <Panel
               key={actor.fragmentId}
@@ -153,7 +154,7 @@ export const AdventureModuleActorsTabPanel = ({
               </div>
             </Panel>
           ))}
-        </div>
+        </ResponsiveCardGrid>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Narrow the Adventure Module, Campaign, and authoring entity list search bars into a shared compact depressed search field, and normalize their card grids to a mobile 1-column, tablet 2-column, desktop 3-column layout.
 - Standardize `Label`, `Heading`, `Button`, `TextField`, `TextArea`, `DepressedInput`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` around shared `size`/`color` naming and aligned heights so adjacent controls line up cleanly.
 - Split `/styleguide` into typography, inputs, buttons, cards, tags, controls, and session-chat labs with a shared secondary nav.
 - Add a dedicated `/styleguide/panel` lab, collapse the cards entry into a single gallery page, and expand the typography/tag color coverage to include the missing sticker and chip tones.
