@@ -68,14 +68,18 @@ export interface ButtonProps extends Omit<HTMLAttributes<HTMLElement>, "color">,
 const variantClassMap: Record<ButtonVariant, string> = {
   solid: cn(
     "border-x-[2px] border-y-[2px] border-kac-iron rounded-sm",
-    "hover:translate-y-[2px] active:translate-y-[4px] disabled:translate-y-0 ",
+    "hover:translate-y-[2px] hover:brightness-[1.03] active:translate-y-[4px] disabled:translate-y-0 ",
     "shadow-[3px_3px_0_0_#121b23] hover:shadow-[2px_2px_0_0_#121b23] active:shadow-[1px_1px_0_0_#121b23] disabled:shadow-[3px_3px_0_0_#121b23]",
     "bg-gradient-to-b disabled:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]",
   ),
   ghost:
-    "border-2 border-kac-iron/60 bg-transparent shadow-none active:translate-y-[1px] active:shadow-none disabled:shadow-none disabled:border-kac-iron/35 disabled:bg-transparent",
-  circle:
-    "rounded-full bg-gradient-to-b border-x-[3px] border-y-[2px] border-kac-iron shadow-[3px_3px_0_0_#121b23] active:translate-y-[2px] active:border-b-[4px] active:shadow-[1px_1px_0_0_#121b23] disabled:translate-y-0 disabled:border-b-[6px] disabled:shadow-[3px_3px_0_0_#121b23] disabled:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]",
+    "border-2 border-kac-iron/60 bg-transparent shadow-none hover:brightness-[1.03] active:translate-y-[1px] active:shadow-none disabled:shadow-none disabled:border-kac-iron/35 disabled:bg-transparent",
+  circle: cn(
+    "rounded-full bg-gradient-to-b border-2 border-kac-iron shadow-[2px_2px_0_0_#121b23]",
+    "hover:translate-y-[1px] hover:brightness-[1] hover:shadow-[1px_1px_0_0_#121b23]",
+    "active:translate-y-[2px] active:shadow-none",
+    "disabled:translate-y-0 disabled:shadow-[2px_2px_0_0_#121b23] disabled:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]",
+  ),
 };
 
 const sizeClassMap: Record<ButtonSize, string> = {
@@ -85,9 +89,9 @@ const sizeClassMap: Record<ButtonSize, string> = {
 };
 
 const circleSizeClassMap: Record<ButtonSize, string> = {
-  sm: "h-8 w-8 p-0 text-xs",
-  md: "h-10 w-10 p-0 text-sm",
-  lg: "h-12 w-12 p-0 text-base",
+  sm: "h-8 w-8 p-0 text-xs leading-none",
+  md: "h-10 w-10 p-0 text-sm leading-none",
+  lg: "h-12 w-12 p-0 text-base leading-none",
 };
 
 const resolveSolidColorClasses = (color: ButtonColors): string => {
@@ -214,7 +218,7 @@ export const Button = forwardRef<HTMLElement, ButtonProps>((rawProps, ref) => {
     const classes = cn(
       "button inline-flex select-none items-center justify-center",
       "font-ui font-bold uppercase tracking-[0.08em] transition duration-100",
-      "hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50",
       "disabled:cursor-not-allowed disabled:brightness-100 disabled:saturate-50 disabled:contrast-75 disabled:brightness-75",
       disabled
         ? "cursor-not-allowed brightness-75 saturate-50 contrast-75"

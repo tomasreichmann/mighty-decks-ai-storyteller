@@ -26,3 +26,22 @@ test("Button exposes a shared sm md lg size ladder with stable heights", () => {
   assert.match(source, /md:[\s\S]*min-h-10/);
   assert.match(source, /lg:[\s\S]*min-h-12/);
 });
+
+test("Button circle variant stays lighter than the solid shell", () => {
+  const source = readFileSync(new URL("./Button.tsx", import.meta.url), "utf8");
+  const circleMatch = source.match(/circle:\s*cn\(([\s\S]*?)\n\s*\),/);
+
+  assert.ok(circleMatch, "circle variant block should be present");
+
+  const circleBlock = circleMatch[1];
+
+  assert.match(circleBlock, /rounded-full bg-gradient-to-b border-2 border-kac-iron/);
+  assert.match(circleBlock, /shadow-\[2px_2px_0_0_#121b23\]/);
+  assert.match(circleBlock, /hover:translate-y-\[1px\]/);
+  assert.match(circleBlock, /hover:brightness-\[1\]/);
+  assert.match(circleBlock, /hover:shadow-\[1px_1px_0_0_#121b23\]/);
+  assert.match(circleBlock, /active:translate-y-\[2px\]/);
+  assert.match(circleBlock, /active:shadow-none/);
+  assert.doesNotMatch(circleBlock, /border-x-\[3px\]/);
+  assert.doesNotMatch(circleBlock, /active:border-b-\[4px\]/);
+});
