@@ -32,7 +32,6 @@ const sizeShowcaseCards = [
   {
     name: "Solid",
     kind: "solid" as const,
-    labelColor: "gold" as const,
     sampleColor: "gold" as const,
     description:
       "The shared filled action shell. Use it for default actions and primary choices.",
@@ -40,7 +39,6 @@ const sizeShowcaseCards = [
   {
     name: "CTA",
     kind: "cta" as const,
-    labelColor: "cloth" as const,
     sampleColor: "cloth" as const,
     description:
       "The slanted hero wrapper. Use it when the action should feel more editorial and forceful.",
@@ -48,7 +46,6 @@ const sizeShowcaseCards = [
   {
     name: "Circle",
     kind: "circle" as const,
-    labelColor: "steel" as const,
     sampleColor: "iron" as const,
     description:
       "The icon-only control for compact utility actions and small toolbars.",
@@ -56,7 +53,6 @@ const sizeShowcaseCards = [
   {
     name: "Ghost",
     kind: "ghost" as const,
-    labelColor: "steel" as const,
     sampleColor: "steel" as const,
     description:
       "The outlined secondary action with the hard border shadow treatment.",
@@ -67,26 +63,22 @@ const colorShowcaseRows = [
   {
     name: "Solid",
     kind: "solid" as const,
-    labelColor: "gold" as const,
     description: "The filled button shell across the full palette.",
   },
   {
     name: "CTA",
     kind: "cta" as const,
-    labelColor: "cloth" as const,
     description:
       "The slanted CTA wrapper across the full palette, with a family-matched hover highlight.",
   },
   {
     name: "Circle",
     kind: "circle" as const,
-    labelColor: "steel" as const,
     description: "The compact icon-only circle across the full palette.",
   },
   {
     name: "Ghost",
     kind: "ghost" as const,
-    labelColor: "steel" as const,
     description: "The outlined ghost button across the full palette, now including the corrected fire tone.",
   },
 ] as const;
@@ -188,21 +180,18 @@ export const StyleguideButtonsPage = (): JSX.Element => {
         <div className="grid gap-4 xl:grid-cols-2">
           {sizeShowcaseCards.map((card) => (
             <div key={card.name} className="stack gap-3">
-              <Label
-                color={card.labelColor}
-                size="sm"
-                rotate={false}
-                className="self-start"
-              >
-                {card.name}
-              </Label>
               <Text variant="body" color="iron-light" className="text-xs">
                 {card.description}
               </Text>
               <div className="grid gap-3 sm:grid-cols-3">
                 {(Object.keys(sizeLadderLabels) as ButtonSize[]).map((size) => (
                   <div key={size} className="stack gap-2">
-                    <Label color={card.labelColor} size="sm" rotate={false} className="self-start">
+                    <Label
+                      color={resolveLabelColor(card.sampleColor)}
+                      size="sm"
+                      rotate={false}
+                      className="self-start"
+                    >
                       {sizeLadderLabels[size]}
                     </Label>
                     {renderShowcaseButton(
@@ -236,14 +225,6 @@ export const StyleguideButtonsPage = (): JSX.Element => {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {buttonPalette.map((palette) => (
                 <div key={palette.name} className="stack gap-2">
-                  <Label
-                    color={resolveLabelColor(palette.color)}
-                    size="sm"
-                    rotate={false}
-                    className="self-start"
-                  >
-                    {palette.name}
-                  </Label>
                   {renderShowcaseButton(
                     row.kind,
                     palette.color,
