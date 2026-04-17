@@ -707,7 +707,7 @@ export const AdventureModuleGeneratedImageField = ({
               return (
                 <div
                   key={item.image.imageId}
-                  className="relative overflow-visible pt-4"
+                  className="relative overflow-visible"
                 >
                   <div className="absolute left-2 top-0 z-20 -translate-y-1/2">
                     <InputDescriptionHint

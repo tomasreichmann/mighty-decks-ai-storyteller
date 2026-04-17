@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: make the shared Adventure Module image pickers fit previews with `object-contain` so title, location, encounter, quest, and asset art are shown in full instead of cropped.
 - Web: remove brittle visual class-name assertions from shared input, layout, and styleguide tests in favor of behavior-focused coverage.
 - Web: bottom-align the styleguide `TextArea` buttons with the textarea control so the row reads cleanly.
 - Refresh the shared image dialog into explicit `Gallery`, `Generate`, and `Edit` modes with the selected preview below the drop zone, muted prompt/model metadata, smaller labeled model selects, gallery info/remove controls, and fal-only image edit generation from the currently selected image.

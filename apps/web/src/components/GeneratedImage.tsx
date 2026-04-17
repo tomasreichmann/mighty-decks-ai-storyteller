@@ -122,7 +122,7 @@ export const GeneratedImage = ({
           <img
             src={toImageSrc(image.imageUrl)}
             alt={image.alt ?? "Generated image"}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain object-center"
           />
         ) : pending ? (
           <div className="flex h-full w-full items-center justify-center px-4">

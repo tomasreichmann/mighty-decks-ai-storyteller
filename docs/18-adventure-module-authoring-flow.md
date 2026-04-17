@@ -119,7 +119,7 @@ Shell behavior:
 - Header also exposes `Create Campaign` so authors can fork the current module into a campaign without leaving the page.
 - On desktop, `Create Campaign` sits on the right side of the title row while the full tab rail stays on its own row below.
 - On tablet-sized layouts and narrower, the tab rail collapses into a section dropdown in the same header row, immediately after `Create Campaign`.
-- Framed image pickers reopen with the current saved image already selected, so cover art and entity art can be reused or regenerated in place.
+- Framed image pickers reopen with the current saved image already selected, so cover art and entity art can be reused or regenerated in place; the preview fit shows the full image instead of cropping it.
 - The shared dialog inside those pickers uses a depressed `Selected Image URL` field, an inline clear button, and a drag-and-drop upload area that stores external images on the server before reusing the saved URL.
 - The shared dialog keeps the selected-image preview directly below the drop zone and shows muted prompt/model metadata when the current selection comes from the generated-image store.
 - The shared dialog is now organized into `Gallery | Generate | Edit` modes so stored fal images can be reused, removed, regenerated, or edited from one consistent flow.

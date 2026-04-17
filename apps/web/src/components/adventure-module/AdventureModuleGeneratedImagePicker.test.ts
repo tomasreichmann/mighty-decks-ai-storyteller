@@ -16,4 +16,6 @@ test("AdventureModuleGeneratedImagePicker renders a preview frame with a top-rig
   assert.match(source, /onInsertImageUrl/);
   assert.match(source, /resolveServerUrl/);
   assert.match(source, /toImageSrc/);
+  assert.match(source, /object-contain object-center/);
+  assert.doesNotMatch(source, /object-cover/);
 });
