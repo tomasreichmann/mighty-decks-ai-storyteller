@@ -68,29 +68,25 @@ const colorShowcaseRows = [
     name: "Solid",
     kind: "solid" as const,
     labelColor: "gold" as const,
-    panelTone: "bone" as const,
     description: "The filled button shell across the full palette.",
   },
   {
     name: "CTA",
     kind: "cta" as const,
     labelColor: "cloth" as const,
-    panelTone: "cloth" as const,
     description:
-      "The slanted CTA wrapper across the full palette, with a family-matched light hover highlight.",
+      "The slanted CTA wrapper across the full palette, with a family-matched hover highlight.",
   },
   {
     name: "Circle",
     kind: "circle" as const,
     labelColor: "steel" as const,
-    panelTone: "gold" as const,
     description: "The compact icon-only circle across the full palette.",
   },
   {
     name: "Ghost",
     kind: "ghost" as const,
     labelColor: "steel" as const,
-    panelTone: "fire" as const,
     description: "The outlined ghost button across the full palette, now including the corrected fire tone.",
   },
 ] as const;
@@ -178,23 +174,20 @@ export const StyleguideButtonsPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Button size ladders
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            Each card uses one representative color so you can compare how the
+            Each example uses one representative color so you can compare how the
             four button families hold their proportions at `sm`, `md`, and
             `lg`.
           </Text>
         </div>
         <div className="grid gap-4 xl:grid-cols-2">
           {sizeShowcaseCards.map((card) => (
-            <div
-              key={card.name}
-              className="stack gap-3 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/45 p-3 shadow-[2px_2px_0_0_#121b23]"
-            >
+            <div key={card.name} className="stack gap-3">
               <Label
                 color={card.labelColor}
                 size="sm"
@@ -208,10 +201,7 @@ export const StyleguideButtonsPage = (): JSX.Element => {
               </Text>
               <div className="grid gap-3 sm:grid-cols-3">
                 {(Object.keys(sizeLadderLabels) as ButtonSize[]).map((size) => (
-                  <div
-                    key={size}
-                    className="stack gap-2 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/55 p-3 shadow-[1px_1px_0_0_#121b23]"
-                  >
+                  <div key={size} className="stack gap-2">
                     <Label color={card.labelColor} size="sm" rotate={false} className="self-start">
                       {sizeLadderLabels[size]}
                     </Label>
@@ -230,11 +220,11 @@ export const StyleguideButtonsPage = (): JSX.Element => {
             </div>
           ))}
         </div>
-      </Panel>
+      </section>
 
       <div className="stack gap-4">
         {colorShowcaseRows.map((row) => (
-          <Panel key={row.name} as="section" tone={row.panelTone} contentClassName="stack gap-4">
+          <section key={row.name} className="stack gap-4">
             <div className="stack gap-1">
               <Text variant="h3" color="iron">
                 {row.name} colors
@@ -245,10 +235,7 @@ export const StyleguideButtonsPage = (): JSX.Element => {
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {buttonPalette.map((palette) => (
-                <div
-                  key={palette.name}
-                  className="stack gap-3 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/45 p-3 shadow-[2px_2px_0_0_#121b23]"
-                >
+                <div key={palette.name} className="stack gap-2">
                   <Label
                     color={resolveLabelColor(palette.color)}
                     size="sm"
@@ -270,7 +257,7 @@ export const StyleguideButtonsPage = (): JSX.Element => {
                 </div>
               ))}
             </div>
-          </Panel>
+          </section>
         ))}
       </div>
 
@@ -282,8 +269,8 @@ export const StyleguideButtonsPage = (): JSX.Element => {
           Use `Button` for standard action surfaces in forms, dialogs, and
           toolbars. Reach for `CTAButton` when the action should carry extra
           visual weight, a more heroic presentation, and a family-matched
-          light hover highlight. Use the size ladders above to keep the shared
-          height rhythm intact.
+          hover highlight. Use the size ladders above to keep the shared height
+          rhythm intact.
         </Text>
         <Link
           to="/styleguide"

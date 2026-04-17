@@ -8,8 +8,11 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: bottom-align the `/styleguide/inputs` button examples against the shared input controls so the action button sits flush with the field instead of floating on a fixed top pad.
+- Web: turn the shared image dialog close button red and label it with `×` so the dismiss affordance reads more clearly.
+- Web: add `Gallery`, `Generate`, and `Edit` tabs to the shared image dialog so the picker separates browsing, prompt generation, and raw image editing.
 - Web: lighten the shared `Panel` frame to a 4px border, keep the image picker modal surface white, and align the styleguide panel lab, index copy, and token payload with the lighter surface treatment.
-- Web: make `CTAButton` highlights follow the selected button color family and resolve the hover underlay to the matching light tone so solo CTAs stay visually consistent across the palette.
+- Web: make `CTAButton` highlights follow the selected button color family and resolve the hover underlay to darker matching tones for gold, steel, and monster so solo CTAs stay visually consistent across the palette.
 - Web: make the shared `Heading` semantic highlight palette resolve to lighter tones for `gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, and `monster`, normalize the styleguide typography and quest-card demo headings onto that semantic palette so the underlines no longer read as heavy dark strokes, and add a live styleguide showcase of every supported heading highlight.
 - Web: give the shared `Button` ghost variant a 1px hard border shadow with matching hover, active, and disabled states so the secondary action shell sits closer to the solid button.
 - Web: fix the ghost `fire` variant so it uses the fire border and text colors instead of falling back to the steel palette.

@@ -348,7 +348,7 @@ Behavior:
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, a framed title-image picker that opens the shared image dialog with the current image preselected, and markdown script authoring.
 - `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, a framed title-image picker that opens the shared image dialog with the current image preselected, markdown brief authoring, and slug-driven route updates after saves.
 - actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and a clipboard copy button
-- the shared image dialog uses a depressed `Selected Image URL` field with an inline trash clear button and a raw-image drop zone that uploads external images to the server before reusing them in the picker
+- the shared image dialog uses a depressed `Selected Image URL` field with an inline trash clear button, a raw-image drop zone that uploads external images to the server before reusing them in the picker, and a `Gallery / Generate / Edit` tab strip so browsing, prompt generation, and manual image edits stay separated
 
 ---
 
@@ -992,7 +992,7 @@ Located in `apps/web/src/components/common/`:
 - `ToggleButton` (straight-edged active/inactive option button for grouped controls using the shared `sm`/`md`/`lg` height ladder)
 - `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label` and the shared `sm`/`md`/`lg` height ladder)
 - `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton` and the shared `sm`/`md`/`lg` height ladder)
-- `CTAButton` (shared high-emphasis solo CTA with a family-matched light hover highlight underlay)
+- `CTAButton` (shared high-emphasis solo CTA with a family-matched hover highlight underlay)
 - `Section`
 - `Panel`
 - `Text`

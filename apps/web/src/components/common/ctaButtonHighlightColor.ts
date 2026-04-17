@@ -1,9 +1,9 @@
 import type { ButtonColors } from "./Button";
 
 const colorMap: Record<ButtonColors, ButtonColors> = {
-  steel: "steel-light",
-  "steel-light": "steel-light",
-  "steel-dark": "steel-light",
+  steel: "steel-dark",
+  "steel-light": "steel-dark",
+  "steel-dark": "steel-dark",
   iron: "iron-light",
   "iron-light": "iron-light",
   "iron-dark": "iron-light",
@@ -23,10 +23,10 @@ const colorMap: Record<ButtonColors, ButtonColors> = {
   skin: "skin-light",
   "skin-light": "skin-light",
   "skin-dark": "skin-light",
-  gold: "gold-light",
-  "gold-light": "gold-light",
-  "gold-dark": "gold-light",
-  "gold-darker": "gold-light",
+  gold: "gold-dark",
+  "gold-light": "gold-dark",
+  "gold-dark": "gold-dark",
+  "gold-darker": "gold-dark",
   cloth: "cloth-light",
   "cloth-light": "cloth-light",
   "cloth-lightest": "cloth-light",
@@ -36,14 +36,14 @@ const colorMap: Record<ButtonColors, ButtonColors> = {
   "curse-lighter": "curse-light",
   "curse-lightest": "curse-light",
   "curse-dark": "curse-light",
-  monster: "monster-light",
-  "monster-light": "monster-light",
-  "monster-lightest": "monster-light",
-  "monster-dark": "monster-light",
+  monster: "monster-dark",
+  "monster-light": "monster-dark",
+  "monster-lightest": "monster-dark",
+  "monster-dark": "monster-dark",
 };
 
 export const resolveCTAButtonHighlightColor = (
   color: ButtonColors,
 ): ButtonColors => {
-  return colorMap[color] ?? "gold-light";
+  return colorMap[color] ?? "gold-dark";
 };
