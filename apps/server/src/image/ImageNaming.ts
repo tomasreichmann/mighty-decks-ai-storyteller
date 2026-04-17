@@ -17,6 +17,9 @@ const normalizeModel = (model: string): string =>
 const normalizeProvider = (provider: string): string =>
   provider.trim().toLowerCase();
 
+const normalizeSourceImageUrl = (sourceImageUrl: string): string =>
+  sourceImageUrl.trim();
+
 export const toPromptHash = (prompt: string): string =>
   toSha256(normalizePrompt(prompt).toLowerCase());
 
@@ -40,6 +43,19 @@ export const toCacheKey = (
 ): string =>
   toSha256(
     `${toGroupKey(prompt, provider, model)}:${resolution.width}x${resolution.height}`,
+  );
+
+export const toSourceImageHash = (sourceImageUrl: string): string =>
+  toSha256(normalizeSourceImageUrl(sourceImageUrl));
+
+export const toEditGroupKey = (
+  sourceImageUrl: string,
+  prompt: string,
+  provider: string,
+  model: string,
+): string =>
+  toSha256(
+    `${normalizeProvider(provider)}:${toPromptHash(prompt)}:${toModelHash(model)}:${toSourceImageHash(sourceImageUrl)}`,
   );
 
 export const toFileSafePromptSegment = (prompt: string): string => {

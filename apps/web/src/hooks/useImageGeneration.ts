@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   GeneratedImageGroup,
+  ImageEditJob,
   ImageJob,
   ImageModelSummary,
   ImageProvider,
 } from "@mighty-decks/spec/imageGeneration";
 import {
+  createImageEditJob,
   createImageJob,
   deleteBatchFromGroup,
   deleteImageFromGroup,
+  fetchImageEditJob,
   fetchImageGroup,
   fetchImageJob,
   fetchImageModels,
@@ -55,11 +58,12 @@ const parsePositiveInt = (raw: string, fallback: number): number => {
   return parsed;
 };
 
-const toSubmitErrorMessage = (error: unknown): string => {
+const toSubmitErrorMessage = (
+  error: unknown,
+  fallbackMessage: string,
+): string => {
   const baseMessage =
-    error instanceof Error
-      ? error.message
-      : "Could not create image generation job.";
+    error instanceof Error ? error.message : fallbackMessage;
   const normalized = baseMessage.toLocaleLowerCase();
 
   if (normalized.includes("at capacity")) {
@@ -71,6 +75,13 @@ const toSubmitErrorMessage = (error: unknown): string => {
 
   return baseMessage;
 };
+
+const sortModelsAlphabetically = (
+  models: ImageModelSummary[],
+): ImageModelSummary[] =>
+  [...models].sort((left, right) =>
+    left.displayName.localeCompare(right.displayName),
+  );
 
 const sortModelsWithFavorites = (
   models: ImageModelSummary[],
@@ -88,12 +99,36 @@ const sortModelsWithFavorites = (
   });
 };
 
+const resolvePreferredModelId = (
+  currentModelId: string,
+  availableModels: ImageModelSummary[],
+  lastUsedModel: string | null,
+): string => {
+  if (
+    currentModelId.length > 0 &&
+    availableModels.some((candidate) => candidate.modelId === currentModelId)
+  ) {
+    return currentModelId;
+  }
+
+  if (
+    lastUsedModel &&
+    availableModels.some((candidate) => candidate.modelId === lastUsedModel)
+  ) {
+    return lastUsedModel;
+  }
+
+  return availableModels[0]?.modelId ?? "";
+};
+
 interface UseImageGenerationResult {
   provider: ImageProvider;
   models: ImageModelSummary[];
+  editModels: ImageModelSummary[];
   sortedModels: ImageModelSummary[];
   favoriteModelIds: string[];
   selectedModelId: string;
+  selectedEditModelId: string;
   prompt: string;
   amount: number;
   useCache: boolean;
@@ -102,13 +137,17 @@ interface UseImageGenerationResult {
   customHeight: string;
   group: GeneratedImageGroup | null;
   job: ImageJob | null;
+  editJob: ImageEditJob | null;
   loadingModels: boolean;
+  loadingEditModels: boolean;
   submittingJob: boolean;
+  submittingEditJob: boolean;
   refreshingGroup: boolean;
   error: string | null;
   resolvedResolution: { width: number; height: number };
   setProvider: (provider: ImageProvider) => void;
   setSelectedModelId: (modelId: string) => void;
+  setSelectedEditModelId: (modelId: string) => void;
   setPrompt: (prompt: string) => void;
   setAmount: (amount: number) => void;
   setUseCache: (useCache: boolean) => void;
@@ -121,22 +160,30 @@ interface UseImageGenerationResult {
   lookupGroupsByPrompt: (promptOverride?: string) => Promise<GeneratedImageGroup[]>;
   listAllGroups: () => Promise<GeneratedImageGroup[]>;
   submitJob: (promptOverride?: string) => Promise<void>;
-  selectActiveImage: (imageId: string) => Promise<void>;
-  deleteImage: (imageId: string) => Promise<void>;
-  deleteBatch: (batchIndex: number) => Promise<void>;
+  submitEditJob: (
+    sourceImageUrl: string,
+    promptOverride: string,
+  ) => Promise<void>;
+  selectActiveImage: (imageId: string, groupKeyOverride?: string) => Promise<void>;
+  deleteImage: (imageId: string, groupKeyOverride?: string) => Promise<void>;
+  deleteBatch: (batchIndex: number, groupKeyOverride?: string) => Promise<void>;
   clearError: () => void;
 }
 
 export const useImageGeneration = (): UseImageGenerationResult => {
   const [provider, setProviderState] = useState<ImageProvider>("fal");
   const [models, setModels] = useState<ImageModelSummary[]>([]);
+  const [editModels, setEditModels] = useState<ImageModelSummary[]>([]);
   const [loadingModels, setLoadingModels] = useState(true);
+  const [loadingEditModels, setLoadingEditModels] = useState(true);
   const [submittingJob, setSubmittingJob] = useState(false);
+  const [submittingEditJob, setSubmittingEditJob] = useState(false);
   const [refreshingGroup, setRefreshingGroup] = useState(false);
   const [favoriteModelIds, setFavoriteModelIds] = useState<string[]>(
     loadFavoriteModels("fal"),
   );
   const [selectedModelId, setSelectedModelIdState] = useState("");
+  const [selectedEditModelId, setSelectedEditModelIdState] = useState("");
   const [prompt, setPrompt] = useState("");
   const [amount, setAmountState] = useState(1);
   const [useCache, setUseCache] = useState(true);
@@ -147,6 +194,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
   const [customHeight, setCustomHeight] = useState("1024");
   const [group, setGroup] = useState<GeneratedImageGroup | null>(null);
   const [job, setJob] = useState<ImageJob | null>(null);
+  const [editJob, setEditJob] = useState<ImageEditJob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const sortedModels = useMemo(
@@ -163,31 +211,45 @@ export const useImageGeneration = (): UseImageGenerationResult => {
 
     const loadModels = async (): Promise<void> => {
       setLoadingModels(true);
+      setLoadingEditModels(true);
+
       try {
-        const nextModels = await fetchImageModels(provider);
+        const [generateResult, editResult] = await Promise.allSettled([
+          fetchImageModels(provider, "generate"),
+          fetchImageModels(provider, "edit"),
+        ]);
         if (cancelled) {
           return;
         }
 
+        const nextModels =
+          generateResult.status === "fulfilled"
+            ? sortModelsAlphabetically(generateResult.value)
+            : [];
+        const nextEditModels =
+          editResult.status === "fulfilled"
+            ? sortModelsAlphabetically(editResult.value)
+            : [];
+
         setModels(nextModels);
+        setEditModels(nextEditModels);
+
         const lastUsedModel = loadLastUsedModel(provider);
-        setSelectedModelIdState((current) => {
-          if (
-            current.length > 0 &&
-            nextModels.some((candidate) => candidate.modelId === current)
-          ) {
-            return current;
-          }
+        const lastUsedEditModel = loadLastUsedModel(provider, "edit");
 
-          if (
-            lastUsedModel &&
-            nextModels.some((candidate) => candidate.modelId === lastUsedModel)
-          ) {
-            return lastUsedModel;
-          }
+        setSelectedModelIdState((current) =>
+          resolvePreferredModelId(current, nextModels, lastUsedModel),
+        );
+        setSelectedEditModelIdState((current) =>
+          resolvePreferredModelId(current, nextEditModels, lastUsedEditModel),
+        );
 
-          return nextModels[0]?.modelId ?? "";
-        });
+        if (generateResult.status === "rejected") {
+          throw generateResult.reason;
+        }
+        if (editResult.status === "rejected") {
+          throw editResult.reason;
+        }
       } catch (loadError) {
         if (!cancelled) {
           setError(
@@ -199,6 +261,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
       } finally {
         if (!cancelled) {
           setLoadingModels(false);
+          setLoadingEditModels(false);
         }
       }
     };
@@ -238,89 +301,117 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     setProviderState(nextProvider);
     setGroup(null);
     setJob(null);
+    setEditJob(null);
     setSelectedModelIdState("");
+    setSelectedEditModelIdState("");
   }, []);
 
-  const setSelectedModelId = useCallback((modelId: string) => {
-    const trimmed = modelId.trim();
-    setSelectedModelIdState(trimmed);
-    if (trimmed.length > 0) {
-      saveLastUsedModel(provider, trimmed);
-    }
-  }, [provider]);
+  const setSelectedModelId = useCallback(
+    (modelId: string) => {
+      const trimmed = modelId.trim();
+      setSelectedModelIdState(trimmed);
+      if (trimmed.length > 0) {
+        saveLastUsedModel(provider, trimmed);
+      }
+    },
+    [provider],
+  );
+
+  const setSelectedEditModelId = useCallback(
+    (modelId: string) => {
+      const trimmed = modelId.trim();
+      setSelectedEditModelIdState(trimmed);
+      if (trimmed.length > 0) {
+        saveLastUsedModel(provider, trimmed, "edit");
+      }
+    },
+    [provider],
+  );
 
   const setAmount = useCallback((nextAmount: number) => {
     setAmountState(clampAmount(nextAmount));
   }, []);
 
-  const toggleFavorite = useCallback((modelId: string) => {
-    const next = toggleFavoriteModel(provider, modelId);
-    setFavoriteModelIds(next);
-  }, [provider]);
+  const toggleFavorite = useCallback(
+    (modelId: string) => {
+      const next = toggleFavoriteModel(provider, modelId);
+      setFavoriteModelIds(next);
+    },
+    [provider],
+  );
 
-  const lookupCurrentGroup = useCallback(async (promptOverride?: string): Promise<void> => {
-    const targetPrompt = (promptOverride ?? prompt).trim();
-    if (targetPrompt.length === 0 || selectedModelId.trim().length === 0) {
-      setGroup(null);
-      return;
-    }
+  const lookupCurrentGroup = useCallback(
+    async (promptOverride?: string): Promise<void> => {
+      const targetPrompt = (promptOverride ?? prompt).trim();
+      if (targetPrompt.length === 0 || selectedModelId.trim().length === 0) {
+        setGroup(null);
+        return;
+      }
 
-    setRefreshingGroup(true);
-    setError(null);
-    try {
-      const matchedGroup = await lookupImageGroup({
-        provider,
-        prompt: targetPrompt,
-        model: selectedModelId,
-      });
-      setGroup(matchedGroup);
-    } catch (lookupError) {
-      setError(
-        lookupError instanceof Error
-          ? lookupError.message
-          : "Could not lookup image group.",
-      );
-    } finally {
-      setRefreshingGroup(false);
-    }
-  }, [prompt, provider, selectedModelId]);
+      setRefreshingGroup(true);
+      setError(null);
+      try {
+        const matchedGroup = await lookupImageGroup({
+          provider,
+          prompt: targetPrompt,
+          model: selectedModelId,
+        });
+        setGroup(matchedGroup);
+      } catch (lookupError) {
+        setError(
+          lookupError instanceof Error
+            ? lookupError.message
+            : "Could not lookup image group.",
+        );
+      } finally {
+        setRefreshingGroup(false);
+      }
+    },
+    [prompt, provider, selectedModelId],
+  );
 
-  const lookupGroupByFileNameFn = useCallback(async (fileName: string): Promise<void> => {
-    if (fileName.length === 0) {
-      return;
-    }
+  const lookupGroupByFileNameFn = useCallback(
+    async (fileName: string): Promise<void> => {
+      if (fileName.length === 0) {
+        return;
+      }
 
-    setRefreshingGroup(true);
-    setError(null);
-    try {
-      const matchedGroup = await lookupImageGroupByFileName(fileName);
-      setGroup(matchedGroup);
-    } catch (lookupError) {
-      setError(
-        lookupError instanceof Error
-          ? lookupError.message
-          : "Could not lookup image group by file.",
-      );
-    } finally {
-      setRefreshingGroup(false);
-    }
-  }, []);
+      setRefreshingGroup(true);
+      setError(null);
+      try {
+        const matchedGroup = await lookupImageGroupByFileName(fileName);
+        setGroup(matchedGroup);
+      } catch (lookupError) {
+        setError(
+          lookupError instanceof Error
+            ? lookupError.message
+            : "Could not lookup image group by file.",
+        );
+      } finally {
+        setRefreshingGroup(false);
+      }
+    },
+    [],
+  );
 
-  const lookupGroupsByPromptFn = useCallback(async (promptOverride?: string): Promise<GeneratedImageGroup[]> => {
-    const targetPrompt = (promptOverride ?? prompt).trim();
-    if (targetPrompt.length === 0) {
-      return [];
-    }
+  const lookupGroupsByPromptFn = useCallback(
+    async (promptOverride?: string): Promise<GeneratedImageGroup[]> => {
+      const targetPrompt = (promptOverride ?? prompt).trim();
+      if (targetPrompt.length === 0) {
+        return [];
+      }
 
-    try {
-      return await lookupImageGroupsByPrompt({
-        provider,
-        prompt: targetPrompt,
-      });
-    } catch {
-      return [];
-    }
-  }, [prompt, provider]);
+      try {
+        return await lookupImageGroupsByPrompt({
+          provider,
+          prompt: targetPrompt,
+        });
+      } catch {
+        return [];
+      }
+    },
+    [prompt, provider],
+  );
 
   const listAllGroupsFn = useCallback(async (): Promise<GeneratedImageGroup[]> => {
     try {
@@ -330,42 +421,97 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     }
   }, [provider]);
 
-  const submitJob = useCallback(async (promptOverride?: string): Promise<void> => {
-    const normalizedPrompt = (promptOverride ?? prompt).trim();
-    if (normalizedPrompt.length === 0) {
-      setError("Prompt is required.");
-      return;
-    }
-    if (selectedModelId.trim().length === 0) {
-      setError("Select an image model first.");
-      return;
-    }
-
-    setSubmittingJob(true);
-    setError(null);
-    setJob(null);
-    try {
-      const createdJob = await createImageJob({
-        provider,
-        prompt: normalizedPrompt,
-        model: selectedModelId,
-        resolution: resolvedResolution,
-        useCache,
-        amount,
-      });
-      setJob(createdJob);
-      saveLastUsedModel(provider, selectedModelId);
-
-      if (createdJob.status !== "running") {
-        const loadedGroup = await fetchImageGroup(createdJob.groupKey);
-        setGroup(loadedGroup);
+  const submitJob = useCallback(
+    async (promptOverride?: string): Promise<void> => {
+      const normalizedPrompt = (promptOverride ?? prompt).trim();
+      if (normalizedPrompt.length === 0) {
+        setError("Prompt is required.");
+        return;
       }
-    } catch (submitError) {
-      setError(toSubmitErrorMessage(submitError));
-    } finally {
-      setSubmittingJob(false);
-    }
-  }, [amount, prompt, provider, resolvedResolution, selectedModelId, useCache]);
+      if (selectedModelId.trim().length === 0) {
+        setError("Select an image model first.");
+        return;
+      }
+
+      setSubmittingJob(true);
+      setError(null);
+      setJob(null);
+      try {
+        const createdJob = await createImageJob({
+          provider,
+          prompt: normalizedPrompt,
+          model: selectedModelId,
+          resolution: resolvedResolution,
+          useCache,
+          amount,
+        });
+        setJob(createdJob);
+        saveLastUsedModel(provider, selectedModelId);
+
+        if (createdJob.status !== "running") {
+          const loadedGroup = await fetchImageGroup(createdJob.groupKey);
+          setGroup(loadedGroup);
+        }
+      } catch (submitError) {
+        setError(
+          toSubmitErrorMessage(
+            submitError,
+            "Could not create image generation job.",
+          ),
+        );
+      } finally {
+        setSubmittingJob(false);
+      }
+    },
+    [amount, prompt, provider, resolvedResolution, selectedModelId, useCache],
+  );
+
+  const submitEditJob = useCallback(
+    async (sourceImageUrl: string, promptOverride: string): Promise<void> => {
+      const normalizedPrompt = promptOverride.trim();
+      const normalizedSourceImageUrl = sourceImageUrl.trim();
+      if (normalizedSourceImageUrl.length === 0) {
+        setError("Select an image before generating an edit.");
+        return;
+      }
+      if (normalizedPrompt.length === 0) {
+        setError("Edit prompt is required.");
+        return;
+      }
+      if (selectedEditModelId.trim().length === 0) {
+        setError("Select an edit model first.");
+        return;
+      }
+
+      setSubmittingEditJob(true);
+      setError(null);
+      setEditJob(null);
+      try {
+        const createdJob = await createImageEditJob({
+          provider,
+          prompt: normalizedPrompt,
+          model: selectedEditModelId,
+          sourceImageUrl: normalizedSourceImageUrl,
+          useCache,
+          amount,
+        });
+        setEditJob(createdJob);
+        saveLastUsedModel(provider, selectedEditModelId, "edit");
+
+        if (createdJob.status !== "running") {
+          const loadedGroup = await fetchImageGroup(createdJob.groupKey);
+          setGroup(loadedGroup);
+        }
+      } catch (submitError) {
+        setError(
+          toSubmitErrorMessage(submitError, "Could not create image edit job."),
+        );
+      } finally {
+        setSubmittingEditJob(false);
+      }
+    },
+    [amount, provider, selectedEditModelId, useCache],
+  );
 
   useEffect(() => {
     if (!job || job.status !== "running") {
@@ -417,19 +563,70 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     };
   }, [job?.jobId, job?.status]);
 
+  useEffect(() => {
+    if (!editJob || editJob.status !== "running") {
+      return;
+    }
+
+    let cancelled = false;
+    const targetJobId = editJob.jobId;
+    let interval: number | null = null;
+
+    const pollOnce = async (): Promise<void> => {
+      try {
+        const nextJob = await fetchImageEditJob(targetJobId);
+        if (cancelled) {
+          return;
+        }
+
+        setEditJob(nextJob);
+        if (nextJob.status !== "running") {
+          const loadedGroup = await fetchImageGroup(nextJob.groupKey);
+          if (!cancelled) {
+            setGroup(loadedGroup);
+          }
+          if (interval !== null) {
+            window.clearInterval(interval);
+            interval = null;
+          }
+        }
+      } catch (pollError) {
+        if (!cancelled) {
+          setError(
+            pollError instanceof Error
+              ? pollError.message
+              : "Could not fetch image edit status.",
+          );
+        }
+      }
+    };
+
+    interval = window.setInterval(() => {
+      void pollOnce();
+    }, 1000);
+
+    return () => {
+      cancelled = true;
+      if (interval !== null) {
+        window.clearInterval(interval);
+      }
+    };
+  }, [editJob?.jobId, editJob?.status]);
+
   const updateGroup = useCallback((nextGroup: GeneratedImageGroup) => {
     setGroup(nextGroup);
   }, []);
 
   const selectActiveImage = useCallback(
-    async (imageId: string): Promise<void> => {
-      if (!group) {
+    async (imageId: string, groupKeyOverride?: string): Promise<void> => {
+      const targetGroupKey = groupKeyOverride ?? group?.groupKey;
+      if (!targetGroupKey) {
         return;
       }
 
       setError(null);
       try {
-        const updatedGroup = await setActiveImage(group.groupKey, imageId);
+        const updatedGroup = await setActiveImage(targetGroupKey, imageId);
         updateGroup(updatedGroup);
       } catch (selectionError) {
         setError(
@@ -439,18 +636,19 @@ export const useImageGeneration = (): UseImageGenerationResult => {
         );
       }
     },
-    [group, updateGroup],
+    [group?.groupKey, updateGroup],
   );
 
   const deleteImage = useCallback(
-    async (imageId: string): Promise<void> => {
-      if (!group) {
+    async (imageId: string, groupKeyOverride?: string): Promise<void> => {
+      const targetGroupKey = groupKeyOverride ?? group?.groupKey;
+      if (!targetGroupKey) {
         return;
       }
 
       setError(null);
       try {
-        const updatedGroup = await deleteImageFromGroup(group.groupKey, imageId);
+        const updatedGroup = await deleteImageFromGroup(targetGroupKey, imageId);
         updateGroup(updatedGroup);
       } catch (deleteError) {
         setError(
@@ -460,19 +658,20 @@ export const useImageGeneration = (): UseImageGenerationResult => {
         );
       }
     },
-    [group, updateGroup],
+    [group?.groupKey, updateGroup],
   );
 
   const deleteBatch = useCallback(
-    async (batchIndex: number): Promise<void> => {
-      if (!group) {
+    async (batchIndex: number, groupKeyOverride?: string): Promise<void> => {
+      const targetGroupKey = groupKeyOverride ?? group?.groupKey;
+      if (!targetGroupKey) {
         return;
       }
 
       setError(null);
       try {
         const updatedGroup = await deleteBatchFromGroup(
-          group.groupKey,
+          targetGroupKey,
           batchIndex,
         );
         updateGroup(updatedGroup);
@@ -484,15 +683,17 @@ export const useImageGeneration = (): UseImageGenerationResult => {
         );
       }
     },
-    [group, updateGroup],
+    [group?.groupKey, updateGroup],
   );
 
   return {
     provider,
     models,
+    editModels,
     sortedModels,
     favoriteModelIds,
     selectedModelId,
+    selectedEditModelId,
     prompt,
     amount,
     useCache,
@@ -501,13 +702,17 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     customHeight,
     group,
     job,
+    editJob,
     loadingModels,
+    loadingEditModels,
     submittingJob,
+    submittingEditJob,
     refreshingGroup,
     error,
     resolvedResolution,
     setProvider,
     setSelectedModelId,
+    setSelectedEditModelId,
     setPrompt,
     setAmount,
     setUseCache,
@@ -520,6 +725,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     lookupGroupsByPrompt: lookupGroupsByPromptFn,
     listAllGroups: listAllGroupsFn,
     submitJob,
+    submitEditJob,
     selectActiveImage,
     deleteImage,
     deleteBatch,

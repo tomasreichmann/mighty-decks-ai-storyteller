@@ -120,7 +120,9 @@ Shell behavior:
 - On desktop, `Create Campaign` sits on the right side of the title row while the full tab rail stays on its own row below.
 - On tablet-sized layouts and narrower, the tab rail collapses into a section dropdown in the same header row, immediately after `Create Campaign`.
 - Framed image pickers reopen with the current saved image already selected, so cover art and entity art can be reused or regenerated in place.
-- The shared dialog inside those pickers uses a depressed `Selected Image URL` field, an inline trash clear button, and a drag-and-drop upload area that stores external images on the server before reusing the saved URL.
+- The shared dialog inside those pickers uses a depressed `Selected Image URL` field, an inline clear button, and a drag-and-drop upload area that stores external images on the server before reusing the saved URL.
+- The shared dialog keeps the selected-image preview directly below the drop zone and shows muted prompt/model metadata when the current selection comes from the generated-image store.
+- The shared dialog is now organized into `Gallery | Generate | Edit` modes so stored fal images can be reused, removed, regenerated, or edited from one consistent flow.
 - The route now delegates its shared title-row and common tab rendering through extracted `SharedAuthoringHeader` and `CommonAuthoringTabContent` components so module and campaign authoring stay aligned.
 - Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
@@ -164,9 +166,9 @@ Behavior:
 - Running controls include `Stop` and `Discard`.
 - Successful smart actions auto-apply and expose one-click rollback for the latest applied change.
 - Cover image selection persists through autosave and module-detail reloads because the saved `coverImageUrl` is returned in the authoring detail payload.
-- `Lookup Existing` works with or without a typed prompt.
-- With a prompt, the current model remains the primary match and same-prompt images from other models appear in a separate gallery.
-- Without a prompt, the image picker dialog can restore the saved image by file name and browse every stored image group for the provider.
+- The image picker dialog opens on `Gallery` and shows every stored fal image newest-first, so saved cover art can be restored without typing the original prompt again.
+- Gallery items expose hoverable prompt/model info, no longer show model text on the thumbnail itself, and can be removed with confirmation even when the current selection uses that image.
+- `Generate` keeps the text-to-image prompt flow with the same context-tag enrichment, while `Edit` is fal-only and sends the current selected image plus an edit prompt to an image-edit model.
 - The same dialog also accepts dropped external image files, saves them through the server artifact store, and keeps the uploaded artifact selected in the field.
 
 ### 5.2 Player Info Tab (`/player-info`)

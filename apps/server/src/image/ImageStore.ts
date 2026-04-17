@@ -19,6 +19,7 @@ import {
   isSafeFileName,
   normalizePrompt,
   toCacheKey,
+  toEditGroupKey,
   toGroupKey,
   toModelHash,
   toPromptHash,
@@ -45,6 +46,7 @@ interface SaveImageParams {
   imageIndex: number;
   resolution: ImageResolution;
   sourceUrl: string;
+  referenceImageUrl?: string;
   imageBuffer: Buffer;
   contentType: string;
 }
@@ -271,6 +273,7 @@ export class ImageStore {
     provider: ImageProvider;
     prompt: string;
     model: string;
+    referenceImageUrl?: string;
   }): Promise<{
     groupKey: string;
     promptHash: string;
@@ -278,7 +281,12 @@ export class ImageStore {
     batchIndex: number;
   }> {
     return this.withWriteLock(async () => {
-      const group = this.ensureGroup(input.prompt, input.provider, input.model);
+      const group = this.ensureGroup(
+        input.prompt,
+        input.provider,
+        input.model,
+        input.referenceImageUrl,
+      );
       const batchIndex = group.nextBatchIndex;
       group.nextBatchIndex += 1;
       await this.persistIndex();
@@ -299,6 +307,7 @@ export class ImageStore {
         params.prompt,
         params.provider,
         params.model,
+        params.referenceImageUrl,
       );
       if (group.groupKey !== params.groupKey) {
         throw new Error("group key mismatch while saving generated image");
@@ -335,6 +344,7 @@ export class ImageStore {
         fileUrl: this.buildFileUrl(fileName),
         contentType: params.contentType,
         sourceUrl: params.sourceUrl,
+        referenceImageUrl: params.referenceImageUrl,
         createdAtIso,
       };
 
@@ -355,6 +365,9 @@ export class ImageStore {
       );
 
       group.images = sortImages([...group.images, imageAsset]);
+      if (params.referenceImageUrl) {
+        group.referenceImageUrl = params.referenceImageUrl;
+      }
       if (!group.activeImageId) {
         group.activeImageId = imageAsset.imageId;
       }
@@ -487,12 +500,18 @@ export class ImageStore {
     prompt: string,
     provider: ImageProvider,
     model: string,
+    referenceImageUrl?: string,
   ): GeneratedImageGroup {
     const normalizedPrompt = normalizePrompt(prompt);
     const normalizedModel = model.trim();
-    const groupKey = toGroupKey(normalizedPrompt, provider, normalizedModel);
+    const groupKey = referenceImageUrl
+      ? toEditGroupKey(referenceImageUrl, normalizedPrompt, provider, normalizedModel)
+      : toGroupKey(normalizedPrompt, provider, normalizedModel);
     const existing = this.index.groups[groupKey];
     if (existing) {
+      if (referenceImageUrl && !existing.referenceImageUrl) {
+        existing.referenceImageUrl = referenceImageUrl;
+      }
       return existing;
     }
 
@@ -503,6 +522,7 @@ export class ImageStore {
       promptHash: toPromptHash(normalizedPrompt),
       model: normalizedModel,
       modelHash: toModelHash(normalizedModel),
+      referenceImageUrl,
       nextBatchIndex: 0,
       images: [],
     };

@@ -348,7 +348,9 @@ Behavior:
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, a framed title-image picker that opens the shared image dialog with the current image preselected, and markdown script authoring.
 - `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, a framed title-image picker that opens the shared image dialog with the current image preselected, markdown brief authoring, and slug-driven route updates after saves.
 - actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and a clipboard copy button
-- the shared image dialog uses a depressed `Selected Image URL` field with an inline trash clear button and a raw-image drop zone that uploads external images to the server before reusing them in the picker
+- the shared image dialog uses a depressed `Selected Image URL` field with an inline clear button, a raw-image drop zone that uploads external images to the server, and a selected-image preview directly below the drop zone
+- when the selected image comes from the generated-image store, the preview shows muted prompt and model metadata under the image so long prompts stay visible without overwhelming the dialog
+- the shared image dialog now uses explicit `Gallery | Generate | Edit` modes: `Gallery` flattens stored fal images newest-first with hoverable prompt/model info and per-image removal, `Generate` keeps the text-to-image prompt flow, and `Edit` sends the selected image plus an edit prompt to fal-only image-edit models
 
 ---
 

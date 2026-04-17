@@ -1,4 +1,7 @@
-import type { ImageModelSummary } from "@mighty-decks/spec/imageGeneration";
+import type {
+  ImageModelCapability,
+  ImageModelSummary,
+} from "@mighty-decks/spec/imageGeneration";
 
 interface FalClientOptions {
   apiKey: string | null;
@@ -20,6 +23,12 @@ interface FalGenerationRequest {
 interface FalGenerationResult {
   imageUrl: string;
   status: string;
+}
+
+interface FalEditRequest {
+  prompt: string;
+  model: string;
+  sourceImageUrl: string;
 }
 
 type RecordLike = Record<string, unknown>;
@@ -239,13 +248,15 @@ export class FalClient {
     this.pollTimeoutMs = Math.max(this.pollIntervalMs, options.pollTimeoutMs);
   }
 
-  public async listModels(): Promise<ImageModelSummary[]> {
+  public async listModels(
+    capability: ImageModelCapability = "generate",
+  ): Promise<ImageModelSummary[]> {
     if (!this.options.apiKey) {
       return [];
     }
 
     const payload = await this.requestJson(
-      `${this.apiBaseUrl}/models?category=text-to-image&status=active&is_private=false&limit=100`,
+      `${this.apiBaseUrl}/models?category=${encodeURIComponent(capability === "edit" ? "image-to-image" : "text-to-image")}&status=active&is_private=false&limit=100`,
       {
         method: "GET",
       },
@@ -317,6 +328,45 @@ export class FalClient {
 
     const submitUrl = `${this.queueBaseUrl}/${endpointPath}`;
     const submitPayload = await this.submitGeneration(submitUrl, request);
+    const submitImageUrls = extractImageUrls(submitPayload);
+    if (submitImageUrls.length > 0) {
+      return {
+        imageUrl: submitImageUrls[0]!,
+        status: extractStatus(submitPayload) ?? "completed",
+      };
+    }
+
+    const requestId = extractRequestId(submitPayload);
+    if (!requestId) {
+      throw new Error("fal.ai response did not include a request id.");
+    }
+
+    return this.pollUntilComplete(
+      submitUrl,
+      requestId,
+      extractStatusUrl(submitPayload),
+      extractResponseUrl(submitPayload),
+    );
+  }
+
+  public async editImage(request: FalEditRequest): Promise<FalGenerationResult> {
+    if (!this.options.apiKey) {
+      throw new Error("fal.ai API key missing.");
+    }
+
+    const endpointPath = toEncodedEndpointPath(request.model);
+    if (endpointPath.length === 0) {
+      throw new Error("fal.ai model id is required.");
+    }
+
+    const submitUrl = `${this.queueBaseUrl}/${endpointPath}`;
+    const submitPayload = await this.requestJson(submitUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        prompt: request.prompt,
+        image_url: request.sourceImageUrl,
+      }),
+    });
     const submitImageUrls = extractImageUrls(submitPayload);
     if (submitImageUrls.length > 0) {
       return {

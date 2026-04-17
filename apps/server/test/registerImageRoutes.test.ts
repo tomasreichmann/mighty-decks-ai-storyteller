@@ -129,9 +129,16 @@ test("registerImageRoutes validates payloads and exposes job lifecycle", async (
   await store.initialize();
 
   const falStub = {
-    listModels: async () => [{ modelId: "fal-1", displayName: "Fal Model" }],
+    listModels: async (capability?: string) =>
+      capability === "edit"
+        ? [{ modelId: "fal-edit-1", displayName: "Fal Edit Model" }]
+        : [{ modelId: "fal-1", displayName: "Fal Model" }],
     generateImage: async () => ({
       imageUrl: "https://example.com/generated-from-route.png",
+      status: "complete",
+    }),
+    editImage: async () => ({
+      imageUrl: "https://example.com/edited-from-route.png",
       status: "complete",
     }),
   } as unknown as FalClient;
@@ -172,6 +179,19 @@ test("registerImageRoutes validates payloads and exposes job lifecycle", async (
     models: Array<{ modelId: string }>;
   };
   assert.equal(leonardoModelsPayload.models[0]?.modelId, "leo-1");
+
+  const falEditModelsResponse = await app.inject({
+    method: "GET",
+    url: "/api/image/models?provider=fal&capability=edit",
+  });
+  assert.equal(falEditModelsResponse.statusCode, 200);
+  const falEditModelsPayload = falEditModelsResponse.json() as {
+    models: Array<{ modelId: string }>;
+  };
+  assert.deepEqual(
+    falEditModelsPayload.models.map((model) => model.modelId),
+    ["fal-edit-1"],
+  );
 
   const invalidJobResponse = await app.inject({
     method: "POST",
@@ -214,4 +234,15 @@ test("registerImageRoutes validates payloads and exposes job lifecycle", async (
   };
   assert.equal(finalPayload.job.status, "completed");
   assert.equal(finalPayload.job.succeededCount, 1);
+
+  const invalidEditJobResponse = await app.inject({
+    method: "POST",
+    url: "/api/image/edit-jobs",
+    payload: {
+      provider: "fal",
+      prompt: "Change the sky to twilight.",
+      model: "fal-edit-1",
+    },
+  });
+  assert.equal(invalidEditJobResponse.statusCode, 400);
 });

@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Refresh the shared image dialog into explicit `Gallery`, `Generate`, and `Edit` modes with the selected preview below the drop zone, muted prompt/model metadata, smaller labeled model selects, gallery info/remove controls, and fal-only image edit generation from the currently selected image.
 - Web: lighten the shared `Button` circle variant with a smaller shadow, a gentler hover press, and better icon centering so compact actions feel less heavy.
 - Web: replace the Adventure Module title, location, encounter, and quest inline image generator blocks with framed image pickers that open the shared generate-or-pick dialog from a top-right trigger button.
 - Web: in the shared generate-or-pick image dialog, replace the selected image URL text field with a depressed input plus inline trash clear button, and add drag-and-drop raw image upload that saves external images on the server.

@@ -172,7 +172,7 @@ const EncounterImageField = ({
 
       <AdventureModuleGeneratedImagePicker
         label="Title Image"
-        promptLabel="Title Image Prompt"
+        promptLabel="image prompt"
         promptDescription="Generate a visual key art image for this encounter."
         contextLabel="Title Image Context"
         contextDescription="Edit the base prompt text. Selected context tags are appended for generation and lookup, but are not shown in the prompt field."

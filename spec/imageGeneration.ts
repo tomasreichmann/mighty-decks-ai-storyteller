@@ -7,6 +7,9 @@ const hashSchema = z
 export const imageProviderSchema = z.enum(["fal", "leonardo"]);
 export type ImageProvider = z.infer<typeof imageProviderSchema>;
 
+export const imageModelCapabilitySchema = z.enum(["generate", "edit"]);
+export type ImageModelCapability = z.infer<typeof imageModelCapabilitySchema>;
+
 export const imageResolutionSchema = z.object({
   width: z.number().int().min(64).max(4096),
   height: z.number().int().min(64).max(4096),
@@ -24,6 +27,16 @@ export const imageGenerateJobRequestSchema = z.object({
 export type ImageGenerateJobRequest = z.infer<
   typeof imageGenerateJobRequestSchema
 >;
+
+export const imageEditJobRequestSchema = z.object({
+  provider: imageProviderSchema.default("fal"),
+  prompt: z.string().min(1).max(4000),
+  model: z.string().min(1).max(200),
+  sourceImageUrl: z.string().min(1).max(4000),
+  useCache: z.boolean().default(true),
+  amount: z.number().int().min(1).max(8),
+});
+export type ImageEditJobRequest = z.infer<typeof imageEditJobRequestSchema>;
 
 export const generatedImageAssetSchema = z.object({
   provider: imageProviderSchema.default("fal"),
@@ -43,6 +56,7 @@ export const generatedImageAssetSchema = z.object({
   fileUrl: z.string().min(1),
   contentType: z.string().min(1),
   sourceUrl: z.string().min(1).optional(),
+  referenceImageUrl: z.string().min(1).optional(),
   createdAtIso: z.string().datetime(),
 });
 export type GeneratedImageAsset = z.infer<typeof generatedImageAssetSchema>;
@@ -54,6 +68,7 @@ export const generatedImageGroupSchema = z.object({
   promptHash: hashSchema,
   model: z.string().min(1),
   modelHash: hashSchema,
+  referenceImageUrl: z.string().min(1).optional(),
   nextBatchIndex: z.number().int().nonnegative(),
   activeImageId: z.string().min(1).optional(),
   images: z.array(generatedImageAssetSchema).default([]),
@@ -99,6 +114,24 @@ export const imageJobSchema = z.object({
   items: z.array(imageJobItemProgressSchema),
 });
 export type ImageJob = z.infer<typeof imageJobSchema>;
+
+export const imageEditJobSchema = z.object({
+  jobId: z.string().min(1),
+  createdAtIso: z.string().datetime(),
+  updatedAtIso: z.string().datetime(),
+  groupKey: z.string().min(1),
+  promptHash: hashSchema,
+  modelHash: hashSchema,
+  request: imageEditJobRequestSchema,
+  status: imageJobStatusSchema,
+  totalRequested: z.number().int().min(1),
+  cachedCount: z.number().int().nonnegative(),
+  generatedCount: z.number().int().nonnegative(),
+  succeededCount: z.number().int().nonnegative(),
+  failedCount: z.number().int().nonnegative(),
+  items: z.array(imageJobItemProgressSchema),
+});
+export type ImageEditJob = z.infer<typeof imageEditJobSchema>;
 
 export const imageModelSummarySchema = z.object({
   modelId: z.string().min(1),
@@ -148,3 +181,8 @@ export const imageJobResponseSchema = z.object({
   job: imageJobSchema,
 });
 export type ImageJobResponse = z.infer<typeof imageJobResponseSchema>;
+
+export const imageEditJobResponseSchema = z.object({
+  job: imageEditJobSchema,
+});
+export type ImageEditJobResponse = z.infer<typeof imageEditJobResponseSchema>;
