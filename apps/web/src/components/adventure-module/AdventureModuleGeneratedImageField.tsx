@@ -8,6 +8,7 @@ import { useImageGeneration } from "../../hooks/useImageGeneration";
 import { uploadAdventureArtifactImage } from "../../lib/adventureArtifactApi";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { cn } from "../../utils/cn";
+import { ButtonRadioGroup } from "../common/ButtonRadioGroup";
 import { Button } from "../common/Button";
 import { DepressedInput } from "../common/DepressedInput";
 import { InputDescriptionHint } from "../common/InputDescriptionHint";
@@ -22,6 +23,12 @@ const PROMPT_MAX_LENGTH = 4000;
 const WORKFLOW_CONTEXT_MAX_LENGTH = 1000;
 const SELECT_CLASSES =
   "w-full border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-3 py-2 text-kac-iron font-ui";
+
+const imageDialogTabs = [
+  { label: "Gallery", value: "gallery" as const },
+  { label: "Generate", value: "generate" as const },
+  { label: "Edit", value: "edit" as const },
+] as const;
 
 const PREFERRED_FAST_MODEL_IDS = [
   "fal-ai/flux/schnell",
@@ -196,6 +203,9 @@ export const AdventureModuleGeneratedImageField = ({
     GeneratedImageGroup[]
   >([]);
   const [loadingCrossModel, setLoadingCrossModel] = useState(false);
+  const [activeTab, setActiveTab] = useState<(typeof imageDialogTabs)[number]["value"]>(
+    "gallery",
+  );
   const lastAutoSelectedImageUrlRef = useRef<string>("");
   const autoLookupDoneRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -540,327 +550,355 @@ export const AdventureModuleGeneratedImageField = ({
 
   return (
     <div className="stack gap-3">
-      <div className="flex items-end gap-2">
-        <DepressedInput
-          label={valueFieldLabel ?? "Selected Image URL"}
-          description={
-            valueFieldDescription ??
-            "Paste an existing image URL, drop an image, or pick one from the generated batch below."
-          }
-          value={value}
-          onChange={(event) => {
-            setUploadError(null);
-            onChange(event.target.value);
-          }}
-          onBlur={onBlur}
-          disabled={disabled}
-          maxLength={500}
-          placeholder="https://..."
-          className="min-w-0 flex-1"
-        />
-
-        <Button
-          variant="circle"
-          color="blood"
-          size="sm"
-          onClick={() => {
-            setUploadError(null);
-            onChange("");
-            onBlur?.();
-          }}
-          disabled={disabled || normalizeImageUrl(value).length === 0}
-          aria-label="Clear image"
-          title="Clear image"
-          className="shrink-0"
-        >
-          <span aria-hidden="true">🗑</span>
-        </Button>
-      </div>
-
-      <div
-        className={cn(
-          "group flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed px-4 py-4 text-center transition",
-          disabled || uploadingImage
-            ? "cursor-not-allowed border-kac-iron/30 bg-kac-bone-light/50 opacity-70"
-            : isDropActive
-              ? "border-kac-gold-dark bg-kac-gold-light/35"
-              : "border-kac-iron/45 bg-kac-bone-light/65 hover:border-kac-gold-dark/70 hover:bg-kac-bone-light",
-        )}
-        role="button"
-        tabIndex={disabled || uploadingImage ? -1 : 0}
-        aria-disabled={disabled || uploadingImage}
-        onClick={openFilePicker}
-        onDragEnter={(event) => {
-          if (disabled || uploadingImage) {
-            return;
-          }
-          event.preventDefault();
-          event.stopPropagation();
-          dragDepthRef.current += 1;
-          setIsDropActive(true);
-        }}
-        onDragOver={(event) => {
-          if (disabled || uploadingImage) {
-            return;
-          }
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "copy";
-        }}
-        onDragLeave={(event) => {
-          if (disabled || uploadingImage) {
-            return;
-          }
-          event.preventDefault();
-          event.stopPropagation();
-          dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
-          if (dragDepthRef.current === 0) {
-            setIsDropActive(false);
-          }
-        }}
-        onDrop={(event) => {
-          if (disabled || uploadingImage) {
-            return;
-          }
-          event.preventDefault();
-          event.stopPropagation();
-          clearDropDepth();
-          void handleFileSelection(event.dataTransfer.files);
-        }}
-        onKeyDown={(event) => {
-          if (disabled || uploadingImage) {
-            return;
-          }
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            openFilePicker();
-          }
-        }}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          tabIndex={-1}
-          aria-hidden="true"
-          onChange={(event) => {
-            void handleFileSelection(event.currentTarget.files);
-            event.currentTarget.value = "";
-          }}
-        />
-
-        <Text variant="note" color="iron" className="text-sm !opacity-100">
-          {uploadingImage
-            ? "Uploading image..."
-            : "Drop an external image here or click to browse."}
-        </Text>
-        <Text variant="note" color="iron-light" className="text-xs !opacity-100">
-          Dropped images are saved on the server and can be reused in this field.
-        </Text>
-      </div>
-
-      {uploadError ? (
-        <Text variant="note" color="blood" className="text-sm !opacity-100">
-          {uploadError}
-        </Text>
-      ) : null}
-
-      <div className="relative z-40 flex min-h-6 flex-col items-stretch gap-2 md:flex-row md:items-start md:justify-between">
-        <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">
-          <Label color="gold">{promptLabel}</Label>
-          <InputDescriptionHint description={contextDescription} className="-translate-y-1 z-50" />
-        </div>
-        {contextTagOptions.length > 0 ? (
-          <Tags
-            label={contextLabel}
-            value={contextTags}
-            onChange={setContextTags}
-            options={[...contextTagOptions]}
-            allowCustom={false}
-            addButtonLabel="Add Context"
-            maxTags={contextTagOptions.length}
-            placeholder="Search context..."
-            disabled={disabled || pending}
-            chrome="borderless"
-            showLabel={false}
-            showEmptyState={false}
-            showCounter={false}
-            className="md:ml-auto"
-          />
-        ) : null}
-      </div>
-
-      <SmartInput
-        label={promptLabel}
-        description={promptDescription}
-        workflowContextDescription={workflowContextDescription}
-        showLabel={false}
-        value={prompt}
-        onChange={setPrompt}
-        disabled={disabled || pending}
-        maxLength={PROMPT_MAX_LENGTH}
-        placeholder="Describe the key scene, subject, mood, and composition."
+      <ButtonRadioGroup
+        ariaLabel="Image dialog sections"
+        color="gold"
+        size="sm"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        options={[...imageDialogTabs]}
       />
-
-      <label className="stack gap-1">
-        <Text variant="note" color="iron" className="text-base">
-          Image Model
-        </Text>
-        <select
-          className={SELECT_CLASSES}
-          value={selectedModelId}
-          onChange={(event) => setSelectedModelId(event.target.value)}
-          disabled={disabled || loadingModels || pending}
-        >
-          {sortedModels.map((model) => (
-            <option key={model.modelId} value={model.modelId}>
-              {model.displayName} - {model.modelId}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {selectedModelId.trim().length > 0 &&
-      !isLikelyFastModel(selectedModelId) ? (
-        <Text
-          variant="note"
-          color="iron-light"
-          className="text-sm !opacity-100"
-        >
-          This model may run slower. For faster turnaround, use a
-          `schnell/flash` model.
-        </Text>
-      ) : null}
-
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="ghost"
-          color="cloth"
-          onClick={() => {
-            void handleLookupWithCrossModel();
-          }}
-          disabled={!canLookup || refreshingGroup || loadingCrossModel}
-        >
-          {refreshingGroup || loadingCrossModel
-            ? "Loading..."
-            : "Lookup Existing"}
-        </Button>
-        <Button
-          color="gold"
-          onClick={() => {
-            void submitJob(composedPrompt);
-          }}
-          disabled={!canRunActions}
-        >
-          {pending ? "Generating..." : generateLabel ?? `Generate ${label}`}
-        </Button>
-      </div>
-
-      {contextLines.length === 0 ? (
-        <Text
-          variant="note"
-          color="iron-light"
-          className="text-sm !opacity-100"
-        >
-          No context tags selected. Generation will use only your prompt text.
-        </Text>
-      ) : null}
-
-      {group && !matchingGroup ? (
-        <Text
-          variant="note"
-          color="iron-light"
-          className="text-sm !opacity-100"
-        >
-          Prompt or model changed. Use Lookup Existing or generate a fresh
-          batch.
-        </Text>
-      ) : null}
-
-      {matchingJob ? (
-        <Text
-          variant="note"
-          color="iron-light"
-          className="text-sm !opacity-100"
-        >
-          Status: {matchingJob.status} | completed {matchingJob.succeededCount}/
-          {matchingJob.totalRequested} (cached {matchingJob.cachedCount},
-          generated {matchingJob.generatedCount}, failed{" "}
-          {matchingJob.failedCount})
-        </Text>
-      ) : null}
 
       {error ? (
         <Message label={label} color="blood" onLabelClick={clearError}>
           {error}
         </Message>
       ) : null}
-      {showFailedState && failedReason.length > 0 ? (
-        <Text variant="note" color="blood" className="text-sm !opacity-100">
-          Last failure: {failedReason}
-        </Text>
-      ) : null}
-      {atCapacityError ? (
-        <Text
-          variant="note"
-          color="iron-light"
-          className="text-sm !opacity-100"
-        >
-          Image workers are currently busy. Retry once active jobs complete.
-        </Text>
-      ) : null}
 
-      <GeneratedImage
-        image={displayImage}
-        batch={activeBatchImages.map((image) =>
-          toDisplayImage(image, `${label} batch option`),
-        )}
-        onChange={(nextImage) => {
-          void selectActiveImage(nextImage.imageId);
-          lastAutoSelectedImageUrlRef.current = normalizeImageUrl(
-            nextImage.imageUrl,
-          );
-          onChange(nextImage.imageUrl);
-        }}
-        pending={pending}
-        failed={showFailedState}
-        pendingLabel={pendingLabel}
-        failedLabel={failedLabel}
-        emptyLabel={emptyLabel}
-        implicitFailure={false}
-      />
+      {activeTab === "edit" ? (
+        <div className="stack gap-3">
+          <div className="flex items-end gap-2">
+            <DepressedInput
+              label={valueFieldLabel ?? "Selected Image URL"}
+              description={
+                valueFieldDescription ??
+                "Paste an existing image URL, drop an image, or pick one from the generated batch below."
+              }
+              value={value}
+              onChange={(event) => {
+                setUploadError(null);
+                onChange(event.target.value);
+              }}
+              onBlur={onBlur}
+              disabled={disabled}
+              maxLength={500}
+              placeholder="https://..."
+              className="min-w-0 flex-1"
+            />
 
-      {crossModelImages.length > 0 ? (
-        <div className="stack gap-2">
-          <Text variant="note" color="iron" className="text-sm !opacity-100">
-            Previously generated images (click to select):
-          </Text>
-          <div className="flex flex-wrap gap-2">
-            {crossModelImages.map((image) => (
-              <button
-                key={image.imageId}
-                type="button"
-                className="relative cursor-pointer overflow-hidden rounded border-2 border-kac-iron hover:border-kac-gold-dark transition-colors"
-                style={{ width: 96, height: 96 }}
-                title={`${image._groupModel} — click to select`}
-                onClick={() => {
-                  lastAutoSelectedImageUrlRef.current = normalizeImageUrl(
-                    image.fileUrl,
-                  );
-                  onChange(image.fileUrl);
-                }}
-              >
-                <img
-                  src={image.fileUrl}
-                  alt={`${label} from ${image._groupModel}`}
-                  className="h-full w-full object-cover"
-                />
-                <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[10px] text-white truncate">
-                  {image._groupModel.split("/").pop()}
-                </span>
-              </button>
-            ))}
+            <Button
+              variant="circle"
+              color="blood"
+              size="sm"
+              onClick={() => {
+                setUploadError(null);
+                onChange("");
+                onBlur?.();
+              }}
+              disabled={disabled || normalizeImageUrl(value).length === 0}
+              aria-label="Clear image"
+              title="Clear image"
+              className="shrink-0"
+            >
+              <span aria-hidden="true">🗑</span>
+            </Button>
           </div>
+
+          <div
+            className={cn(
+              "group flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed px-4 py-4 text-center transition",
+              disabled || uploadingImage
+                ? "cursor-not-allowed border-kac-iron/30 bg-kac-bone-light/50 opacity-70"
+                : isDropActive
+                  ? "border-kac-gold-dark bg-kac-gold-light/35"
+                  : "border-kac-iron/45 bg-kac-bone-light/65 hover:border-kac-gold-dark/70 hover:bg-kac-bone-light",
+            )}
+            role="button"
+            tabIndex={disabled || uploadingImage ? -1 : 0}
+            aria-disabled={disabled || uploadingImage}
+            onClick={openFilePicker}
+            onDragEnter={(event) => {
+              if (disabled || uploadingImage) {
+                return;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              dragDepthRef.current += 1;
+              setIsDropActive(true);
+            }}
+            onDragOver={(event) => {
+              if (disabled || uploadingImage) {
+                return;
+              }
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "copy";
+            }}
+            onDragLeave={(event) => {
+              if (disabled || uploadingImage) {
+                return;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+              if (dragDepthRef.current === 0) {
+                setIsDropActive(false);
+              }
+            }}
+            onDrop={(event) => {
+              if (disabled || uploadingImage) {
+                return;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              clearDropDepth();
+              void handleFileSelection(event.dataTransfer.files);
+            }}
+            onKeyDown={(event) => {
+              if (disabled || uploadingImage) {
+                return;
+              }
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openFilePicker();
+              }
+            }}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden="true"
+              onChange={(event) => {
+                void handleFileSelection(event.currentTarget.files);
+                event.currentTarget.value = "";
+              }}
+            />
+
+            <Text variant="note" color="iron" className="text-sm !opacity-100">
+              {uploadingImage
+                ? "Uploading image..."
+                : "Drop an external image here or click to browse."}
+            </Text>
+            <Text variant="note" color="iron-light" className="text-xs !opacity-100">
+              Dropped images are saved on the server and can be reused in this field.
+            </Text>
+          </div>
+
+          {uploadError ? (
+            <Text variant="note" color="blood" className="text-sm !opacity-100">
+              {uploadError}
+            </Text>
+          ) : null}
+        </div>
+      ) : null}
+
+      {activeTab === "generate" ? (
+        <div className="stack gap-3">
+          <div className="relative z-40 flex min-h-6 flex-col items-stretch gap-2 md:flex-row md:items-start md:justify-between">
+            <div className="-mb-2 -ml-1 relative self-start z-20 inline-flex items-center gap-2">
+              <Label color="gold">{promptLabel}</Label>
+              <InputDescriptionHint
+                description={contextDescription}
+                className="-translate-y-1 z-50"
+              />
+            </div>
+            {contextTagOptions.length > 0 ? (
+              <Tags
+                label={contextLabel}
+                value={contextTags}
+                onChange={setContextTags}
+                options={[...contextTagOptions]}
+                allowCustom={false}
+                addButtonLabel="Add Context"
+                maxTags={contextTagOptions.length}
+                placeholder="Search context..."
+                disabled={disabled || pending}
+                chrome="borderless"
+                showLabel={false}
+                showEmptyState={false}
+                showCounter={false}
+                className="md:ml-auto"
+              />
+            ) : null}
+          </div>
+
+          <SmartInput
+            label={promptLabel}
+            description={promptDescription}
+            workflowContextDescription={workflowContextDescription}
+            showLabel={false}
+            value={prompt}
+            onChange={setPrompt}
+            disabled={disabled || pending}
+            maxLength={PROMPT_MAX_LENGTH}
+            placeholder="Describe the key scene, subject, mood, and composition."
+          />
+
+          <label className="stack gap-1">
+            <Text variant="note" color="iron" className="text-base">
+              Image Model
+            </Text>
+            <select
+              className={SELECT_CLASSES}
+              value={selectedModelId}
+              onChange={(event) => setSelectedModelId(event.target.value)}
+              disabled={disabled || loadingModels || pending}
+            >
+              {sortedModels.map((model) => (
+                <option key={model.modelId} value={model.modelId}>
+                  {model.displayName} - {model.modelId}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {selectedModelId.trim().length > 0 &&
+          !isLikelyFastModel(selectedModelId) ? (
+            <Text
+              variant="note"
+              color="iron-light"
+              className="text-sm !opacity-100"
+            >
+              This model may run slower. For faster turnaround, use a
+              `schnell/flash` model.
+            </Text>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              color="gold"
+              onClick={() => {
+                void submitJob(composedPrompt);
+              }}
+              disabled={!canRunActions}
+            >
+              {pending ? "Generating..." : generateLabel ?? `Generate ${label}`}
+            </Button>
+          </div>
+
+          {contextLines.length === 0 ? (
+            <Text
+              variant="note"
+              color="iron-light"
+              className="text-sm !opacity-100"
+            >
+              No context tags selected. Generation will use only your prompt text.
+            </Text>
+          ) : null}
+
+          {group && !matchingGroup ? (
+            <Text
+              variant="note"
+              color="iron-light"
+              className="text-sm !opacity-100"
+            >
+              Prompt or model changed. Use Lookup Existing or generate a fresh
+              batch.
+            </Text>
+          ) : null}
+
+          {matchingJob ? (
+            <Text
+              variant="note"
+              color="iron-light"
+              className="text-sm !opacity-100"
+            >
+              Status: {matchingJob.status} | completed {matchingJob.succeededCount}/
+              {matchingJob.totalRequested} (cached {matchingJob.cachedCount},
+              generated {matchingJob.generatedCount}, failed{" "}
+              {matchingJob.failedCount})
+            </Text>
+          ) : null}
+
+          {showFailedState && failedReason.length > 0 ? (
+            <Text variant="note" color="blood" className="text-sm !opacity-100">
+              Last failure: {failedReason}
+            </Text>
+          ) : null}
+          {atCapacityError ? (
+            <Text
+              variant="note"
+              color="iron-light"
+              className="text-sm !opacity-100"
+            >
+              Image workers are currently busy. Retry once active jobs complete.
+            </Text>
+          ) : null}
+        </div>
+      ) : null}
+
+      {activeTab === "gallery" ? (
+        <div className="stack gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              color="cloth"
+              onClick={() => {
+                void handleLookupWithCrossModel();
+              }}
+              disabled={!canLookup || refreshingGroup || loadingCrossModel}
+            >
+              {refreshingGroup || loadingCrossModel
+                ? "Loading..."
+                : "Lookup Existing"}
+            </Button>
+          </div>
+
+          <GeneratedImage
+            image={displayImage}
+            batch={activeBatchImages.map((image) =>
+              toDisplayImage(image, `${label} batch option`),
+            )}
+            onChange={(nextImage) => {
+              void selectActiveImage(nextImage.imageId);
+              lastAutoSelectedImageUrlRef.current = normalizeImageUrl(
+                nextImage.imageUrl,
+              );
+              onChange(nextImage.imageUrl);
+            }}
+            pending={pending}
+            failed={showFailedState}
+            pendingLabel={pendingLabel}
+            failedLabel={failedLabel}
+            emptyLabel={emptyLabel}
+            implicitFailure={false}
+          />
+
+          {crossModelImages.length > 0 ? (
+            <div className="stack gap-2">
+              <Text variant="note" color="iron" className="text-sm !opacity-100">
+                Previously generated images (click to select):
+              </Text>
+              <div className="flex flex-wrap gap-2">
+                {crossModelImages.map((image) => (
+                  <button
+                    key={image.imageId}
+                    type="button"
+                    className="relative cursor-pointer overflow-hidden rounded border-2 border-kac-iron hover:border-kac-gold-dark transition-colors"
+                    style={{ width: 96, height: 96 }}
+                    title={`${image._groupModel} — click to select`}
+                    onClick={() => {
+                      lastAutoSelectedImageUrlRef.current = normalizeImageUrl(
+                        image.fileUrl,
+                      );
+                      onChange(image.fileUrl);
+                    }}
+                  >
+                    <img
+                      src={image.fileUrl}
+                      alt={`${label} from ${image._groupModel}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[10px] text-white truncate">
+                      {image._groupModel.split("/").pop()}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

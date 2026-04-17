@@ -164,6 +164,7 @@ Behavior:
 - Running controls include `Stop` and `Discard`.
 - Successful smart actions auto-apply and expose one-click rollback for the latest applied change.
 - Cover image selection persists through autosave and module-detail reloads because the saved `coverImageUrl` is returned in the authoring detail payload.
+- The shared image dialog opens with `Gallery`, `Generate`, and `Edit` tabs so module authors can browse stored images, generate new ones, or paste/upload raw image URLs without switching dialogs.
 - `Lookup Existing` works with or without a typed prompt.
 - With a prompt, the current model remains the primary match and same-prompt images from other models appear in a separate gallery.
 - Without a prompt, the image picker dialog can restore the saved image by file name and browse every stored image group for the provider.

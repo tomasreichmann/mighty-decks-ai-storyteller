@@ -13,6 +13,10 @@ test("MarkdownImageInsertButton reopens with the current image URL in the genera
   assert.match(source, /aria-modal="true"/);
   assert.match(source, /buildMarkdownImageSnippet/);
   assert.match(source, /variant="circle"/);
+  assert.match(
+    source,
+    /<Button[\s\S]*?variant="solid"[\s\S]*?color="blood"[\s\S]*?size="sm"[\s\S]*?aria-label="Close image tools"[\s\S]*?>[\s\S]*?×[\s\S]*?<\/Button>/,
+  );
   assert.match(source, /initialImageUrl/);
   assert.match(source, /normalizedInitialImageUrl/);
   assert.match(source, /onInsertImageUrl/);

@@ -16,3 +16,15 @@ test("AdventureModuleGeneratedImageField uses a depressed URL input and an image
   assert.match(source, /uploadAdventureArtifactImage/);
   assert.match(source, /Drop an external image here/);
 });
+
+test("AdventureModuleGeneratedImageField exposes Gallery Generate and Edit tabs", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleGeneratedImageField.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /ButtonRadioGroup/);
+  assert.match(source, /Gallery/);
+  assert.match(source, /Generate/);
+  assert.match(source, /Edit/);
+});

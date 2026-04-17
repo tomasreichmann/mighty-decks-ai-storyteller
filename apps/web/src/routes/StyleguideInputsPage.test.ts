@@ -17,7 +17,9 @@ test("StyleguideInputsPage validates field and button alignment", () => {
   assert.match(source, /size="sm"/);
   assert.match(source, /size="md"/);
   assert.match(source, /size="lg"/);
-  assert.match(source, /sm:grid-cols-\[minmax\(0,1fr\)_auto\]/);
-  assert.match(source, /sm:pt-7/);
+  assert.match(source, /sm:flex sm:items-end sm:gap-0/);
+  assert.match(source, /sm:self-end/);
+  assert.doesNotMatch(source, /sm:grid-cols-\[minmax\(0,1fr\)_auto\]/);
+  assert.doesNotMatch(source, /sm:pt-7/);
   assert.match(source, /inset style variant/);
 });

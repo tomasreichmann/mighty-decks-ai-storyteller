@@ -9,6 +9,9 @@ import { TextArea } from "../components/common/TextArea";
 import { TextField } from "../components/common/TextField";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
+const inputButtonRowClassName = "grid gap-3 sm:flex sm:items-end sm:gap-0";
+const inputButtonWrapClassName = "sm:self-end";
+
 export const StyleguideInputsPage = (): JSX.Element => {
   return (
     <div className="styleguide-inputs-page app-shell stack gap-6 py-8">
@@ -35,7 +38,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
           Validate the field APIs here. The rows below keep inputs and buttons
-          beside each other so we can check that matching sizes stay aligned.
+          directly adjacent so we can check that matching sizes stay aligned.
         </Text>
       </div>
 
@@ -51,7 +54,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </div>
 
         <div className="grid gap-4">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <TextField
               label="Short title"
               size="sm"
@@ -59,13 +62,13 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="A compact title"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="sm" color="cloth">
                 Save
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <TextField
               label="Display name"
               size="md"
@@ -73,13 +76,13 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="A slightly longer label"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="md" color="cloth">
                 Preview
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <TextField
               label="Public prompt"
               size="lg"
@@ -87,7 +90,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="A more prominent input"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="lg" color="fire">
                 Submit
               </Button>
@@ -108,7 +111,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </div>
 
         <div className="grid gap-4">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <TextArea
               label="Short note"
               size="sm"
@@ -117,13 +120,13 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="One line of copy"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="sm" color="cloth">
                 Insert
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <TextArea
               label="Summary"
               size="md"
@@ -132,13 +135,13 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="A quick summary"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="md" color="cloth">
                 Preview
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <TextArea
               label="Long prompt"
               size="lg"
@@ -147,7 +150,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="A more expressive block of copy"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="lg" color="fire">
                 Send
               </Button>
@@ -169,7 +172,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </div>
 
         <div className="grid gap-4">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <DepressedInput
               label="Light prompt"
               size="sm"
@@ -177,13 +180,13 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="Compact inset field"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="sm" color="cloth">
                 Save
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <DepressedInput
               label="Message"
               size="md"
@@ -191,13 +194,13 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="A standard inset input"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="md" color="cloth">
                 Draft
               </Button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className={inputButtonRowClassName}>
             <DepressedInput
               label="Scene action"
               size="lg"
@@ -205,7 +208,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
               placeholder="A larger inset input"
               className="w-full max-w-md"
             />
-            <div className="sm:pt-7">
+            <div className={inputButtonWrapClassName}>
               <Button size="lg" color="fire">
                 Send
               </Button>

@@ -170,12 +170,12 @@ export const MarkdownImageInsertButton = ({
               <div className="absolute right-4 top-0 -translate-y-1/2">
                 <Button
                   variant="solid"
-                  color="bone"
+                  color="blood"
                   size="sm"
                   onClick={closeModal}
                   aria-label="Close image tools"
                 >
-                  Close
+                  <span aria-hidden="true">×</span>
                 </Button>
               </div>
             </div>
