@@ -46,6 +46,15 @@ test("Button circle variant stays lighter than the solid shell", () => {
   assert.doesNotMatch(circleBlock, /active:border-b-\[4px\]/);
 });
 
+test("Button iron solid variant uses a slightly lighter gradient than the darkest iron tone", () => {
+  const source = readFileSync(new URL("./Button.tsx", import.meta.url), "utf8");
+
+  assert.match(
+    source,
+    /case "iron":\s*case "iron-light":\s*case "iron-dark":\s*return "\[background-color:black\] bg-gradient-to-b from-kac-iron-light to-kac-iron text-kac-steel-light disabled:bg-kac-iron-light";/,
+  );
+});
+
 test("Button ghost variant gets a hard border shadow with matching states", () => {
   const source = readFileSync(new URL("./Button.tsx", import.meta.url), "utf8");
   const ghostMatch = source.match(/ghost:\s*cn\(([\s\S]*?)\n\s*\),/);

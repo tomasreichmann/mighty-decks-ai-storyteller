@@ -136,7 +136,7 @@ const resolveSolidColorClasses = (color: ButtonColors): string => {
     case "iron":
     case "iron-light":
     case "iron-dark":
-      return "[background-color:black] bg-gradient-to-b from-kac-iron-light to-kac-iron-dark text-kac-steel-light disabled:bg-kac-iron-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-iron-light to-kac-iron text-kac-steel-light disabled:bg-kac-iron-light";
     case "steel":
     case "steel-light":
     case "steel-dark":
