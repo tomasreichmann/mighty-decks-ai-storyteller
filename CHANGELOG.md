@@ -6,8 +6,16 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ## [Unreleased]
 
+### Added
+
+- Web: add a dedicated `/styleguide/loading` lab that showcases the shared `LoadingIndicator` progress ring and `PendingIndicator` dot state, and surface it from the styleguide overview and section nav.
+
 ### Changed
 
+- Web: keep solid iron buttons on steel borders while iron ghost buttons retain iron borders, matching the shared button family split in the styleguide.
+- Web: animate the styleguide loading rings from 0 to 100 over 4 seconds on page load, while respecting reduced-motion users by snapping straight to the final state.
+- Web: rework the styleguide loading ring so the percentage is smaller, the color label sits below the ring, and the progress arc can use any standard token color with an iron track that falls back to bone for iron.
+- Web: render the styleguide loading ring's 100% state as a true full circle so completion no longer looks half filled.
 - Web: make the shared Adventure Module image pickers fit previews with `object-contain` so title, location, encounter, quest, and asset art are shown in full instead of cropped.
 - Web: remove brittle visual class-name assertions from shared input, layout, and styleguide tests in favor of behavior-focused coverage.
 - Web: bottom-align the styleguide `TextArea` buttons with the textarea control so the row reads cleanly.
@@ -149,6 +157,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: retune the pending-dot palette so steel reads as steel, skin no longer borrows bone, and the blood, cloth, and fire dots stay bright enough to read at small sizes.
+- Web: fix overflowing Adventure Module theme pills so long labels truncate with an ellipsis instead of clipping mid-word.
 - Web: fix the shared generated-image picker so the trash clear button renders correctly, preview and gallery images fit instead of crop, model labels stay compact, action buttons align to the right, and gallery overlays can sit above the card boundary.
 - Web: add route-shell, section, and card error boundaries so broken routes, panels, and `GameCard` / `GameCardView` surfaces fail locally instead of blanking the whole app.
 - Web: prepopulate the shared generate-or-pick image dialog with the current image URL when it opens from an Adventure Module image picker, so saved title, map, encounter, quest, and asset images stay selected instead of reopening on a blank draft.

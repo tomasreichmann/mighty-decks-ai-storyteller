@@ -136,7 +136,7 @@ const resolveSolidColorClasses = (color: ButtonColors): string => {
     case "iron":
     case "iron-light":
     case "iron-dark":
-      return "[background-color:black] bg-gradient-to-b from-kac-iron-light to-kac-iron text-kac-steel-light disabled:bg-kac-iron-light";
+      return "[background-color:black] bg-gradient-to-b from-kac-iron-light to-kac-iron border-kac-steel text-kac-steel-light disabled:bg-kac-iron-light";
     case "steel":
     case "steel-light":
     case "steel-dark":
@@ -196,7 +196,7 @@ const resolveGhostColorClasses = (color: ButtonColors): string => {
     case "iron":
     case "iron-light":
     case "iron-dark":
-      return "text-kac-iron-light border-kac-iron/60 hover:bg-kac-steel-light/30";
+      return "text-kac-iron-light border-kac-iron/60 hover:bg-kac-steel-light/30 disabled:border-kac-iron/35";
     case "skin":
     case "skin-light":
     case "skin-dark":
