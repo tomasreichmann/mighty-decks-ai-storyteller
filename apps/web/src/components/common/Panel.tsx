@@ -14,11 +14,16 @@ export type PanelProps = PropsWithChildren<{
   Omit<JSX.IntrinsicElements["section"], "children">;
 
 const contentToneClassMap: Record<PanelTone, string> = {
-  bone: "[background-color:white] bg-gradient-to-b from-kac-bone-light/50 to-kac-bone-light",
-  gold: "[background-color:white] bg-gradient-to-b from-kac-gold-light to-kac-bone",
-  cloth:
-    "[background-color:white] bg-gradient-to-b from-kac-cloth-lightest to-kac-cloth-lightest/40",
-  fire: "[background-color:white] bg-gradient-to-b from-kac-fire-lightest to-kac-bone-light",
+  bone: "bg-gradient-to-b from-kac-bone-light/50 to-kac-bone-light/75",
+  gold: "bg-gradient-to-b from-kac-gold-light/50 to-kac-gold-light/75",
+  cloth: "bg-gradient-to-b from-kac-cloth-lightest/50 to-kac-cloth-lightest/75",
+  fire: "bg-gradient-to-b from-kac-fire-lightest/50 to-kac-fire-lightest/75",
+};
+const toneClassMap: Record<PanelTone, string> = {
+  bone: "before:border-kac-bone-dark before:border-solid",
+  gold: "before:border-kac-gold-dark before:border-solid",
+  cloth: "before:border-kac-cloth-dark before:border-solid",
+  fire: "before:border-kac-fire-dark before:border-solid",
 };
 
 export const Panel = ({
@@ -34,13 +39,13 @@ export const Panel = ({
 
   return (
     <Component
-      className={cn(styles.panelFrame, "relative p-1.5", className)}
+      className={cn(styles.panelFrame, toneClassMap[tone], "relative flex flex-col", className)}
       {...restProps}
     >
       <div
         className={cn(
           "flex-1 relative z-10",
-          "px-3 py-3 shadow-[inset_1px_1px_0_0_#fffaf0,inset_-1px_-1px_0_0_#d6c1a1]",
+          "px-3 py-3",
           contentToneClassMap[tone],
           contentClassName,
           disabled &&

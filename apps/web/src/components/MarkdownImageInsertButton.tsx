@@ -156,7 +156,7 @@ export const MarkdownImageInsertButton = ({
           role="presentation"
         >
           <Panel
-            className="my-auto w-full max-w-4xl max-h-[calc(100vh-2rem)]"
+            className="bg-white my-auto w-full max-w-4xl max-h-[calc(100vh-2rem)]"
             contentClassName="flex max-h-[calc(100vh-5rem)] min-h-0 flex-col gap-0"
             onClick={(event) => event.stopPropagation()}
             role="dialog"

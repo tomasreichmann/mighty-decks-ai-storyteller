@@ -582,7 +582,7 @@ Behavior:
 
 ### `/styleguide/panel`
 
-Hidden internal overview for the heavy framed surface.
+Hidden internal overview for the lighter framed surface.
 
 Components:
 
@@ -591,7 +591,7 @@ Components:
 
 Behavior:
 
-- showcases `Panel` as the heavyweight framed surface for major route blocks and summary panels
+- showcases `Panel` as the lighter framed surface for major route blocks and summary panels
 - keeps framed surfaces separate from the lighter body, field, and chip labs so contributors can judge when a frame is actually warranted
 
 ---

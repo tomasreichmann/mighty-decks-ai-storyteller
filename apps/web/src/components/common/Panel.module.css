@@ -4,18 +4,17 @@
 
 .panelFrame::before {
   content: "";
-  --size: 15px;
-  --skew-shift-x: 5px;
-  --skew-shift-y: 5px;
+  --size: 4px;
+  --skew-shift-x: 3px;
+  --skew-shift-y: 3px;
   position: absolute;
-  inset: 0;
-  z-index: 0;
+  inset: -4px;
   pointer-events: none;
-  border: var(--size) solid #090f15;
+  border-width: var(--size);
   clip-path: polygon(
     var(--skew-shift-x) var(--skew-shift-y),
-    100% 0%,
-    calc(100% - var(--skew-shift-x)) calc(100% - var(--skew-shift-y)),
-    0 100%
+    calc(100% - var(--skew-shift-x)) var(--skew-shift-y),
+    100% 100%,
+    var(--skew-shift-x) calc(100% - var(--skew-shift-y))
   );
 }

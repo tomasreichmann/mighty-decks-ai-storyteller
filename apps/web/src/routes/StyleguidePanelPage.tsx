@@ -57,7 +57,7 @@ export const StyleguidePanelPage = (): JSX.Element => {
           Panel
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          Panel is the heavy framed surface in the system. Use it for major
+          Panel is the lighter framed surface in the system. Use it for major
           story blocks, not as a default wrapper for every small subsection.
         </Text>
       </div>

@@ -45,3 +45,27 @@ test("Button circle variant stays lighter than the solid shell", () => {
   assert.doesNotMatch(circleBlock, /border-x-\[3px\]/);
   assert.doesNotMatch(circleBlock, /active:border-b-\[4px\]/);
 });
+
+test("Button ghost variant gets a hard border shadow with matching states", () => {
+  const source = readFileSync(new URL("./Button.tsx", import.meta.url), "utf8");
+  const ghostMatch = source.match(/ghost:\s*cn\(([\s\S]*?)\n\s*\),/);
+
+  assert.ok(ghostMatch, "ghost variant block should be present");
+
+  const ghostBlock = ghostMatch[1];
+
+  assert.match(ghostBlock, /border-2[\s\S]*border-kac-iron\/60[\s\S]*bg-transparent/);
+  assert.match(ghostBlock, /shadow-\[1px_1px_0_0_#121b23\]/);
+  assert.match(ghostBlock, /hover:translate-y-\[1px\]/);
+  assert.match(ghostBlock, /hover:shadow-\[2px_2px_0_0_#121b23\]/);
+  assert.match(ghostBlock, /active:translate-y-\[2px\]/);
+  assert.match(ghostBlock, /active:shadow-none/);
+  assert.match(ghostBlock, /disabled:translate-y-0/);
+  assert.match(ghostBlock, /disabled:shadow-\[1px_1px_0_0_#121b23\]/);
+});
+
+test("Button ghost fire variant uses fire border and text colors", () => {
+  const source = readFileSync(new URL("./Button.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /case "fire":\s*case "fire-light":\s*case "fire-lightest":\s*case "fire-dark":\s*return "text-kac-fire-dark border-kac-fire-dark\/70 hover:bg-kac-fire-light\/25";/);
+});

@@ -72,8 +72,12 @@ const variantClassMap: Record<ButtonVariant, string> = {
     "shadow-[3px_3px_0_0_#121b23] hover:shadow-[2px_2px_0_0_#121b23] active:shadow-[1px_1px_0_0_#121b23] disabled:shadow-[3px_3px_0_0_#121b23]",
     "bg-gradient-to-b disabled:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]",
   ),
-  ghost:
-    "border-2 border-kac-iron/60 bg-transparent shadow-none hover:brightness-[1.03] active:translate-y-[1px] active:shadow-none disabled:shadow-none disabled:border-kac-iron/35 disabled:bg-transparent",
+  ghost: cn(
+    "border-2 border-kac-iron/60 bg-transparent shadow-[1px_1px_0_0_#121b23]",
+    "hover:translate-y-[1px] hover:brightness-[1.03] hover:shadow-[2px_2px_0_0_#121b23]",
+    "active:translate-y-[2px] active:shadow-none",
+    "disabled:translate-y-0 disabled:shadow-[1px_1px_0_0_#121b23] disabled:border-kac-iron/35 disabled:bg-transparent",
+  ),
   circle: cn(
     "rounded-full bg-gradient-to-b border-2 border-kac-iron shadow-[2px_2px_0_0_#121b23]",
     "hover:translate-y-[1px] hover:brightness-[1] hover:shadow-[1px_1px_0_0_#121b23]",
@@ -174,6 +178,11 @@ const resolveGhostColorClasses = (color: ButtonColors): string => {
     case "blood-lightest":
     case "blood-dark":
       return "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15";
+    case "fire":
+    case "fire-light":
+    case "fire-lightest":
+    case "fire-dark":
+      return "text-kac-fire-dark border-kac-fire-dark/70 hover:bg-kac-fire-light/25";
     case "monster":
     case "monster-light":
     case "monster-lightest":

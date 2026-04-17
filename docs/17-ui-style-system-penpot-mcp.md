@@ -68,7 +68,7 @@ Usage rule:
 | --- | --- | --- | --- |
 | `scale.tailwind-used` | `0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 10, 12` | `canonical` | shared primitives |
 | `layout.shell` | `max-width 1120px`, `padding 1.25rem` | `canonical` | `apps/web/src/styles.css` |
-| `exceptions` | `panelFrame 15px`, `fadeMask 14px`, `halftoneGrid 10px`, `paperShadowInset -10px -20px` | `current-only` | panel/transcript/framed-image styles |
+| `exceptions` | `panelFrame 4px`, `fadeMask 14px`, `halftoneGrid 10px`, `paperShadowInset -10px -20px` | `current-only` | panel/transcript/framed-image styles |
 
 Usage rule:
 
@@ -140,13 +140,13 @@ Surface rules:
 
 - Use Panel gradients (`bone`, `gold`, `cloth`, `fire`) for framed containers.
 - Use Message gradients for semantic callouts.
-- Treat `Panel` as the heavyweight framed surface and validate its density and tone choices in `/styleguide/panel` before reusing it broadly.
+- Treat `Panel` as the framed surface and validate its density and tone choices in `/styleguide/panel` before reusing it broadly.
 
 Border rules:
 
 - Primary control border width is `2px`.
 - Input depth borders (`3px` + `6px`) are current-only style behavior.
-- Panel frame `15px` border remains pattern-specific.
+- Panel frame `4px` border remains pattern-specific.
 
 Radius rules:
 

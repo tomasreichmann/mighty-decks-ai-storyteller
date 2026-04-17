@@ -34,7 +34,7 @@ const overviewSections = [
     title: "Panel",
     tone: "bone" as const,
     description:
-      "Validate the heavyweight framed surface before you reach for it in the rest of the app.",
+      "Validate the lighter framed surface before you reach for it in the rest of the app.",
     href: "/styleguide/panel",
     buttonLabel: "Open Panel Lab",
   },
