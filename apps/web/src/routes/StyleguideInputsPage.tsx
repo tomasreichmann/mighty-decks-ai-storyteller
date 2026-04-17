@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/common/Button";
-import { DepressedInput } from "../components/common/DepressedInput";
 import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
@@ -11,6 +10,8 @@ import { StyleguideSectionNav } from "../components/styleguide/StyleguideSection
 
 const inputButtonRowClassName = "grid gap-3 sm:flex sm:items-end sm:gap-0";
 const inputButtonWrapClassName = "sm:self-end";
+const textAreaButtonRowClassName = "grid gap-3 sm:flex sm:items-end sm:gap-0";
+const textAreaButtonWrapClassName = "sm:self-end";
 
 export const StyleguideInputsPage = (): JSX.Element => {
   return (
@@ -111,104 +112,46 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </div>
 
         <div className="grid gap-4">
-          <div className={inputButtonRowClassName}>
+          <div className={textAreaButtonRowClassName}>
             <TextArea
               label="Short note"
               size="sm"
               color="gold"
-              rows={1}
+              rows={2}
               placeholder="One line of copy"
               className="w-full max-w-md"
             />
-            <div className={inputButtonWrapClassName}>
+            <div className={textAreaButtonWrapClassName}>
               <Button size="sm" color="cloth">
                 Insert
               </Button>
             </div>
           </div>
-          <div className={inputButtonRowClassName}>
+          <div className={textAreaButtonRowClassName}>
             <TextArea
               label="Summary"
               size="md"
               color="cloth"
-              rows={1}
+              rows={3}
               placeholder="A quick summary"
               className="w-full max-w-md"
             />
-            <div className={inputButtonWrapClassName}>
+            <div className={textAreaButtonWrapClassName}>
               <Button size="md" color="cloth">
                 Preview
               </Button>
             </div>
           </div>
-          <div className={inputButtonRowClassName}>
+          <div className={textAreaButtonRowClassName}>
             <TextArea
               label="Long prompt"
               size="lg"
               color="fire"
-              rows={1}
+              rows={4}
               placeholder="A more expressive block of copy"
               className="w-full max-w-md"
             />
-            <div className={inputButtonWrapClassName}>
-              <Button size="lg" color="fire">
-                Send
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Panel>
-
-      <Panel as="section" tone="gold" contentClassName="stack gap-4">
-        <div className="stack gap-1">
-          <Text variant="h3" color="iron">
-            DepressedInput and Button
-          </Text>
-          <Text variant="body" color="iron-light" className="text-sm">
-            `DepressedInput` is the inset style variant for heavier authoring
-            flows, including multiline prompts and fields that need counter or
-            helper affordances.
-          </Text>
-        </div>
-
-        <div className="grid gap-4">
-          <div className={inputButtonRowClassName}>
-            <DepressedInput
-              label="Light prompt"
-              size="sm"
-              color="gold"
-              placeholder="Compact inset field"
-              className="w-full max-w-md"
-            />
-            <div className={inputButtonWrapClassName}>
-              <Button size="sm" color="cloth">
-                Save
-              </Button>
-            </div>
-          </div>
-          <div className={inputButtonRowClassName}>
-            <DepressedInput
-              label="Message"
-              size="md"
-              color="cloth"
-              placeholder="A standard inset input"
-              className="w-full max-w-md"
-            />
-            <div className={inputButtonWrapClassName}>
-              <Button size="md" color="cloth">
-                Draft
-              </Button>
-            </div>
-          </div>
-          <div className={inputButtonRowClassName}>
-            <DepressedInput
-              label="Scene action"
-              size="lg"
-              color="fire"
-              placeholder="A larger inset input"
-              className="w-full max-w-md"
-            />
-            <div className={inputButtonWrapClassName}>
+            <div className={textAreaButtonWrapClassName}>
               <Button size="lg" color="fire">
                 Send
               </Button>
@@ -223,8 +166,8 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
           Use `TextField` for short single-line input, `TextArea` for compact
-          multi-line copy, and `DepressedInput` when the authoring flow needs a
-          heavier inset treatment and extra controls.
+          multi-line copy, and keep the shared field shell aligned with buttons
+          whenever an input sits beside an action.
         </Text>
         <Link
           to="/styleguide"

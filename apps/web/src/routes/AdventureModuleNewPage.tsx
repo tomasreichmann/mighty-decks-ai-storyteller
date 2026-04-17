@@ -1,10 +1,10 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/common/Button";
-import { DepressedInput } from "../components/common/DepressedInput";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
+import { TextField } from "../components/common/TextField";
 import {
   createAdventureModule,
   getAdventureModuleSlugAvailability,
@@ -170,7 +170,7 @@ export const AdventureModuleNewPage = (): JSX.Element => {
 
       <Panel className="max-w-2xl">
         <form className="stack gap-4" onSubmit={handleSubmit}>
-          <DepressedInput
+          <TextField
             label="Title"
             value={title}
             onChange={(event) => {
@@ -183,7 +183,7 @@ export const AdventureModuleNewPage = (): JSX.Element => {
             showCharCount
           />
 
-          <DepressedInput
+          <TextField
             label="Slug"
             value={slug}
             onChange={(event) => {

@@ -6,10 +6,10 @@ import type {
 } from "@mighty-decks/spec/campaign";
 import { CampaignSessionTranscriptFeed } from "../CampaignSessionTranscriptFeed";
 import { Button } from "../common/Button";
-import { DepressedInput } from "../common/DepressedInput";
 import { Message } from "../common/Message";
 import { Section } from "../common/Section";
 import { Text } from "../common/Text";
+import { TextArea } from "../common/TextArea";
 import { CampaignSessionChatLayout } from "../session/CampaignSessionChatLayout";
 import { CampaignSessionTable } from "../session/CampaignSessionTable";
 import type { GameCardCatalogContextValue } from "../../lib/gameCardCatalogContext";
@@ -81,8 +81,7 @@ export const CampaignStorytellerSessionTabContent = ({
             />
 
             <div className="stack gap-2">
-              <DepressedInput
-                multiline
+              <TextArea
                 label="Message"
                 color="gold"
                 rows={4}

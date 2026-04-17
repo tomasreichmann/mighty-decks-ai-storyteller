@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "./Button";
 import { ContextMenu, type ContextMenuRow } from "./ContextMenu";
-import { DepressedInput } from "./DepressedInput";
 import { Message } from "./Message";
 import { Text } from "./Text";
+import { TextArea } from "./TextArea";
 import {
   getWorkflowLabRun,
   startWorkflowLabRun,
@@ -835,11 +835,10 @@ export const SmartInput = ({
 
   return (
     <div className={className}>
-      <DepressedInput
+      <TextArea
         label={label}
         description={description}
         showLabel={showLabel}
-        multiline
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onBlur={() => onBlur?.()}

@@ -8,7 +8,6 @@ import type {
 } from "@mighty-decks/spec/workflowLab";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/common/Button";
-import { DepressedInput } from "../components/common/DepressedInput";
 import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
 import { Message } from "../components/common/Message";
@@ -17,6 +16,8 @@ import { RockerSwitch } from "../components/common/RockerSwitch";
 import { Section } from "../components/common/Section";
 import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
+import { TextArea } from "../components/common/TextArea";
+import { TextField } from "../components/common/TextField";
 import { listWorkflowLabWorkflows, startWorkflowLabRun, getWorkflowLabRun, subscribeWorkflowLabRunEvents, invalidateWorkflowLabRunSteps, rerunWorkflowLabRun } from "../lib/workflowLabApi";
 
 const MODEL_SLOTS: WorkflowModelSlot[] = [
@@ -573,7 +574,7 @@ export const WorkflowLabPage = (): JSX.Element => {
           </Section>
 
           <Section className="stack gap-3">
-            <DepressedInput
+            <TextField
               label="Workflow Run Timeout (ms)"
               value={timeoutMsText}
               onChange={(event) => setTimeoutMsText(event.target.value)}
@@ -583,7 +584,7 @@ export const WorkflowLabPage = (): JSX.Element => {
             />
             <div className="stack max-h-60 gap-2 overflow-auto px-1 pb-1 pt-2">
               {MODEL_SLOTS.map((slot) => (
-                <DepressedInput
+                <TextField
                   key={slot}
                   label={slot}
                   value={modelOverrides[slot] ?? ""}
@@ -611,9 +612,8 @@ export const WorkflowLabPage = (): JSX.Element => {
         >
           <div className="stack gap-4 min-w-0">
           <Section className="stack gap-3">
-            <DepressedInput
+            <TextArea
               label="Input JSON"
-              multiline={true}
               value={inputText}
               onChange={(event) => setInputText(event.target.value)}
               spellCheck={false}

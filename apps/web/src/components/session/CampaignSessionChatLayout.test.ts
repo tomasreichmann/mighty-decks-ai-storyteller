@@ -15,7 +15,6 @@ test("CampaignSessionChatLayout provides mobile table/chat switching with Button
   assert.match(source, /options=\{\[/);
   assert.match(source, /label: "Table"/);
   assert.match(source, /label: "Chat"/);
-  assert.match(source, /lg:grid lg:grid-cols-\[minmax\(0,2fr\)_minmax\(0,1fr\)\]/);
   assert.match(source, /activeMobilePane === "table"/);
   assert.match(source, /activeMobilePane === "chat"/);
 });

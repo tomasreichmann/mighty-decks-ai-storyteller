@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   GeneratedImageAsset,
   GeneratedImageGroup,
@@ -16,13 +16,13 @@ import {
   ButtonRadioGroup,
   type ButtonRadioGroupOption,
 } from "../common/ButtonRadioGroup";
-import { DepressedInput } from "../common/DepressedInput";
 import { InputDescriptionHint } from "../common/InputDescriptionHint";
 import { Label } from "../common/Label";
 import { Message } from "../common/Message";
 import { SmartInput } from "../common/SmartInput";
 import { Tags } from "../common/Tags";
 import { Text } from "../common/Text";
+import { TextField } from "../common/TextField";
 
 const PROMPT_MAX_LENGTH = 4000;
 const WORKFLOW_CONTEXT_MAX_LENGTH = 1000;
@@ -533,7 +533,7 @@ export const AdventureModuleGeneratedImageField = ({
   return (
     <div className="stack gap-3">
       <div className="flex items-end gap-2">
-        <DepressedInput
+          <TextField
           label={valueFieldLabel ?? "Selected Image URL"}
           description={
             valueFieldDescription ??
@@ -565,7 +565,7 @@ export const AdventureModuleGeneratedImageField = ({
           title="Clear image"
           className="shrink-0"
         >
-          <span aria-hidden="true">ðŸ—‘</span>
+          <span aria-hidden="true">{"\u{1F5D1}"}</span>
         </Button>
       </div>
 
@@ -699,7 +699,7 @@ export const AdventureModuleGeneratedImageField = ({
             No generated images yet. Use Generate or Edit to add one.
           </Message>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 overflow-visible sm:grid-cols-2 lg:grid-cols-3">
             {galleryItems.map((item) => {
               const isSelected =
                 normalizeImageUrl(item.image.fileUrl) === normalizeImageUrl(value);
@@ -707,21 +707,16 @@ export const AdventureModuleGeneratedImageField = ({
               return (
                 <div
                   key={item.image.imageId}
-                  className={cn(
-                    "relative overflow-hidden rounded-sm border-2 bg-kac-bone-light p-2",
-                    isSelected
-                      ? "border-kac-gold-dark shadow-[0_0_0_2px_rgba(196,146,39,0.2)]"
-                      : "border-kac-iron",
-                  )}
+                  className="relative overflow-visible pt-4"
                 >
-                  <div className="absolute left-2 top-2 z-10">
+                  <div className="absolute left-2 top-0 z-20 -translate-y-1/2">
                     <InputDescriptionHint
                       description={buildTooltipDescription(item)}
                       placement="bottom"
                     />
                   </div>
 
-                  <div className="absolute right-2 top-2 z-10">
+                  <div className="absolute right-2 top-0 z-20 -translate-y-1/2">
                     <Button
                       variant="circle"
                       color="blood"
@@ -739,20 +734,29 @@ export const AdventureModuleGeneratedImageField = ({
                     </Button>
                   </div>
 
-                  <button
-                    type="button"
-                    className="block w-full overflow-hidden rounded-sm"
-                    onClick={() => {
-                      onChange(item.image.fileUrl);
-                      onBlur?.();
-                    }}
+                  <div
+                    className={cn(
+                      "rounded-sm border-2 bg-kac-bone-light p-2",
+                      isSelected
+                        ? "border-kac-gold-dark shadow-[0_0_0_2px_rgba(196,146,39,0.2)]"
+                        : "border-kac-iron",
+                    )}
                   >
-                    <img
-                      src={item.image.fileUrl}
-                      alt={`${label} gallery option`}
-                      className="aspect-square w-full object-cover"
-                    />
-                  </button>
+                    <button
+                      type="button"
+                      className="block w-full overflow-hidden rounded-sm"
+                      onClick={() => {
+                        onChange(item.image.fileUrl);
+                        onBlur?.();
+                      }}
+                    >
+                      <img
+                        src={item.image.fileUrl}
+                        alt={`${label} gallery option`}
+                        className="aspect-square w-full object-contain object-center"
+                      />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -802,7 +806,7 @@ export const AdventureModuleGeneratedImageField = ({
             placeholder="Describe the key scene, subject, mood, and composition."
           />
 
-          <div className="stack gap-1">
+          <div className="stack items-start gap-1">
             <Label color="bone" rotate={false}>
               Image Model
             </Label>
@@ -828,7 +832,7 @@ export const AdventureModuleGeneratedImageField = ({
             </Text>
           ) : null}
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button
               color="gold"
               onClick={() => {
@@ -889,7 +893,7 @@ export const AdventureModuleGeneratedImageField = ({
             placeholder="Describe the edits you want to make to the selected image."
           />
 
-          <div className="stack gap-1">
+          <div className="stack items-start gap-1">
             <Label color="bone" rotate={false}>
               Edit Model
             </Label>
@@ -913,7 +917,7 @@ export const AdventureModuleGeneratedImageField = ({
             </Text>
           ) : null}
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button
               color="gold"
               onClick={() => {

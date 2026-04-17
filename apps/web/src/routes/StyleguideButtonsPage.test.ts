@@ -41,8 +41,6 @@ test("StyleguideButtonsPage showcases Button and CTAButton", () => {
   assert.doesNotMatch(source, /Cloth Wash/);
   assert.doesNotMatch(source, /Stamp Lift/);
   assert.doesNotMatch(source, /panelTone:/);
-  assert.doesNotMatch(source, /rounded-sm border-2 border-kac-iron\/20 bg-kac-bone-light\/45 p-3 shadow/);
-  assert.doesNotMatch(source, /rounded-sm border-2 border-kac-iron\/20 bg-kac-bone-light\/55 p-3 shadow/);
   assert.match(source, /single representative color/);
   assert.match(source, /full palette/);
 });

@@ -20,8 +20,8 @@ import { CardBoundary } from "../common/CardBoundary";
 import { Button } from "../common/Button";
 import { ButtonRadioGroup } from "../common/ButtonRadioGroup";
 import { ConnectionStatusPill } from "../common/ConnectionStatusPill";
-import { DepressedInput } from "../common/DepressedInput";
 import { Label, type LabelVariant } from "../common/Label";
+import { TextArea } from "../common/TextArea";
 import styles from "./StyleguideSessionChatMock.module.css";
 
 type ViewerRole = "player" | "storyteller";
@@ -729,8 +729,7 @@ const ChatRail = ({ viewerRole }: ChatRailProps): JSX.Element => {
       />
 
       <div className="stack gap-2">
-        <DepressedInput
-          multiline
+        <TextArea
           readOnly
           label="Message"
           color={viewerRole === "player" ? "fire" : "gold"}

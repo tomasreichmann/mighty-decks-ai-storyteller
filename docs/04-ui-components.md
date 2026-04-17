@@ -46,7 +46,7 @@ When creating a new route/view (or a major new panel in an existing view), prefe
 - Use `Button` for actions (including icon-only/circle variants) instead of styled `button`s.
 - Use `Label` for badge-like headings, tags, and compact status chips.
 - Use `Message` for alert/status/informational callouts instead of custom callout wrappers.
-- Use `TextField`, `TextArea`, and `DepressedInput` for form controls before creating one-off input styles.
+- Use `TextField` and `TextArea` for form controls before creating one-off input styles.
 - Use `Button`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` for button-like controls that need aligned heights or grouped states.
 
 ### `div` is still allowed, but only for these roles
@@ -553,14 +553,13 @@ Components:
 - `StyleguideInputsPage`
 - `TextField`
 - `TextArea`
-- `DepressedInput`
 - `Button`
 
 Behavior:
 
 - groups the shared input primitives beside matching buttons so contributors can confirm height alignment before they reuse a control in a feature surface
-- keeps the standard input shells and depressed input shells in one page for API validation
-- treats `DepressedInput` as the inset input style variant and validates button/input rows side by side so adjacent controls can share a height baseline
+- keeps the standard input shells in one page for API validation
+- validates button/input rows side by side so adjacent controls can share a height baseline
 
 ---
 
@@ -1002,9 +1001,8 @@ Located in `apps/web/src/components/common/`:
 - `Message`
 - `Tag`
 - `ConnectionStatusPill`
-- `TextField` (standard single-line field with the shared `sm`/`md`/`lg` size ladder)
-- `TextArea` (multiline field with the shared `sm`/`md`/`lg` size ladder)
-- `DepressedInput` (depressed shell input with the shared `sm`/`md`/`lg` size ladder)
+- `TextField` (shared single-line field with the `sm`/`md`/`lg` size ladder)
+- `TextArea` (shared multiline field with the `sm`/`md`/`lg` size ladder)
 - `Toggle`
 - `Highlight` (decorative text accent; use via `Heading` where possible)
 - `ImageBackground` (for image-backed UI blocks)
@@ -1017,7 +1015,7 @@ Recent routes/components already follow this in many places:
 - `ImageGenerator` uses `Section`/`Panel` + `Heading`/`Text` + `Button`
 - `AdventureHeader`, `NarratedSceneCard`, `GenericVotePanel`, `ReadyGatePanel`, `TranscriptFeed` rely on shared primitives instead of one-off shells
 - `/styleguide` now includes focused typography, inputs, buttons, cards, tags, controls, and session-chat labs so contributors can validate one API family at a time
-- the shared `Button`, `TextField`, `TextArea`, `DepressedInput`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` shells all use the common `sm`/`md`/`lg` size ladder so adjacent controls can match height
+- the shared `Button`, `TextField`, `TextArea`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` shells all use the common `sm`/`md`/`lg` size ladder so adjacent controls can match height
 
 New views should follow these patterns by default rather than introducing custom framed boxes or custom typography wrappers.
 

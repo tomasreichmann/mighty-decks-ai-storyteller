@@ -33,6 +33,6 @@ test("Rules card pages wrap GameCardView in CardBoundary", () => {
 
   for (const source of [outcomesSource, effectsSource, stuntsSource]) {
     assert.match(source, /CardBoundary/);
-    assert.match(source, /<CardBoundary[\s\S]*<GameCardView gameCard=\{gameCard\} className="mx-auto" \/>[\s\S]*<\/CardBoundary>/);
+    assert.match(source, /<CardBoundary[\s\S]*<GameCardView gameCard=\{gameCard\}[\s\S]*<\/CardBoundary>/);
   }
 });

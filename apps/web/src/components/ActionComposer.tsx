@@ -1,10 +1,10 @@
 import { FormEvent, KeyboardEvent, useState } from "react";
 import { Button } from "./common/Button";
 import { Section } from "./common/Section";
-import { DepressedInput } from "./common/DepressedInput";
 import { Text } from "./common/Text";
 import { Message } from "./common/Message";
 import { Toggle } from "./common/Toggle";
+import { TextArea } from "./common/TextArea";
 
 interface ActionComposerProps {
   connected: boolean;
@@ -71,8 +71,7 @@ export const ActionComposer = ({
           />
         ) : null}
         <form className="stack" onSubmit={handleSubmit}>
-          <DepressedInput
-            multiline
+          <TextArea
             label={metagameEnabled ? "Ask a Storyteller" : "Your action"}
             color={metagameEnabled ? "curse" : "gold"}
             rows={3}

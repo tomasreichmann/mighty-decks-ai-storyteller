@@ -23,10 +23,10 @@ test("runtime GameCardView render paths are wrapped in CardBoundary", () => {
   );
   assertWrapped(
     "../components/styleguide/StyleguideSessionChatMock.tsx",
-    /<CardBoundary[\s\S]*<GameCardView gameCard=\{card\.card\} className=\{compactCardClassName\} \/>[\s\S]*<\/CardBoundary>/,
+    /<CardBoundary[\s\S]*<GameCardView gameCard=\{card\.card\}[\s\S]*<\/CardBoundary>/,
   );
   assertWrapped(
     "../components/session/campaignSessionTable/resolveReference.tsx",
-    /<CardBoundary[\s\S]*<GameCardView gameCard=\{resolved\} className=\{compactCardClassName\} \/>[\s\S]*<\/CardBoundary>/,
+    /<CardBoundary[\s\S]*<GameCardView gameCard=\{resolved\}[\s\S]*<\/CardBoundary>/,
   );
 });

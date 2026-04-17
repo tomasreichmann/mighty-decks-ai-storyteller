@@ -18,7 +18,7 @@ const overviewSections = [
     title: "Inputs",
     tone: "cloth" as const,
     description:
-      "Check TextField, TextArea, and DepressedInput side by side with matching button heights.",
+      "Check TextField and TextArea side by side with matching button heights.",
     href: "/styleguide/inputs",
     buttonLabel: "Open Inputs Lab",
   },

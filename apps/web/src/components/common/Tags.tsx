@@ -1,12 +1,12 @@
 import { type KeyboardEvent, useId, useMemo, useState } from "react";
 import { cn } from "../../utils/cn";
 import { Button } from "./Button";
-import { DepressedInput } from "./DepressedInput";
 import { Dropdown } from "./Dropdown";
 import { InputDescriptionHint } from "./InputDescriptionHint";
 import { Label, type LabelVariant } from "./Label";
 import { Tag, type TagTone } from "./Tag";
 import { Text } from "./Text";
+import { TextField } from "./TextField";
 
 export interface TagOption {
   value: string;
@@ -341,7 +341,7 @@ export const Tags = ({
                   )}
                 >
                   <div className="stack gap-2">
-                    <DepressedInput
+                    <TextField
                       id={`${searchInputId}-search`}
                       label="Search tags"
                       value={query}

@@ -5,11 +5,11 @@ import { ActorCard } from "../components/cards/ActorCard";
 import { CampaignSessionTranscriptFeed } from "../components/CampaignSessionTranscriptFeed";
 import { MarkdownImageInsertButton } from "../components/MarkdownImageInsertButton";
 import { Button } from "../components/common/Button";
-import { DepressedInput } from "../components/common/DepressedInput";
 import { Message } from "../components/common/Message";
 import { Section } from "../components/common/Section";
 import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
+import { TextArea } from "../components/common/TextArea";
 import { TextField } from "../components/common/TextField";
 import { CampaignSessionChatLayout } from "../components/session/CampaignSessionChatLayout";
 import { CampaignSessionTable } from "../components/session/CampaignSessionTable";
@@ -416,8 +416,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
                 ) : null}
 
                 <div className="stack shrink-0 gap-2">
-                  <DepressedInput
-                    multiline
+                  <TextArea
                     label="Message"
                     color="gold"
                     rows={4}

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-test("StyleguideInputsPage validates field and button alignment", () => {
+test("StyleguideInputsPage includes the input demos", () => {
   const source = readFileSync(
     new URL("./StyleguideInputsPage.tsx", import.meta.url),
     "utf8",
@@ -12,14 +12,11 @@ test("StyleguideInputsPage validates field and button alignment", () => {
   assert.match(source, /StyleguideSectionNav/);
   assert.match(source, /TextField/);
   assert.match(source, /TextArea/);
-  assert.match(source, /DepressedInput/);
   assert.match(source, /Button/);
   assert.match(source, /size="sm"/);
   assert.match(source, /size="md"/);
   assert.match(source, /size="lg"/);
-  assert.match(source, /sm:flex sm:items-end sm:gap-0/);
-  assert.match(source, /sm:self-end/);
-  assert.doesNotMatch(source, /sm:grid-cols-\[minmax\(0,1fr\)_auto\]/);
-  assert.doesNotMatch(source, /sm:pt-7/);
-  assert.match(source, /inset style variant/);
+  assert.match(source, /rows=\{2\}/);
+  assert.match(source, /rows=\{3\}/);
+  assert.match(source, /rows=\{4\}/);
 });

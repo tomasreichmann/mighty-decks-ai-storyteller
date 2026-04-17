@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { PlayerSetup } from "@mighty-decks/spec/adventureState";
 import { Button } from "./common/Button";
+import { TextArea } from "./common/TextArea";
+import { TextField } from "./common/TextField";
 import { Section } from "./common/Section";
-import { DepressedInput } from "./common/DepressedInput";
 import { generateUuid } from "../lib/randomId";
 import { Label } from "./common/Label";
 import { Text } from "./common/Text";
@@ -228,7 +229,7 @@ export const CharacterSetupForm = ({
             />
           </span>
         </Text>
-        <DepressedInput
+        <TextField
           id="character-name"
           label="What do they call your character?"
           placeholder="Nyra Flint"
@@ -239,8 +240,7 @@ export const CharacterSetupForm = ({
           disabled={setupLocked}
           required
         />
-        <DepressedInput
-          multiline
+        <TextArea
           id="character-visual-description"
           label="What does your character look like?"
           placeholder="A storm-chaser in patched leather with brass goggles."
@@ -253,8 +253,7 @@ export const CharacterSetupForm = ({
           required
         />
         {showAdventurePreference ? (
-          <DepressedInput
-            multiline
+          <TextArea
             id="adventure-preference"
             label="What adventure do you want to play?"
             placeholder="A tense mystery with weird weather and ruins."

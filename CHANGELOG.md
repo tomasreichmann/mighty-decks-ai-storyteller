@@ -8,17 +8,21 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: remove brittle visual class-name assertions from shared input, layout, and styleguide tests in favor of behavior-focused coverage.
+- Web: bottom-align the styleguide `TextArea` buttons with the textarea control so the row reads cleanly.
 - Refresh the shared image dialog into explicit `Gallery`, `Generate`, and `Edit` modes with the selected preview below the drop zone, muted prompt/model metadata, smaller labeled model selects, gallery info/remove controls, and fal-only image edit generation from the currently selected image.
+- Web: retire the old inset input in favor of shared `TextField` and `TextArea` defaults, then update the styleguide inputs lab and every call site to use the new primitives.
+- Web: move the shared `SearchField` width constraint onto the shell so the adventure authoring and list-page search bars no longer stretch a blank row beside the input.
 - Web: lighten the shared `Button` circle variant with a smaller shadow, a gentler hover press, and better icon centering so compact actions feel less heavy.
 - Web: replace the Adventure Module title, location, encounter, and quest inline image generator blocks with framed image pickers that open the shared generate-or-pick dialog from a top-right trigger button.
-- Web: in the shared generate-or-pick image dialog, replace the selected image URL text field with a depressed input plus inline trash clear button, and add drag-and-drop raw image upload that saves external images on the server.
+- Web: in the shared generate-or-pick image dialog, replace the selected image URL text field with a `TextField` plus inline trash clear button, and add drag-and-drop raw image upload that saves external images on the server.
 - Web: add raw-image selection mode to the shared image dialog so image fields can reuse the same modal without inserting markdown.
-- Narrow the Adventure Module, Campaign, and authoring entity list search bars into a shared compact depressed search field, and normalize their card grids to a mobile 1-column, tablet 2-column, desktop 3-column layout.
+- Narrow the Adventure Module, Campaign, and authoring entity list search bars into a shared compact `TextField` search field, and normalize their card grids to a mobile 1-column, tablet 2-column, desktop 3-column layout.
 - Replace the empty counters panel shell with a neutral `Message` state so the "no counters yet" view feels lighter and less framed.
-- Standardize `Label`, `Heading`, `Button`, `TextField`, `TextArea`, `DepressedInput`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` around shared `size`/`color` naming and aligned heights so adjacent controls line up cleanly.
+- Standardize `Label`, `Heading`, `Button`, `TextField`, `TextArea`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup` around shared `size`/`color` naming and aligned heights so adjacent controls line up cleanly.
 - Split `/styleguide` into typography, inputs, buttons, cards, tags, controls, and session-chat labs with a shared secondary nav.
 - Add a dedicated `/styleguide/panel` lab, collapse the cards entry into a single gallery page, and expand the typography/tag color coverage to include the missing sticker and chip tones.
-- Tighten the inputs lab so button rows stay aligned with the shared field height ladder and frame `DepressedInput` as the inset style variant.
+- Tighten the inputs lab so button rows stay aligned with the shared field height ladder and frame `TextField`/`TextArea` as the shared default input variants.
 - Clarify contributor guidance so style-only changes do not need brittle class-name or DOM-structure tests; prefer manual or visual verification unless behavior or contracts change.
 - Rework the hidden `/styleguide` playground into an overview plus scoped `Cards`, `Tags`, `Controls`, and `Session Chat` pages with a shared secondary nav.
 - Make `Tag` the reusable chip shell for read-only labels, editable tag rows, and connection status pills.
@@ -144,6 +148,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: fix the shared generated-image picker so the trash clear button renders correctly, preview and gallery images fit instead of crop, model labels stay compact, action buttons align to the right, and gallery overlays can sit above the card boundary.
 - Web: add route-shell, section, and card error boundaries so broken routes, panels, and `GameCard` / `GameCardView` surfaces fail locally instead of blanking the whole app.
 - Web: prepopulate the shared generate-or-pick image dialog with the current image URL when it opens from an Adventure Module image picker, so saved title, map, encounter, quest, and asset images stay selected instead of reopening on a blank draft.
 - Web: add the framed generated-image picker to Adventure Module custom asset icon editing so the old plain `Icon URL` text field now opens the same dialog-backed image flow as the other entity image fields.

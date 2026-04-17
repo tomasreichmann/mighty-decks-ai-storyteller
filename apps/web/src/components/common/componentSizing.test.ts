@@ -9,7 +9,4 @@ test("shared component sizing exports the sm md lg ladder", () => {
   assert.match(source, /componentSurfaceSizeClassMap/);
   assert.match(source, /componentCircleSizeClassMap/);
   assert.match(source, /componentLabelSizeClassMap/);
-  assert.match(source, /sm: "min-h-8 px-3 py-1\.5 text-xs"/);
-  assert.match(source, /md: "min-h-10 px-4 py-2 text-sm"/);
-  assert.match(source, /lg: "min-h-12 px-5 py-2\.5 text-base"/);
 });

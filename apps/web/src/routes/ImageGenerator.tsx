@@ -9,7 +9,6 @@ import {
   ContextMenu,
   type ContextMenuRow,
 } from "../components/common/ContextMenu";
-import { DepressedInput } from "../components/common/DepressedInput";
 import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
 import { Message } from "../components/common/Message";
@@ -17,6 +16,8 @@ import { RockerSwitch } from "../components/common/RockerSwitch";
 import { Section } from "../components/common/Section";
 import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
+import { TextArea } from "../components/common/TextArea";
+import { TextField } from "../components/common/TextField";
 import {
   IMAGE_RESOLUTION_PRESETS,
   useImageGeneration,
@@ -150,16 +151,15 @@ export const ImageGenerator = (): JSX.Element => {
         className="stack gap-4"
       >
         <Section className="stack gap-4">
-        <DepressedInput
-          label="Prompt"
-          multiline={true}
-          value={prompt}
-          onChange={(event) => setPrompt(event.target.value)}
-          rows={4}
-          maxLength={4000}
-          showCharCount={true}
-          placeholder="Describe the scene you want to generate..."
-        />
+          <TextArea
+            label="Prompt"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            rows={4}
+            maxLength={4000}
+            showCharCount={true}
+            placeholder="Describe the scene you want to generate..."
+          />
 
         <div className="flex flex-wrap items-end gap-3">
           <label className="stack max-w-[14rem] min-w-[11rem] flex-1 gap-1">
@@ -236,7 +236,7 @@ export const ImageGenerator = (): JSX.Element => {
             </select>
           </label>
 
-          <DepressedInput
+          <TextField
             label="Amount"
             type="number"
             min={1}
@@ -248,7 +248,7 @@ export const ImageGenerator = (): JSX.Element => {
 
           {resolutionPresetId === "custom" ? (
             <>
-              <DepressedInput
+              <TextField
                 label="Custom Width"
                 type="number"
                 min={64}
@@ -257,7 +257,7 @@ export const ImageGenerator = (): JSX.Element => {
                 onChange={(event) => setCustomWidth(event.target.value)}
                 className="xl:max-w-[8rem]"
               />
-              <DepressedInput
+              <TextField
                 label="Custom Height"
                 type="number"
                 min={64}

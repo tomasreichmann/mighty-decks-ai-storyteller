@@ -1,6 +1,6 @@
 import type { ChangeEventHandler } from "react";
 import { cn } from "../../utils/cn";
-import { DepressedInput } from "./DepressedInput";
+import { TextField } from "./TextField";
 
 interface SearchFieldProps {
   label: string;
@@ -20,13 +20,14 @@ export const SearchField = ({
   className = "",
 }: SearchFieldProps): JSX.Element => {
   return (
-    <DepressedInput
-      label={label}
-      id={id}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className={cn("w-full max-w-lg", className)}
-    />
+    <div className={cn("w-full max-w-lg", className)}>
+      <TextField
+        label={label}
+        id={id}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+      />
+    </div>
   );
 };

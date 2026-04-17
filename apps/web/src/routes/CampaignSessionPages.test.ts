@@ -64,13 +64,13 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.match(source, /CampaignSessionChatLayout/);
   assert.match(source, /CampaignSessionTable/);
   assert.match(source, /MarkdownImageInsertButton/);
-  assert.match(source, /DepressedInput/);
+  assert.match(source, /TextArea/);
   assert.match(source, /removeTableCard/);
   assert.match(source, /drawOutcomeCard/);
   assert.match(source, /shuffleOutcomeDeck/);
   assert.match(source, /playOutcomeCards/);
   assert.match(source, /inChatRoute && hasClaim[\s\S]*<CampaignSessionChatLayout/);
-  assert.match(source, /<DepressedInput[\s\S]*label="Message"[\s\S]*topRightControl=\{/);
+  assert.match(source, /<TextArea[\s\S]*label="Message"[\s\S]*topRightControl=\{/);
   assert.match(source, /handleMessageKeyDown/);
   assert.match(source, /event\.shiftKey\s*\|\|\s*event\.ctrlKey\s*\|\|\s*event\.metaKey\s*\|\|\s*event\.altKey/);
   assert.match(source, />\s*Send\s*</);
@@ -85,5 +85,4 @@ test("CampaignSessionPlayerPage supports claim, create, and a transcript-first f
   assert.doesNotMatch(source, /claimedCharacter\.summary \?\? "No summary yet\."./);
   assert.doesNotMatch(source, />\s*Transcript\s*</);
   assert.doesNotMatch(source, /import\s+\{\s*Panel\s*\}\s+from/);
-  assert.doesNotMatch(source, /import\s+\{\s*TextArea\s*\}/);
 });

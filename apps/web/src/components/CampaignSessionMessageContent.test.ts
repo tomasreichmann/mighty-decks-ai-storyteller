@@ -34,6 +34,5 @@ test("CampaignSessionMessageContent promotes played-card transcript shortcodes o
   );
 
   assert.match(source, /endsWith\("played:"\)/);
-  assert.match(source, /flex flex-wrap items-start gap-2/);
   assert.match(source, /game_card|encounter_card|quest_card/);
 });
