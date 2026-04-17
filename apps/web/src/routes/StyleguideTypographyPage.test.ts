@@ -25,4 +25,11 @@ test("StyleguideTypographyPage showcases Label, Text, and Heading", () => {
   assert.match(source, /highlight: "gold"/);
   assert.match(source, /highlight: "fire"/);
   assert.match(source, /highlight: "cloth"/);
+  assert.match(source, /Supported heading highlights/);
+  assert.match(source, /highlight: "blood"/);
+  assert.match(source, /highlight: "bone"/);
+  assert.match(source, /highlight: "steel"/);
+  assert.match(source, /highlight: "skin"/);
+  assert.match(source, /highlight: "curse"/);
+  assert.match(source, /highlight: "monster"/);
 });

@@ -23,6 +23,18 @@ const headingSamples = [
   { level: "h3" as const, title: "Heading level 3", highlight: "cloth" as const },
 ] as const;
 
+const supportedHeadingHighlightSamples = [
+  { title: "Gold", highlight: "gold" as const },
+  { title: "Fire", highlight: "fire" as const },
+  { title: "Blood", highlight: "blood" as const },
+  { title: "Bone", highlight: "bone" as const },
+  { title: "Steel", highlight: "steel" as const },
+  { title: "Skin", highlight: "skin" as const },
+  { title: "Cloth", highlight: "cloth" as const },
+  { title: "Curse", highlight: "curse" as const },
+  { title: "Monster", highlight: "monster" as const },
+] as const;
+
 export const StyleguideTypographyPage = (): JSX.Element => {
   return (
     <div className="styleguide-typography-page app-shell stack gap-6 py-8">
@@ -136,6 +148,28 @@ export const StyleguideTypographyPage = (): JSX.Element => {
                 {sample.title}
               </Heading>
             ))}
+          </div>
+          <div className="stack gap-2 border-t border-kac-iron/15 pt-3">
+            <Text variant="h3" color="iron" className="text-[1.7rem]">
+              Supported heading highlights
+            </Text>
+            <Text variant="body" color="iron-light" className="text-sm">
+              These are the supported base highlight colors for `Heading`.
+              They resolve to lighter underline tones so the accent reads as a
+              highlight instead of a heavy stroke.
+            </Text>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {supportedHeadingHighlightSamples.map((sample) => (
+                <Heading
+                  key={sample.title}
+                  level="h3"
+                  color="iron"
+                  highlightProps={{ color: sample.highlight }}
+                >
+                  {sample.title}
+                </Heading>
+              ))}
+            </div>
           </div>
         </Panel>
       </div>

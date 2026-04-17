@@ -39,7 +39,7 @@ export const StyleguideQuestCardPage = (): JSX.Element => {
           level="h1"
           color="iron"
           className="text-[2.2rem] sm:text-[3.2rem]"
-          highlightProps={{ color: "gold-dark" }}
+          highlightProps={{ color: "gold" }}
         >
           Quest Card
         </Heading>

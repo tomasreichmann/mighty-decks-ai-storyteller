@@ -8,6 +8,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: make the shared `Heading` semantic highlight palette resolve to lighter tones for `gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, and `monster`, normalize the styleguide typography and quest-card demo headings onto that semantic palette so the underlines no longer read as heavy dark strokes, and add a live styleguide showcase of every supported heading highlight.
+- Web: give the shared `Button` ghost variant a 1px hard border shadow with matching hover, active, and disabled states so the secondary action shell sits closer to the solid button.
+- Web: fix the ghost `fire` variant so it uses the fire border and text colors instead of falling back to the steel palette.
+- Web: turn `/styleguide/buttons` into a four-way buttons matrix with single-color size ladders and full-palette rows for solid, CTA, circle, and ghost buttons, removing the prototype ghost comparison lab.
 - Web: lighten the shared `Button` circle variant with a smaller shadow, a gentler hover press, and better icon centering so compact actions feel less heavy.
 - Web: replace the Adventure Module title, location, encounter, and quest inline image generator blocks with framed image pickers that open the shared generate-or-pick dialog from a top-right trigger button.
 - Web: in the shared generate-or-pick image dialog, replace the selected image URL text field with a depressed input plus inline trash clear button, and add drag-and-drop raw image upload that saves external images on the server.

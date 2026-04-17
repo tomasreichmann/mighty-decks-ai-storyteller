@@ -1,13 +1,149 @@
 import { Link } from "react-router-dom";
-import { Button } from "../components/common/Button";
+import { Button, type ButtonColors, type ButtonSize } from "../components/common/Button";
 import { CTAButton } from "../components/common/CTAButton";
 import { Heading } from "../components/common/Heading";
-import { Label } from "../components/common/Label";
+import { Label, type LabelColor } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
-const buttonColors = ["gold", "cloth", "bone", "fire"] as const;
+const buttonPalette = [
+  { name: "Gold", color: "gold" as const },
+  { name: "Cloth", color: "cloth" as const },
+  { name: "Bone", color: "bone" as const },
+  { name: "Fire", color: "fire" as const },
+  { name: "Iron", color: "iron" as const },
+  { name: "Steel", color: "steel" as const },
+  { name: "Blood", color: "blood" as const },
+  { name: "Curse", color: "curse" as const },
+  { name: "Monster", color: "monster" as const },
+  { name: "Skin", color: "skin" as const },
+] as const;
+
+const sizeLadderLabels: Record<ButtonSize, string> = {
+  sm: "Small",
+  md: "Medium",
+  lg: "Large",
+};
+
+type ShowcaseKind = "solid" | "cta" | "circle" | "ghost";
+
+const sizeShowcaseCards = [
+  {
+    name: "Solid",
+    kind: "solid" as const,
+    labelColor: "gold" as const,
+    sampleColor: "gold" as const,
+    description:
+      "The shared filled action shell. Use it for default actions and primary choices.",
+  },
+  {
+    name: "CTA",
+    kind: "cta" as const,
+    labelColor: "cloth" as const,
+    sampleColor: "cloth" as const,
+    description:
+      "The slanted hero wrapper. Use it when the action should feel more editorial and forceful.",
+  },
+  {
+    name: "Circle",
+    kind: "circle" as const,
+    labelColor: "steel" as const,
+    sampleColor: "iron" as const,
+    description:
+      "The icon-only control for compact utility actions and small toolbars.",
+  },
+  {
+    name: "Ghost",
+    kind: "ghost" as const,
+    labelColor: "steel" as const,
+    sampleColor: "steel" as const,
+    description:
+      "The outlined secondary action with the hard border shadow treatment.",
+  },
+] as const;
+
+const colorShowcaseRows = [
+  {
+    name: "Solid",
+    kind: "solid" as const,
+    labelColor: "gold" as const,
+    panelTone: "bone" as const,
+    description: "The filled button shell across the full palette.",
+  },
+  {
+    name: "CTA",
+    kind: "cta" as const,
+    labelColor: "cloth" as const,
+    panelTone: "cloth" as const,
+    description: "The slanted CTA wrapper across the full palette.",
+  },
+  {
+    name: "Circle",
+    kind: "circle" as const,
+    labelColor: "steel" as const,
+    panelTone: "gold" as const,
+    description: "The compact icon-only circle across the full palette.",
+  },
+  {
+    name: "Ghost",
+    kind: "ghost" as const,
+    labelColor: "steel" as const,
+    panelTone: "fire" as const,
+    description: "The outlined ghost button across the full palette, now including the corrected fire tone.",
+  },
+] as const;
+
+const resolveLabelColor = (color: ButtonColors): LabelColor =>
+  (color === "iron" ? "steel" : color) as LabelColor;
+
+const renderShowcaseButton = (
+  kind: ShowcaseKind,
+  color: ButtonColors,
+  content: string,
+  size: ButtonSize,
+  options: { ariaLabel?: string; wide?: boolean } = {},
+): JSX.Element => {
+  const { ariaLabel, wide = false } = options;
+  const widthClassName = wide ? "w-full" : "";
+
+  switch (kind) {
+    case "solid":
+      return (
+        <Button variant="solid" color={color} size={size} className={widthClassName}>
+          {content}
+        </Button>
+      );
+    case "cta":
+      return (
+        <CTAButton
+          color={color}
+          size={size}
+          containerClassName={widthClassName}
+          className={widthClassName}
+        >
+          {content}
+        </CTAButton>
+      );
+    case "circle":
+      return (
+        <Button
+          variant="circle"
+          color={color}
+          size={size}
+          aria-label={ariaLabel ?? content}
+        >
+          {content}
+        </Button>
+      );
+    case "ghost":
+      return (
+        <Button variant="ghost" color={color} size={size} className={widthClassName}>
+          {content}
+        </Button>
+      );
+  }
+};
 
 export const StyleguideButtonsPage = (): JSX.Element => {
   return (
@@ -34,115 +170,118 @@ export const StyleguideButtonsPage = (): JSX.Element => {
           Buttons
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          Validate the core button API here. The rows below check size, color,
-          variant, and the slanted CTA wrapper without mixing in other control
-          families.
+          Validate the core button API here. The rows below show each button
+          family at a single representative color for size comparison, then fan
+          solid, CTA, circle, and ghost buttons across the full palette without
+          mixing in other control families.
         </Text>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Panel as="section" tone="bone" contentClassName="stack gap-4">
-          <div className="stack gap-1">
-            <Text variant="h3" color="iron">
-              Button size ladder
-            </Text>
-            <Text variant="body" color="iron-light" className="text-sm">
-              Use the shared `sm`, `md`, and `lg` sizes so buttons line up with
-              inputs and other controls.
-            </Text>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button size="sm" color="gold">
-              Small
-            </Button>
-            <Button size="md" color="gold">
-              Medium
-            </Button>
-            <Button size="lg" color="gold">
-              Large
-            </Button>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {buttonColors.map((color) => (
-              <Button key={color} size="md" color={color}>
-                {color}
-              </Button>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel as="section" tone="cloth" contentClassName="stack gap-4">
-          <div className="stack gap-1">
-            <Text variant="h3" color="iron">
-              Variant samples
-            </Text>
-            <Text variant="body" color="iron-light" className="text-sm">
-              Solid, ghost, and circle buttons all share the same sizing API
-              now, so you can swap variants without breaking the rhythm.
-            </Text>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="solid" color="cloth">
-              Solid
-            </Button>
-            <Button variant="ghost" color="cloth">
-              Ghost
-            </Button>
-            <Button variant="circle" color="cloth" size="sm" aria-label="Add">
-              +
-            </Button>
-            <Button variant="circle" color="cloth" size="md" aria-label="Add">
-              +
-            </Button>
-            <Button variant="circle" color="cloth" size="lg" aria-label="Add">
-              +
-            </Button>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="ghost" color="gold">
-              Gold
-            </Button>
-            <Button variant="ghost" color="fire">
-              Fire
-            </Button>
-            <Button variant="ghost" color="bone">
-              Bone
-            </Button>
-            <Button variant="ghost" color="monster">
-              Monster
-            </Button>
-          </div>
-        </Panel>
-      </div>
-
-      <Panel as="section" tone="gold" contentClassName="stack gap-4">
+      <Panel as="section" tone="bone" contentClassName="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
-            CTAButton wrapper
+            Button size ladders
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            `CTAButton` layers the skewed hero treatment on top of the shared
-            `Button` primitive for strong primary actions.
+            Each card uses one representative color so you can compare how the
+            four button families hold their proportions at `sm`, `md`, and
+            `lg`.
           </Text>
         </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <CTAButton color="gold" size="md">
-            Primary CTA
-          </CTAButton>
-          <CTAButton color="cloth" size="sm">
-            Secondary CTA
-          </CTAButton>
+        <div className="grid gap-4 xl:grid-cols-2">
+          {sizeShowcaseCards.map((card) => (
+            <div
+              key={card.name}
+              className="stack gap-3 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/45 p-3 shadow-[2px_2px_0_0_#121b23]"
+            >
+              <Label
+                color={card.labelColor}
+                size="sm"
+                rotate={false}
+                className="self-start"
+              >
+                {card.name}
+              </Label>
+              <Text variant="body" color="iron-light" className="text-xs">
+                {card.description}
+              </Text>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {(Object.keys(sizeLadderLabels) as ButtonSize[]).map((size) => (
+                  <div
+                    key={size}
+                    className="stack gap-2 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/55 p-3 shadow-[1px_1px_0_0_#121b23]"
+                  >
+                    <Label color={card.labelColor} size="sm" rotate={false} className="self-start">
+                      {sizeLadderLabels[size]}
+                    </Label>
+                    {renderShowcaseButton(
+                      card.kind,
+                      card.sampleColor,
+                      card.kind === "circle" ? "+" : card.name,
+                      size,
+                      {
+                        ariaLabel: `${sizeLadderLabels[size]} ${card.name}`,
+                      },
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </Panel>
+
+      <div className="stack gap-4">
+        {colorShowcaseRows.map((row) => (
+          <Panel key={row.name} as="section" tone={row.panelTone} contentClassName="stack gap-4">
+            <div className="stack gap-1">
+              <Text variant="h3" color="iron">
+                {row.name} colors
+              </Text>
+              <Text variant="body" color="iron-light" className="text-sm">
+                {row.description}
+              </Text>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {buttonPalette.map((palette) => (
+                <div
+                  key={palette.name}
+                  className="stack gap-3 rounded-sm border-2 border-kac-iron/20 bg-kac-bone-light/45 p-3 shadow-[2px_2px_0_0_#121b23]"
+                >
+                  <Label
+                    color={resolveLabelColor(palette.color)}
+                    size="sm"
+                    rotate={false}
+                    className="self-start"
+                  >
+                    {palette.name}
+                  </Label>
+                  {renderShowcaseButton(
+                    row.kind,
+                    palette.color,
+                    row.kind === "circle" ? "+" : palette.name,
+                    "md",
+                    {
+                      ariaLabel: `${palette.name} ${row.name.toLowerCase()}`,
+                      wide: row.kind !== "circle",
+                    },
+                  )}
+                </div>
+              ))}
+            </div>
+          </Panel>
+        ))}
+      </div>
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">
           Where to use it
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          Use `Button` for the standard action surfaces in forms, dialogs, and
+          Use `Button` for standard action surfaces in forms, dialogs, and
           toolbars. Reach for `CTAButton` when the action should carry extra
-          visual weight and a more heroic presentation.
+          visual weight and a more heroic presentation. Use the size ladders
+          above to keep the shared height rhythm intact.
         </Text>
         <Link
           to="/styleguide"

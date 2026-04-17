@@ -538,7 +538,7 @@ Behavior:
 - showcases the shared `Heading`, `Text`, and `Label` APIs together so contributors can validate hierarchy, colors, and the shared size ladder in one place
 - keeps semantic heading usage and sticker/tag usage scoped to a dedicated page
 - includes the full `Label` palette and the `Small` / `Medium` / `Large` size ladder so chips can be checked across the same surface
-- uses different heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
+- uses different semantic heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
 
 ---
 
@@ -575,6 +575,7 @@ Components:
 Behavior:
 
 - isolates the standard and high-emphasis button APIs so contributors can compare size and color behavior without the rest of the styleguide chrome
+- includes a four-way buttons matrix with single-color size ladders and full-palette rows for solid, CTA, circle, and ghost buttons so contributors can compare the live primitive and wrapper styles without a prototype ghost lab
 - keeps the button family scoped to one page before it is reused in routes or labs
 
 ---
@@ -987,7 +988,7 @@ Behavior:
 
 Located in `apps/web/src/components/common/`:
 
-- `Button` (project variants/sizes; neutral default for standard and grouped actions with the shared `sm`/`md`/`lg` height ladder)
+- `Button` (project variants/sizes; neutral default for standard and grouped actions with the shared `sm`/`md`/`lg` height ladder and the shadowed ghost treatment)
 - `ToggleButton` (straight-edged active/inactive option button for grouped controls using the shared `sm`/`md`/`lg` height ladder)
 - `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label` and the shared `sm`/`md`/`lg` height ladder)
 - `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton` and the shared `sm`/`md`/`lg` height ladder)
