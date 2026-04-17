@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/common/Button";
 import { Heading } from "../components/common/Heading";
-import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
@@ -12,9 +11,6 @@ export const StyleguideSessionChatPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="fire" className="self-start">
-          Session Chat Labs
-        </Label>
         <Heading
           level="h1"
           color="iron"

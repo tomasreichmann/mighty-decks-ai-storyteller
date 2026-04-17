@@ -8,6 +8,7 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /StyleguideIndexPage/);
   assert.match(source, /StyleguideTypographyPage/);
   assert.match(source, /StyleguideInputsPage/);
+  assert.match(source, /StyleguideLoadingPage/);
   assert.match(source, /StyleguideButtonsPage/);
   assert.match(source, /StyleguidePanelPage/);
   assert.match(source, /StyleguideCardsPage/);
@@ -23,6 +24,7 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /path="\/styleguide"/);
   assert.match(source, /path="\/styleguide\/typography"/);
   assert.match(source, /path="\/styleguide\/inputs"/);
+  assert.match(source, /path="\/styleguide\/loading"/);
   assert.match(source, /path="\/styleguide\/buttons"/);
   assert.match(source, /path="\/styleguide\/panel"/);
   assert.match(source, /path="\/styleguide\/cards"/);
@@ -43,6 +45,10 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(
     source,
     /path="\/styleguide\/cards"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideCardsPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/loading"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideLoadingPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,

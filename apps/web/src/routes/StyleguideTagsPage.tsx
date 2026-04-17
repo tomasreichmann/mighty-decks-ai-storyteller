@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ConnectionStatusPill } from "../components/common/ConnectionStatusPill";
 import { Heading } from "../components/common/Heading";
-import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Tag } from "../components/common/Tag";
 import { Tags } from "../components/common/Tags";
@@ -39,9 +38,6 @@ export const StyleguideTagsPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="cloth" className="self-start">
-          Tag Family
-        </Label>
         <Heading
           level="h1"
           color="iron"

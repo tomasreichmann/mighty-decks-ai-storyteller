@@ -1,6 +1,5 @@
 import type { AdventureModuleResolvedQuest } from "@mighty-decks/spec/adventureModuleAuthoring";
 import { Heading } from "../components/common/Heading";
-import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { CardBoundary } from "../components/common/CardBoundary";
@@ -32,9 +31,6 @@ export const StyleguideQuestCardPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="gold" className="self-start">
-          Single Direction
-        </Label>
         <Heading
           level="h1"
           color="iron"

@@ -1,6 +1,5 @@
 import { Button } from "../components/common/Button";
 import { Heading } from "../components/common/Heading";
-import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
@@ -21,6 +20,14 @@ const overviewSections = [
       "Check TextField and TextArea side by side with matching button heights.",
     href: "/styleguide/inputs",
     buttonLabel: "Open Inputs Lab",
+  },
+  {
+    title: "Loading",
+    tone: "cloth" as const,
+    description:
+      "Review the shared progress ring and the dot-based pending cue in one place.",
+    href: "/styleguide/loading",
+    buttonLabel: "Open Loading Lab",
   },
   {
     title: "Buttons",
@@ -78,9 +85,6 @@ export const StyleguideIndexPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="gold" className="self-start">
-          Styleguide
-        </Label>
         <Heading
           level="h1"
           color="iron"
@@ -98,9 +102,9 @@ export const StyleguideIndexPage = (): JSX.Element => {
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
           Hidden component playground for scoped iteration. Use the navigation
-          to jump between typography, input, button, panel, card, tag, grouped
-          control, or session chat labs before you move into broader feature
-          work.
+          to jump between typography, input, loading, button, panel, card, tag,
+          grouped control, or session chat labs before you move into broader
+          feature work.
         </Text>
       </div>
 

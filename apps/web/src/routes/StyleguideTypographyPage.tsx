@@ -41,9 +41,6 @@ export const StyleguideTypographyPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="gold" className="self-start">
-          Typography
-        </Label>
         <Heading
           level="h1"
           color="iron"

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/common/Button";
 import { Heading } from "../components/common/Heading";
-import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { TextArea } from "../components/common/TextArea";
@@ -19,9 +18,6 @@ export const StyleguideInputsPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="gold" className="self-start">
-          Inputs
-        </Label>
         <Heading
           level="h1"
           color="iron"

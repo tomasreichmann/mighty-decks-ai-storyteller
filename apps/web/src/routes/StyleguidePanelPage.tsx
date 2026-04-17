@@ -38,9 +38,6 @@ export const StyleguidePanelPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="gold" className="self-start">
-          Surfaces
-        </Label>
         <Heading
           level="h1"
           color="iron"

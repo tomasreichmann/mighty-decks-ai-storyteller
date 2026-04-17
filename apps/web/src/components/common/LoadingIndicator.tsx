@@ -1,4 +1,5 @@
 import { type CSSProperties, type PropsWithChildren, useId } from "react";
+import { type ButtonColors } from "./Button";
 import { cn } from "../../utils/cn";
 
 interface Point {
@@ -6,11 +7,132 @@ interface Point {
   y: number;
 }
 
+export type LoadingIndicatorColor = ButtonColors;
+
+type LoadingIndicatorTone =
+  | "steel"
+  | "iron"
+  | "blood"
+  | "fire"
+  | "bone"
+  | "skin"
+  | "gold"
+  | "cloth"
+  | "curse"
+  | "monster";
+
+interface TonePalette {
+  light: string;
+  base: string;
+  dark: string;
+}
+
+const loadingTonePalette: Record<LoadingIndicatorTone, TonePalette> = {
+  steel: {
+    light: "#f3f3f4",
+    base: "#abb4c3",
+    dark: "#65738b",
+  },
+  iron: {
+    light: "#23303d",
+    base: "#121b23",
+    dark: "#090f15",
+  },
+  blood: {
+    light: "#ff9494",
+    base: "#e3132c",
+    dark: "#541423",
+  },
+  fire: {
+    light: "#ffe79b",
+    base: "#f88b00",
+    dark: "#950101",
+  },
+  bone: {
+    light: "#e4ceb3",
+    base: "#ecb87b",
+    dark: "#a3835f",
+  },
+  skin: {
+    light: "#f2ced1",
+    base: "#f7adae",
+    dark: "#e6848c",
+  },
+  gold: {
+    light: "#fff5c0",
+    base: "#ffd23b",
+    dark: "#f59d20",
+  },
+  cloth: {
+    light: "#d8e2ea",
+    base: "#5c77b2",
+    dark: "#32497b",
+  },
+  curse: {
+    light: "#fff2f2",
+    base: "#f20170",
+    dark: "#c10045",
+  },
+  monster: {
+    light: "#d7ffab",
+    base: "#4ec342",
+    dark: "#1aa62b",
+  },
+};
+
+const loadingToneByColor: Record<ButtonColors, LoadingIndicatorTone> = {
+  steel: "steel",
+  "steel-light": "steel",
+  "steel-dark": "steel",
+  iron: "iron",
+  "iron-light": "iron",
+  "iron-dark": "iron",
+  blood: "blood",
+  "blood-light": "blood",
+  "blood-lighter": "blood",
+  "blood-lightest": "blood",
+  "blood-dark": "blood",
+  fire: "fire",
+  "fire-light": "fire",
+  "fire-lightest": "fire",
+  "fire-dark": "fire",
+  bone: "bone",
+  "bone-light": "bone",
+  "bone-dark": "bone",
+  "bone-darker": "bone",
+  skin: "skin",
+  "skin-light": "skin",
+  "skin-dark": "skin",
+  gold: "gold",
+  "gold-light": "gold",
+  "gold-dark": "gold",
+  "gold-darker": "gold",
+  cloth: "cloth",
+  "cloth-light": "cloth",
+  "cloth-lightest": "cloth",
+  "cloth-dark": "cloth",
+  curse: "curse",
+  "curse-light": "curse",
+  "curse-lighter": "curse",
+  "curse-lightest": "curse",
+  "curse-dark": "curse",
+  monster: "monster",
+  "monster-light": "monster",
+  "monster-lightest": "monster",
+  "monster-dark": "monster",
+};
+
+const resolveLoadingTone = (
+  color: LoadingIndicatorColor,
+): LoadingIndicatorTone => loadingToneByColor[color];
+
 export interface LoadingIndicatorProps extends PropsWithChildren {
   value: number;
   total: number;
   radius?: number;
   thickness?: number;
+  color?: LoadingIndicatorColor;
+  trackColor?: LoadingIndicatorColor;
   arcColor?: string;
   className?: string;
   ariaLabel?: string;
@@ -132,6 +254,8 @@ export const LoadingIndicator = ({
   total,
   radius = 16,
   thickness = 16,
+  color,
+  trackColor,
   arcColor = "#f59d20",
   className = "",
   ariaLabel = "Loading progress",
@@ -144,36 +268,51 @@ export const LoadingIndicator = ({
   const normalizedTotal = total > 0 ? total : 1;
   const clampedValue = clamp(value, 0, normalizedTotal);
   const progress = clampedValue / normalizedTotal;
+  // Snap to a true circle once the visible percentage would already read 100.
+  const hasFullCircle = progress >= 0.995;
 
   const startAngle = -90;
   const sweepAngle = progress * FULL_CIRCLE_SWEEP_DEGREES;
   const endAngle = startAngle + sweepAngle;
   const ringBorderWidth = Math.max(1, safeThickness * 0.09);
   const arcBorderWidth = Math.max(2, safeThickness * 0.22);
-  const capReach = safeThickness * 1.25;
-  const padding = Math.ceil(safeThickness + capReach + arcBorderWidth + 6);
+  const padding = Math.ceil(safeThickness / 2 + arcBorderWidth + 3);
   const size = safeRadius * 2 + padding * 2;
   const center = size / 2;
   const ringRadius = safeRadius;
   const contentDiameter = Math.max((ringRadius - safeThickness / 2 - 4) * 2, 0);
 
   const hasArc = sweepAngle > 0;
-  const hasJaggedCaps = hasArc && progress < 1;
-  const arcPath = hasArc
+  const hasJaggedCaps = hasArc && !hasFullCircle;
+  const arcPath = hasArc && !hasFullCircle
     ? buildArcPath(center, center, ringRadius, startAngle, endAngle)
     : "";
   const startPoint = polarToCartesian(center, center, ringRadius, startAngle);
   const endPoint = polarToCartesian(center, center, ringRadius, endAngle);
   const gradientEndPoint = hasArc
-    ? endPoint
+    ? hasFullCircle
+      ? polarToCartesian(center, center, ringRadius, startAngle + 180)
+      : endPoint
     : polarToCartesian(center, center, ringRadius, startAngle + 1);
 
-  const arcLightColor = adjustHexColor(arcColor, 28) ?? arcColor;
-  const arcDarkColor = adjustHexColor(arcColor, -34) ?? arcColor;
-  const ringGradientId = `${idBase}-ring-gradient`;
-  const ringInsetShadowId = `${idBase}-ring-inset-shadow`;
+  const resolvedArcTone = color ? resolveLoadingTone(color) : null;
+  const resolvedTrackTone = trackColor
+    ? resolveLoadingTone(trackColor)
+    : resolvedArcTone === "iron"
+      ? "bone"
+      : "iron";
+  const arcPalette = resolvedArcTone ? loadingTonePalette[resolvedArcTone] : null;
+  const trackPalette = loadingTonePalette[resolvedTrackTone];
+  const arcBaseColor = arcPalette?.base ?? arcColor;
+  const arcLightColor = arcPalette?.light ?? adjustHexColor(arcColor, 28) ?? arcColor;
+  const arcDarkColor = arcPalette?.dark ?? adjustHexColor(arcColor, -34) ?? arcColor;
+  const trackGradientId = `${idBase}-track-gradient`;
+  const trackInsetShadowId = `${idBase}-track-inset-shadow`;
   const arcGradientId = `${idBase}-arc-gradient`;
   const arcGlossId = `${idBase}-arc-gloss`;
+  const trackLightColor = trackPalette.light;
+  const trackBaseColor = trackPalette.base;
+  const trackDarkColor = trackPalette.dark;
 
   const wrapperStyle: CSSProperties = {
     width: size,
@@ -204,28 +343,28 @@ export const LoadingIndicator = ({
       >
         <defs>
           <linearGradient
-            id={ringGradientId}
+            id={trackGradientId}
             x1={center}
             y1={center - ringRadius}
             x2={center}
             y2={center + ringRadius}
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0%" stopColor="#f3f3f4" />
-            <stop offset="58%" stopColor="#abb4c3" />
-            <stop offset="100%" stopColor="#65738b" />
+            <stop offset="0%" stopColor={trackLightColor} />
+            <stop offset="58%" stopColor={trackBaseColor} />
+            <stop offset="100%" stopColor={trackDarkColor} />
           </linearGradient>
           <linearGradient
-            id={ringInsetShadowId}
+            id={trackInsetShadowId}
             x1={center}
             y1={center - ringRadius}
             x2={center}
             y2={center + ringRadius}
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0%" stopColor="#090f15" stopOpacity="0.3" />
-            <stop offset="42%" stopColor="#090f15" stopOpacity="0.12" />
-            <stop offset="80%" stopColor="#090f15" stopOpacity="0" />
+            <stop offset="0%" stopColor={trackDarkColor} stopOpacity="0.28" />
+            <stop offset="42%" stopColor={trackDarkColor} stopOpacity="0.12" />
+            <stop offset="80%" stopColor={trackDarkColor} stopOpacity="0" />
           </linearGradient>
           <linearGradient
             id={arcGradientId}
@@ -236,7 +375,7 @@ export const LoadingIndicator = ({
             gradientUnits="userSpaceOnUse"
           >
             <stop offset="0%" stopColor={arcLightColor} />
-            <stop offset="55%" stopColor={arcColor} />
+            <stop offset="55%" stopColor={arcBaseColor} />
             <stop offset="100%" stopColor={arcDarkColor} />
           </linearGradient>
           <linearGradient
@@ -258,7 +397,7 @@ export const LoadingIndicator = ({
           cy={center}
           r={ringRadius}
           fill="none"
-          stroke="#121b23"
+          stroke={trackDarkColor}
           strokeOpacity="0.7"
           strokeWidth={safeThickness + ringBorderWidth * 2}
         />
@@ -267,7 +406,7 @@ export const LoadingIndicator = ({
           cy={center}
           r={ringRadius}
           fill="none"
-          stroke={`url(#${ringGradientId})`}
+          stroke={`url(#${trackGradientId})`}
           strokeWidth={safeThickness}
         />
         <circle
@@ -275,11 +414,42 @@ export const LoadingIndicator = ({
           cy={center}
           r={ringRadius}
           fill="none"
-          stroke={`url(#${ringInsetShadowId})`}
+          stroke={`url(#${trackInsetShadowId})`}
           strokeWidth={safeThickness * 0.9}
         />
 
-        {hasArc ? (
+        {hasFullCircle ? (
+          <>
+            <circle
+              cx={center}
+              cy={center}
+              r={ringRadius}
+              fill="none"
+              stroke="#090f15"
+              strokeOpacity="0.88"
+              strokeLinejoin="round"
+              strokeWidth={safeThickness + arcBorderWidth * 2}
+            />
+            <circle
+              cx={center}
+              cy={center}
+              r={ringRadius}
+              fill="none"
+              stroke={`url(#${arcGradientId})`}
+              strokeLinejoin="round"
+              strokeWidth={safeThickness}
+            />
+            <circle
+              cx={center}
+              cy={center}
+              r={ringRadius}
+              fill="none"
+              stroke={`url(#${arcGlossId})`}
+              strokeLinejoin="round"
+              strokeWidth={safeThickness * 0.56}
+            />
+          </>
+        ) : hasArc ? (
           <>
             <path
               d={arcPath}

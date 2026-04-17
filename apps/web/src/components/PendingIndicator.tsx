@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { Text } from "./common/Text";
 import { cn } from "../utils/cn";
 import type { MessageColor } from "./common/Message";
+import { resolvePendingIndicatorTone } from "./PendingIndicatorTone";
 import styles from "./PendingIndicator.module.css";
 
 interface PendingIndicatorProps {
@@ -12,104 +13,6 @@ interface PendingIndicatorProps {
 }
 
 const DOT_DELAYS_MS = [0, 140, 280] as const;
-
-const resolvePendingIndicatorTone = (
-  color: MessageColor,
-): {
-  labelClassName: string;
-  dotClassName: string;
-} => {
-  switch (color) {
-    case "fire":
-    case "fire-light":
-    case "fire-lightest":
-    case "fire-dark":
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-fire-dark border-kac-fire-lightest",
-      };
-    case "bone":
-    case "bone-light":
-    case "bone-dark":
-    case "bone-darker":
-    case "skin":
-    case "skin-light":
-    case "skin-dark":
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-bone-dark border-kac-bone-light",
-      };
-    case "cloth":
-    case "cloth-light":
-    case "cloth-lightest":
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-cloth-dark border-kac-cloth-lightest",
-      };
-    case "cloth-dark":
-      return {
-        labelClassName: "text-kac-steel-light",
-        dotClassName: "bg-kac-cloth-light border-kac-cloth-lightest",
-      };
-    case "curse":
-    case "curse-light":
-    case "curse-lighter":
-    case "curse-lightest":
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-curse-dark border-kac-curse-lightest",
-      };
-    case "curse-dark":
-      return {
-        labelClassName: "text-kac-curse-lightest",
-        dotClassName: "bg-kac-curse-light border-kac-curse-lightest",
-      };
-    case "monster":
-    case "monster-light":
-    case "monster-lightest":
-    case "monster-dark":
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-monster-dark border-kac-monster-lightest",
-      };
-    case "blood":
-    case "blood-light":
-    case "blood-lighter":
-    case "blood-lightest":
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-blood-dark border-kac-blood-lightest",
-      };
-    case "blood-dark":
-      return {
-        labelClassName: "text-kac-curse-lightest",
-        dotClassName: "bg-kac-blood-light border-kac-blood-lightest",
-      };
-    case "iron-dark":
-    case "steel-dark":
-      return {
-        labelClassName: "text-kac-steel-light",
-        dotClassName: "bg-kac-steel-light border-kac-steel-dark",
-      };
-    case "iron":
-    case "iron-light":
-    case "steel":
-    case "steel-light":
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-iron-dark border-kac-steel-light",
-      };
-    case "gold":
-    case "gold-light":
-    case "gold-dark":
-    case "gold-darker":
-    default:
-      return {
-        labelClassName: "text-kac-iron-dark",
-        dotClassName: "bg-kac-gold-dark border-kac-gold-light",
-      };
-  }
-};
 
 export const PendingIndicator = ({
   label = "Processing",

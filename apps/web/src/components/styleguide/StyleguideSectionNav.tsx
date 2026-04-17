@@ -18,6 +18,11 @@ const styleguideSectionItems = [
     activePaths: ["/styleguide/inputs"],
   },
   {
+    to: "/styleguide/loading",
+    label: "Loading",
+    activePaths: ["/styleguide/loading"],
+  },
+  {
     to: "/styleguide/buttons",
     label: "Buttons",
     activePaths: ["/styleguide/buttons"],

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ButtonRadioGroup } from "../components/common/ButtonRadioGroup";
 import { Heading } from "../components/common/Heading";
-import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { RockerSwitch } from "../components/common/RockerSwitch";
 import { ToggleButton } from "../components/common/ToggleButton";
@@ -24,9 +23,6 @@ export const StyleguideControlsPage = (): JSX.Element => {
       <StyleguideSectionNav />
 
       <div className="stack gap-2">
-        <Label color="gold" className="self-start">
-          Grouped Controls
-        </Label>
         <Heading
           level="h1"
           color="iron"

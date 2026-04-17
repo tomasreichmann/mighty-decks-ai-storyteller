@@ -80,6 +80,10 @@ const StyleguideTypographyPage = lazy(async () => ({
 const StyleguideInputsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideInputsPage")).StyleguideInputsPage,
 }));
+const StyleguideLoadingPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideLoadingPage"))
+    .StyleguideLoadingPage,
+}));
 const StyleguideButtonsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideButtonsPage"))
     .StyleguideButtonsPage,
@@ -339,19 +343,27 @@ export const App = (): JSX.Element => {
               </RouteShellBoundary>
             }
           />
-          <Route
-            path="/styleguide/inputs"
-            element={
-              <RouteShellBoundary>
-                <StyleguideInputsPage />
-              </RouteShellBoundary>
-            }
-          />
-          <Route
-            path="/styleguide/buttons"
-            element={
-              <RouteShellBoundary>
-                <StyleguideButtonsPage />
+              <Route
+                path="/styleguide/inputs"
+                element={
+                  <RouteShellBoundary>
+                    <StyleguideInputsPage />
+                  </RouteShellBoundary>
+                }
+              />
+              <Route
+                path="/styleguide/loading"
+                element={
+                  <RouteShellBoundary>
+                    <StyleguideLoadingPage />
+                  </RouteShellBoundary>
+                }
+              />
+              <Route
+                path="/styleguide/buttons"
+                element={
+                  <RouteShellBoundary>
+                    <StyleguideButtonsPage />
               </RouteShellBoundary>
             }
           />
