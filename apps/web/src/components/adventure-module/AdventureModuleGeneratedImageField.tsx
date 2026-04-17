@@ -23,6 +23,7 @@ import { SmartInput } from "../common/SmartInput";
 import { Tags } from "../common/Tags";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
+import { PendingIndicator } from "../PendingIndicator";
 
 const PROMPT_MAX_LENGTH = 4000;
 const WORKFLOW_CONTEXT_MAX_LENGTH = 1000;
@@ -642,9 +643,11 @@ export const AdventureModuleGeneratedImageField = ({
         />
 
         <Text variant="note" color="iron" className="text-sm !opacity-100">
-          {uploadingImage
-            ? "Uploading image..."
-            : "Drop an external image here or click to browse."}
+          {uploadingImage ? (
+            <PendingIndicator label="Uploading image" color="cloth" />
+          ) : (
+            "Drop an external image here or click to browse."
+          )}
         </Text>
         <Text variant="note" color="iron-light" className="text-xs !opacity-100">
           Dropped images are saved on the server and can be reused in this field.
@@ -691,8 +694,8 @@ export const AdventureModuleGeneratedImageField = ({
 
       {mode === "gallery" ? (
         loadingGallery ? (
-          <Message label="Gallery" color="cloth">
-            Loading existing images...
+          <Message label="Gallery" color="cloth" contentClassName="flex justify-center">
+            <PendingIndicator label="Loading existing images" color="cloth" />
           </Message>
         ) : galleryItems.length === 0 ? (
           <Message label="Gallery" color="cloth">
@@ -840,7 +843,11 @@ export const AdventureModuleGeneratedImageField = ({
               }}
               disabled={!canGenerate}
             >
-              {generatePending ? "Generating..." : "Generate"}
+              {generatePending ? (
+                <PendingIndicator label="Generating" color="gold" />
+              ) : (
+                "Generate"
+              )}
             </Button>
           </div>
 
@@ -925,7 +932,11 @@ export const AdventureModuleGeneratedImageField = ({
               }}
               disabled={!canGenerateEdit}
             >
-              {editPending ? "Generating Edit..." : "Generate Edit"}
+              {editPending ? (
+                <PendingIndicator label="Generating edit" color="gold" />
+              ) : (
+                "Generate Edit"
+              )}
             </Button>
           </div>
 

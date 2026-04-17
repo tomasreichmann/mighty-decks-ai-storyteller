@@ -12,8 +12,8 @@ import { SharedAuthoringHeader } from "../adventure-module/SharedAuthoringHeader
 import { CTAButton } from "../common/CTAButton";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { SectionBoundary } from "../common/SectionBoundary";
-import { Text } from "../common/Text";
 import {
   CAMPAIGN_DETAIL_TABS,
   CAMPAIGN_TAB_LABELS,
@@ -114,7 +114,11 @@ export const CampaignAuthoringScreen = (): JSX.Element => {
               void handleCreateSession();
             }}
           >
-            {creatingSession ? "Creating Session..." : "Create Session"}
+            {creatingSession ? (
+              <PendingIndicator label="Creating session" color="gold" />
+            ) : (
+              "Create Session"
+            )}
           </CTAButton>
         }
         titleSupportingContent={
@@ -137,7 +141,11 @@ export const CampaignAuthoringScreen = (): JSX.Element => {
               void handleCreateSession();
             }}
           >
-            {creatingSession ? "Creating Session..." : "Create Session"}
+            {creatingSession ? (
+              <PendingIndicator label="Creating session" color="gold" />
+            ) : (
+              "Create Session"
+            )}
           </CTAButton>
         }
       />
@@ -149,10 +157,8 @@ export const CampaignAuthoringScreen = (): JSX.Element => {
       ) : null}
 
       {state.loading ? (
-        <Panel>
-          <Text variant="body" color="iron-light">
-            Loading campaign...
-          </Text>
+        <Panel contentClassName="flex justify-center">
+          <PendingIndicator label="Loading campaign" color="cloth" />
         </Panel>
       ) : null}
 

@@ -3,6 +3,7 @@ import type { AdventureModuleResolvedAsset } from "@mighty-decks/spec/adventureM
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
 import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
@@ -62,7 +63,11 @@ export const AdventureModuleAssetsTabPanel = ({
           onClick={onCreate}
           disabled={!editable || creating}
         >
-          {creating ? "Creating..." : "Create Asset"}
+          {creating ? (
+            <PendingIndicator label="Creating asset" color="gold" />
+          ) : (
+            "Create Asset"
+          )}
         </Button>
       </div>
 

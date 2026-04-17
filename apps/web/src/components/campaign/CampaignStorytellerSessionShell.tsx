@@ -20,8 +20,8 @@ import { AutosaveStatusBadge } from "../adventure-module/AutosaveStatusBadge";
 import { CommonAuthoringTabContent } from "../adventure-module/CommonAuthoringTabContent";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { SectionBoundary } from "../common/SectionBoundary";
-import { Text } from "../common/Text";
 import {
   CampaignSessionSelectionStrip,
   type CampaignSessionSelectionEntry,
@@ -237,10 +237,8 @@ export const CampaignStorytellerSessionShell = ({
       ) : null}
 
       {state.loading ? (
-        <Panel>
-          <Text variant="body" color="iron-light">
-            Loading campaign...
-          </Text>
+        <Panel contentClassName="flex justify-center">
+          <PendingIndicator label="Loading campaign" color="cloth" />
         </Panel>
       ) : null}
 

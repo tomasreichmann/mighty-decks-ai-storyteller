@@ -3,6 +3,7 @@ import type { AdventureModuleResolvedQuest } from "@mighty-decks/spec/adventureM
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
 import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
@@ -68,7 +69,11 @@ export const AdventureModuleQuestsTabPanel = ({
           onClick={onCreate}
           disabled={!editable || creating}
         >
-          {creating ? "Creating..." : "Create Quest"}
+          {creating ? (
+            <PendingIndicator label="Creating quest" color="gold" />
+          ) : (
+            "Create Quest"
+          )}
         </Button>
       </div>
 

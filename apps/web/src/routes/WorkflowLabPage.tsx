@@ -15,6 +15,7 @@ import { Panel } from "../components/common/Panel";
 import { RockerSwitch } from "../components/common/RockerSwitch";
 import { Section } from "../components/common/Section";
 import { SectionBoundary } from "../components/common/SectionBoundary";
+import { PendingIndicator } from "../components/PendingIndicator";
 import { Text } from "../components/common/Text";
 import { TextArea } from "../components/common/TextArea";
 import { TextField } from "../components/common/TextField";
@@ -540,7 +541,7 @@ export const WorkflowLabPage = (): JSX.Element => {
           <div className="stack gap-4">
           <Section className="stack gap-3">
             {loadingWorkflows ? (
-              <p className="text-sm text-kac-iron-light">Loading workflows...</p>
+              <PendingIndicator label="Loading workflows" color="cloth" />
             ) : (
               <>
                 <label className="stack max-w-[22rem] gap-1">
@@ -622,7 +623,11 @@ export const WorkflowLabPage = (): JSX.Element => {
             />
             <div className="flex flex-wrap gap-2">
               <Button color="gold" disabled={!selectedWorkflow || busy} onClick={() => void onStartRun()}>
-                {busy ? "Working..." : "Start Run"}
+                {busy ? (
+                  <PendingIndicator label="Starting run" color="gold" />
+                ) : (
+                  "Start Run"
+                )}
               </Button>
               <Button variant="ghost" color="steel" disabled={!runId || busy} onClick={() => void onRefreshRun()}>
                 Refresh Snapshot

@@ -8,7 +8,6 @@ import {
   useParams,
 } from "react-router-dom";
 import { Page } from "./components/layout/Page";
-import { Label } from "./components/common/Label";
 import { PendingIndicator } from "./components/PendingIndicator";
 import { RouteBoundary } from "./components/common/RouteBoundary";
 
@@ -96,6 +95,13 @@ const StyleguideCardsPage = lazy(async () => ({
 }));
 const StyleguideTagsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideTagsPage")).StyleguideTagsPage,
+}));
+const StyleguideLabelsPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideLabelsPage")).StyleguideLabelsPage,
+}));
+const StyleguideMessagesPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideMessagesPage"))
+    .StyleguideMessagesPage,
 }));
 const StyleguideControlsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideControlsPage"))
@@ -194,19 +200,13 @@ const AdventureModuleRootRedirect = (): JSX.Element => {
 };
 
 const RouteLoadingFallback = (): JSX.Element => (
-  <div className="w-full grid min-h-screen place-items-center px-6 py-10">
+  <div className="grid min-h-screen w-full place-items-center px-6 py-10">
     <div
       role="status"
       aria-live="polite"
       className="flex flex-col items-center gap-4 text-center"
     >
-
-      <Label color="gold" size="lg" rotate={false}>
-        <PendingIndicator
-          label="Loading"
-          color="gold-dark"
-        />
-      </Label>
+      <PendingIndicator label="Loading" color="gold" />
     </div>
   </div>
 );
@@ -343,27 +343,27 @@ export const App = (): JSX.Element => {
               </RouteShellBoundary>
             }
           />
-              <Route
-                path="/styleguide/inputs"
-                element={
-                  <RouteShellBoundary>
-                    <StyleguideInputsPage />
-                  </RouteShellBoundary>
-                }
-              />
-              <Route
-                path="/styleguide/loading"
-                element={
-                  <RouteShellBoundary>
-                    <StyleguideLoadingPage />
-                  </RouteShellBoundary>
-                }
-              />
-              <Route
-                path="/styleguide/buttons"
-                element={
-                  <RouteShellBoundary>
-                    <StyleguideButtonsPage />
+          <Route
+            path="/styleguide/inputs"
+            element={
+              <RouteShellBoundary>
+                <StyleguideInputsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/loading"
+            element={
+              <RouteShellBoundary>
+                <StyleguideLoadingPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/buttons"
+            element={
+              <RouteShellBoundary>
+                <StyleguideButtonsPage />
               </RouteShellBoundary>
             }
           />
@@ -388,6 +388,22 @@ export const App = (): JSX.Element => {
             element={
               <RouteShellBoundary>
                 <StyleguideTagsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/labels"
+            element={
+              <RouteShellBoundary>
+                <StyleguideLabelsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/messages"
+            element={
+              <RouteShellBoundary>
+                <StyleguideMessagesPage />
               </RouteShellBoundary>
             }
           />

@@ -6,6 +6,7 @@ import { CTAButton } from "../components/common/CTAButton";
 import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
+import { PendingIndicator } from "../components/PendingIndicator";
 import { ResponsiveCardGrid } from "../components/common/ResponsiveCardGrid";
 import { SearchField } from "../components/common/SearchField";
 import { Text } from "../components/common/Text";
@@ -176,10 +177,8 @@ export const CampaignListPage = (): JSX.Element => {
       ) : null}
 
       {loading ? (
-        <Panel>
-          <Text variant="body" color="iron-light">
-            Loading campaigns...
-          </Text>
+        <Panel contentClassName="flex justify-center">
+          <PendingIndicator label="Loading campaigns" color="cloth" />
         </Panel>
       ) : visibleCampaigns.length > 0 ? (
         <>

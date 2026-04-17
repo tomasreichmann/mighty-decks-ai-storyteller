@@ -19,8 +19,8 @@ import { SharedAuthoringHeader } from "./SharedAuthoringHeader";
 import { CTAButton } from "../common/CTAButton";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { SectionBoundary } from "../common/SectionBoundary";
-import { Text } from "../common/Text";
 
 const TAB_ITEMS: AdventureModuleTabItem[] = AUTHORING_TABS.map((tab) => ({
   id: tab,
@@ -103,7 +103,11 @@ export const AdventureModuleAuthoringScreen = (): JSX.Element => {
               void handleCreateCampaign();
             }}
           >
-            {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
+            {creatingCampaign ? (
+              <PendingIndicator label="Creating campaign" color="gold" />
+            ) : (
+              "Create Campaign"
+            )}
           </CTAButton>
         }
         titleSupportingContent={titleSupportingContent}
@@ -119,7 +123,11 @@ export const AdventureModuleAuthoringScreen = (): JSX.Element => {
               void handleCreateCampaign();
             }}
           >
-            {creatingCampaign ? "Creating Campaign..." : "Create Campaign"}
+            {creatingCampaign ? (
+              <PendingIndicator label="Creating campaign" color="gold" />
+            ) : (
+              "Create Campaign"
+            )}
           </CTAButton>
         }
         showMobileMenu
@@ -132,10 +140,8 @@ export const AdventureModuleAuthoringScreen = (): JSX.Element => {
       ) : null}
 
       {state.loading ? (
-        <Panel>
-          <Text variant="body" color="iron-light">
-            Loading adventure module...
-          </Text>
+        <Panel contentClassName="flex justify-center">
+          <PendingIndicator label="Loading adventure module" color="cloth" />
         </Panel>
       ) : null}
 

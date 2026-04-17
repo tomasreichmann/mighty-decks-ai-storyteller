@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Message } from "./common/Message";
 import { Text } from "./common/Text";
 import { Button } from "./common/Button";
+import { PendingIndicator } from "./PendingIndicator";
 
 interface ActiveAdventureSummary {
   adventureId: string;
@@ -222,9 +223,10 @@ export const ConnectionDiagnostics = ({
             You can join an existing adventure.
           </Text>
           {loadingAdventures ? (
-            <Text variant="note" className="normal-case tracking-normal">
-              Loading active adventures...
-            </Text>
+            <PendingIndicator
+              label="Loading active adventures"
+              color="cloth"
+            />
           ) : null}
           {adventureListError ? (
             <Text

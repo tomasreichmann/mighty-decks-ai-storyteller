@@ -9,9 +9,13 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Added
 
 - Web: add a dedicated `/styleguide/loading` lab that showcases the shared `LoadingIndicator` progress ring and `PendingIndicator` dot state, and surface it from the styleguide overview and section nav.
+- Web: add dedicated `/styleguide/labels` and `/styleguide/messages` styleguide labs, and surface both from the shared secondary nav and router so contributors can validate sticker labels and semantic callouts in isolation.
 
 ### Changed
 
+- Web: replace the app's plain loading copy with shared `PendingIndicator` dot states for loading panels and action buttons, while keeping the quantified progress ring in the styleguide loading lab.
+- Web: tighten the shared scene-card frame so long location, encounter, and quest text gets more padding and clamps earlier with a visible ellipsis instead of crowding the border.
+- Web: replace the `/styleguide` overview component grid with a design reference hub covering design principles, the full semantic color-family ledger as swatches with hex values, shared-component rules, and component use cases.
 - Web: keep solid iron buttons on steel borders while iron ghost buttons retain iron borders, matching the shared button family split in the styleguide.
 - Web: animate the styleguide loading rings from 0 to 100 over 4 seconds on page load, while respecting reduced-motion users by snapping straight to the final state.
 - Web: rework the styleguide loading ring so the percentage is smaller, the color label sits below the ring, and the progress arc can use any standard token color with an iron track that falls back to bone for iron.

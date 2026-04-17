@@ -4,6 +4,7 @@ import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
 import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
@@ -59,7 +60,11 @@ export const AdventureModuleCountersTabPanel = ({
           onClick={onCreate}
           disabled={!editable || creating}
         >
-          {creating ? "Creating..." : "Create Counter"}
+          {creating ? (
+            <PendingIndicator label="Creating counter" color="gold" />
+          ) : (
+            "Create Counter"
+          )}
         </Button>
       </div>
 

@@ -3,6 +3,7 @@ import type { AdventureModuleResolvedLocation } from "@mighty-decks/spec/adventu
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
 import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
@@ -68,7 +69,11 @@ export const AdventureModuleLocationsTabPanel = ({
           onClick={onCreate}
           disabled={!editable || creating}
         >
-          {creating ? "Creating..." : "Create Location"}
+          {creating ? (
+            <PendingIndicator label="Creating location" color="gold" />
+          ) : (
+            "Create Location"
+          )}
         </Button>
       </div>
 

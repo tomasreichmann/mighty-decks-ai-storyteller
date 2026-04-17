@@ -16,6 +16,7 @@ import { RockerSwitch } from "../components/common/RockerSwitch";
 import { Section } from "../components/common/Section";
 import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
+import { PendingIndicator } from "../components/PendingIndicator";
 import { TextArea } from "../components/common/TextArea";
 import { TextField } from "../components/common/TextField";
 import {
@@ -290,7 +291,11 @@ export const ImageGenerator = (): JSX.Element => {
             }}
             disabled={refreshingGroup || submittingJob}
           >
-            {refreshingGroup ? "Loading..." : "Lookup Existing"}
+            {refreshingGroup ? (
+              <PendingIndicator label="Looking up" color="cloth" />
+            ) : (
+              "Lookup Existing"
+            )}
           </Button>
           <Button
             color="gold"
@@ -299,7 +304,11 @@ export const ImageGenerator = (): JSX.Element => {
             }}
             disabled={loadingModels || submittingJob}
           >
-            {submittingJob ? "Generating..." : "Generate"}
+            {submittingJob ? (
+              <PendingIndicator label="Generating" color="gold" />
+            ) : (
+              "Generate"
+            )}
           </Button>
         </div>
         </Section>

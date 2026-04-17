@@ -3,6 +3,7 @@ import type { AdventureModuleResolvedEncounter } from "@mighty-decks/spec/advent
 import { Button } from "../common/Button";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { PendingIndicator } from "../PendingIndicator";
 import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
 import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
@@ -68,7 +69,11 @@ export const AdventureModuleEncountersTabPanel = ({
           onClick={onCreate}
           disabled={!editable || creating}
         >
-          {creating ? "Creating..." : "Create Encounter"}
+          {creating ? (
+            <PendingIndicator label="Creating encounter" color="gold" />
+          ) : (
+            "Create Encounter"
+          )}
         </Button>
       </div>
 

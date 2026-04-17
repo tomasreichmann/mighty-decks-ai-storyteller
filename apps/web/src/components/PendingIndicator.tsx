@@ -15,7 +15,7 @@ interface PendingIndicatorProps {
 const DOT_DELAYS_MS = [0, 140, 280] as const;
 
 export const PendingIndicator = ({
-  label = "Processing",
+  label = "Pending",
   color = "gold",
   className = "",
   indicatorClassName = "",

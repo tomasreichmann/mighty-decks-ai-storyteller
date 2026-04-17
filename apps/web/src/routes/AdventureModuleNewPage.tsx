@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../components/common/Button";
 import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
+import { PendingIndicator } from "../components/PendingIndicator";
 import { Text } from "../components/common/Text";
 import { TextField } from "../components/common/TextField";
 import {
@@ -73,7 +74,7 @@ export const AdventureModuleNewPage = (): JSX.Element => {
     }
 
     setSlugStatus("checking");
-    setSlugMessage("Checking slug availability...");
+    setSlugMessage("Checking slug availability");
 
     let cancelled = false;
     const timer = window.setTimeout(() => {
@@ -197,13 +198,17 @@ export const AdventureModuleNewPage = (): JSX.Element => {
             showCharCount
           />
 
-          <Text
-            variant="note"
-            color={slugStatusTone(slugStatus)}
-            className="text-sm !opacity-100"
-          >
-            {slugMessage}
-          </Text>
+          {slugStatus === "checking" ? (
+            <PendingIndicator label="Checking slug availability" color="cloth" />
+          ) : (
+            <Text
+              variant="note"
+              color={slugStatusTone(slugStatus)}
+              className="text-sm !opacity-100"
+            >
+              {slugMessage}
+            </Text>
+          )}
 
           <div className="flex flex-wrap items-center gap-2">
             {slugTouched && titleTrimmed.length > 0 ? (
@@ -224,7 +229,11 @@ export const AdventureModuleNewPage = (): JSX.Element => {
 
           <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" color="gold" disabled={!canCreate}>
-              {submitting ? "Creating..." : "Create Module"}
+              {submitting ? (
+                <PendingIndicator label="Creating module" color="gold" />
+              ) : (
+                "Create Module"
+              )}
             </Button>
             <Button
               variant="ghost"
