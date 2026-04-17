@@ -6,6 +6,7 @@ test("Tag is a reusable chip primitive", () => {
   const source = readFileSync(new URL("./Tag.tsx", import.meta.url), "utf8");
 
   assert.match(source, /export const Tag/);
+  assert.match(source, /tag__content inline-flex min-w-0 items-center/);
   assert.match(source, /leading\?: ReactNode/);
   assert.match(source, /trailing\?: ReactNode/);
   assert.match(source, /contentClassName\?: string/);

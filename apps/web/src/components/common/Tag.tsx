@@ -76,7 +76,7 @@ export const Tag = ({
       ) : null}
       <span
         className={cn(
-          "tag__content inline-flex items-center",
+          "tag__content inline-flex min-w-0 items-center",
           "font-heading font-bold uppercase tracking-[0.06em]",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]",
           "[text-shadow:0_1px_0_rgba(0,0,0,0.35)]",

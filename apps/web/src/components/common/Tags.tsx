@@ -270,14 +270,14 @@ export const Tags = ({
         )}
       >
         <div className="stack gap-2">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {value.map((tag, index) => (
               <Tag
                 key={`${tag}-${index}`}
                 tone={tagVariant}
                 size="sm"
-                className="tags__tag max-w-full"
-                contentClassName="tags__tag-label max-w-[15rem] truncate"
+                className="tags__tag min-w-0 max-w-full"
+                contentClassName="tags__tag-label min-w-0 max-w-[15rem]"
                 trailing={
                   <button
                     type="button"
@@ -300,7 +300,12 @@ export const Tags = ({
                   </button>
                 }
               >
-                <span title={tag}>{tag}</span>
+                <span
+                  title={tag}
+                  className="tags__tag-label-text min-w-0 flex-1 truncate"
+                >
+                  {tag}
+                </span>
               </Tag>
             ))}
 
