@@ -490,13 +490,15 @@ Behavior:
 
 ### `/styleguide`
 
-Hidden internal route for component iteration and design comparison work.
+Hidden internal route for design reference and component comparison work.
 
 Components:
 
 - `StyleguideIndexPage`
 - `StyleguideSectionNav`
 - `StyleguideTypographyPage`
+- `StyleguideLabelsPage`
+- `StyleguideMessagesPage`
 - `StyleguideInputsPage`
 - `StyleguideButtonsPage`
 - `StyleguidePanelPage`
@@ -508,9 +510,13 @@ Components:
 - `LocationCard` (styleguide-local image treatment)
 - `EncounterCard` (styleguide-local image treatment)
 - `QuestCard` (styleguide-local image treatment)
+- `Heading`
+- `Text`
+- `Label`
 - `Tag`
 - `Tags`
 - `ConnectionStatusPill`
+- `Panel`
 - `ToggleButton`
 - `ButtonRadioGroup`
 - `RockerSwitch`
@@ -519,7 +525,8 @@ Behavior:
 
 - direct-route accessible but intentionally unlinked from the public app flows
 - `/styleguide` is now the overview and secondary-nav hub for the styleguide labs
-- the overview links to `/styleguide/typography`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
+- the overview now reads as a design reference: principles, the complete color-family ledger shown as swatches with hex values, shared-component rules, and component use cases
+- the section nav provides access to `/styleguide/typography`, `/styleguide/labels`, `/styleguide/messages`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
 - the cards page is the primary gallery entry point; the detail routes remain direct drill-down pages for internal inspection but are not surfaced in the main styleguide nav
 
 ---
@@ -538,9 +545,47 @@ Components:
 Behavior:
 
 - showcases the shared `Heading`, `Text`, and `Label` APIs together so contributors can validate hierarchy, colors, and the shared size ladder in one place
-- keeps semantic heading usage and sticker/tag usage scoped to a dedicated page
+- keeps semantic heading usage scoped here while the dedicated sticker lab lives on `/styleguide/labels` and the editable chip/tag patterns stay on `/styleguide/tags`
 - includes the full `Label` palette and the `Small` / `Medium` / `Large` size ladder so chips can be checked across the same surface
 - uses different heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
+
+---
+
+### `/styleguide/labels`
+
+Hidden internal overview for sticker-style labels and size ladder checks.
+
+Components:
+
+- `StyleguideLabelsPage`
+- `Heading`
+- `Text`
+- `Label`
+
+Behavior:
+
+- showcases the shared `Label` API across the full tone palette so contributors can validate sticker colors in one place
+- keeps the `sm` / `md` / `lg` size ladder visible alongside the default rotated label and the flatter alignment used in denser rows
+- stays focused on sticker-like surfaces instead of the editable chip/tag patterns that live on the `Tags` page
+
+---
+
+### `/styleguide/messages`
+
+Hidden internal overview for semantic message shells and highlighted callouts.
+
+Components:
+
+- `StyleguideMessagesPage`
+- `Heading`
+- `Text`
+- `Message`
+
+Behavior:
+
+- showcases the shared `Message` shell across tonal callouts so contributors can validate label placement, container gradients, and body copy contrast
+- keeps the highlighted pulse treatment visible on a dedicated page so urgency can be checked without feature noise
+- uses the same narrative-first content style as the rest of the styleguide labs so message tone reads in context rather than in isolation
 
 ---
 

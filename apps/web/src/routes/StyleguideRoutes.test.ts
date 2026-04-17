@@ -13,6 +13,8 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /StyleguidePanelPage/);
   assert.match(source, /StyleguideCardsPage/);
   assert.match(source, /StyleguideTagsPage/);
+  assert.match(source, /StyleguideLabelsPage/);
+  assert.match(source, /StyleguideMessagesPage/);
   assert.match(source, /StyleguideControlsPage/);
   assert.match(source, /StyleguideSessionChatPage/);
   assert.match(source, /StyleguideLocationCardPage/);
@@ -29,6 +31,8 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /path="\/styleguide\/panel"/);
   assert.match(source, /path="\/styleguide\/cards"/);
   assert.match(source, /path="\/styleguide\/tags"/);
+  assert.match(source, /path="\/styleguide\/labels"/);
+  assert.match(source, /path="\/styleguide\/messages"/);
   assert.match(source, /path="\/styleguide\/controls"/);
   assert.match(source, /path="\/styleguide\/session-chat"/);
   assert.match(source, /path="location-card"|path="\/styleguide\/location-card"/);
@@ -62,9 +66,17 @@ test("App registers the hidden styleguide routes", () => {
     source,
     /path="\/styleguide\/quest-card"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideQuestCardPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
+  assert.match(
+    source,
+    /path="\/styleguide\/labels"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideLabelsPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/messages"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideMessagesPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
 });
 
-test("StyleguideIndexPage documents the scoped styleguide overview", () => {
+test("StyleguideIndexPage documents the design reference hub", () => {
   const source = readFileSync(
     new URL("./StyleguideIndexPage.tsx", import.meta.url),
     "utf8",
@@ -72,21 +84,23 @@ test("StyleguideIndexPage documents the scoped styleguide overview", () => {
 
   assert.match(source, /StyleguideSectionNav/);
   assert.match(source, /styleguide-index-page/);
-  assert.match(source, /Typography/);
-  assert.match(source, /Inputs/);
-  assert.match(source, /Buttons/);
-  assert.match(source, /Cards/);
-  assert.match(source, /Tags/);
-  assert.match(source, /Controls/);
-  assert.match(source, /Session Chat/);
-  assert.match(source, /\/styleguide\/typography/);
-  assert.match(source, /\/styleguide\/inputs/);
-  assert.match(source, /\/styleguide\/buttons/);
-  assert.match(source, /\/styleguide\/cards/);
-  assert.match(source, /\/styleguide\/tags/);
-  assert.match(source, /\/styleguide\/controls/);
-  assert.match(source, /\/styleguide\/session-chat/);
-  assert.doesNotMatch(source, /ConnectionStatusPill/);
-  assert.doesNotMatch(source, /ButtonRadioGroup/);
-  assert.doesNotMatch(source, /ToggleButton/);
+  assert.match(source, /Design principles/);
+  assert.match(source, /Color families and swatches/);
+  assert.match(source, /Common shared-component rules/);
+  assert.match(source, /Component use cases/);
+  assert.match(source, /Narration first/);
+  assert.match(source, /Semantic color/);
+  assert.match(source, /Shared primitives/);
+  assert.match(source, /Contrast with restraint/);
+  assert.match(source, /Label \/ Tag \/ ConnectionStatusPill/);
+  assert.match(source, /Button \/ CTAButton/);
+  assert.match(source, /TextField \/ TextArea/);
+  assert.match(source, /backgroundColor: variant\.hex/);
+  assert.doesNotMatch(source, /\/styleguide\/typography/);
+  assert.doesNotMatch(source, /\/styleguide\/inputs/);
+  assert.doesNotMatch(source, /\/styleguide\/buttons/);
+  assert.doesNotMatch(source, /\/styleguide\/cards/);
+  assert.doesNotMatch(source, /\/styleguide\/tags/);
+  assert.doesNotMatch(source, /\/styleguide\/controls/);
+  assert.doesNotMatch(source, /\/styleguide\/session-chat/);
 });
