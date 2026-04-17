@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: make `CTAButton` highlights follow the selected button color family and resolve the hover underlay to the matching light tone so solo CTAs stay visually consistent across the palette.
 - Web: make the shared `Heading` semantic highlight palette resolve to lighter tones for `gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, and `monster`, normalize the styleguide typography and quest-card demo headings onto that semantic palette so the underlines no longer read as heavy dark strokes, and add a live styleguide showcase of every supported heading highlight.
 - Web: give the shared `Button` ghost variant a 1px hard border shadow with matching hover, active, and disabled states so the secondary action shell sits closer to the solid button.
 - Web: fix the ghost `fire` variant so it uses the fire border and text colors instead of falling back to the steel palette.

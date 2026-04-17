@@ -2,6 +2,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { Button } from "./Button";
 import { Highlight } from "./Highlight";
+import { resolveCTAButtonHighlightColor } from "./ctaButtonHighlightColor";
 
 type CTAButtonProps = Omit<
   ComponentPropsWithoutRef<typeof Button>,
@@ -17,11 +18,13 @@ export const CTAButton = ({
   className,
   containerClassName,
   highlightClassName,
+  color = "gold",
   ...props
 }: CTAButtonProps): JSX.Element => {
   return (
     <div className={cn("cta-button relative inline-flex w-fit group", containerClassName)}>
       <Button
+        color={color}
         className={cn(
           "relative z-10 rotate-[-2deg] skew-x-[-5deg] hover:rotate-[0deg] active:rotate-[0deg] disabled:rotate-[-2deg]",
           className,
@@ -31,7 +34,7 @@ export const CTAButton = ({
         {children}
       </Button>
       <Highlight
-        color="gold"
+        color={resolveCTAButtonHighlightColor(color)}
         animate="infinite"
         lineCount={4}
         canvasWidth={600}

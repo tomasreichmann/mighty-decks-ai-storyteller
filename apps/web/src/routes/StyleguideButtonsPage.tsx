@@ -76,7 +76,8 @@ const colorShowcaseRows = [
     kind: "cta" as const,
     labelColor: "cloth" as const,
     panelTone: "cloth" as const,
-    description: "The slanted CTA wrapper across the full palette.",
+    description:
+      "The slanted CTA wrapper across the full palette, with a family-matched light hover highlight.",
   },
   {
     name: "Circle",
@@ -280,8 +281,9 @@ export const StyleguideButtonsPage = (): JSX.Element => {
         <Text variant="body" color="iron-light" className="text-sm">
           Use `Button` for standard action surfaces in forms, dialogs, and
           toolbars. Reach for `CTAButton` when the action should carry extra
-          visual weight and a more heroic presentation. Use the size ladders
-          above to keep the shared height rhythm intact.
+          visual weight, a more heroic presentation, and a family-matched
+          light hover highlight. Use the size ladders above to keep the shared
+          height rhythm intact.
         </Text>
         <Link
           to="/styleguide"

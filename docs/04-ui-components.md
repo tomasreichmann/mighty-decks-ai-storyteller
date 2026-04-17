@@ -992,7 +992,7 @@ Located in `apps/web/src/components/common/`:
 - `ToggleButton` (straight-edged active/inactive option button for grouped controls using the shared `sm`/`md`/`lg` height ladder)
 - `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label` and the shared `sm`/`md`/`lg` height ladder)
 - `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton` and the shared `sm`/`md`/`lg` height ladder)
-- `CTAButton` (shared high-emphasis solo CTA with hover highlight underlay)
+- `CTAButton` (shared high-emphasis solo CTA with a family-matched light hover highlight underlay)
 - `Section`
 - `Panel`
 - `Text`

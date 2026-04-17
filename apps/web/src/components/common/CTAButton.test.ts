@@ -9,4 +9,7 @@ test("CTAButton applies the rotated highlighted call-to-action treatment", () =>
   assert.match(source, /rotate-\[-2deg\]/);
   assert.match(source, /skew-x-\[-5deg\]/);
   assert.match(source, /containerClassName/);
+  assert.match(source, /resolveCTAButtonHighlightColor/);
+  assert.match(source, /color=\{resolveCTAButtonHighlightColor\(color\)\}/);
+  assert.doesNotMatch(source, /color="gold"/);
 });

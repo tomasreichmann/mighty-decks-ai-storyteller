@@ -193,7 +193,7 @@ Tag family note:
 Primitive API notes:
 
 - `Button` solid is the neutral default for standard and grouped actions.
-- `CTAButton` owns the skewed, highlighted solo-action treatment.
+- `CTAButton` owns the skewed, highlighted solo-action treatment, and its hover highlight resolves to the button family's light tone.
 - `Label` uses `color` and `size` props rather than dynamic text-class composition.
 - `Heading` uses `level` instead of a variant prop so the semantic title level is explicit at the call site.
 - Shared field and control shells use the same `sm`/`md`/`lg` size ladder so rows with adjacent controls can match height.
