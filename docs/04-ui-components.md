@@ -348,7 +348,9 @@ Behavior:
 - `/adventure-module/:slug/encounters/:entityId` renders a live encounter editor with autosave, prerequisites, a framed title-image picker that opens the shared image dialog with the current image preselected, and markdown script authoring.
 - `/adventure-module/:slug/quests/:entityId` renders a live quest editor with autosave, a framed title-image picker that opens the shared image dialog with the current image preselected, markdown brief authoring, and slug-driven route updates after saves.
 - actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and a clipboard copy button
-- the shared image dialog uses a depressed `Selected Image URL` field with an inline trash clear button, a raw-image drop zone that uploads external images to the server before reusing them in the picker, and a `Gallery / Generate / Edit` tab strip so browsing, prompt generation, and manual image edits stay separated
+- the shared image dialog uses a depressed `Selected Image URL` field with an inline clear button, a raw-image drop zone that uploads external images to the server, and a selected-image preview directly below the drop zone
+- when the selected image comes from the generated-image store, the preview shows muted prompt and model metadata under the image so long prompts stay visible without overwhelming the dialog
+- the shared image dialog now uses explicit `Gallery | Generate | Edit` modes: `Gallery` flattens stored fal images newest-first with hoverable prompt/model info and per-image removal, `Generate` keeps the text-to-image prompt flow, and `Edit` sends the selected image plus an edit prompt to fal-only image-edit models
 
 ---
 
@@ -538,7 +540,7 @@ Behavior:
 - showcases the shared `Heading`, `Text`, and `Label` APIs together so contributors can validate hierarchy, colors, and the shared size ladder in one place
 - keeps semantic heading usage and sticker/tag usage scoped to a dedicated page
 - includes the full `Label` palette and the `Small` / `Medium` / `Large` size ladder so chips can be checked across the same surface
-- uses different semantic heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
+- uses different heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
 
 ---
 
@@ -575,14 +577,13 @@ Components:
 Behavior:
 
 - isolates the standard and high-emphasis button APIs so contributors can compare size and color behavior without the rest of the styleguide chrome
-- includes a four-way buttons matrix with single-color size ladders and full-palette rows for solid, CTA, circle, and ghost buttons so contributors can compare the live primitive and wrapper styles without a prototype ghost lab
 - keeps the button family scoped to one page before it is reused in routes or labs
 
 ---
 
 ### `/styleguide/panel`
 
-Hidden internal overview for the lighter framed surface.
+Hidden internal overview for the heavy framed surface.
 
 Components:
 
@@ -591,7 +592,7 @@ Components:
 
 Behavior:
 
-- showcases `Panel` as the lighter framed surface for major route blocks and summary panels
+- showcases `Panel` as the heavyweight framed surface for major route blocks and summary panels
 - keeps framed surfaces separate from the lighter body, field, and chip labs so contributors can judge when a frame is actually warranted
 
 ---
@@ -988,11 +989,11 @@ Behavior:
 
 Located in `apps/web/src/components/common/`:
 
-- `Button` (project variants/sizes; neutral default for standard and grouped actions with the shared `sm`/`md`/`lg` height ladder and the shadowed ghost treatment)
+- `Button` (project variants/sizes; neutral default for standard and grouped actions with the shared `sm`/`md`/`lg` height ladder)
 - `ToggleButton` (straight-edged active/inactive option button for grouped controls using the shared `sm`/`md`/`lg` height ladder)
 - `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label` and the shared `sm`/`md`/`lg` height ladder)
 - `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton` and the shared `sm`/`md`/`lg` height ladder)
-- `CTAButton` (shared high-emphasis solo CTA with a family-matched hover highlight underlay)
+- `CTAButton` (shared high-emphasis solo CTA with hover highlight underlay)
 - `Section`
 - `Panel`
 - `Text`

@@ -195,7 +195,7 @@ const LocationImageField = ({
 
       <AdventureModuleGeneratedImagePicker
         label={imageLabel}
-        promptLabel={`${imageLabel} Prompt`}
+        promptLabel={imageLabel === "Title Image" ? "image prompt" : `${imageLabel} Prompt`}
         promptDescription={promptDescription}
         contextLabel={`${imageLabel} Context`}
         contextDescription="Edit the base prompt text. Selected context tags are appended for generation and lookup, but are not shown in the prompt field."

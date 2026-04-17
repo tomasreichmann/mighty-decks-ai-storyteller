@@ -28,6 +28,22 @@ const waitForJobFinalState = async (
   throw new Error("Timed out waiting for image job completion.");
 };
 
+const waitForEditJobFinalState = async (
+  service: ImageGenerationService,
+  jobId: string,
+): Promise<void> => {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    const job = service.getEditJob(jobId);
+    if (!job || job.status !== "running") {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+
+  throw new Error("Timed out waiting for image edit job completion.");
+};
+
 const createLeonardoStub = (options: {
   delayMs?: number;
 } = {}): {
@@ -323,4 +339,84 @@ test("ImageGenerationService enforces active-job cap and per-minute rate limit",
     (error: unknown) =>
       error instanceof ImageGenerationError && error.statusCode === 429,
   );
+});
+
+test("ImageGenerationService creates distinct edit groups for different source images", async (t) => {
+  const rootDir = await createTempDir();
+  const originalFetch = globalThis.fetch;
+
+  t.after(async () => {
+    globalThis.fetch = originalFetch;
+    await rm(rootDir, { recursive: true, force: true });
+  });
+
+  globalThis.fetch = (async () =>
+    new Response(Buffer.from("edited"), {
+      status: 200,
+      headers: {
+        "Content-Type": "image/png",
+      },
+    })) as typeof fetch;
+
+  const store = new ImageStore({
+    rootDir,
+    fileRouteBasePath: "/api/image/files",
+  });
+  await store.initialize();
+
+  const falClient = {
+    listModels: async () => [],
+    generateImage: async () => ({
+      imageUrl: "https://example.com/generated-from-edit.png",
+      status: "complete",
+    }),
+    editImage: async () => ({
+      imageUrl: "https://example.com/generated-from-edit.png",
+      status: "complete",
+    }),
+  } as unknown as FalClient;
+
+  const service = new ImageGenerationService({
+    falClient,
+    leonardoClient: createLeonardoStub().client,
+    imageStore: store,
+    maxActiveJobs: 4,
+    rateLimitPerMinute: 10,
+    downloadTimeoutMs: 5000,
+  });
+
+  const firstJob = await service.createEditJob(
+    {
+      provider: "fal",
+      prompt: "Add drifting fog behind the tower.",
+      model: "fal-ai/flux-pro/kontext",
+      sourceImageUrl: "https://example.com/base-one.png",
+      useCache: false,
+      amount: 1,
+    },
+    "127.0.0.1",
+  );
+  const secondJob = await service.createEditJob(
+    {
+      provider: "fal",
+      prompt: "Add drifting fog behind the tower.",
+      model: "fal-ai/flux-pro/kontext",
+      sourceImageUrl: "https://example.com/base-two.png",
+      useCache: false,
+      amount: 1,
+    },
+    "127.0.0.1",
+  );
+
+  assert.notEqual(firstJob.groupKey, secondJob.groupKey);
+
+  await waitForEditJobFinalState(service, firstJob.jobId);
+  await waitForEditJobFinalState(service, secondJob.jobId);
+
+  const firstGroup = service.getGroup(firstJob.groupKey);
+  const secondGroup = service.getGroup(secondJob.groupKey);
+  assert.equal(firstGroup?.referenceImageUrl, "https://example.com/base-one.png");
+  assert.equal(secondGroup?.referenceImageUrl, "https://example.com/base-two.png");
+  assert.equal(firstGroup?.images[0]?.referenceImageUrl, "https://example.com/base-one.png");
+  assert.equal(secondGroup?.images[0]?.referenceImageUrl, "https://example.com/base-two.png");
 });

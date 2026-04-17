@@ -1,4 +1,7 @@
-import type { ImageModelSummary } from "@mighty-decks/spec/imageGeneration";
+import type {
+  ImageModelCapability,
+  ImageModelSummary,
+} from "@mighty-decks/spec/imageGeneration";
 
 interface LeonardoClientOptions {
   apiKey: string | null;
@@ -195,8 +198,14 @@ export class LeonardoClient {
     return Boolean(this.options.apiKey);
   }
 
-  public async listModels(): Promise<ImageModelSummary[]> {
+  public async listModels(
+    capability: ImageModelCapability = "generate",
+  ): Promise<ImageModelSummary[]> {
     if (!this.options.apiKey) {
+      return [];
+    }
+
+    if (capability === "edit") {
       return [];
     }
 

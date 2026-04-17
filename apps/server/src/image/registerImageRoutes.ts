@@ -1,11 +1,15 @@
 import { readFile } from "node:fs/promises";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type {
+  ImageEditJobRequest,
   ImageGenerateJobRequest,
   ImageLookupGroupRequest,
   ImageLookupGroupsByPromptRequest,
 } from "@mighty-decks/spec/imageGeneration";
-import { imageProviderSchema } from "@mighty-decks/spec/imageGeneration";
+import {
+  imageModelCapabilitySchema,
+  imageProviderSchema,
+} from "@mighty-decks/spec/imageGeneration";
 import { ZodError } from "zod";
 import { isSafeFileName } from "./ImageNaming";
 import {
@@ -58,14 +62,31 @@ const parseProviderQuery = (value: unknown): "fal" | "leonardo" => {
   return parsed.data;
 };
 
+const parseCapabilityQuery = (value: unknown): "generate" | "edit" => {
+  const capability =
+    typeof value === "string" && value.trim().length > 0 ? value : "generate";
+  const parsed = imageModelCapabilitySchema.safeParse(capability);
+  if (!parsed.success) {
+    throw new ImageGenerationError(
+      "Invalid capability. Use 'generate' or 'edit'.",
+      400,
+    );
+  }
+
+  return parsed.data;
+};
+
 export const registerImageRoutes = (
   app: FastifyInstance,
   service: ImageGenerationService,
 ): void => {
   app.get("/api/image/models", async (request, reply) => {
     try {
-      const query = request.query as { provider?: unknown };
-      const models = await service.listModels(parseProviderQuery(query.provider));
+      const query = request.query as { provider?: unknown; capability?: unknown };
+      const models = await service.listModels(
+        parseProviderQuery(query.provider),
+        parseCapabilityQuery(query.capability),
+      );
       return reply.send({ models });
     } catch (error) {
       return sendError(reply, error, "Could not fetch image models.");
@@ -175,6 +196,41 @@ export const registerImageRoutes = (
       return reply.send({ job });
     } catch (error) {
       return sendError(reply, error, "Could not fetch image job.");
+    }
+  });
+
+  app.post("/api/image/edit-jobs", async (request, reply) => {
+    try {
+      const job = await service.createEditJob(
+        request.body as ImageEditJobRequest,
+        request.ip,
+      );
+      return reply.code(201).send({ job });
+    } catch (error) {
+      return sendError(reply, error, "Could not create image edit job.");
+    }
+  });
+
+  app.get("/api/image/edit-jobs/:jobId", async (request, reply) => {
+    const params = request.params as { jobId?: string };
+    const jobId = params.jobId?.trim();
+    if (!jobId) {
+      return reply.code(400).send({
+        message: "jobId is required.",
+      });
+    }
+
+    try {
+      const job = service.getEditJob(jobId);
+      if (!job) {
+        return reply.code(404).send({
+          message: "Image edit job not found.",
+        });
+      }
+
+      return reply.send({ job });
+    } catch (error) {
+      return sendError(reply, error, "Could not fetch image edit job.");
     }
   });
 

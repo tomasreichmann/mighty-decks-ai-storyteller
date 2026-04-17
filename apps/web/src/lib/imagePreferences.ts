@@ -2,9 +2,19 @@ import type { ImageProvider } from "@mighty-decks/spec/imageGeneration";
 
 const FAVORITE_MODELS_KEY = "mighty_decks_image_favorite_models";
 const LAST_USED_MODEL_KEY = "mighty_decks_image_last_model";
+export type ImageModelPreferenceScope = "generate" | "edit";
 
 const withProviderScope = (key: string, provider: ImageProvider): string =>
   `${key}_${provider}`;
+
+const withModelScope = (
+  key: string,
+  provider: ImageProvider,
+  scope: ImageModelPreferenceScope,
+): string =>
+  scope === "generate"
+    ? withProviderScope(key, provider)
+    : `${withProviderScope(key, provider)}_${scope}`;
 
 const readStringArray = (key: string): string[] => {
   if (typeof window === "undefined") {
@@ -62,13 +72,16 @@ export const toggleFavoriteModel = (
   return nextFavorites;
 };
 
-export const loadLastUsedModel = (provider: ImageProvider): string | null => {
+export const loadLastUsedModel = (
+  provider: ImageProvider,
+  scope: ImageModelPreferenceScope = "generate",
+): string | null => {
   if (typeof window === "undefined") {
     return null;
   }
 
   const raw = window.localStorage.getItem(
-    withProviderScope(LAST_USED_MODEL_KEY, provider),
+    withModelScope(LAST_USED_MODEL_KEY, provider, scope),
   );
   const trimmed = raw?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : null;
@@ -77,6 +90,7 @@ export const loadLastUsedModel = (provider: ImageProvider): string | null => {
 export const saveLastUsedModel = (
   provider: ImageProvider,
   modelId: string,
+  scope: ImageModelPreferenceScope = "generate",
 ): void => {
   if (typeof window === "undefined") {
     return;
@@ -88,7 +102,7 @@ export const saveLastUsedModel = (
   }
 
   window.localStorage.setItem(
-    withProviderScope(LAST_USED_MODEL_KEY, provider),
+    withModelScope(LAST_USED_MODEL_KEY, provider, scope),
     trimmed,
   );
 };

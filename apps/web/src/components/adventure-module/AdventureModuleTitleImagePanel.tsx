@@ -244,7 +244,7 @@ export const AdventureModuleTitleImagePanel = ({
     <div className="stack gap-3">
       <AdventureModuleGeneratedImagePicker
         label="Title Image"
-        promptLabel="Title Image Prompt"
+        promptLabel="image prompt"
         promptDescription="Base text used for title image generation."
         contextLabel="Title Image Context"
         contextDescription="Edit the base prompt text. Selected context tags are appended for generation and lookup, but are not shown in the prompt field."
@@ -257,7 +257,6 @@ export const AdventureModuleTitleImagePanel = ({
         defaultContextTags={DEFAULT_CONTEXT_TAGS}
         emptyLabel="No title image selected yet."
         emptyFrameClassName="aspect-video min-h-56"
-        generateLabel="Generate Title Image"
         resolveContextLines={resolveSelectedContextLines}
       />
 

@@ -1,13 +1,17 @@
 import type {
   GeneratedImageGroup,
+  ImageEditJob,
+  ImageEditJobRequest,
   ImageGenerateJobRequest,
   ImageJob,
   ImageLookupGroupRequest,
   ImageLookupGroupsByPromptRequest,
+  ImageModelCapability,
   ImageModelSummary,
   ImageProvider,
 } from "@mighty-decks/spec/imageGeneration";
 import {
+  imageEditJobResponseSchema,
   imageGroupResponseSchema,
   imageGroupsResponseSchema,
   imageJobResponseSchema,
@@ -39,9 +43,12 @@ const fetchJson = async (input: RequestInfo | URL, init?: RequestInit): Promise<
 
 export const fetchImageModels = async (
   provider: ImageProvider,
+  capability: ImageModelCapability = "generate",
 ): Promise<ImageModelSummary[]> => {
   const payload = await fetchJson(
-    buildApiUrl(`/api/image/models?provider=${encodeURIComponent(provider)}`),
+    buildApiUrl(
+      `/api/image/models?provider=${encodeURIComponent(provider)}&capability=${encodeURIComponent(capability)}`,
+    ),
   );
   const parsed = imageModelsResponseSchema.parse(payload);
   return parsed.models;
@@ -128,6 +135,26 @@ export const fetchImageJob = async (jobId: string): Promise<ImageJob> => {
     buildApiUrl(`/api/image/jobs/${encodeURIComponent(jobId)}`),
   );
   return imageJobResponseSchema.parse(payload).job;
+};
+
+export const createImageEditJob = async (
+  request: ImageEditJobRequest,
+): Promise<ImageEditJob> => {
+  const payload = await fetchJson(buildApiUrl("/api/image/edit-jobs"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+  return imageEditJobResponseSchema.parse(payload).job;
+};
+
+export const fetchImageEditJob = async (jobId: string): Promise<ImageEditJob> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/image/edit-jobs/${encodeURIComponent(jobId)}`),
+  );
+  return imageEditJobResponseSchema.parse(payload).job;
 };
 
 export const setActiveImage = async (

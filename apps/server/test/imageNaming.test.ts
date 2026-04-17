@@ -4,6 +4,7 @@ import {
   buildImageFileBaseName,
   isSafeFileName,
   toCacheKey,
+  toEditGroupKey,
   toGroupKey,
   toModelHash,
   toPromptHash,
@@ -30,6 +31,27 @@ test("image naming hashes are deterministic", () => {
     height: 1024,
   });
   assert.match(cacheKey, /^[a-f0-9]{64}$/);
+});
+
+test("edit group keys stay distinct when only the source image changes", () => {
+  const prompt = "Change the sky to dusk.";
+  const provider = "fal";
+  const model = "fal-ai/flux-pro/kontext";
+
+  const firstGroupKey = toEditGroupKey(
+    "https://example.com/base-one.png",
+    prompt,
+    provider,
+    model,
+  );
+  const secondGroupKey = toEditGroupKey(
+    "https://example.com/base-two.png",
+    prompt,
+    provider,
+    model,
+  );
+
+  assert.notEqual(firstGroupKey, secondGroupKey);
 });
 
 test("buildImageFileBaseName is file-safe and encodes batch/image position", () => {
