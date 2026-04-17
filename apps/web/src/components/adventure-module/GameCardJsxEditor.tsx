@@ -9,6 +9,7 @@ import {
   type GameCardType,
 } from "../../lib/markdownGameComponents";
 import { useGameCardCatalogContext } from "../../lib/gameCardCatalogContext";
+import { CardBoundary } from "../common/CardBoundary";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
 import { GameCardView, InvalidGameCardView } from "./GameCardView";
 
@@ -155,7 +156,16 @@ export const GameCardJsxEditor = ({
       data-selected={isSelected ? "true" : "false"}
     >
       {resolvedGameCard ? (
-        <GameCardView gameCard={resolvedGameCard} />
+        <CardBoundary
+          resetKey={`${type ?? "unknown"}-${slug ?? "unknown"}-${
+            modifierSlug ?? "base"
+          }`}
+          label="Card failed to render"
+          message="This preview could not render."
+          className="w-full max-w-[13rem]"
+        >
+          <GameCardView gameCard={resolvedGameCard} />
+        </CardBoundary>
       ) : (
         <InvalidGameCardView type={type} slug={slug} />
       )}

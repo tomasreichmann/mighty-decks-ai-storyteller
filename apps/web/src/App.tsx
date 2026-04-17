@@ -10,6 +10,7 @@ import {
 import { Page } from "./components/layout/Page";
 import { Label } from "./components/common/Label";
 import { PendingIndicator } from "./components/PendingIndicator";
+import { RouteBoundary } from "./components/common/RouteBoundary";
 
 const AdventureModuleAuthoringPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleAuthoringPage"))
@@ -206,57 +207,226 @@ const RouteLoadingFallback = (): JSX.Element => (
   </div>
 );
 
+const RouteShellBoundary = ({
+  children,
+}: {
+  children: JSX.Element;
+}): JSX.Element => {
+  return (
+    <RouteBoundary
+      title="Route failed to render"
+      message="This route hit a render error. Use Home or Back to continue."
+    >
+      {children}
+    </RouteBoundary>
+  );
+};
+
 export const App = (): JSX.Element => {
   return (
     <Suspense fallback={<RouteLoadingFallback />}>
       <Routes>
         <Route element={<FitContentLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/image-lab" element={<ImageGenerator />} />
-          <Route path="/campaign/list" element={<CampaignListPage />} />
-          <Route path="/campaign/:slug/:tab" element={<CampaignAuthoringPage />} />
+          <Route
+            path="/"
+            element={
+              <RouteShellBoundary>
+                <LandingPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/image-lab"
+            element={
+              <RouteShellBoundary>
+                <ImageGenerator />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/campaign/list"
+            element={
+              <RouteShellBoundary>
+                <CampaignListPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/campaign/:slug/:tab"
+            element={
+              <RouteShellBoundary>
+                <CampaignAuthoringPage />
+              </RouteShellBoundary>
+            }
+          />
           <Route
             path="/campaign/:slug/:tab/:entityId"
-            element={<CampaignAuthoringPage />}
+            element={
+              <RouteShellBoundary>
+                <CampaignAuthoringPage />
+              </RouteShellBoundary>
+            }
           />
           <Route
             path="/campaign/:campaignSlug/session/:sessionId"
-            element={<CampaignSessionLobbyPage />}
+            element={
+              <RouteShellBoundary>
+                <CampaignSessionLobbyPage />
+              </RouteShellBoundary>
+            }
           />
-          <Route path="/adventure-module/list" element={<AdventureModuleListPage />} />
-          <Route path="/adventure-module/new" element={<AdventureModuleNewPage />} />
-          <Route path="/adventure-module/:slug/:tab" element={<AdventureModuleAuthoringPage />} />
+          <Route
+            path="/adventure-module/list"
+            element={
+              <RouteShellBoundary>
+                <AdventureModuleListPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/adventure-module/new"
+            element={
+              <RouteShellBoundary>
+                <AdventureModuleNewPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/adventure-module/:slug/:tab"
+            element={
+              <RouteShellBoundary>
+                <AdventureModuleAuthoringPage />
+              </RouteShellBoundary>
+            }
+          />
           <Route
             path="/adventure-module/:slug/:tab/:entityId"
-            element={<AdventureModuleAuthoringPage />}
+            element={
+              <RouteShellBoundary>
+                <AdventureModuleAuthoringPage />
+              </RouteShellBoundary>
+            }
           />
-          <Route path="/workflow-lab" element={<WorkflowLabPage />} />
-          <Route path="/workflow-lab/:workflowId" element={<WorkflowLabPage />} />
-          <Route path="/styleguide" element={<StyleguideIndexPage />} />
-          <Route path="/styleguide/typography" element={<StyleguideTypographyPage />} />
-          <Route path="/styleguide/inputs" element={<StyleguideInputsPage />} />
-          <Route path="/styleguide/buttons" element={<StyleguideButtonsPage />} />
-          <Route path="/styleguide/panel" element={<StyleguidePanelPage />} />
-          <Route path="/styleguide/cards" element={<StyleguideCardsPage />} />
-          <Route path="/styleguide/tags" element={<StyleguideTagsPage />} />
-          <Route path="/styleguide/controls" element={<StyleguideControlsPage />} />
+          <Route
+            path="/workflow-lab"
+            element={
+              <RouteShellBoundary>
+                <WorkflowLabPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/workflow-lab/:workflowId"
+            element={
+              <RouteShellBoundary>
+                <WorkflowLabPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide"
+            element={
+              <RouteShellBoundary>
+                <StyleguideIndexPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/typography"
+            element={
+              <RouteShellBoundary>
+                <StyleguideTypographyPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/inputs"
+            element={
+              <RouteShellBoundary>
+                <StyleguideInputsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/buttons"
+            element={
+              <RouteShellBoundary>
+                <StyleguideButtonsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/panel"
+            element={
+              <RouteShellBoundary>
+                <StyleguidePanelPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/cards"
+            element={
+              <RouteShellBoundary>
+                <StyleguideCardsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/tags"
+            element={
+              <RouteShellBoundary>
+                <StyleguideTagsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/controls"
+            element={
+              <RouteShellBoundary>
+                <StyleguideControlsPage />
+              </RouteShellBoundary>
+            }
+          />
           <Route
             path="/styleguide/session-chat"
-            element={<StyleguideSessionChatPage />}
+            element={
+              <RouteShellBoundary>
+                <StyleguideSessionChatPage />
+              </RouteShellBoundary>
+            }
           />
           <Route
             path="/styleguide/location-card"
-            element={<StyleguideLocationCardPage />}
+            element={
+              <RouteShellBoundary>
+                <StyleguideLocationCardPage />
+              </RouteShellBoundary>
+            }
           />
           <Route
             path="/styleguide/encounter-card"
-            element={<StyleguideEncounterCardPage />}
+            element={
+              <RouteShellBoundary>
+                <StyleguideEncounterCardPage />
+              </RouteShellBoundary>
+            }
           />
           <Route
             path="/styleguide/quest-card"
-            element={<StyleguideQuestCardPage />}
+            element={
+              <RouteShellBoundary>
+                <StyleguideQuestCardPage />
+              </RouteShellBoundary>
+            }
           />
-          <Route path="/adventure/:adventureId" element={<RoleSelectPage />} />
+          <Route
+            path="/adventure/:adventureId"
+            element={
+              <RouteShellBoundary>
+                <RoleSelectPage />
+              </RouteShellBoundary>
+            }
+          />
           <Route path="/rules" element={<RulesLayoutPage />}>
             <Route index element={<RulesIndexPage />} />
             <Route path="outcomes" element={<RulesOutcomesPage />} />
@@ -269,35 +439,69 @@ export const App = (): JSX.Element => {
         <Route element={<NoHeaderFitScreenLayout />}>
           <Route
             path="/styleguide/session-chat-player"
-            element={<StyleguideSessionChatPlayerPage />}
+            element={
+              <RouteShellBoundary>
+                <StyleguideSessionChatPlayerPage />
+              </RouteShellBoundary>
+            }
           />
           <Route
             path="/styleguide/session-chat-storyteller"
-            element={<StyleguideSessionChatStorytellerPage />}
+            element={
+              <RouteShellBoundary>
+                <StyleguideSessionChatStorytellerPage />
+              </RouteShellBoundary>
+            }
           />
         </Route>
 
         <Route element={<CampaignPlayerSessionLayout />}>
           <Route
             path="/campaign/:campaignSlug/session/:sessionId/player/*"
-            element={<CampaignSessionPlayerPage />}
+            element={
+              <RouteShellBoundary>
+                <CampaignSessionPlayerPage />
+              </RouteShellBoundary>
+            }
           />
         </Route>
 
         <Route element={<CampaignStorytellerSessionLayout />}>
           <Route
             path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab"
-            element={<CampaignAuthoringPage />}
+            element={
+              <RouteShellBoundary>
+                <CampaignAuthoringPage />
+              </RouteShellBoundary>
+            }
           />
           <Route
             path="/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId"
-            element={<CampaignAuthoringPage />}
+            element={
+              <RouteShellBoundary>
+                <CampaignAuthoringPage />
+              </RouteShellBoundary>
+            }
           />
         </Route>
 
         <Route element={<FitScreenLayout />}>
-          <Route path="/adventure/:adventureId/player" element={<PlayerPage />} />
-          <Route path="/adventure/:adventureId/screen" element={<ScreenPage />} />
+          <Route
+            path="/adventure/:adventureId/player"
+            element={
+              <RouteShellBoundary>
+                <PlayerPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/adventure/:adventureId/screen"
+            element={
+              <RouteShellBoundary>
+                <ScreenPage />
+              </RouteShellBoundary>
+            }
+          />
         </Route>
 
         <Route

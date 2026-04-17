@@ -1,5 +1,6 @@
 import { GameCardView } from "../components/adventure-module/GameCardView";
 import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
+import { CardBoundary } from "../components/common/CardBoundary";
 import { Text } from "../components/common/Text";
 import { rulesOutcomeCards } from "../data/rulesComponents";
 import { resolveGameCard } from "../lib/markdownGameComponents";
@@ -34,7 +35,14 @@ export const RulesOutcomesContent = ({
               key={`${outcome.slug}-${outcome.sourceSlug}`}
               className="stack h-full gap-2"
             >
-              <GameCardView gameCard={gameCard} className="mx-auto" />
+              <CardBoundary
+                resetKey={outcome.slug}
+                label="Card failed to render"
+                message="This rules card could not render."
+                className="mx-auto w-full max-w-[13rem]"
+              >
+                <GameCardView gameCard={gameCard} className="mx-auto" />
+              </CardBoundary>
               <ShortcodeField
                 shortcode={gameCard.legacyToken}
                 onAddToSelection={

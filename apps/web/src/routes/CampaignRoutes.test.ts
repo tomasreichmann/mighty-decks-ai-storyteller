@@ -9,6 +9,7 @@ test("App registers the campaign list, detail, and session routes", () => {
   assert.match(source, /CampaignAuthoringPage/);
   assert.match(source, /CampaignSessionLobbyPage/);
   assert.match(source, /CampaignSessionPlayerPage/);
+  assert.match(source, /RouteShellBoundary/);
   assert.match(source, /CampaignPlayerSessionLayout/);
   assert.match(source, /CampaignStorytellerSessionLayout/);
   assert.match(source, /hideHeader/);
@@ -21,31 +22,31 @@ test("App registers the campaign list, detail, and session routes", () => {
   );
   assert.match(
     source,
-    /path="\/campaign\/list"\s+element={<CampaignListPage \/>}/,
+    /path="\/campaign\/list"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignListPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,
-    /path="\/campaign\/:slug\/:tab"\s+element={<CampaignAuthoringPage \/>}/,
+    /path="\/campaign\/:slug\/:tab"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignAuthoringPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,
-    /path="\/campaign\/:slug\/:tab\/:entityId"\s+element={<CampaignAuthoringPage \/>}/,
+    /path="\/campaign\/:slug\/:tab\/:entityId"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignAuthoringPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,
-    /path="\/campaign\/:campaignSlug\/session\/:sessionId"\s+element={<CampaignSessionLobbyPage \/>}/,
+    /path="\/campaign\/:campaignSlug\/session\/:sessionId"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignSessionLobbyPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,
-    /<Route element={<CampaignPlayerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/player\/\*"\s+element={<CampaignSessionPlayerPage \/>}/,
+    /<Route element={<CampaignPlayerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/player\/\*"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignSessionPlayerPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,
-    /<Route element={<CampaignStorytellerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab"\s+element={<CampaignAuthoringPage \/>}/,
+    /<Route element={<CampaignStorytellerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignAuthoringPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,
-    /<Route element={<CampaignStorytellerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab\/:entityId"\s+element={<CampaignAuthoringPage \/>}/,
+    /<Route element={<CampaignStorytellerSessionLayout \/>}>[\s\S]*path="\/campaign\/:campaignSlug\/session\/:sessionId\/storyteller\/:tab\/:entityId"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignAuthoringPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.doesNotMatch(
     source,

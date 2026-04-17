@@ -1,7 +1,8 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Heading } from "../components/common/Heading";
 import { Tabs, type TabItem } from "../components/common/Tabs";
 import { Text } from "../components/common/Text";
+import { SectionBoundary } from "../components/common/SectionBoundary";
 
 const rulesTabs: TabItem[] = [
   { to: "/rules/outcomes", label: "Outcomes" },
@@ -11,6 +12,8 @@ const rulesTabs: TabItem[] = [
 ];
 
 export const RulesLayoutPage = (): JSX.Element => {
+  const location = useLocation();
+
   return (
     <div className="app-shell stack py-8 gap-4">
       <div>
@@ -40,7 +43,13 @@ export const RulesLayoutPage = (): JSX.Element => {
 
       <Tabs items={rulesTabs} ariaLabel="Rules sections" color="cloth" />
 
-      <Outlet />
+      <SectionBoundary
+        resetKey={location.pathname}
+        title="Rules content failed to render"
+        message="This rules section crashed while rendering. Choose another tab or return home."
+      >
+        <Outlet />
+      </SectionBoundary>
     </div>
   );
 };

@@ -5,5 +5,6 @@ import { readFileSync } from "node:fs";
 test("AppErrorBoundary renders the crash fallback message", () => {
   const source = readFileSync(new URL("./AppErrorBoundary.tsx", import.meta.url), "utf8");
 
-  assert.match(source, /<Message color="curse" label="App crashed while rendering">/);
+  assert.match(source, /BoundaryMessage/);
+  assert.match(source, /title="App crashed while rendering"/);
 });

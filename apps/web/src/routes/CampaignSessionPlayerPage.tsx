@@ -8,6 +8,7 @@ import { Button } from "../components/common/Button";
 import { DepressedInput } from "../components/common/DepressedInput";
 import { Message } from "../components/common/Message";
 import { Section } from "../components/common/Section";
+import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
 import { TextField } from "../components/common/TextField";
 import { CampaignSessionChatLayout } from "../components/session/CampaignSessionChatLayout";
@@ -277,171 +278,195 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
       ) : null}
 
       {!inChatRoute && !hasClaim ? (
-        <Section className="stack gap-5">
-          {!readyToClaimCharacter ? (
-            <Message label="Joining Seat" color="cloth">
-              Confirming your player seat with the session before character
-              claim opens.
-            </Message>
-          ) : null}
+        <SectionBoundary
+          resetKey={`${campaignSlug}-${sessionId}-claim`}
+          title="Character claim failed to render"
+          message="This claim flow crashed while rendering. Refresh the route or switch to the chat tab after claiming a seat."
+          className="stack gap-5"
+        >
+          <Section className="stack gap-5">
+            {!readyToClaimCharacter ? (
+              <Message label="Joining Seat" color="cloth">
+                Confirming your player seat with the session before character
+                claim opens.
+              </Message>
+            ) : null}
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-            <Section className="stack gap-3">
-              <Text variant="h3" color="iron">
-                Claim a Character
-              </Text>
-              {(availableCharacters.length > 0 ? availableCharacters : []).map((actor) => (
-                <div key={actor.fragmentId} className="flex flex-wrap items-start gap-4">
-                  <ActorCard
-                    className="w-full max-w-[13rem] shrink-0"
-                    baseLayerSlug={actor.baseLayerSlug}
-                    tacticalRoleSlug={actor.tacticalRoleSlug}
-                    tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
-                  />
-                  <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3 rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
-                    <div className="stack min-w-0 gap-1">
-                      <Text variant="emphasised" color="iron">
-                        {actor.title}
-                      </Text>
-                      <Text
-                        variant="body"
-                        color="iron-light"
-                        className="text-sm"
-                      >
-                        {actor.summary ?? "No summary yet."}
-                      </Text>
-                    </div>
-                    <Button
-                      color="gold"
-                      disabled={!readyToClaimCharacter}
-                      onClick={() =>
-                        claimCharacter(identity.participantId, actor.fragmentId)
-                      }
-                    >
-                      Claim
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {availableCharacters.length === 0 ? (
-                <Text variant="body" color="iron-light" className="text-sm">
-                  No unclaimed player characters are available yet.
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+              <Section className="stack gap-3">
+                <Text variant="h3" color="iron">
+                  Claim a Character
                 </Text>
-              ) : null}
-            </Section>
+                {(availableCharacters.length > 0 ? availableCharacters : []).map(
+                  (actor) => (
+                    <div key={actor.fragmentId} className="flex flex-wrap items-start gap-4">
+                      <ActorCard
+                        className="w-full max-w-[13rem] shrink-0"
+                        baseLayerSlug={actor.baseLayerSlug}
+                        tacticalRoleSlug={actor.tacticalRoleSlug}
+                        tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
+                      />
+                      <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3 rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
+                        <div className="stack min-w-0 gap-1">
+                          <Text variant="emphasised" color="iron">
+                            {actor.title}
+                          </Text>
+                          <Text
+                            variant="body"
+                            color="iron-light"
+                            className="text-sm"
+                          >
+                            {actor.summary ?? "No summary yet."}
+                          </Text>
+                        </div>
+                        <Button
+                          color="gold"
+                          disabled={!readyToClaimCharacter}
+                          onClick={() =>
+                            claimCharacter(identity.participantId, actor.fragmentId)
+                          }
+                        >
+                          Claim
+                        </Button>
+                      </div>
+                    </div>
+                  ),
+                )}
+                {availableCharacters.length === 0 ? (
+                  <Text variant="body" color="iron-light" className="text-sm">
+                    No unclaimed player characters are available yet.
+                  </Text>
+                ) : null}
+              </Section>
 
-            <Section className="stack gap-3">
-              <Text variant="h3" color="iron">
-                Create a New Character
-              </Text>
-              <TextField
-                label="Character Name"
-                value={newCharacterTitle}
-                onChange={(event) => setNewCharacterTitle(event.target.value)}
-                maxLength={120}
-                placeholder="Lyra Vell"
-              />
-              <div className="flex justify-end">
-                <Button
-                  color="gold"
-                  disabled={
-                    !readyToClaimCharacter || newCharacterTitle.trim().length === 0
-                  }
-                  onClick={() => {
-                    createCharacter(identity.participantId, newCharacterTitle.trim());
-                    setNewCharacterTitle("");
-                  }}
-                >
-                  Create
-                </Button>
-              </div>
-            </Section>
-          </div>
-        </Section>
+              <Section className="stack gap-3">
+                <Text variant="h3" color="iron">
+                  Create a New Character
+                </Text>
+                <TextField
+                  label="Character Name"
+                  value={newCharacterTitle}
+                  onChange={(event) => setNewCharacterTitle(event.target.value)}
+                  maxLength={120}
+                  placeholder="Lyra Vell"
+                />
+                <div className="flex justify-end">
+                  <Button
+                    color="gold"
+                    disabled={
+                      !readyToClaimCharacter ||
+                      newCharacterTitle.trim().length === 0
+                    }
+                    onClick={() => {
+                      createCharacter(identity.participantId, newCharacterTitle.trim());
+                      setNewCharacterTitle("");
+                    }}
+                  >
+                    Create
+                  </Button>
+                </div>
+              </Section>
+            </div>
+          </Section>
+        </SectionBoundary>
       ) : null}
 
       {inChatRoute && hasClaim ? (
         <CampaignSessionChatLayout
           tablePane={
-            <CampaignSessionTable
-              campaign={campaign}
-              session={session}
-              viewerRole="player"
-              currentParticipantId={identity.participantId}
-              onDrawOutcomeCard={drawOutcomeCard}
-              onShuffleOutcomeDeck={shuffleOutcomeDeck}
-              onPlayOutcomeCards={playOutcomeCards}
-              onRemoveEntry={handleRemoveTableCard}
-              className="mx-2 sm:mx-3"
-            />
+            <SectionBoundary
+              resetKey={`${campaignSlug}-${sessionId}-table`}
+              title="Session table failed to render"
+              message="The live table crashed while rendering. Switch to the chat pane or reload the route to continue."
+              className="flex min-h-0 min-w-0 flex-1 flex-col"
+            >
+              <CampaignSessionTable
+                campaign={campaign}
+                session={session}
+                viewerRole="player"
+                currentParticipantId={identity.participantId}
+                onDrawOutcomeCard={drawOutcomeCard}
+                onShuffleOutcomeDeck={shuffleOutcomeDeck}
+                onPlayOutcomeCards={playOutcomeCards}
+                onRemoveEntry={handleRemoveTableCard}
+                className="mx-2 sm:mx-3"
+              />
+            </SectionBoundary>
           }
           chatPane={
-            <div className="flex min-h-0 flex-1 flex-col gap-3 px-2 sm:px-3">
-              <CampaignSessionTranscriptFeed
-                entries={session?.transcript ?? []}
-                participants={session?.participants ?? []}
-                currentParticipantId={identity.participantId}
-                gameCardCatalogValue={gameCardCatalogValue}
-                className="min-h-[16rem] flex-1"
-              />
-
-              {session?.status === "closed" ? (
-                <Message label="Closed" color="cloth">
-                  This session has been closed by the storyteller.
-                </Message>
-              ) : null}
-
-              <div className="stack shrink-0 gap-2">
-                <DepressedInput
-                  multiline
-                  label="Message"
-                  color="gold"
-                  rows={4}
-                  value={messageText}
-                  onChange={(event) => setMessageText(event.target.value)}
-                  onKeyDown={handleMessageKeyDown}
-                  placeholder="Share your action, narration, or question for the table..."
-                  controlClassName="min-h-[7.5rem] pr-12"
-                  topRightControl={
-                    <MarkdownImageInsertButton
-                      identityKey={`${campaignSlug}-${sessionId}-player-chat-image`}
-                      smartContextDocument={smartContextDocument}
-                      currentInputValue={messageText}
-                      disabled={!canChat}
-                      dialogTitle="Share Image"
-                      dialogDescription="Generate a new image or reuse an existing one, then insert it into your transcript draft as standard markdown."
-                      promptDescription="Generate or reuse an image to share in the live transcript."
-                      workflowContextIntro="Markdown image prompt for a campaign session player transcript message. Refine wording while preserving a clear, table-readable illustration."
-                      buttonAriaLabel="Insert image into transcript"
-                      buttonTitle="Share image"
-                      onInsertMarkdownSnippet={(snippet) => {
-                        setMessageText((current) =>
-                          appendMarkdownSnippet(current, snippet),
-                        );
-                      }}
-                    />
-                  }
+            <SectionBoundary
+              resetKey={`${campaignSlug}-${sessionId}-chat`}
+              title="Session chat failed to render"
+              message="The live chat pane crashed while rendering. Switch to the table pane or reload the route to continue."
+              className="flex min-h-0 min-w-0 flex-1 flex-col"
+            >
+              <div className="flex min-h-0 flex-1 flex-col gap-3 px-2 sm:px-3">
+                <CampaignSessionTranscriptFeed
+                  entries={session?.transcript ?? []}
+                  participants={session?.participants ?? []}
+                  currentParticipantId={identity.participantId}
+                  gameCardCatalogValue={gameCardCatalogValue}
+                  className="min-h-[16rem] flex-1"
                 />
-                <div className="flex items-end justify-end gap-2 paper-shadow">
-                  <Button
+
+                {session?.status === "closed" ? (
+                  <Message label="Closed" color="cloth">
+                    This session has been closed by the storyteller.
+                  </Message>
+                ) : null}
+
+                <div className="stack shrink-0 gap-2">
+                  <DepressedInput
+                    multiline
+                    label="Message"
                     color="gold"
-                    disabled={!canChat || messageText.trim().length === 0}
-                    onClick={handleSendMessage}
-                  >
-                    Send
-                  </Button>
-                </div>
-                <div className="flex min-h-[2.2em] flex-col items-end mt-2 paper-shadow">
-                  <Text
-                    variant="note"
-                    color="steel-dark"
-                    className="normal-case tracking-normal"
-                  >
-                    Press Enter to send. Shift+Enter for newline.
-                  </Text>
+                    rows={4}
+                    value={messageText}
+                    onChange={(event) => setMessageText(event.target.value)}
+                    onKeyDown={handleMessageKeyDown}
+                    placeholder="Share your action, narration, or question for the table..."
+                    controlClassName="min-h-[7.5rem] pr-12"
+                    topRightControl={
+                      <MarkdownImageInsertButton
+                        identityKey={`${campaignSlug}-${sessionId}-player-chat-image`}
+                        smartContextDocument={smartContextDocument}
+                        currentInputValue={messageText}
+                        disabled={!canChat}
+                        dialogTitle="Share Image"
+                        dialogDescription="Generate a new image or reuse an existing one, then insert it into your transcript draft as standard markdown."
+                        promptDescription="Generate or reuse an image to share in the live transcript."
+                        workflowContextIntro="Markdown image prompt for a campaign session player transcript message. Refine wording while preserving a clear, table-readable illustration."
+                        buttonAriaLabel="Insert image into transcript"
+                        buttonTitle="Share image"
+                        onInsertMarkdownSnippet={(snippet) => {
+                          setMessageText((current) =>
+                            appendMarkdownSnippet(current, snippet),
+                          );
+                        }}
+                      />
+                    }
+                  />
+                  <div className="flex items-end justify-end gap-2 paper-shadow">
+                    <Button
+                      color="gold"
+                      disabled={!canChat || messageText.trim().length === 0}
+                      onClick={handleSendMessage}
+                    >
+                      Send
+                    </Button>
+                  </div>
+                  <div className="flex min-h-[2.2em] flex-col items-end mt-2 paper-shadow">
+                    <Text
+                      variant="note"
+                      color="steel-dark"
+                      className="normal-case tracking-normal"
+                    >
+                      Press Enter to send. Shift+Enter for newline.
+                    </Text>
+                  </div>
                 </div>
               </div>
-            </div>
+            </SectionBoundary>
           }
         />
       ) : null}

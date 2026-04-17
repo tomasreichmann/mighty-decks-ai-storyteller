@@ -13,5 +13,9 @@ test("StyleguideQuestCardPage renders the quest card direction", () => {
   assert.match(source, /scroll icon medallion/);
   assert.match(source, /StyleguideSectionNav/);
   assert.match(source, /styleguide-quest-card-page/);
-  assert.match(source, /<GameCard type="quest" quest=\{sampleQuest\} \/>/);
+  assert.match(source, /CardBoundary/);
+  assert.match(
+    source,
+    /<CardBoundary[\s\S]*<GameCard type="quest" quest=\{sampleQuest\} \/>[\s\S]*<\/CardBoundary>/,
+  );
 });

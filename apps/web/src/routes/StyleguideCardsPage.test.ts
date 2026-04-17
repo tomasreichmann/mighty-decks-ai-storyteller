@@ -9,6 +9,7 @@ test("StyleguideCardsPage keeps the gallery self-contained", () => {
   );
 
   assert.match(source, /styleguide-cards-page/);
+  assert.match(source, /CardBoundary/);
   assert.match(source, /GameCard/);
   assert.match(source, /type="location"/);
   assert.match(source, /type="encounter"/);

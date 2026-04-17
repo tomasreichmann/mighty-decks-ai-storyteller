@@ -12,6 +12,7 @@ import { SharedAuthoringHeader } from "../adventure-module/SharedAuthoringHeader
 import { CTAButton } from "../common/CTAButton";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { SectionBoundary } from "../common/SectionBoundary";
 import { Text } from "../common/Text";
 import {
   CAMPAIGN_DETAIL_TABS,
@@ -156,27 +157,33 @@ export const CampaignAuthoringScreen = (): JSX.Element => {
       ) : null}
 
       {!state.loading && state.detail ? (
-        <>
-          {!state.detail.ownedByRequester ? (
-            <Message label="Read-Only" color="bone">
-              You can view this campaign, but only its current editor can modify
-              it.
-            </Message>
-          ) : null}
+        <SectionBoundary
+          resetKey={`${state.detail.index.slug}-${state.route.activeTab}`}
+          title="Campaign content failed to render"
+          message="This campaign section crashed while rendering. Choose another tab or refresh the page."
+        >
+          <>
+            {!state.detail.ownedByRequester ? (
+              <Message label="Read-Only" color="bone">
+                You can view this campaign, but only its current editor can
+                modify it.
+              </Message>
+            ) : null}
 
-          {state.route.activeTab === "sessions" ? (
-            <CampaignSessionsTabContent
-              campaignSlug={state.detail.index.slug}
-              sessions={state.detail.sessions ?? []}
-              creatingSession={creatingSession}
-              onCreateSession={() => {
-                void handleCreateSession();
-              }}
-            />
-          ) : (
-            <CommonAuthoringTabContent />
-          )}
-        </>
+            {state.route.activeTab === "sessions" ? (
+              <CampaignSessionsTabContent
+                campaignSlug={state.detail.index.slug}
+                sessions={state.detail.sessions ?? []}
+                creatingSession={creatingSession}
+                onCreateSession={() => {
+                  void handleCreateSession();
+                }}
+              />
+            ) : (
+              <CommonAuthoringTabContent />
+            )}
+          </>
+        </SectionBoundary>
       ) : null}
     </div>
   );

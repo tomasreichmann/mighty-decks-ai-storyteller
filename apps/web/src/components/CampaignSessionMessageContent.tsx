@@ -9,6 +9,7 @@ import { ActorCard } from "./cards/ActorCard";
 import { EncounterCardView } from "./adventure-module/EncounterCardView";
 import { GameCardView } from "./adventure-module/GameCardView";
 import { QuestCardView } from "./adventure-module/QuestCardView";
+import { CardBoundary } from "./common/CardBoundary";
 
 interface CampaignSessionMessageContentProps {
   text: string;
@@ -101,12 +102,18 @@ export const CampaignSessionMessageContent = ({
   if (actor) {
     return (
       <div className="flex flex-wrap items-start gap-4">
-        <ActorCard
-          className="w-full max-w-[13rem] shrink-0"
-          baseLayerSlug={actor.baseLayerSlug}
-          tacticalRoleSlug={actor.tacticalRoleSlug}
-          tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
-        />
+        <CardBoundary
+          resetKey={`actor-${normalizeActorTitle(actor.title)}`}
+          label="Card failed to render"
+          message="This character card could not render."
+        >
+          <ActorCard
+            className="w-full max-w-[13rem] shrink-0"
+            baseLayerSlug={actor.baseLayerSlug}
+            tacticalRoleSlug={actor.tacticalRoleSlug}
+            tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
+          />
+        </CardBoundary>
         <div className="stack min-w-0 flex-1 gap-1">
           <span className="font-semibold">{actor.title}</span>
           <span className="text-sm text-kac-iron-light">
@@ -143,7 +150,13 @@ export const CampaignSessionMessageContent = ({
             block ? "block" : "inline-block align-middle",
           )}
         >
-          <GameCardView gameCard={resolved} />
+          <CardBoundary
+            resetKey={`game-card-${segment.type}-${segment.slug}-${segment.modifierSlug ?? "base"}`}
+            label="Card failed to render"
+            message="This card could not render."
+          >
+            <GameCardView gameCard={resolved} />
+          </CardBoundary>
         </div>
       ) : (
         <span key={`${key}-fallback`}>{segment.token}</span>
@@ -161,7 +174,13 @@ export const CampaignSessionMessageContent = ({
             block ? "block" : "inline-block align-middle",
           )}
         >
-          <EncounterCardView encounter={resolved.encounter} />
+          <CardBoundary
+            resetKey={`encounter-card-${segment.slug}`}
+            label="Card failed to render"
+            message="This encounter card could not render."
+          >
+            <EncounterCardView encounter={resolved.encounter} />
+          </CardBoundary>
         </div>
       ) : (
         <span key={`${key}-fallback`}>{segment.token}</span>
@@ -178,7 +197,13 @@ export const CampaignSessionMessageContent = ({
           block ? "block" : "inline-block align-middle",
         )}
       >
-        <QuestCardView quest={resolved.quest} />
+        <CardBoundary
+          resetKey={`quest-card-${segment.slug}`}
+          label="Card failed to render"
+          message="This quest card could not render."
+        >
+          <QuestCardView quest={resolved.quest} />
+        </CardBoundary>
       </div>
     ) : (
       <span key={`${key}-fallback`}>{segment.token}</span>

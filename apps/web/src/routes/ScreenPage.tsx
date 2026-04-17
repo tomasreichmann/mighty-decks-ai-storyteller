@@ -13,6 +13,7 @@ import { TranscriptFeed } from "../components/TranscriptFeed";
 import { useAdventureSession } from "../hooks/useAdventureSession";
 import { Message } from "../components/common/Message";
 import { Button } from "../components/common/Button";
+import { SectionBoundary } from "../components/common/SectionBoundary";
 import { createAdventureId } from "../lib/ids";
 import { PendingIndicator } from "../components/PendingIndicator";
 
@@ -107,138 +108,147 @@ export const ScreenPage = (): JSX.Element => {
         }}
       />
 
-      {showLobbyState ? (
+      <SectionBoundary
+        resetKey={`${adventureId}-${phase}`}
+        title="Adventure screen content failed to render"
+        message="This screen phase crashed while rendering. Use the navigation above or reopen the route to continue."
+        className="stack gap-4"
+      >
         <>
-          <RosterList roster={adventure?.roster ?? []} />
-          <ReadyGatePanel
-            connectedPlayers={connectedPlayers}
-            readyPlayers={readyPlayers}
-          />
-        </>
-      ) : null}
-      {phase === "lobby" && !adventure ? (
-        <Message label="Joining Adventure" color="cloth">
-          <PendingIndicator color="cloth" />
-        </Message>
-      ) : null}
-
-      {phase === "vote" && adventure?.activeVote ? (
-        <>
-          <GenericVotePanel
-            vote={adventure.activeVote}
-            onVote={() => undefined}
-            disabled={true}
-          />
-          <RosterList roster={adventure.roster} />
-        </>
-      ) : null}
-
-      {phase === "play" ? (
-        <>
-          {adventure?.debugMode ? (
-            <Message label="Debug Controls" color="cloth">
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant={transcriptVerbosity === "full" ? "solid" : "ghost"}
-                  color="cloth"
-                  onClick={() => setTranscriptVerbosity("full")}
-                >
-                  Full Transcript
-                </Button>
-                <Button
-                  size="sm"
-                  variant={transcriptVerbosity === "table" ? "solid" : "ghost"}
-                  color="cloth"
-                  onClick={() => setTranscriptVerbosity("table")}
-                >
-                  Hide AI Debug
-                </Button>
-                <Button
-                  size="sm"
-                  variant={transcriptVerbosity === "story" ? "solid" : "ghost"}
-                  color="cloth"
-                  onClick={() => setTranscriptVerbosity("story")}
-                >
-                  Story Only
-                </Button>
-                <Button
-                  size="sm"
-                  variant={showAiRequestDetails ? "solid" : "ghost"}
-                  color="gold"
-                  onClick={() => setShowAiRequestDetails((current) => !current)}
-                >
-                  {showAiRequestDetails
-                    ? "Hide AI Request Detail"
-                    : "Show AI Request Detail"}
-                </Button>
-              </div>
+          {showLobbyState ? (
+            <>
+              <RosterList roster={adventure?.roster ?? []} />
+              <ReadyGatePanel
+                connectedPlayers={connectedPlayers}
+                readyPlayers={readyPlayers}
+              />
+            </>
+          ) : null}
+          {phase === "lobby" && !adventure ? (
+            <Message label="Joining Adventure" color="cloth">
+              <PendingIndicator color="cloth" />
             </Message>
           ) : null}
-          {adventure?.activeVote ? (
-            <GenericVotePanel
-              vote={adventure.activeVote}
-              onVote={() => undefined}
-              disabled={true}
-            />
-          ) : null}
-          <TranscriptFeed
-            entries={filteredTranscriptEntries}
-            scene={adventure?.currentScene}
-            characterPortraitsByName={adventure?.characterPortraitsByName}
-            transcriptIllustrationsByEntryId={
-              adventure?.transcriptIllustrationsByEntryId
-            }
-            onRequestIllustration={requestTranscriptIllustration}
-            pendingLabel={
-              thinking.active && thinking.showInTranscript
-                ? thinking.label
-                : undefined
-            }
-          />
-          {adventure?.debugMode && adventure.debugScene ? (
-            <DebugPanel
-              debug={adventure.debugScene}
-              scene={adventure.currentScene}
-              showAiRequestDetails={showAiRequestDetails}
-            />
-          ) : null}
-          {adventure ? (
-            <RuntimeConfigPanel
-              config={adventure.runtimeConfig}
-              onApply={updateRuntimeConfig}
-            />
-          ) : null}
-          {adventure ? (
-            <LatencyMetricsCard metrics={adventure.latencyMetrics} />
-          ) : null}
-        </>
-      ) : null}
 
-      {phase === "ending" ? (
-        <>
-          <TranscriptFeed
-            entries={filteredTranscriptEntries}
-            scene={adventure?.currentScene}
-            characterPortraitsByName={adventure?.characterPortraitsByName}
-            transcriptIllustrationsByEntryId={
-              adventure?.transcriptIllustrationsByEntryId
-            }
-          />
-          <SessionSummaryCard
-            summary={adventure?.sessionSummary ?? "Session ended."}
-            forwardHook={adventure?.sessionForwardHook}
-            onContinueAdventure={continueAdventure}
-            onStartNewAdventure={() => {
-              navigate(`/adventure/${createAdventureId()}/screen`);
-            }}
-            onCloseAdventure={() => {
-              closeAdventure();
-              navigate("/");
-            }}
-          />
+          {phase === "vote" && adventure?.activeVote ? (
+            <>
+              <GenericVotePanel
+                vote={adventure.activeVote}
+                onVote={() => undefined}
+                disabled={true}
+              />
+              <RosterList roster={adventure.roster} />
+            </>
+          ) : null}
+
+          {phase === "play" ? (
+            <>
+              {adventure?.debugMode ? (
+                <Message label="Debug Controls" color="cloth">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant={transcriptVerbosity === "full" ? "solid" : "ghost"}
+                      color="cloth"
+                      onClick={() => setTranscriptVerbosity("full")}
+                    >
+                      Full Transcript
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={transcriptVerbosity === "table" ? "solid" : "ghost"}
+                      color="cloth"
+                      onClick={() => setTranscriptVerbosity("table")}
+                    >
+                      Hide AI Debug
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={transcriptVerbosity === "story" ? "solid" : "ghost"}
+                      color="cloth"
+                      onClick={() => setTranscriptVerbosity("story")}
+                    >
+                      Story Only
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={showAiRequestDetails ? "solid" : "ghost"}
+                      color="gold"
+                      onClick={() => setShowAiRequestDetails((current) => !current)}
+                    >
+                      {showAiRequestDetails
+                        ? "Hide AI Request Detail"
+                        : "Show AI Request Detail"}
+                    </Button>
+                  </div>
+                </Message>
+              ) : null}
+              {adventure?.activeVote ? (
+                <GenericVotePanel
+                  vote={adventure.activeVote}
+                  onVote={() => undefined}
+                  disabled={true}
+                />
+              ) : null}
+              <TranscriptFeed
+                entries={filteredTranscriptEntries}
+                scene={adventure?.currentScene}
+                characterPortraitsByName={adventure?.characterPortraitsByName}
+                transcriptIllustrationsByEntryId={
+                  adventure?.transcriptIllustrationsByEntryId
+                }
+                onRequestIllustration={requestTranscriptIllustration}
+                pendingLabel={
+                  thinking.active && thinking.showInTranscript
+                    ? thinking.label
+                    : undefined
+                }
+              />
+              {adventure?.debugMode && adventure.debugScene ? (
+                <DebugPanel
+                  debug={adventure.debugScene}
+                  scene={adventure.currentScene}
+                  showAiRequestDetails={showAiRequestDetails}
+                />
+              ) : null}
+              {adventure ? (
+                <RuntimeConfigPanel
+                  config={adventure.runtimeConfig}
+                  onApply={updateRuntimeConfig}
+                />
+              ) : null}
+              {adventure ? (
+                <LatencyMetricsCard metrics={adventure.latencyMetrics} />
+              ) : null}
+            </>
+          ) : null}
+
+          {phase === "ending" ? (
+            <>
+              <TranscriptFeed
+                entries={filteredTranscriptEntries}
+                scene={adventure?.currentScene}
+                characterPortraitsByName={adventure?.characterPortraitsByName}
+                transcriptIllustrationsByEntryId={
+                  adventure?.transcriptIllustrationsByEntryId
+                }
+              />
+              <SessionSummaryCard
+                summary={adventure?.sessionSummary ?? "Session ended."}
+                forwardHook={adventure?.sessionForwardHook}
+                onContinueAdventure={continueAdventure}
+                onStartNewAdventure={() => {
+                  navigate(`/adventure/${createAdventureId()}/screen`);
+                }}
+                onCloseAdventure={() => {
+                  closeAdventure();
+                  navigate("/");
+                }}
+              />
+            </>
+          ) : null}
         </>
-      ) : null}
+      </SectionBoundary>
     </div>
   );
 };

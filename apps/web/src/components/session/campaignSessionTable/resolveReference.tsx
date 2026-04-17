@@ -15,6 +15,7 @@ import {
 } from "../../adventure-module/QuestCardView";
 import { AssetCard } from "../../cards/AssetCard";
 import { CounterCard } from "../../cards/CounterCard";
+import { CardBoundary } from "../../common/CardBoundary";
 import { makeReferenceTitle } from "./utils";
 
 const compactCardClassName = "w-full max-w-[6.5rem]";
@@ -155,7 +156,16 @@ export const resolveReference = (
     return {
       title:
         resolved.type === "ActorCard" ? resolved.actor.title : resolved.card.title,
-      node: <GameCardView gameCard={resolved} className={compactCardClassName} />,
+      node: (
+        <CardBoundary
+          resetKey={`${card.type}-${card.slug}-${card.type === "AssetCard" ? card.modifierSlug ?? "base" : "default"}`}
+          label="Card failed to render"
+          message="This card could not render."
+          className={compactCardClassName}
+        >
+          <GameCardView gameCard={resolved} className={compactCardClassName} />
+        </CardBoundary>
+      ),
     };
   }
 

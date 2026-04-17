@@ -15,6 +15,7 @@ import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { RockerSwitch } from "../components/common/RockerSwitch";
 import { Section } from "../components/common/Section";
+import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
 import { listWorkflowLabWorkflows, startWorkflowLabRun, getWorkflowLabRun, subscribeWorkflowLabRunEvents, invalidateWorkflowLabRunSteps, rerunWorkflowLabRun } from "../lib/workflowLabApi";
 
@@ -529,7 +530,13 @@ export const WorkflowLabPage = (): JSX.Element => {
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <div className="stack gap-4">
+        <SectionBoundary
+          resetKey={selectedWorkflowId ?? "workflow-controls"}
+          title="Workflow controls failed to render"
+          message="The workflow control panel crashed while rendering. You can still inspect the run output or choose another workflow."
+          className="stack gap-4"
+        >
+          <div className="stack gap-4">
           <Section className="stack gap-3">
             {loadingWorkflows ? (
               <p className="text-sm text-kac-iron-light">Loading workflows...</p>
@@ -593,9 +600,16 @@ export const WorkflowLabPage = (): JSX.Element => {
               ))}
             </div>
           </Section>
-        </div>
+          </div>
+        </SectionBoundary>
 
-        <div className="stack gap-4 min-w-0">
+        <SectionBoundary
+          resetKey={runId ?? "workflow-output"}
+          title="Workflow results failed to render"
+          message="The workflow inspector crashed while rendering. You can refresh the run or start another one."
+          className="stack gap-4 min-w-0"
+        >
+          <div className="stack gap-4 min-w-0">
           <Section className="stack gap-3">
             <DepressedInput
               label="Input JSON"
@@ -823,7 +837,8 @@ export const WorkflowLabPage = (): JSX.Element => {
               )}
             </Panel>
           </div>
-        </div>
+          </div>
+        </SectionBoundary>
       </div>
     </div>
   );

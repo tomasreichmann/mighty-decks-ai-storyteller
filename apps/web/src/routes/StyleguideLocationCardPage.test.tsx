@@ -13,7 +13,11 @@ test("StyleguideLocationCardPage renders a single location card direction", () =
   assert.match(source, /pinned icon medallion/);
   assert.match(source, /StyleguideSectionNav/);
   assert.match(source, /styleguide-location-card-page/);
-  assert.match(source, /<GameCard type="location" location=\{sampleLocation\} \/>/);
+  assert.match(source, /CardBoundary/);
+  assert.match(
+    source,
+    /<CardBoundary[\s\S]*<GameCard type="location" location=\{sampleLocation\} \/>[\s\S]*<\/CardBoundary>/,
+  );
   assert.doesNotMatch(source, /ImageCard-driven direction/);
   assert.doesNotMatch(source, /locationGameCardVariantLabels/);
 });

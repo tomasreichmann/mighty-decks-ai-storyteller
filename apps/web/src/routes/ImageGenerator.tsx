@@ -15,6 +15,7 @@ import { Label } from "../components/common/Label";
 import { Message } from "../components/common/Message";
 import { RockerSwitch } from "../components/common/RockerSwitch";
 import { Section } from "../components/common/Section";
+import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
 import {
   IMAGE_RESOLUTION_PRESETS,
@@ -142,7 +143,13 @@ export const ImageGenerator = (): JSX.Element => {
         </Message>
       ) : null}
 
-      <Section className="stack gap-4">
+      <SectionBoundary
+        resetKey={`${provider}-${selectedModelId}-${resolutionPresetId}`}
+        title="Image controls failed to render"
+        message="The image generation controls crashed while rendering. You can still inspect the gallery or refresh the page."
+        className="stack gap-4"
+      >
+        <Section className="stack gap-4">
         <DepressedInput
           label="Prompt"
           multiline={true}
@@ -295,7 +302,8 @@ export const ImageGenerator = (): JSX.Element => {
             {submittingJob ? "Generating..." : "Generate"}
           </Button>
         </div>
-      </Section>
+        </Section>
+      </SectionBoundary>
 
       {job ? (
         <Message label="Generation Progress" color="gold">
@@ -315,106 +323,120 @@ export const ImageGenerator = (): JSX.Element => {
         </Message>
       ) : null}
 
-      <Section className="stack gap-3">
-        <GeneratedImage
-          image={activeImage ? toDisplayImage(activeImage) : null}
-          batch={activeBatchImages.map(toDisplayImage)}
-          onChange={(nextImage) => {
-            void selectActiveImage(nextImage.imageId);
-          }}
-        />
-      </Section>
+      <SectionBoundary
+        resetKey={activeImage?.imageId ?? "image-preview"}
+        title="Image preview failed to render"
+        message="The selected image preview crashed while rendering. You can still work with the gallery below."
+        className="stack gap-3"
+      >
+        <Section className="stack gap-3">
+          <GeneratedImage
+            image={activeImage ? toDisplayImage(activeImage) : null}
+            batch={activeBatchImages.map(toDisplayImage)}
+            onChange={(nextImage) => {
+              void selectActiveImage(nextImage.imageId);
+            }}
+          />
+        </Section>
+      </SectionBoundary>
 
-      <Section className="stack gap-3">
-        {sortedImages.length === 0 ? (
-          <Message label="Image Gallery" color="cloth">
-            No images in this prompt/model group yet.
-          </Message>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {sortedImages.map((image) => {
-              const isActive = group?.activeImageId === image.imageId;
-              const menuRows: ContextMenuRow[] = [
-                {
-                  kind: "action",
-                  id: "delete-image",
-                  label: "Delete Image",
-                  className:
-                    "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
-                  onSelect: () => {
-                    if (window.confirm("Delete this image?")) {
-                      void deleteImage(image.imageId);
-                    }
+      <SectionBoundary
+        resetKey={activeImage?.imageId ?? selectedModelId}
+        title="Image gallery failed to render"
+        message="The image gallery crashed while rendering. You can still generate new images above or reload the page."
+        className="stack gap-3"
+      >
+        <Section className="stack gap-3">
+          {sortedImages.length === 0 ? (
+            <Message label="Image Gallery" color="cloth">
+              No images in this prompt/model group yet.
+            </Message>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {sortedImages.map((image) => {
+                const isActive = group?.activeImageId === image.imageId;
+                const menuRows: ContextMenuRow[] = [
+                  {
+                    kind: "action",
+                    id: "delete-image",
+                    label: "Delete Image",
+                    className:
+                      "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
+                    onSelect: () => {
+                      if (window.confirm("Delete this image?")) {
+                        void deleteImage(image.imageId);
+                      }
+                    },
                   },
-                },
-                {
-                  kind: "action",
-                  id: "delete-batch",
-                  label: "Delete Batch",
-                  className:
-                    "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
-                  onSelect: () => {
-                    if (
-                      window.confirm(
-                        `Delete batch ${image.batchIndex} and all of its images?`,
-                      )
-                    ) {
-                      void deleteBatch(image.batchIndex);
-                    }
+                  {
+                    kind: "action",
+                    id: "delete-batch",
+                    label: "Delete Batch",
+                    className:
+                      "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
+                    onSelect: () => {
+                      if (
+                        window.confirm(
+                          `Delete batch ${image.batchIndex} and all of its images?`,
+                        )
+                      ) {
+                        void deleteBatch(image.batchIndex);
+                      }
+                    },
                   },
-                },
-              ];
+                ];
 
-              return (
-                <div
-                  key={image.imageId}
-                  className="relative border-2 border-kac-iron bg-kac-bone-light p-2"
-                >
-                  <div className="absolute left-2 top-2 z-10">
-                    <ContextMenu
-                      rows={menuRows}
-                      direction="bottom"
-                      align="start"
-                      open={menuImageId === image.imageId}
-                      onOpenChange={(nextOpen) => {
-                        setMenuImageId(nextOpen ? image.imageId : null);
-                      }}
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void selectActiveImage(image.imageId);
-                    }}
-                    className="w-full text-left"
+                return (
+                  <div
+                    key={image.imageId}
+                    className="relative border-2 border-kac-iron bg-kac-bone-light p-2"
                   >
-                    <GeneratedImage
-                      image={toDisplayImage(image)}
-                      className="pointer-events-none"
-                    />
-                  </button>
-                  <div className="mt-2 flex items-center justify-between gap-2">
-                    <Text variant="body" color="iron-light" className="text-xs">
-                      b{image.batchIndex} / i{image.imageIndex}
-                    </Text>
-                    <Button
-                      size="sm"
-                      variant={isActive ? "solid" : "ghost"}
-                      color={isActive ? "gold" : "cloth"}
+                    <div className="absolute left-2 top-2 z-10">
+                      <ContextMenu
+                        rows={menuRows}
+                        direction="bottom"
+                        align="start"
+                        open={menuImageId === image.imageId}
+                        onOpenChange={(nextOpen) => {
+                          setMenuImageId(nextOpen ? image.imageId : null);
+                        }}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
                       onClick={() => {
                         void selectActiveImage(image.imageId);
                       }}
+                      className="w-full text-left"
                     >
-                      {isActive ? "Active" : "Set Active"}
-                    </Button>
+                      <GeneratedImage
+                        image={toDisplayImage(image)}
+                        className="pointer-events-none"
+                      />
+                    </button>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <Text variant="body" color="iron-light" className="text-xs">
+                        b{image.batchIndex} / i{image.imageIndex}
+                      </Text>
+                      <Button
+                        size="sm"
+                        variant={isActive ? "solid" : "ghost"}
+                        color={isActive ? "gold" : "cloth"}
+                        onClick={() => {
+                          void selectActiveImage(image.imageId);
+                        }}
+                      >
+                        {isActive ? "Active" : "Set Active"}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Section>
+                );
+              })}
+            </div>
+          )}
+        </Section>
+      </SectionBoundary>
     </div>
   );
 };

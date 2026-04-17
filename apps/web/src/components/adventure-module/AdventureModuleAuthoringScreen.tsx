@@ -19,6 +19,7 @@ import { SharedAuthoringHeader } from "./SharedAuthoringHeader";
 import { CTAButton } from "../common/CTAButton";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
+import { SectionBoundary } from "../common/SectionBoundary";
 import { Text } from "../common/Text";
 
 const TAB_ITEMS: AdventureModuleTabItem[] = AUTHORING_TABS.map((tab) => ({
@@ -139,16 +140,22 @@ export const AdventureModuleAuthoringScreen = (): JSX.Element => {
       ) : null}
 
       {!state.loading && state.detail ? (
-        <>
-          {!state.detail.ownedByRequester ? (
-            <Message label="Read-Only" color="bone">
-              You can view this adventure module, but only its current editor can
-              modify it.
-            </Message>
-          ) : null}
+        <SectionBoundary
+          resetKey={`${state.detail.index.slug}-${state.route.activeTab}`}
+          title="Adventure module content failed to render"
+          message="This adventure module section crashed while rendering. Choose another tab or refresh the page."
+        >
+          <>
+            {!state.detail.ownedByRequester ? (
+              <Message label="Read-Only" color="bone">
+                You can view this adventure module, but only its current editor can
+                modify it.
+              </Message>
+            ) : null}
 
-          <CommonAuthoringTabContent />
-        </>
+            <CommonAuthoringTabContent />
+          </>
+        </SectionBoundary>
       ) : null}
     </div>
   );

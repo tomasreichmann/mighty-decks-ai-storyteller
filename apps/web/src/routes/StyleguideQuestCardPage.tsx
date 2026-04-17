@@ -3,6 +3,7 @@ import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
+import { CardBoundary } from "../components/common/CardBoundary";
 import { GameCard, StyleguideBackLink } from "../components/styleguide/GameCard";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
@@ -74,7 +75,14 @@ export const StyleguideQuestCardPage = (): JSX.Element => {
         </div>
 
         <div className="flex justify-center">
-          <GameCard type="quest" quest={sampleQuest} />
+          <CardBoundary
+            resetKey={sampleQuest.questSlug}
+            label="Card failed to render"
+            message="This demo card could not render."
+            className="w-full max-w-[20.75rem]"
+          >
+            <GameCard type="quest" quest={sampleQuest} />
+          </CardBoundary>
         </div>
       </Panel>
     </div>

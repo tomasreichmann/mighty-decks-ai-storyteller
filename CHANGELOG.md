@@ -142,6 +142,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: add route-shell, section, and card error boundaries so broken routes, panels, and `GameCard` / `GameCardView` surfaces fail locally instead of blanking the whole app.
 - Web: prepopulate the shared generate-or-pick image dialog with the current image URL when it opens from an Adventure Module image picker, so saved title, map, encounter, quest, and asset images stay selected instead of reopening on a blank draft.
 - Web: add the framed generated-image picker to Adventure Module custom asset icon editing so the old plain `Icon URL` text field now opens the same dialog-backed image flow as the other entity image fields.
 - Raise the editable tag dropdown above the next panel frame on the styleguide tags page.

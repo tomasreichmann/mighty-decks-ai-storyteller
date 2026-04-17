@@ -19,6 +19,7 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /StyleguideQuestCardPage/);
   assert.match(source, /StyleguideSessionChatPlayerPage/);
   assert.match(source, /StyleguideSessionChatStorytellerPage/);
+  assert.match(source, /RouteShellBoundary/);
   assert.match(source, /path="\/styleguide"/);
   assert.match(source, /path="\/styleguide\/typography"/);
   assert.match(source, /path="\/styleguide\/inputs"/);
@@ -38,6 +39,22 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(
     source,
     /path="session-chat-storyteller"|path="\/styleguide\/session-chat-storyteller"/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/cards"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideCardsPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/location-card"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideLocationCardPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/encounter-card"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideEncounterCardPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/quest-card"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideQuestCardPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
 });
 

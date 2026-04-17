@@ -4,6 +4,7 @@ import type {
 } from "@mighty-decks/spec/campaign";
 import { cn } from "../../../utils/cn";
 import { Button } from "../../common/Button";
+import { CardBoundary } from "../../common/CardBoundary";
 import styles from "../CampaignSessionTable.module.css";
 import { resolveReference } from "./resolveReference";
 import {
@@ -78,7 +79,14 @@ const CardSlot = ({
             () => onRequestRemoveEntry(entry.tableEntryId),
           )
         : null}
-      {rendered.node}
+      <CardBoundary
+        resetKey={entry.tableEntryId}
+        label="Card failed to render"
+        message="This table card could not render."
+        className={slotWidthClassName}
+      >
+        {rendered.node}
+      </CardBoundary>
     </div>
   );
 };
@@ -137,7 +145,14 @@ const StackedCardSlot = ({
             top: `${peekEntries.length * stackPeekStepRem}rem`,
           }}
         >
-          {renderedTop.node}
+          <CardBoundary
+            resetKey={topEntry.tableEntryId}
+            label="Card failed to render"
+            message="This table card could not render."
+            className={compactCardSlotClassName}
+          >
+            {renderedTop.node}
+          </CardBoundary>
         </div>
         {peekEntries.map((entry, index) => {
           const rendered = resolveReference(entry.card, campaign);
@@ -149,7 +164,16 @@ const StackedCardSlot = ({
                 top: `${index * stackPeekStepRem}rem`,
               }}
             >
-              <div className={styles.stackPeekViewport}>{rendered.node}</div>
+              <div className={styles.stackPeekViewport}>
+                <CardBoundary
+                  resetKey={entry.tableEntryId}
+                  label="Card failed to render"
+                  message="This table card could not render."
+                  className={compactCardSlotClassName}
+                >
+                  {rendered.node}
+                </CardBoundary>
+              </div>
             </div>
           );
         })}

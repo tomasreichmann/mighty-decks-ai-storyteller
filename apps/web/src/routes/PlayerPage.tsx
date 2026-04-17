@@ -13,6 +13,7 @@ import { useAdventureSession } from "../hooks/useAdventureSession";
 import { cn } from "../utils/cn";
 import { Label } from "../components/common/Label";
 import { Message } from "../components/common/Message";
+import { SectionBoundary } from "../components/common/SectionBoundary";
 import { Text } from "../components/common/Text";
 import { createAdventureId } from "../lib/ids";
 import { PendingIndicator } from "../components/PendingIndicator";
@@ -245,152 +246,161 @@ export const PlayerPage = (): JSX.Element => {
         )
       ) : null}
 
-      {showLobbySetup ? (
+      <SectionBoundary
+        resetKey={`${adventureId}-${phase}`}
+        title="Adventure content failed to render"
+        message="This adventure phase crashed while rendering. Use the navigation above or reopen the route to continue."
+        className="stack gap-4"
+      >
         <>
-          <CharacterSetupForm
-            mode="ready_gate"
-            isReady={participant?.ready ?? false}
-            connectedPlayers={connectedPlayers}
-            readyPlayers={readyPlayers}
-            initialSetup={participant?.setup}
-            adventureGenerationInProgress={adventureGenerationInProgress}
-            disableReadyAction={disconnectedDueToInactivity}
-            onSubmit={submitSetup}
-            onToggleReady={toggleReady}
-          />
-        </>
-      ) : null}
-      {phase === "lobby" && !adventure ? (
-        <Message label="System" color="cloth">
-          <PendingIndicator color="cloth" /> Joining adventure session
-        </Message>
-      ) : null}
-
-      {showLateJoinSetup ? (
-        <CharacterSetupForm
-          mode="profile_only"
-          isReady={false}
-          connectedPlayers={connectedPlayers}
-          readyPlayers={readyPlayers}
-          initialSetup={participant?.setup}
-          onSubmit={submitSetup}
-          onToggleReady={toggleReady}
-        />
-      ) : null}
-
-      {phase === "vote" && adventure?.activeVote ? (
-        <GenericVotePanel
-          vote={adventure.activeVote}
-          onVote={castVote}
-          disabled={!canVote}
-        />
-      ) : null}
-
-      {phase === "play" ? (
-        <>
-          {activeOutcomeCheck && !activeOutcomeTarget ? (
+          {showLobbySetup ? (
+            <>
+              <CharacterSetupForm
+                mode="ready_gate"
+                isReady={participant?.ready ?? false}
+                connectedPlayers={connectedPlayers}
+                readyPlayers={readyPlayers}
+                initialSetup={participant?.setup}
+                adventureGenerationInProgress={adventureGenerationInProgress}
+                disableReadyAction={disconnectedDueToInactivity}
+                onSubmit={submitSetup}
+                onToggleReady={toggleReady}
+              />
+            </>
+          ) : null}
+          {phase === "lobby" && !adventure ? (
             <Message label="System" color="cloth">
-              Waiting for another player to choose an Outcome card before the
-              turn resolves.
+              <PendingIndicator color="cloth" /> Joining adventure session
             </Message>
           ) : null}
-          {activeOutcomeTarget?.playedCard ? (
-            <Message label="System" color="cloth">
-              Your Outcome card is locked in. Waiting for resolution.
-            </Message>
+
+          {showLateJoinSetup ? (
+            <CharacterSetupForm
+              mode="profile_only"
+              isReady={false}
+              connectedPlayers={connectedPlayers}
+              readyPlayers={readyPlayers}
+              initialSetup={participant?.setup}
+              onSubmit={submitSetup}
+              onToggleReady={toggleReady}
+            />
           ) : null}
-          {adventure?.activeVote ? (
+
+          {phase === "vote" && adventure?.activeVote ? (
             <GenericVotePanel
               vote={adventure.activeVote}
               onVote={castVote}
               disabled={!canVote}
             />
           ) : null}
-          <div className="relative flex-1 basis-[30vh] shrink-0 min-h-[30vh] flex flex-col">
-            <TranscriptFeed
-              className="h-full"
-              entries={adventure?.transcript ?? []}
-              scene={adventure?.currentScene}
-              characterPortraitsByName={adventure?.characterPortraitsByName}
-              transcriptIllustrationsByEntryId={
-                adventure?.transcriptIllustrationsByEntryId
-              }
-              onRequestIllustration={requestTranscriptIllustration}
-              scrollable={true}
-              autoScrollToBottom={true}
-              pendingLabel={
-                thinking.active && thinking.showInTranscript
-                  ? thinking.label
-                  : undefined
-              }
-            />
-          </div>
-          <div className="shrink-0 relative">
-            <div className="relative">
-              <OutcomeHandPanel
-                check={activeOutcomeCheck}
-                playerId={identity.playerId}
-                disabled={!requiresOutcomeSelection}
-                onPlayCard={(card) => {
-                  if (!activeOutcomeCheck) {
-                    return;
-                  }
 
-                  playOutcomeCard(activeOutcomeCheck.checkId, card);
-                }}
-              />
-            </div>
-            <div
-              className={cn(
-                "relative z-10 transition-transform duration-300",
-                requiresOutcomeSelection ? "-mt-4" : "-mt-7",
-              )}
-            >
-              <ActionComposer
-                connected={connected}
-                canSend={canSendAction && !waitingForHighTensionTurn}
-                allowDrafting={hasCharacterSetup}
-                onSend={submitAction}
-                onSendMetagame={submitMetagameQuestion}
-                onEndSession={!adventure?.closed ? endSession : undefined}
-              />
-              {waitingForHighTensionTurn ? (
-                <Message label="Turn Order" color="cloth">
-                  Waiting for{" "}
-                  {adventure?.currentScene?.activeActorName ??
-                    "the active player"}{" "}
-                  to act.
+          {phase === "play" ? (
+            <>
+              {activeOutcomeCheck && !activeOutcomeTarget ? (
+                <Message label="System" color="cloth">
+                  Waiting for another player to choose an Outcome card before the
+                  turn resolves.
                 </Message>
               ) : null}
-            </div>
-          </div>
-        </>
-      ) : null}
+              {activeOutcomeTarget?.playedCard ? (
+                <Message label="System" color="cloth">
+                  Your Outcome card is locked in. Waiting for resolution.
+                </Message>
+              ) : null}
+              {adventure?.activeVote ? (
+                <GenericVotePanel
+                  vote={adventure.activeVote}
+                  onVote={castVote}
+                  disabled={!canVote}
+                />
+              ) : null}
+              <div className="relative flex-1 basis-[30vh] shrink-0 min-h-[30vh] flex flex-col">
+                <TranscriptFeed
+                  className="h-full"
+                  entries={adventure?.transcript ?? []}
+                  scene={adventure?.currentScene}
+                  characterPortraitsByName={adventure?.characterPortraitsByName}
+                  transcriptIllustrationsByEntryId={
+                    adventure?.transcriptIllustrationsByEntryId
+                  }
+                  onRequestIllustration={requestTranscriptIllustration}
+                  scrollable={true}
+                  autoScrollToBottom={true}
+                  pendingLabel={
+                    thinking.active && thinking.showInTranscript
+                      ? thinking.label
+                      : undefined
+                  }
+                />
+              </div>
+              <div className="shrink-0 relative">
+                <div className="relative">
+                  <OutcomeHandPanel
+                    check={activeOutcomeCheck}
+                    playerId={identity.playerId}
+                    disabled={!requiresOutcomeSelection}
+                    onPlayCard={(card) => {
+                      if (!activeOutcomeCheck) {
+                        return;
+                      }
 
-      {phase === "ending" ? (
-        <>
-          <TranscriptFeed
-            entries={adventure?.transcript ?? []}
-            scene={adventure?.currentScene}
-            characterPortraitsByName={adventure?.characterPortraitsByName}
-            transcriptIllustrationsByEntryId={
-              adventure?.transcriptIllustrationsByEntryId
-            }
-          />
-          <SessionSummaryCard
-            summary={adventure?.sessionSummary ?? "Session ended."}
-            forwardHook={adventure?.sessionForwardHook}
-            onContinueAdventure={continueAdventure}
-            onStartNewAdventure={() => {
-              navigate(`/adventure/${createAdventureId()}/player`);
-            }}
-            onCloseAdventure={() => {
-              closeAdventure();
-              navigate("/");
-            }}
-          />
+                      playOutcomeCard(activeOutcomeCheck.checkId, card);
+                    }}
+                  />
+                </div>
+                <div
+                  className={cn(
+                    "relative z-10 transition-transform duration-300",
+                    requiresOutcomeSelection ? "-mt-4" : "-mt-7",
+                  )}
+                >
+                  <ActionComposer
+                    connected={connected}
+                    canSend={canSendAction && !waitingForHighTensionTurn}
+                    allowDrafting={hasCharacterSetup}
+                    onSend={submitAction}
+                    onSendMetagame={submitMetagameQuestion}
+                    onEndSession={!adventure?.closed ? endSession : undefined}
+                  />
+                  {waitingForHighTensionTurn ? (
+                    <Message label="Turn Order" color="cloth">
+                      Waiting for{" "}
+                      {adventure?.currentScene?.activeActorName ??
+                        "the active player"}{" "}
+                      to act.
+                    </Message>
+                  ) : null}
+                </div>
+              </div>
+            </>
+          ) : null}
+
+          {phase === "ending" ? (
+            <>
+              <TranscriptFeed
+                entries={adventure?.transcript ?? []}
+                scene={adventure?.currentScene}
+                characterPortraitsByName={adventure?.characterPortraitsByName}
+                transcriptIllustrationsByEntryId={
+                  adventure?.transcriptIllustrationsByEntryId
+                }
+              />
+              <SessionSummaryCard
+                summary={adventure?.sessionSummary ?? "Session ended."}
+                forwardHook={adventure?.sessionForwardHook}
+                onContinueAdventure={continueAdventure}
+                onStartNewAdventure={() => {
+                  navigate(`/adventure/${createAdventureId()}/player`);
+                }}
+                onCloseAdventure={() => {
+                  closeAdventure();
+                  navigate("/");
+                }}
+              />
+            </>
+          ) : null}
         </>
-      ) : null}
+      </SectionBoundary>
     </div>
   );
 };

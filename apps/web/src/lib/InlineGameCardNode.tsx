@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { lexical } from "@mdxeditor/editor";
 
 import { GameCardView, InvalidGameCardView } from "../components/adventure-module/GameCardView";
+import { CardBoundary } from "../components/common/CardBoundary";
 import styles from "../components/adventure-module/AdventureModulePlayerInfoTabPanel.module.css";
 import { useGameCardCatalogContext } from "./gameCardCatalogContext";
 import {
@@ -161,7 +162,14 @@ const InlineGameCardDecorator = ({
       data-selected={isSelected ? "true" : "false"}
     >
       {resolvedGameCard ? (
-        <GameCardView gameCard={resolvedGameCard} />
+        <CardBoundary
+          resetKey={`${cardType ?? "unknown"}-${slug ?? "unknown"}-${modifierSlug ?? "base"}`}
+          label="Card failed to render"
+          message="This inline card preview could not render."
+          className="w-full max-w-[13rem]"
+        >
+          <GameCardView gameCard={resolvedGameCard} />
+        </CardBoundary>
       ) : (
         <InvalidGameCardView type={cardType ?? undefined} slug={slug ?? undefined} />
       )}

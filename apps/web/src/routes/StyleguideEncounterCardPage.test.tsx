@@ -13,5 +13,9 @@ test("StyleguideEncounterCardPage renders the encounter card direction", () => {
   assert.match(source, /warning icon medallion/);
   assert.match(source, /StyleguideSectionNav/);
   assert.match(source, /styleguide-encounter-card-page/);
-  assert.match(source, /<GameCard type="encounter" encounter=\{sampleEncounter\} \/>/);
+  assert.match(source, /CardBoundary/);
+  assert.match(
+    source,
+    /<CardBoundary[\s\S]*<GameCard type="encounter" encounter=\{sampleEncounter\} \/>[\s\S]*<\/CardBoundary>/,
+  );
 });

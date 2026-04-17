@@ -29,6 +29,7 @@ Use it alongside `AGENTS.md` and `README.md`. If instructions conflict, `AGENTS.
 
 - Keep UI components presentational; move orchestration, persistence, and async coordination into hooks or server-side modules.
 - Reuse shared UI primitives such as `Button`, and keep player-facing surfaces narration-first instead of dashboard-heavy.
+- Wrap brittle route shells, large sections, and card renderers in local error boundaries so a single crash does not take down the whole page.
 - Treat the server as authoritative for adventure state, phase changes, scenes, transcripts, and hidden/debug data.
 - Prefer retry-safe and idempotent handlers where practical, especially for toggles, votes, and async lookups.
 

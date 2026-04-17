@@ -7,6 +7,7 @@ import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
+import { CardBoundary } from "../components/common/CardBoundary";
 import { GameCard } from "../components/styleguide/GameCard";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
@@ -101,9 +102,30 @@ export const StyleguideCardsPage = (): JSX.Element => {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <GameCard type="location" location={sampleLocation} />
-        <GameCard type="encounter" encounter={sampleEncounter} />
-        <GameCard type="quest" quest={sampleQuest} />
+        <CardBoundary
+          resetKey={sampleLocation.locationSlug}
+          label="Card failed to render"
+          message="This demo card could not render."
+          className="w-full max-w-[20.75rem]"
+        >
+          <GameCard type="location" location={sampleLocation} />
+        </CardBoundary>
+        <CardBoundary
+          resetKey={sampleEncounter.encounterSlug}
+          label="Card failed to render"
+          message="This demo card could not render."
+          className="w-full max-w-[20.75rem]"
+        >
+          <GameCard type="encounter" encounter={sampleEncounter} />
+        </CardBoundary>
+        <CardBoundary
+          resetKey={sampleQuest.questSlug}
+          label="Card failed to render"
+          message="This demo card could not render."
+          className="w-full max-w-[20.75rem]"
+        >
+          <GameCard type="quest" quest={sampleQuest} />
+        </CardBoundary>
       </div>
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">

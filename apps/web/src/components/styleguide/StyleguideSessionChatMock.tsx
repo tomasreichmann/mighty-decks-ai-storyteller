@@ -16,6 +16,7 @@ import { CampaignSessionTranscriptFeed } from "../CampaignSessionTranscriptFeed"
 import { GameCardView } from "../adventure-module/GameCardView";
 import { AssetCard } from "../cards/AssetCard";
 import { CounterCard } from "../cards/CounterCard";
+import { CardBoundary } from "../common/CardBoundary";
 import { Button } from "../common/Button";
 import { ButtonRadioGroup } from "../common/ButtonRadioGroup";
 import { ConnectionStatusPill } from "../common/ConnectionStatusPill";
@@ -445,7 +446,14 @@ const playerLanes: readonly PlayerLane[] = [
 const renderTableCard = (card: TableLeafCard): JSX.Element => {
   if (card.kind === "game_card") {
     return (
-      <GameCardView gameCard={card.card} className={compactCardClassName} />
+      <CardBoundary
+        resetKey={`${card.card.type}-${card.card.slug}`}
+        label="Card failed to render"
+        message="This preview could not render."
+        className={compactCardClassName}
+      >
+        <GameCardView gameCard={card.card} className={compactCardClassName} />
+      </CardBoundary>
     );
   }
 
