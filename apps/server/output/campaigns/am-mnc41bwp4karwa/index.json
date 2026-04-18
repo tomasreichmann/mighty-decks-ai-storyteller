@@ -1,0 +1,491 @@
+{
+  "moduleId": "am-mnc41bwp4karwa",
+  "slug": "test",
+  "title": "Test",
+  "summary": "Draft adventure module summary.",
+  "premise": "Short pirate adventure about",
+  "intent": "Deliver a one-session arc with clear hooks, escalating pressure, and fail-forward outcomes.",
+  "status": "draft",
+  "version": 1,
+  "sessionScope": "one_session_arc",
+  "launchProfile": "dual",
+  "authoringControlDefault": "curate_select",
+  "dos": [
+    "Keep pressure visible",
+    "Provide multiple entry hooks"
+  ],
+  "donts": [
+    "Avoid single-path bottlenecks"
+  ],
+  "tags": [
+    "draft",
+    "authoring"
+  ],
+  "storytellerSummaryFragmentId": "frag-storyteller-summary",
+  "storytellerSummaryMarkdown": "# Storyteller Summary\n\nSpoiler-ready guidance for a Storyteller running this module.",
+  "playerSummaryFragmentId": "frag-player-summary",
+  "playerSummaryMarkdown": "# Player Summary\n\nSpoiler-free invitation text for potential players.\n\n<EncounterCard slug=\"primary-encounter\" />\n\n<GameCard type=\"AssetCard\" slug=\"base_light\" modifierSlug=\"base_hidden\" />\n\n<GameCard type=\"AssetCard\" slug=\"primary-asset\" />",
+  "paletteFragmentId": "frag-palette",
+  "settingFragmentId": "frag-setting",
+  "componentMapFragmentId": "frag-component-map",
+  "locationFragmentIds": [
+    "frag-location-main"
+  ],
+  "locationDetails": [
+    {
+      "fragmentId": "frag-location-main",
+      "titleImageUrl": "/api/image/files/a-lone-sorceress-stands-defiantly-amidst-a-bligh-1fd7812e698f-656d2d0c4697-b0-i0.png",
+      "introductionMarkdown": "Describe what players immediately notice when they arrive here.",
+      "descriptionMarkdown": "- Actors usually here\n- Assets that can be found here\n- Exits to other locations\n- Hazards or pressure that shape the scene",
+      "mapPins": []
+    }
+  ],
+  "actorFragmentIds": [
+    "frag-actor-main",
+    "frag-actor-mnc43vi8zc81jb"
+  ],
+  "actorCards": [
+    {
+      "fragmentId": "frag-actor-main",
+      "baseLayerSlug": "civilian",
+      "tacticalRoleSlug": "pawn",
+      "isPlayerCharacter": true
+    },
+    {
+      "fragmentId": "frag-actor-mnc43vi8zc81jb",
+      "baseLayerSlug": "assassin",
+      "tacticalRoleSlug": "pawn",
+      "tacticalSpecialSlug": "tough",
+      "isPlayerCharacter": true
+    }
+  ],
+  "counters": [
+    {
+      "slug": "new-counter",
+      "iconSlug": "danger",
+      "title": "New Counter",
+      "currentValue": 3,
+      "maxValue": 5,
+      "description": ""
+    }
+  ],
+  "assetFragmentIds": [
+    "frag-asset-main"
+  ],
+  "assetCards": [
+    {
+      "fragmentId": "frag-asset-main",
+      "kind": "custom",
+      "modifier": "",
+      "noun": "",
+      "nounDescription": "",
+      "adjectiveDescription": "",
+      "iconUrl": "",
+      "overlayUrl": ""
+    }
+  ],
+  "itemFragmentIds": [],
+  "encounterFragmentIds": [
+    "frag-encounter-main"
+  ],
+  "encounterDetails": [
+    {
+      "fragmentId": "frag-encounter-main",
+      "prerequisites": ""
+    }
+  ],
+  "questFragmentIds": [
+    "frag-quest-main"
+  ],
+  "questDetails": [
+    {
+      "fragmentId": "frag-quest-main",
+      "questId": "quest-main",
+      "titleImageUrl": "/api/image/files/a-lone-adventurer-stands-at-the-gaping-maw-of-a--397e42eb8cb0-656d2d0c4697-b0-i0.png"
+    }
+  ],
+  "imagePromptFragmentIds": [],
+  "fragments": [
+    {
+      "fragmentId": "frag-index",
+      "kind": "index",
+      "title": "Index",
+      "path": "index.mdx",
+      "summary": "Canonical module metadata and fragment manifest.",
+      "tags": [
+        "index"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-storyteller-summary",
+      "kind": "storyteller_summary",
+      "title": "Storyteller Summary",
+      "path": "storyteller-summary.mdx",
+      "summary": "Spoiler-ready Storyteller overview.",
+      "tags": [
+        "summary",
+        "spoilers"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-player-summary",
+      "kind": "player_summary",
+      "title": "Player Summary",
+      "path": "player-summary.mdx",
+      "summary": "Spoiler-safe player invitation.",
+      "tags": [
+        "summary",
+        "players"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "players"
+    },
+    {
+      "fragmentId": "frag-palette",
+      "kind": "palette",
+      "title": "Palette",
+      "path": "palette.mdx",
+      "summary": "Dos and donts for tone and boundaries.",
+      "tags": [
+        "palette"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-setting",
+      "kind": "setting",
+      "title": "Setting",
+      "path": "setting.mdx",
+      "summary": "World premise and pressure vectors.",
+      "tags": [
+        "setting"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-main",
+      "kind": "location",
+      "title": "Dark Swamp",
+      "path": "locations/dark-swamp.mdx",
+      "summary": "A damp, suspiciously dark, stinking swamp",
+      "tags": [
+        "location"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-main",
+      "kind": "actor",
+      "title": "Primary Actor",
+      "path": "actors/primary-actor.mdx",
+      "summary": "Main actor driving pressure.",
+      "tags": [
+        "actor"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-main",
+      "kind": "asset",
+      "title": "Primary Asset",
+      "path": "assets/primary-asset.mdx",
+      "summary": "A key asset involved in the module.",
+      "tags": [
+        "asset"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-encounter-main",
+      "kind": "encounter",
+      "title": "Primary Encounter",
+      "path": "encounters/primary-encounter.mdx",
+      "summary": "Core encounter beat.",
+      "tags": [
+        "encounter"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-quest-main",
+      "kind": "quest",
+      "title": "Primary Quest",
+      "path": "quests/primary-quest.mdx",
+      "summary": "Node-based quest progression.",
+      "tags": [
+        "quest"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-component-map",
+      "kind": "component_map",
+      "title": "Component Map",
+      "path": "components/component-map.mdx",
+      "summary": "Mighty Decks component opportunity map.",
+      "tags": [
+        "components"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-actor-mnc43vi8zc81jb",
+      "kind": "actor",
+      "title": "Ralph Stoneshard",
+      "path": "actors/ralph-stoneshard.mdx",
+      "summary": "Describe this actor's pressure, leverage, and public face.",
+      "tags": [
+        "actor",
+        "layered_actor"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    }
+  ],
+  "questGraphs": [
+    {
+      "questId": "quest-main",
+      "title": "Primary Quest Graph",
+      "summary": "A compact graph for a one-session arc.",
+      "hooks": [
+        {
+          "hookId": "hook-starter",
+          "title": "Starter Hook",
+          "prompt": "Players hear of a rising threat and an opportunity to intervene.",
+          "entryNodeIds": [
+            "node-entry"
+          ],
+          "clueExamples": [
+            "Urgent witness testimony",
+            "Physical clue at the scene"
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node-entry",
+          "nodeType": "scene",
+          "title": "Entry Scene",
+          "summary": "Establish stakes and possible approaches.",
+          "locationFragmentId": "frag-location-main",
+          "encounterFragmentIds": [
+            "frag-encounter-main"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-main"
+          ],
+          "assetFragmentIds": [
+            "frag-asset-main"
+          ],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Clock: pressure rises every two turns.",
+          "exitNotes": [
+            "Follow direct lead",
+            "Take stealth route"
+          ]
+        },
+        {
+          "nodeId": "node-conclusion",
+          "nodeType": "conclusion",
+          "title": "Conclusion",
+          "summary": "Resolve immediate conflict and set fallout.",
+          "locationFragmentId": "frag-location-main",
+          "encounterFragmentIds": [
+            "frag-encounter-main"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-main"
+          ],
+          "assetFragmentIds": [
+            "frag-asset-main"
+          ],
+          "itemFragmentIds": [],
+          "exitNotes": [
+            "Clean win",
+            "Costly win"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "edgeId": "edge-entry-to-conclusion",
+          "fromNodeId": "node-entry",
+          "toNodeId": "node-conclusion",
+          "label": "Escalate",
+          "clueHint": "A visible consequence pushes urgency."
+        }
+      ],
+      "entryNodeIds": [
+        "node-entry"
+      ],
+      "conclusionNodeIds": [
+        "node-conclusion"
+      ],
+      "conclusions": [
+        {
+          "conclusionId": "conclusion-primary",
+          "title": "Primary Conclusion",
+          "summary": "Threat is contained with measurable fallout.",
+          "sampleOutcomes": [
+            "Stability restored at a cost"
+          ],
+          "forwardHooks": [
+            "A rival faction exploits the aftermath"
+          ]
+        }
+      ]
+    }
+  ],
+  "componentOpportunities": [
+    {
+      "opportunityId": "opp-primary-counter",
+      "componentType": "counter",
+      "strength": "recommended",
+      "timing": "during_action",
+      "fragmentId": "frag-encounter-main",
+      "fragmentKind": "encounter",
+      "questId": "quest-main",
+      "nodeId": "node-entry",
+      "placementLabel": "Escalation Clock",
+      "trigger": "Whenever players take costly or loud actions.",
+      "rationale": "Keeps pressure visible and helps fail-forward pacing."
+    }
+  ],
+  "artifacts": [
+    {
+      "artifactId": "artifact-frag-index",
+      "kind": "mdx",
+      "path": "index.mdx",
+      "title": "Index",
+      "sourceFragmentId": "frag-index",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-storyteller-summary",
+      "kind": "mdx",
+      "path": "storyteller-summary.mdx",
+      "title": "Storyteller Summary",
+      "sourceFragmentId": "frag-storyteller-summary",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-player-summary",
+      "kind": "mdx",
+      "path": "player-summary.mdx",
+      "title": "Player Summary",
+      "sourceFragmentId": "frag-player-summary",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-palette",
+      "kind": "mdx",
+      "path": "palette.mdx",
+      "title": "Palette",
+      "sourceFragmentId": "frag-palette",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-setting",
+      "kind": "mdx",
+      "path": "setting.mdx",
+      "title": "Setting",
+      "sourceFragmentId": "frag-setting",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-main",
+      "kind": "mdx",
+      "path": "locations/dark-swamp.mdx",
+      "title": "Dark Swamp",
+      "sourceFragmentId": "frag-location-main",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-main",
+      "kind": "mdx",
+      "path": "actors/primary-actor.mdx",
+      "title": "Primary Actor",
+      "sourceFragmentId": "frag-actor-main",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-main",
+      "kind": "mdx",
+      "path": "assets/primary-asset.mdx",
+      "title": "Primary Asset",
+      "sourceFragmentId": "frag-asset-main",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-main",
+      "kind": "mdx",
+      "path": "encounters/primary-encounter.mdx",
+      "title": "Primary Encounter",
+      "sourceFragmentId": "frag-encounter-main",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-quest-main",
+      "kind": "mdx",
+      "path": "quests/primary-quest.mdx",
+      "title": "Primary Quest",
+      "sourceFragmentId": "frag-quest-main",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-component-map",
+      "kind": "mdx",
+      "path": "components/component-map.mdx",
+      "title": "Component Map",
+      "sourceFragmentId": "frag-component-map",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-27T11:58:50.704Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-mnc43vi8zc81jb",
+      "kind": "mdx",
+      "path": "actors/ralph-stoneshard.mdx",
+      "title": "Ralph Stoneshard",
+      "sourceFragmentId": "frag-actor-mnc43vi8zc81jb",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-03-29T18:48:17.215Z"
+    }
+  ],
+  "notes": "Draft generated by Adventure Module authoring flow.",
+  "updatedAtIso": "2026-04-16T19:57:20.722Z",
+  "postMvpExtension": true
+}

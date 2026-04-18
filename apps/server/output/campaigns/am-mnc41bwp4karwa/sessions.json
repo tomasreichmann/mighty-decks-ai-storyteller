@@ -1,0 +1,2594 @@
+{
+  "sessions": [
+    {
+      "sessionId": "session-mnc41th0p0hi4v",
+      "status": "active",
+      "createdAtIso": "2026-03-29T18:46:41.267Z",
+      "updatedAtIso": "2026-04-16T17:32:53.935Z",
+      "storytellerCount": 1,
+      "playerCount": 2,
+      "transcriptEntryCount": 366,
+      "transcriptPreview": "Player D179 left the session.",
+      "participants": [
+        {
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "displayName": "Player D179",
+          "role": "player",
+          "isMock": false,
+          "connected": false,
+          "joinedAtIso": "2026-03-29T18:48:11.244Z"
+        },
+        {
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "displayName": "Storyteller 84FA",
+          "role": "storyteller",
+          "isMock": false,
+          "connected": false,
+          "joinedAtIso": "2026-03-29T19:23:09.160Z"
+        },
+        {
+          "participantId": "mock-mnfoobwn-j58p",
+          "displayName": "Mock Player",
+          "role": "player",
+          "isMock": true,
+          "connected": true,
+          "joinedAtIso": "2026-04-01T06:47:22.451Z"
+        }
+      ],
+      "claims": [],
+      "outcomePilesByParticipantId": {
+        "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179": {
+          "deck": [
+            {
+              "cardId": "outcome-card-mnko7yp4k03k84",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp467n1ok",
+              "slug": "special-action",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp4nzf4rk",
+              "slug": "partial-success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp4pscbow",
+              "slug": "success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp4zs3bq3",
+              "slug": "success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp41mry23",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            }
+          ],
+          "hand": [
+            {
+              "cardId": "outcome-card-mnko7yp4so31fj",
+              "slug": "chaos",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            }
+          ],
+          "discard": [
+            {
+              "cardId": "outcome-card-mnko7yp4urxy47",
+              "slug": "partial-success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp44v66ec",
+              "slug": "success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp45pj5d7",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp4w9dh2e",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp433mhlr",
+              "slug": "partial-success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            }
+          ]
+        },
+        "mock-mnfoobwn-j58p": {
+          "deck": [
+            {
+              "cardId": "outcome-card-mnko7yp5eb7hso",
+              "slug": "success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp5fqdy21",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp5l011ln",
+              "slug": "partial-success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp5e2wxpg",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp5n42icw",
+              "slug": "partial-success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp501f6n4",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp59epqae",
+              "slug": "special-action",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp57sbnhi",
+              "slug": "success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp5ta02e3",
+              "slug": "success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            }
+          ],
+          "hand": [
+            {
+              "cardId": "outcome-card-mnko7yp5a0j8tn",
+              "slug": "partial-success",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp59aatwx",
+              "slug": "chaos",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            },
+            {
+              "cardId": "outcome-card-mnko7yp5sbud08",
+              "slug": "fumble",
+              "createdAtIso": "2026-04-04T18:22:19.617Z"
+            }
+          ],
+          "discard": []
+        }
+      },
+      "transcript": [
+        {
+          "entryId": "session-entry-mnc41th0dxe34b",
+          "kind": "system",
+          "text": "Session created.",
+          "createdAtIso": "2026-03-29T18:46:41.267Z"
+        },
+        {
+          "entryId": "session-entry-mnc43qwd87tnuv",
+          "kind": "system",
+          "text": "Player D179 joined as player.",
+          "createdAtIso": "2026-03-29T18:48:11.244Z"
+        },
+        {
+          "entryId": "session-entry-mnc43r3u5xd7dw",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T18:48:11.513Z"
+        },
+        {
+          "entryId": "session-entry-mnc43vlgod9kfc",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-29T18:48:17.332Z"
+        },
+        {
+          "entryId": "session-entry-mnc43vmcxsh46m",
+          "kind": "system",
+          "text": "Player D179 created Ralph Stoneshard.",
+          "createdAtIso": "2026-03-29T18:48:17.364Z"
+        },
+        {
+          "entryId": "session-entry-mnc4n5yxxxxmq2",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:03:17.241Z"
+        },
+        {
+          "entryId": "session-entry-mnc4z4si9xglct",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:12:35.586Z"
+        },
+        {
+          "entryId": "session-entry-mnc506fsyqjg0v",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:13:24.375Z"
+        },
+        {
+          "entryId": "session-entry-mnc50b2oz19eb5",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:13:30.384Z"
+        },
+        {
+          "entryId": "session-entry-mnc50exfb80n9c",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:13:35.379Z"
+        },
+        {
+          "entryId": "session-entry-mnc50jmj1kkqgd",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:13:41.467Z"
+        },
+        {
+          "entryId": "session-entry-mnc50s44uev0xo",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:13:52.468Z"
+        },
+        {
+          "entryId": "session-entry-mnc50v6kydbxos",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:13:56.444Z"
+        },
+        {
+          "entryId": "session-entry-mnc5cetw2qixp9",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:22:55.124Z"
+        },
+        {
+          "entryId": "session-entry-mnc5cpnstgjgk6",
+          "kind": "system",
+          "text": "Storyteller 84FA joined as storyteller.",
+          "createdAtIso": "2026-03-29T19:23:09.160Z"
+        },
+        {
+          "entryId": "session-entry-mnc5cpnsyduhym",
+          "kind": "system",
+          "text": "Session is now active.",
+          "createdAtIso": "2026-03-29T19:23:09.160Z"
+        },
+        {
+          "entryId": "session-entry-mnc5ejbztxvht0",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-29T19:24:34.271Z"
+        },
+        {
+          "entryId": "session-entry-mnc5jpwklnmsll",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-29T19:28:36.068Z"
+        },
+        {
+          "entryId": "session-entry-mnc5kzaescylhn",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-29T19:29:34.886Z"
+        },
+        {
+          "entryId": "session-entry-mnc5kzbbpwmdy5",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:29:34.919Z"
+        },
+        {
+          "entryId": "session-entry-mnc5kzd9x93nld",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-29T19:29:34.989Z"
+        },
+        {
+          "entryId": "session-entry-mnc5mtx5q3kmva",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-29T19:31:01.241Z"
+        },
+        {
+          "entryId": "session-entry-mnd15m5wqgdne3",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T10:13:25.748Z"
+        },
+        {
+          "entryId": "session-entry-mnd16xw4kqx01c",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T10:14:27.603Z"
+        },
+        {
+          "entryId": "session-entry-mnd1a2avazn63m",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T10:16:53.287Z"
+        },
+        {
+          "entryId": "session-entry-mnd1gtrdo2cbid",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T10:22:08.809Z"
+        },
+        {
+          "entryId": "session-entry-mnd1igzs7r1dt9",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T10:23:25.576Z"
+        },
+        {
+          "entryId": "session-entry-mndbrfuckm1179",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T15:10:20.148Z"
+        },
+        {
+          "entryId": "session-entry-mndbrmiq3di7kb",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T15:10:28.802Z"
+        },
+        {
+          "entryId": "session-entry-mndhc8d53am0ql",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T17:46:28.313Z"
+        },
+        {
+          "entryId": "session-entry-mndhccnskgbq19",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-30T17:46:33.880Z"
+        },
+        {
+          "entryId": "session-entry-mndhcg2qm3cvwe",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-30T17:46:38.306Z"
+        },
+        {
+          "entryId": "session-entry-mndhd7fnoj46or",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-30T17:47:13.763Z"
+        },
+        {
+          "entryId": "session-entry-mndhf7ye8lw8of",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "@location/dark-swamp",
+          "createdAtIso": "2026-03-30T17:48:47.750Z"
+        },
+        {
+          "entryId": "session-entry-mndhhra4ge3v7g",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-30T17:50:46.108Z"
+        },
+        {
+          "entryId": "session-entry-mndi11wr3bl19q",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-30T18:05:46.347Z"
+        },
+        {
+          "entryId": "session-entry-mndip6f74l2pa5",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-30T18:24:31.939Z"
+        },
+        {
+          "entryId": "session-entry-mne9pqwip9uzy3",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "@effect/injury",
+          "createdAtIso": "2026-03-31T07:00:48.114Z"
+        },
+        {
+          "entryId": "session-entry-mne9qaw0gic0ej",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "@effect/injury",
+          "createdAtIso": "2026-03-31T07:01:14.016Z"
+        },
+        {
+          "entryId": "session-entry-mne9sa47ldarhg",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T07:02:46.327Z"
+        },
+        {
+          "entryId": "session-entry-mnea17if9i8gcm",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T07:09:42.855Z"
+        },
+        {
+          "entryId": "session-entry-mneam83zrnv3x1",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T07:26:03.407Z"
+        },
+        {
+          "entryId": "session-entry-mneb3i5ranfdj3",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T07:39:29.583Z"
+        },
+        {
+          "entryId": "session-entry-mneb3ms7zh3ae8",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T07:39:35.575Z"
+        },
+        {
+          "entryId": "session-entry-mneb9p5fout3sh",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T07:44:18.579Z"
+        },
+        {
+          "entryId": "session-entry-mnebszogb7rfp5",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T07:59:18.688Z"
+        },
+        {
+          "entryId": "session-entry-mnec83dm0a58dm",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:11:03.322Z"
+        },
+        {
+          "entryId": "session-entry-mnecmda81i3qmo",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:22:09.344Z"
+        },
+        {
+          "entryId": "session-entry-mnecmjugc7rkih",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:22:17.848Z"
+        },
+        {
+          "entryId": "session-entry-mnecw5arjlqalp",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:29:45.555Z"
+        },
+        {
+          "entryId": "session-entry-mnecxa3r7290gz",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:30:38.439Z"
+        },
+        {
+          "entryId": "session-entry-mnecz57zo1dvyw",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:32:05.423Z"
+        },
+        {
+          "entryId": "session-entry-mned4mrzvj8w8t",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:36:21.454Z"
+        },
+        {
+          "entryId": "session-entry-mned7sy58fy041",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:38:49.421Z"
+        },
+        {
+          "entryId": "session-entry-mnedlb53xsrcg6",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:49:19.527Z"
+        },
+        {
+          "entryId": "session-entry-mnedpc9vmdtd10",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T08:52:27.619Z"
+        },
+        {
+          "entryId": "session-entry-mnee7v3k4uqfxs",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:06:51.824Z"
+        },
+        {
+          "entryId": "session-entry-mneecyx5xz4edn",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:10:50.057Z"
+        },
+        {
+          "entryId": "session-entry-mneei3v09yio5c",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "![](/api/image/files/a-lone-adventurer-stands-at-the-gaping-maw-of-a--397e42eb8cb0-656d2d0c4697-b0-i0.png)",
+          "createdAtIso": "2026-03-31T09:14:49.740Z"
+        },
+        {
+          "entryId": "session-entry-mneejg7drodty6",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:15:52.393Z"
+        },
+        {
+          "entryId": "session-entry-mnef2rn057duk0",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:30:53.676Z"
+        },
+        {
+          "entryId": "session-entry-mnef7fq72rq4a0",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "@actor/primary-actor",
+          "createdAtIso": "2026-03-31T09:34:31.519Z"
+        },
+        {
+          "entryId": "session-entry-mnef8wtpcpy6yn",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "@quest/primary-quest",
+          "createdAtIso": "2026-03-31T09:35:40.333Z"
+        },
+        {
+          "entryId": "session-entry-mnef9hwozdxwhf",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:36:07.656Z"
+        },
+        {
+          "entryId": "session-entry-mnef9v58x4jrnp",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:36:24.812Z"
+        },
+        {
+          "entryId": "session-entry-mnef9wv72a55uj",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:36:27.043Z"
+        },
+        {
+          "entryId": "session-entry-mnefo2sb5cyj4j",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:47:27.899Z"
+        },
+        {
+          "entryId": "session-entry-mneg42bzu0bc1x",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T09:59:53.807Z"
+        },
+        {
+          "entryId": "session-entry-mneg6yvqgeuxk6",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:02:09.302Z"
+        },
+        {
+          "entryId": "session-entry-mneg7e7dkxgtzj",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:02:29.161Z"
+        },
+        {
+          "entryId": "session-entry-mneg8o6lfeiqa8",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:03:28.749Z"
+        },
+        {
+          "entryId": "session-entry-mnegrzajxqdeuf",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:18:29.611Z"
+        },
+        {
+          "entryId": "session-entry-mnegzua81o5k0g",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:24:36.368Z"
+        },
+        {
+          "entryId": "session-entry-mneh1ncwvccysi",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T10:26:00.704Z"
+        },
+        {
+          "entryId": "session-entry-mneh1ug1jo22a6",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T10:26:09.889Z"
+        },
+        {
+          "entryId": "session-entry-mneh22ehtfpje6",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Hi!",
+          "createdAtIso": "2026-03-31T10:26:20.200Z"
+        },
+        {
+          "entryId": "session-entry-mneh2jyhnyeiqy",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "![](/api/image/files/a-colossal-frost-giant-its-icy-breath-misting-th-c4cacd243b0e-656d2d0c4697-b0-i0.png)",
+          "createdAtIso": "2026-03-31T10:26:42.953Z"
+        },
+        {
+          "entryId": "session-entry-mneh2pd5vrx2i5",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T10:26:49.961Z"
+        },
+        {
+          "entryId": "session-entry-mneh2r59ihnr5b",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:26:52.269Z"
+        },
+        {
+          "entryId": "session-entry-mneh3o2n5yj71g",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "@actor/ralph-stoneshard @effect/injury @effect/injury",
+          "createdAtIso": "2026-03-31T10:27:34.943Z"
+        },
+        {
+          "entryId": "session-entry-mneh44h3hp11w0",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "dsf adsaf ad s adsf\n\n![](/api/image/files/painterly-digital-painting-of-rumi-a-thin-korean-7cefa521f1c1-656d2d0c4697-b0-i0.png)\n\n@effect/injury @effect/injury",
+          "createdAtIso": "2026-03-31T10:27:56.199Z"
+        },
+        {
+          "entryId": "session-entry-mnehj67ooxx47r",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:39:38.292Z"
+        },
+        {
+          "entryId": "session-entry-mnehnf0ij9zib8",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:42:56.322Z"
+        },
+        {
+          "entryId": "session-entry-mnehojsgu2s7po",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:43:49.168Z"
+        },
+        {
+          "entryId": "session-entry-mnehojxqhigd24",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:43:49.358Z"
+        },
+        {
+          "entryId": "session-entry-mnehv75nfdz2um",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:48:59.387Z"
+        },
+        {
+          "entryId": "session-entry-mnehv76jo9t6vr",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:48:59.419Z"
+        },
+        {
+          "entryId": "session-entry-mnehxrr4ail6lc",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:50:59.392Z"
+        },
+        {
+          "entryId": "session-entry-mnehxrrfidcpgj",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:50:59.403Z"
+        },
+        {
+          "entryId": "session-entry-mnehz3lqggna3u",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:52:01.406Z"
+        },
+        {
+          "entryId": "session-entry-mnehz3m7ipcm1i",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T10:52:01.423Z"
+        },
+        {
+          "entryId": "session-entry-mneiifdr2cb7ma",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T11:07:03.135Z"
+        },
+        {
+          "entryId": "session-entry-mneiifkrx9xnfb",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T11:07:03.387Z"
+        },
+        {
+          "entryId": "session-entry-mnellot8fmtklg",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T12:33:34.172Z"
+        },
+        {
+          "entryId": "session-entry-mnelm0fxl9yi72",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "XXX",
+          "createdAtIso": "2026-03-31T12:33:49.245Z"
+        },
+        {
+          "entryId": "session-entry-mnelm8urwg1nso",
+          "kind": "group_message",
+          "participantId": "campaign-storyteller-c840de2e-d09a-4fa1-9a44-d067ce9d84fa",
+          "authorDisplayName": "Storyteller 84FA",
+          "authorRole": "storyteller",
+          "text": "asdasd",
+          "createdAtIso": "2026-03-31T12:34:00.147Z"
+        },
+        {
+          "entryId": "session-entry-mnelp4i9d9mgeo",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T12:36:14.481Z"
+        },
+        {
+          "entryId": "session-entry-mnelpun9qtsyxb",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T12:36:48.357Z"
+        },
+        {
+          "entryId": "session-entry-mnelpup2ztq5oe",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T12:36:48.422Z"
+        },
+        {
+          "entryId": "session-entry-mnem95acmip0bx",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T12:51:48.612Z"
+        },
+        {
+          "entryId": "session-entry-mnem95ar7yyniz",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T12:51:48.627Z"
+        },
+        {
+          "entryId": "session-entry-mnerzhbnubhq9i",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:32:15.347Z"
+        },
+        {
+          "entryId": "session-entry-mnerzheqrqirlj",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:32:15.458Z"
+        },
+        {
+          "entryId": "session-entry-mnes0jy1zbhz60",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:33:05.401Z"
+        },
+        {
+          "entryId": "session-entry-mnes0k1guw7tyc",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:33:05.524Z"
+        },
+        {
+          "entryId": "session-entry-mnesjvyuojhfeu",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:48:07.446Z"
+        },
+        {
+          "entryId": "session-entry-mnesjw4x215ssx",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:48:07.665Z"
+        },
+        {
+          "entryId": "session-entry-mnesrndif0fo9z",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:54:09.558Z"
+        },
+        {
+          "entryId": "session-entry-mnesrs5d5ysquq",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:54:15.745Z"
+        },
+        {
+          "entryId": "session-entry-mness22bh9uv74",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:54:28.595Z"
+        },
+        {
+          "entryId": "session-entry-mness2k7dx3rgc",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:54:29.239Z"
+        },
+        {
+          "entryId": "session-entry-mnest6e10ytoqw",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:55:20.857Z"
+        },
+        {
+          "entryId": "session-entry-mnest6r3azwyc1",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:55:21.327Z"
+        },
+        {
+          "entryId": "session-entry-mnestiltllgf65",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:55:36.689Z"
+        },
+        {
+          "entryId": "session-entry-mnestj0zco5dm7",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:55:37.235Z"
+        },
+        {
+          "entryId": "session-entry-mnesunrunt9m5c",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T15:56:30.042Z"
+        },
+        {
+          "entryId": "session-entry-mnf1bbah41ur93",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T19:53:23.945Z"
+        },
+        {
+          "entryId": "session-entry-mnf4y8zusybu64",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:35:12.906Z"
+        },
+        {
+          "entryId": "session-entry-mnf4ycgjonhz5e",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:35:17.395Z"
+        },
+        {
+          "entryId": "session-entry-mnf5675yq9es74",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:41:23.782Z"
+        },
+        {
+          "entryId": "session-entry-mnf56aqab5pyh0",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:41:28.402Z"
+        },
+        {
+          "entryId": "session-entry-mnf57dgf79vo9s",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:42:18.591Z"
+        },
+        {
+          "entryId": "session-entry-mnf57fhhhbklge",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:42:21.221Z"
+        },
+        {
+          "entryId": "session-entry-mnf5b2hx835jl7",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:45:11.013Z"
+        },
+        {
+          "entryId": "session-entry-mnf5b2p6tn46kg",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:45:11.274Z"
+        },
+        {
+          "entryId": "session-entry-mnf5b5m24q7y1n",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:45:15.050Z"
+        },
+        {
+          "entryId": "session-entry-mnf5b5sanp0d40",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:45:15.274Z"
+        },
+        {
+          "entryId": "session-entry-mnf5bafv54u7s6",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:45:21.306Z"
+        },
+        {
+          "entryId": "session-entry-mnf5bag4a13172",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:45:21.316Z"
+        },
+        {
+          "entryId": "session-entry-mnf5bhdi3zktx9",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:45:30.294Z"
+        },
+        {
+          "entryId": "session-entry-mnf5bhdt2w5j5m",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:45:30.305Z"
+        },
+        {
+          "entryId": "session-entry-mnf5bsew2ie8l3",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:45:44.600Z"
+        },
+        {
+          "entryId": "session-entry-mnf5cdosqce18h",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:46:12.172Z"
+        },
+        {
+          "entryId": "session-entry-mnf5cfgzu3hurg",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:46:14.483Z"
+        },
+        {
+          "entryId": "session-entry-mnf5fu6vkk2oqk",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:48:53.527Z"
+        },
+        {
+          "entryId": "session-entry-mnf5fur6ys3je1",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:48:54.258Z"
+        },
+        {
+          "entryId": "session-entry-mnf5fvt17i86f7",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:48:55.621Z"
+        },
+        {
+          "entryId": "session-entry-mnf5fz76i2rrm7",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:49:00.018Z"
+        },
+        {
+          "entryId": "session-entry-mnf5fzegarun7r",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:49:00.280Z"
+        },
+        {
+          "entryId": "session-entry-mnf5g0vogsoyle",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:49:02.196Z"
+        },
+        {
+          "entryId": "session-entry-mnf5gh7vk7f8wa",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:49:23.371Z"
+        },
+        {
+          "entryId": "session-entry-mnf5gjuzpmik1s",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:49:26.795Z"
+        },
+        {
+          "entryId": "session-entry-mnf5gn3hci3pr1",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:49:30.989Z"
+        },
+        {
+          "entryId": "session-entry-mnf5goiw2td56q",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-03-31T21:49:32.840Z"
+        },
+        {
+          "entryId": "session-entry-mnf5nx4ejr6klz",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:55:10.574Z"
+        },
+        {
+          "entryId": "session-entry-mnf5nx67ikgtdw",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:55:10.639Z"
+        },
+        {
+          "entryId": "session-entry-mnf5s487vu11ts",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:58:26.407Z"
+        },
+        {
+          "entryId": "session-entry-mnf5tvtk17i59s",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-03-31T21:59:48.824Z"
+        },
+        {
+          "entryId": "session-entry-mnf5tvucbu2v4g",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-03-31T21:59:48.852Z"
+        },
+        {
+          "entryId": "session-entry-mnfd1t442mtizy",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T01:21:55.876Z"
+        },
+        {
+          "entryId": "session-entry-mnfn38v1mxfu1q",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T06:02:59.101Z"
+        },
+        {
+          "entryId": "session-entry-mnfolu7nd3dawm",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T06:45:26.195Z"
+        },
+        {
+          "entryId": "session-entry-mnfoobwz1m2ubf",
+          "kind": "system",
+          "text": "Mock Player mock joined as player.",
+          "createdAtIso": "2026-04-01T06:47:22.451Z"
+        },
+        {
+          "entryId": "session-entry-mnfoodwfy651bd",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T06:47:25.023Z"
+        },
+        {
+          "entryId": "session-entry-mnfooh4yda9h79",
+          "kind": "system",
+          "text": "Player D179 claimed Primary Actor.",
+          "createdAtIso": "2026-04-01T06:47:29.218Z"
+        },
+        {
+          "entryId": "session-entry-mnfp7rnw41gio2",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T07:02:29.324Z"
+        },
+        {
+          "entryId": "session-entry-mnfsktl64gbr4o",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-01T08:36:37.194Z"
+        },
+        {
+          "entryId": "session-entry-mnfsl0bqzf0w4a",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:36:45.926Z"
+        },
+        {
+          "entryId": "session-entry-mnfsm9vm8zrc8o",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:37:44.962Z"
+        },
+        {
+          "entryId": "session-entry-mnfsmbu9tdkv9h",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-01T08:37:47.505Z"
+        },
+        {
+          "entryId": "session-entry-mnfsmludgobx26",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-01T08:38:00.469Z"
+        },
+        {
+          "entryId": "session-entry-mnfsmo9eqz9gez",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:38:03.602Z"
+        },
+        {
+          "entryId": "session-entry-mnfsmqmanoqd18",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-01T08:38:06.658Z"
+        },
+        {
+          "entryId": "session-entry-mnfstbycqozupa",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:43:14.244Z"
+        },
+        {
+          "entryId": "session-entry-mnfsvour5k10xu",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:45:04.275Z"
+        },
+        {
+          "entryId": "session-entry-mnfsw2pyyl4azb",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:45:22.246Z"
+        },
+        {
+          "entryId": "session-entry-mnfsw9nu17ijnu",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:45:31.242Z"
+        },
+        {
+          "entryId": "session-entry-mnfswm0hkc3n32",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:45:47.249Z"
+        },
+        {
+          "entryId": "session-entry-mnfswrfsf4e3y6",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:45:54.280Z"
+        },
+        {
+          "entryId": "session-entry-mnfswva9kpiflh",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:45:59.265Z"
+        },
+        {
+          "entryId": "session-entry-mnft9zvpbukdve",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-01T08:56:11.749Z"
+        },
+        {
+          "entryId": "session-entry-mnft9zwzmm9bka",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:11.795Z"
+        },
+        {
+          "entryId": "session-entry-mnfta0084fo9ty",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:11.912Z"
+        },
+        {
+          "entryId": "session-entry-mnfta19jour780",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-01T08:56:13.543Z"
+        },
+        {
+          "entryId": "session-entry-mnfta1aimn6odw",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:13.578Z"
+        },
+        {
+          "entryId": "session-entry-mnfta1dqe1r961",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:13.694Z"
+        },
+        {
+          "entryId": "session-entry-mnfta3806thlvy",
+          "kind": "system",
+          "text": "Player D179 claimed Primary Actor.",
+          "createdAtIso": "2026-04-01T08:56:16.080Z"
+        },
+        {
+          "entryId": "session-entry-mnfta391o0ujcb",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:16.116Z"
+        },
+        {
+          "entryId": "session-entry-mnfta3bdrqtizc",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:16.201Z"
+        },
+        {
+          "entryId": "session-entry-mnfta45flgju4x",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-01T08:56:17.283Z"
+        },
+        {
+          "entryId": "session-entry-mnfta46h5b890q",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:17.321Z"
+        },
+        {
+          "entryId": "session-entry-mnfta49s6lhmnl",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:17.440Z"
+        },
+        {
+          "entryId": "session-entry-mnftam8r4rkcuz",
+          "kind": "system",
+          "text": "Player D179 claimed Primary Actor.",
+          "createdAtIso": "2026-04-01T08:56:40.731Z"
+        },
+        {
+          "entryId": "session-entry-mnftam9v9k7tj4",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:40.771Z"
+        },
+        {
+          "entryId": "session-entry-mnftamcvlrofvb",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:56:40.879Z"
+        },
+        {
+          "entryId": "session-entry-mnftb6kjdafcsj",
+          "kind": "system",
+          "text": "Player D179 claimed Primary Actor.",
+          "createdAtIso": "2026-04-01T08:57:07.075Z"
+        },
+        {
+          "entryId": "session-entry-mnftb6lp9vr756",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:57:07.117Z"
+        },
+        {
+          "entryId": "session-entry-mnftb6pkvmd3yu",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:57:07.256Z"
+        },
+        {
+          "entryId": "session-entry-mnftb99nk0wabv",
+          "kind": "system",
+          "text": "Player D179 claimed Primary Actor.",
+          "createdAtIso": "2026-04-01T08:57:10.571Z"
+        },
+        {
+          "entryId": "session-entry-mnftb9awjyqrhl",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:57:10.616Z"
+        },
+        {
+          "entryId": "session-entry-mnftb9eamupwgu",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T08:57:10.738Z"
+        },
+        {
+          "entryId": "session-entry-mnftezaspl958t",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T09:00:04.276Z"
+        },
+        {
+          "entryId": "session-entry-mnftfhsuhl711j",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T09:00:28.254Z"
+        },
+        {
+          "entryId": "session-entry-mnftrazqwbrobz",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T09:09:39.302Z"
+        },
+        {
+          "entryId": "session-entry-mnfu6tnmvu2qhh",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T09:21:43.330Z"
+        },
+        {
+          "entryId": "session-entry-mnfufgmvb6xm0s",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-01T09:28:26.359Z"
+        },
+        {
+          "entryId": "session-entry-mnfugwco9znhq6",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T09:29:33.384Z"
+        },
+        {
+          "entryId": "session-entry-mnfv082958ty16",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T09:44:35.025Z"
+        },
+        {
+          "entryId": "session-entry-mnfwraacekfplh",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T10:33:37.236Z"
+        },
+        {
+          "entryId": "session-entry-mng3qoqcefls4h",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T13:49:06.612Z"
+        },
+        {
+          "entryId": "session-entry-mng6afj2u7wdja",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-01T15:00:27.038Z"
+        },
+        {
+          "entryId": "session-entry-mng6dniiddef2j",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-01T15:02:57.354Z"
+        },
+        {
+          "entryId": "session-entry-mng6wy6s6ssiim",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-01T15:17:57.652Z"
+        },
+        {
+          "entryId": "session-entry-mnhs06ga59p27s",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T17:56:06.442Z"
+        },
+        {
+          "entryId": "session-entry-mnhs0norpwtqbu",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T17:56:28.779Z"
+        },
+        {
+          "entryId": "session-entry-mnhs0taw3qehyj",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T17:56:36.056Z"
+        },
+        {
+          "entryId": "session-entry-mnhs2csy0dlukf",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T17:57:47.986Z"
+        },
+        {
+          "entryId": "session-entry-mnhs2jnlbeop9n",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T17:57:56.865Z"
+        },
+        {
+          "entryId": "session-entry-mnhs331tnsldy3",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T17:58:22.001Z"
+        },
+        {
+          "entryId": "session-entry-mnhs42ef4ltdnj",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T17:59:07.815Z"
+        },
+        {
+          "entryId": "session-entry-mnhs9am9h7yd1u",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T18:03:11.745Z"
+        },
+        {
+          "entryId": "session-entry-mnhs9n6ut1153u",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T18:03:28.037Z"
+        },
+        {
+          "entryId": "session-entry-mnhsakw0z47wqz",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T18:04:11.712Z"
+        },
+        {
+          "entryId": "session-entry-mnhsaow9devd3x",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T18:04:16.905Z"
+        },
+        {
+          "entryId": "session-entry-mnhsu22vbtnk9e",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T18:19:20.455Z"
+        },
+        {
+          "entryId": "session-entry-mnhvkli68m1tf4",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-02T19:35:57.918Z"
+        },
+        {
+          "entryId": "session-entry-mnkjtl5nctyi3t",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T16:30:20.507Z"
+        },
+        {
+          "entryId": "session-entry-mnkjtojuqsjd75",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T16:30:24.906Z"
+        },
+        {
+          "entryId": "session-entry-mnkjwv1xoj3ob2",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T16:32:53.301Z"
+        },
+        {
+          "entryId": "session-entry-mnkk2i2dsotyy5",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T16:37:16.405Z"
+        },
+        {
+          "entryId": "session-entry-mnkk2l5mfyhycd",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T16:37:20.410Z"
+        },
+        {
+          "entryId": "session-entry-mnkklx0dnz6lr6",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T16:52:22.237Z"
+        },
+        {
+          "entryId": "session-entry-mnklurdkszm57n",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T17:27:14.456Z"
+        },
+        {
+          "entryId": "session-entry-mnkm1vvxrxoeq0",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T17:32:46.893Z"
+        },
+        {
+          "entryId": "session-entry-mnkmc2izql75fd",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T17:40:42.059Z"
+        },
+        {
+          "entryId": "session-entry-mnkmvf5dsflczw",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T17:55:44.881Z"
+        },
+        {
+          "entryId": "session-entry-mnknc6u0q9hgs5",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:08:47.256Z"
+        },
+        {
+          "entryId": "session-entry-mnknc9iuonekcf",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:08:50.742Z"
+        },
+        {
+          "entryId": "session-entry-mnkncbxrsz9tqq",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:08:53.871Z"
+        },
+        {
+          "entryId": "session-entry-mnknd12ia6gl6e",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:09:26.442Z"
+        },
+        {
+          "entryId": "session-entry-mnknd72lroincc",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:09:34.221Z"
+        },
+        {
+          "entryId": "session-entry-mnknq6o3c0n9tj",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:19:40.227Z"
+        },
+        {
+          "entryId": "session-entry-mnknq9r2b47nyu",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:19:44.222Z"
+        },
+        {
+          "entryId": "session-entry-mnknqdpepc1ktf",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:19:49.346Z"
+        },
+        {
+          "entryId": "session-entry-mnknqgoqwqpzgy",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:19:53.210Z"
+        },
+        {
+          "entryId": "session-entry-mnknsluxwgvinr",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:21:33.225Z"
+        },
+        {
+          "entryId": "session-entry-mnkor96ze8i1fq",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T18:48:29.770Z"
+        },
+        {
+          "entryId": "session-entry-mnkphd6rnomy9c",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T19:08:48.003Z"
+        },
+        {
+          "entryId": "session-entry-mnkpmokd2e9wj5",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T19:12:56.029Z"
+        },
+        {
+          "entryId": "session-entry-mnkpmqocshjakd",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T19:12:58.764Z"
+        },
+        {
+          "entryId": "session-entry-mnkpqkn3a5g9ag",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "@outcome/partial-success",
+          "createdAtIso": "2026-04-04T19:15:57.567Z"
+        },
+        {
+          "entryId": "session-entry-mnkpred1w19l1b",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T19:16:36.085Z"
+        },
+        {
+          "entryId": "session-entry-mnkpv94r8kltm9",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T19:19:35.931Z"
+        },
+        {
+          "entryId": "session-entry-mnkpvrph283pe6",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/fumble, @outcome/partial-success.",
+          "createdAtIso": "2026-04-04T19:20:00.004Z"
+        },
+        {
+          "entryId": "session-entry-mnkpwxxinwuy5i",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/special-action.",
+          "createdAtIso": "2026-04-04T19:20:54.726Z"
+        },
+        {
+          "entryId": "session-entry-mnkpx3ndi62b81",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/success, @outcome/partial-success.",
+          "createdAtIso": "2026-04-04T19:21:02.136Z"
+        },
+        {
+          "entryId": "session-entry-mnkpxrefl4r2dm",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/chaos, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T19:21:32.919Z"
+        },
+        {
+          "entryId": "session-entry-mnkpy7w8hk94jb",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/partial-success, @outcome/success, @outcome/chaos.",
+          "createdAtIso": "2026-04-04T19:21:54.296Z"
+        },
+        {
+          "entryId": "session-entry-mnkqjrmx19wkgc",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T19:38:39.657Z"
+        },
+        {
+          "entryId": "session-entry-mnkqys3ljpt7ri",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T19:50:20.097Z"
+        },
+        {
+          "entryId": "session-entry-mnkr2yqkuemjsc",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T19:53:35.323Z"
+        },
+        {
+          "entryId": "session-entry-mnkr48fwqxgr0e",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T19:54:34.556Z"
+        },
+        {
+          "entryId": "session-entry-mnkrdosyrm034k",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:01:55.666Z"
+        },
+        {
+          "entryId": "session-entry-mnkrjfgicadn8d",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:06:23.490Z"
+        },
+        {
+          "entryId": "session-entry-mnkrjfhgn3q8lb",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:06:23.524Z"
+        },
+        {
+          "entryId": "session-entry-mnkrqeptc2foaz",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:11:49.121Z"
+        },
+        {
+          "entryId": "session-entry-mnkryp89iln9l1",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:18:15.993Z"
+        },
+        {
+          "entryId": "session-entry-mnkryq1acbf6wb",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:18:17.038Z"
+        },
+        {
+          "entryId": "session-entry-mnkrz07ky483oq",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:18:30.223Z"
+        },
+        {
+          "entryId": "session-entry-mnks029r91uh3w",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:19:19.551Z"
+        },
+        {
+          "entryId": "session-entry-mnks02anqi7rif",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:19:19.583Z"
+        },
+        {
+          "entryId": "session-entry-mnks05wy3x2tk0",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:19:24.274Z"
+        },
+        {
+          "entryId": "session-entry-mnks1yuocgwjyu",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:20:48.432Z"
+        },
+        {
+          "entryId": "session-entry-mnksbfwle37hsv",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:28:10.437Z"
+        },
+        {
+          "entryId": "session-entry-mnksbgop4054kz",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:28:11.448Z"
+        },
+        {
+          "entryId": "session-entry-mnkslnr5fcuaxy",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:36:07.169Z"
+        },
+        {
+          "entryId": "session-entry-mnksntxzgww1ma",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:37:48.503Z"
+        },
+        {
+          "entryId": "session-entry-mnksnuodvial0y",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:37:49.453Z"
+        },
+        {
+          "entryId": "session-entry-mnkspmg6pktslx",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:39:12.102Z"
+        },
+        {
+          "entryId": "session-entry-mnkst19qyy1bpn",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/success, @outcome/special-action.",
+          "createdAtIso": "2026-04-04T20:41:51.264Z"
+        },
+        {
+          "entryId": "session-entry-mnkst98f8qe4rx",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:42:01.599Z"
+        },
+        {
+          "entryId": "session-entry-mnkst9c7jnca9p",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:42:01.734Z"
+        },
+        {
+          "entryId": "session-entry-mnkstszxvv2tdb",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:42:27.213Z"
+        },
+        {
+          "entryId": "session-entry-mnksufhirecnhg",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:42:56.358Z"
+        },
+        {
+          "entryId": "session-entry-mnksvlbzruat39",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:43:50.591Z"
+        },
+        {
+          "entryId": "session-entry-mnksy5j0h02imi",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:45:50.076Z"
+        },
+        {
+          "entryId": "session-entry-mnksy5tgybilgz",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:45:50.452Z"
+        },
+        {
+          "entryId": "session-entry-mnkszw2dr6yyaj",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:47:11.123Z"
+        },
+        {
+          "entryId": "session-entry-mnkt5uy1hksnjb",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:51:49.608Z"
+        },
+        {
+          "entryId": "session-entry-mnkt6541mmqump",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:52:02.785Z"
+        },
+        {
+          "entryId": "session-entry-mnkt787z9evc7f",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T20:52:53.471Z"
+        },
+        {
+          "entryId": "session-entry-mnktb0l0k02fc5",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T20:55:50.196Z"
+        },
+        {
+          "entryId": "session-entry-mnktb70a1nrp2x",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/partial-success.",
+          "createdAtIso": "2026-04-04T20:55:58.521Z"
+        },
+        {
+          "entryId": "session-entry-mnktbqznqfxts3",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/success.",
+          "createdAtIso": "2026-04-04T20:56:24.418Z"
+        },
+        {
+          "entryId": "session-entry-mnktbwyqjgssrz",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/partial-success.",
+          "createdAtIso": "2026-04-04T20:56:32.161Z"
+        },
+        {
+          "entryId": "session-entry-mnktc1ns19wxuq",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T20:56:38.248Z"
+        },
+        {
+          "entryId": "session-entry-mnktcb0mty8pkf",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/fumble, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T20:56:50.374Z"
+        },
+        {
+          "entryId": "session-entry-mnktcm2d7u605j",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/success.",
+          "createdAtIso": "2026-04-04T20:57:04.693Z"
+        },
+        {
+          "entryId": "session-entry-mnktexy06641h7",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/partial-success.",
+          "createdAtIso": "2026-04-04T20:58:53.400Z"
+        },
+        {
+          "entryId": "session-entry-mnktglid8u0h3b",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:00:10.597Z"
+        },
+        {
+          "entryId": "session-entry-mnktgljm0k4zzh",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:00:10.642Z"
+        },
+        {
+          "entryId": "session-entry-mnktgvptniukjz",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:00:23.825Z"
+        },
+        {
+          "entryId": "session-entry-mnktgvwhmig6w8",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:00:24.065Z"
+        },
+        {
+          "entryId": "session-entry-mnktlxd963katz",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T21:04:19.245Z"
+        },
+        {
+          "entryId": "session-entry-mnktoseyyhltc3",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:06:32.794Z"
+        },
+        {
+          "entryId": "session-entry-mnktosmz6z1mcd",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:06:33.083Z"
+        },
+        {
+          "entryId": "session-entry-mnkttys75zr0o9",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T21:10:34.327Z"
+        },
+        {
+          "entryId": "session-entry-mnktuef8alubmj",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/special-action.",
+          "createdAtIso": "2026-04-04T21:10:54.595Z"
+        },
+        {
+          "entryId": "session-entry-mnktxi8734uxoj",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/partial-success, @outcome/success, @outcome/chaos.",
+          "createdAtIso": "2026-04-04T21:13:19.495Z"
+        },
+        {
+          "entryId": "session-entry-mnktxkivpvcmpa",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/success, @outcome/partial-success, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:13:22.471Z"
+        },
+        {
+          "entryId": "session-entry-mnkty17of1c0gl",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:13:44.100Z"
+        },
+        {
+          "entryId": "session-entry-mnkty19o3gfrdc",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:13:44.172Z"
+        },
+        {
+          "entryId": "session-entry-mnktyupd4fae6z",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T21:14:22.320Z"
+        },
+        {
+          "entryId": "session-entry-mnktz2inzb991q",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/success, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:14:32.446Z"
+        },
+        {
+          "entryId": "session-entry-mnktz5gx0yi4rk",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/success, @outcome/partial-success, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:14:36.273Z"
+        },
+        {
+          "entryId": "session-entry-mnktz81av26zdc",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/chaos.",
+          "createdAtIso": "2026-04-04T21:14:39.597Z"
+        },
+        {
+          "entryId": "session-entry-mnku0bodkxtzo3",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/partial-success.",
+          "createdAtIso": "2026-04-04T21:15:30.973Z"
+        },
+        {
+          "entryId": "session-entry-mnku0ffklv3d5f",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:15:35.840Z"
+        },
+        {
+          "entryId": "session-entry-mnku0gjppzml2o",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:15:37.285Z"
+        },
+        {
+          "entryId": "session-entry-mnku0pyzc0f31d",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-04T21:15:49.499Z"
+        },
+        {
+          "entryId": "session-entry-mnku167og4zwxc",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/partial-success, @outcome/success, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:16:10.548Z"
+        },
+        {
+          "entryId": "session-entry-mnku31l474m4zz",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/partial-success, @outcome/success.",
+          "createdAtIso": "2026-04-04T21:17:37.864Z"
+        },
+        {
+          "entryId": "session-entry-mnku3wzocuoyxy",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/chaos, @outcome/success, @outcome/fumble, @outcome/partial-success, @outcome/success.",
+          "createdAtIso": "2026-04-04T21:18:18.564Z"
+        },
+        {
+          "entryId": "session-entry-mnku3yx9hunubf",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/fumble, @outcome/success, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:18:21.069Z"
+        },
+        {
+          "entryId": "session-entry-mnku40pntvfxyp",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/partial-success, @outcome/partial-success, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:18:23.387Z"
+        },
+        {
+          "entryId": "session-entry-mnku41wtnvd4q9",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/special-action.",
+          "createdAtIso": "2026-04-04T21:18:24.941Z"
+        },
+        {
+          "entryId": "session-entry-mnku4hi7mo9wii",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/partial-success.",
+          "createdAtIso": "2026-04-04T21:18:45.151Z"
+        },
+        {
+          "entryId": "session-entry-mnkujzd6hpszyc",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:30:48.138Z"
+        },
+        {
+          "entryId": "session-entry-mnkuo2mp3gi3b4",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:33:58.993Z"
+        },
+        {
+          "entryId": "session-entry-mnkv33pnnghd73",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:45:40.235Z"
+        },
+        {
+          "entryId": "session-entry-mnkv3ez6i8992v",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:45:54.834Z"
+        },
+        {
+          "entryId": "session-entry-mnkv4bei75oafk",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:46:36.858Z"
+        },
+        {
+          "entryId": "session-entry-mnkv4cqzp4w7dt",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:46:38.603Z"
+        },
+        {
+          "entryId": "session-entry-mnkv4e0nuo6r6l",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:46:40.247Z"
+        },
+        {
+          "entryId": "session-entry-mnkv4l6lo6xeui",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:46:49.533Z"
+        },
+        {
+          "entryId": "session-entry-mnkv5bnlod0gbe",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:47:23.841Z"
+        },
+        {
+          "entryId": "session-entry-mnkv66wax8knyh",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:48:04.330Z"
+        },
+        {
+          "entryId": "session-entry-mnkv673v7yvw4f",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:48:04.603Z"
+        },
+        {
+          "entryId": "session-entry-mnkv6guls6t3f9",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:48:17.229Z"
+        },
+        {
+          "entryId": "session-entry-mnkv6lsn9fxc0v",
+          "kind": "system",
+          "text": "Player D179 claimed Primary Actor.",
+          "createdAtIso": "2026-04-04T21:48:23.639Z"
+        },
+        {
+          "entryId": "session-entry-mnkv7oqmoaycei",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Primary Actor played: @outcome/success, @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:49:14.110Z"
+        },
+        {
+          "entryId": "session-entry-mnkv7uncklxurb",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Primary Actor played: @outcome/fumble.",
+          "createdAtIso": "2026-04-04T21:49:21.768Z"
+        },
+        {
+          "entryId": "session-entry-mnkvh51lkdf3yi",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T21:56:35.145Z"
+        },
+        {
+          "entryId": "session-entry-mnkvh53gx26g3x",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T21:56:35.212Z"
+        },
+        {
+          "entryId": "session-entry-mnkw1xfj1nfoni",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-04T22:12:45.055Z"
+        },
+        {
+          "entryId": "session-entry-mnkw1ydnjk948x",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-04T22:12:46.283Z"
+        },
+        {
+          "entryId": "session-entry-mnl25pirjwt5gd",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-05T01:03:39.123Z"
+        },
+        {
+          "entryId": "session-entry-mnl25pndxk8wfq",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-05T01:03:39.289Z"
+        },
+        {
+          "entryId": "session-entry-mnl25r2fj6yane",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-05T01:03:41.127Z"
+        },
+        {
+          "entryId": "session-entry-mnlighe13vh137",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-05T08:39:55.657Z"
+        },
+        {
+          "entryId": "session-entry-mnligponkl7b5k",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-05T08:40:06.407Z"
+        },
+        {
+          "entryId": "session-entry-mnm33k49lqzgcl",
+          "kind": "system",
+          "text": "Player D179 claimed Ralph Stoneshard.",
+          "createdAtIso": "2026-04-05T18:17:44.601Z"
+        },
+        {
+          "entryId": "session-entry-mnm3423vdc6chq",
+          "kind": "group_message",
+          "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179",
+          "authorDisplayName": "Player D179",
+          "authorRole": "player",
+          "text": "Ralph Stoneshard played: @outcome/partial-success.",
+          "createdAtIso": "2026-04-05T18:18:07.915Z"
+        },
+        {
+          "entryId": "session-entry-mnm34rlna794ra",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-05T18:18:40.955Z"
+        },
+        {
+          "entryId": "session-entry-mnm36nicht6qcz",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-05T18:20:08.964Z"
+        },
+        {
+          "entryId": "session-entry-mnypoqjlytqlov",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-14T14:23:18.369Z"
+        },
+        {
+          "entryId": "session-entry-mnyppucl9bo0rf",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-14T14:24:09.957Z"
+        },
+        {
+          "entryId": "session-entry-mo0hkrm307b52y",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:11:48.554Z"
+        },
+        {
+          "entryId": "session-entry-mo0i42crtli7hh",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:26:48.939Z"
+        },
+        {
+          "entryId": "session-entry-mo0i9x43wlbcxp",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:31:22.083Z"
+        },
+        {
+          "entryId": "session-entry-mo0iba6yxno8gv",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:32:25.690Z"
+        },
+        {
+          "entryId": "session-entry-mo0igm4hxfxy4d",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:36:34.432Z"
+        },
+        {
+          "entryId": "session-entry-mo0il98gzxgoyy",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:40:11.008Z"
+        },
+        {
+          "entryId": "session-entry-mo0ilv0row3975",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:40:39.243Z"
+        },
+        {
+          "entryId": "session-entry-mo0imbs30h9rhy",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:41:00.963Z"
+        },
+        {
+          "entryId": "session-entry-mo0ip1ui43z1ca",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:43:08.058Z"
+        },
+        {
+          "entryId": "session-entry-mo0it6rc8bfagt",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:46:21.048Z"
+        },
+        {
+          "entryId": "session-entry-mo0iukst3w9swi",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:47:25.901Z"
+        },
+        {
+          "entryId": "session-entry-mo0iuye4tcx7nx",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:47:43.516Z"
+        },
+        {
+          "entryId": "session-entry-mo0ixlqkjminsi",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:49:47.084Z"
+        },
+        {
+          "entryId": "session-entry-mo0iy2lppd30b7",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T20:50:08.940Z"
+        },
+        {
+          "entryId": "session-entry-mo0jhf210hfh7g",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-15T21:05:11.545Z"
+        },
+        {
+          "entryId": "session-entry-mo160dp6we737g",
+          "kind": "system",
+          "text": "Storyteller 84FA left the session.",
+          "createdAtIso": "2026-04-16T07:35:47.802Z"
+        },
+        {
+          "entryId": "session-entry-mo1ra5xny2t909",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-16T17:31:16.235Z"
+        },
+        {
+          "entryId": "session-entry-mo1ra8aza6tvnv",
+          "kind": "system",
+          "text": "Player D179 claimed Primary Actor.",
+          "createdAtIso": "2026-04-16T17:31:19.307Z"
+        },
+        {
+          "entryId": "session-entry-mo1rbs2rbkrs33",
+          "kind": "system",
+          "text": "Player D179 left the session.",
+          "createdAtIso": "2026-04-16T17:32:31.587Z"
+        }
+      ],
+      "table": [
+        {
+          "tableEntryId": "session-table-mnhryc62v75xkz",
+          "target": {
+            "scope": "participant",
+            "participantId": "campaign-player-bd9c8c93-916f-4916-86dc-6002f5fdd179"
+          },
+          "card": {
+            "type": "AssetCard",
+            "slug": "base_shield",
+            "modifierSlug": "base_insulating"
+          },
+          "addedAtIso": "2026-04-02T17:54:40.538Z"
+        },
+        {
+          "tableEntryId": "session-table-mnhuz883bkznr8",
+          "target": {
+            "scope": "shared"
+          },
+          "card": {
+            "type": "EffectCard",
+            "slug": "injury"
+          },
+          "addedAtIso": "2026-04-02T19:19:20.931Z"
+        },
+        {
+          "tableEntryId": "session-table-mnhuz883lxq5yt",
+          "target": {
+            "scope": "shared"
+          },
+          "card": {
+            "type": "StuntCard",
+            "slug": "dontGiveUp"
+          },
+          "addedAtIso": "2026-04-02T19:19:20.931Z"
+        },
+        {
+          "tableEntryId": "session-table-mnhuz883gwiott",
+          "target": {
+            "scope": "shared"
+          },
+          "card": {
+            "type": "ActorCard",
+            "slug": "primary-actor"
+          },
+          "addedAtIso": "2026-04-02T19:19:20.931Z"
+        },
+        {
+          "tableEntryId": "session-table-mnhuz8839z52sj",
+          "target": {
+            "scope": "shared"
+          },
+          "card": {
+            "type": "LocationCard",
+            "slug": "dark-swamp"
+          },
+          "addedAtIso": "2026-04-02T19:19:20.931Z"
+        },
+        {
+          "tableEntryId": "session-table-mnhuz883tfsf8b",
+          "target": {
+            "scope": "shared"
+          },
+          "card": {
+            "type": "EncounterCard",
+            "slug": "primary-encounter"
+          },
+          "addedAtIso": "2026-04-02T19:19:20.931Z"
+        },
+        {
+          "tableEntryId": "session-table-mnhuz883o83at3",
+          "target": {
+            "scope": "shared"
+          },
+          "card": {
+            "type": "QuestCard",
+            "slug": "primary-quest"
+          },
+          "addedAtIso": "2026-04-02T19:19:20.931Z"
+        },
+        {
+          "tableEntryId": "session-table-mnhuz883mjmxkd",
+          "target": {
+            "scope": "shared"
+          },
+          "card": {
+            "type": "AssetCard",
+            "slug": "base_light_weapon"
+          },
+          "addedAtIso": "2026-04-02T19:19:20.931Z"
+        }
+      ]
+    }
+  ]
+}

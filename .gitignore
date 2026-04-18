@@ -17,3 +17,11 @@ output/playwright/
 scene-run-final.png
 scene-run-summary.json
 scene-run-transcript.txt
+
+# Keep the Exiles of the Hungry Void campaign bundle versioned in Git.
+!apps/server/output/
+apps/server/output/*
+!apps/server/output/campaigns/
+apps/server/output/campaigns/*
+!apps/server/output/campaigns/am-mnc41bwp4karwa/
+!apps/server/output/campaigns/am-mnc41bwp4karwa/**

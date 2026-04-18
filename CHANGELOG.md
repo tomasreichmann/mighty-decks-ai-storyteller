@@ -6,6 +6,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ## [Unreleased]
 
+### Changed
+
+- Repo: keep the `Exiles of the Hungry Void` campaign bundle under `apps/server/output/campaigns/am-mnc41bwp4karwa` trackable in Git by carving it out of the broad `output/` ignore rule.
+
 ### Added
 
 - Web: add a dedicated `/styleguide/loading` lab that showcases the shared `LoadingIndicator` progress ring and `PendingIndicator` dot state, and surface it from the styleguide overview and section nav.
