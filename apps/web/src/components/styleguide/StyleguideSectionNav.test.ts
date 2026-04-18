@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-test("StyleguideSectionNav exposes the new typography inputs loading buttons and panel sections", () => {
+test("StyleguideSectionNav exposes the styleguide labs", () => {
   const source = readFileSync(
     new URL("./StyleguideSectionNav.tsx", import.meta.url),
     "utf8",
@@ -18,4 +18,8 @@ test("StyleguideSectionNav exposes the new typography inputs loading buttons and
   assert.match(source, /Loading/);
   assert.match(source, /Buttons/);
   assert.match(source, /Panel/);
+  assert.match(source, /\/styleguide\/labels/);
+  assert.match(source, /\/styleguide\/messages/);
+  assert.match(source, /Labels/);
+  assert.match(source, /Messages/);
 });

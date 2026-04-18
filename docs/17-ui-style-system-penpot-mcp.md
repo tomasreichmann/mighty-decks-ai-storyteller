@@ -90,7 +90,7 @@ Usage rule:
 - Body and controls use `md-body` family.
 - Use `Text` primitive variants instead of reauthoring type classes in route components.
 - Use `Heading` for semantic title blocks, `Label` for sticker/tag surfaces, and the shared `sm`/`md`/`lg` control ladder for `Button`, `TextField`, `TextArea`, `ToggleButton`, `RockerSwitch`, and `ButtonRadioGroup`.
-- `Label` tone coverage now includes `gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, and `monster`; validate the full sticker palette in `/styleguide/typography` and `/styleguide/tags`.
+- `Label` tone coverage now includes `gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, and `monster`; validate the full sticker palette in `/styleguide/labels`, with `/styleguide/typography` and `/styleguide/tags` as adjacent cross-checks.
 - `Heading` highlight accent color is allowed to vary by section tone instead of staying fixed to one highlight color across the app; the semantic heading palette resolves to lighter tones for the base highlight colors (`gold`, `fire`, `blood`, `bone`, `steel`, `skin`, `cloth`, `curse`, `monster`) so title underlines stay readable, and the typography styleguide includes those supported tones as live examples.
 
 ## 4. Semantic Alias Map

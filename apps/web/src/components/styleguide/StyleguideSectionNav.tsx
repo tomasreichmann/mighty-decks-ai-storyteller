@@ -43,6 +43,16 @@ const styleguideSectionItems = [
     activePaths: ["/styleguide/tags"],
   },
   {
+    to: "/styleguide/labels",
+    label: "Labels",
+    activePaths: ["/styleguide/labels"],
+  },
+  {
+    to: "/styleguide/messages",
+    label: "Messages",
+    activePaths: ["/styleguide/messages"],
+  },
+  {
     to: "/styleguide/controls",
     label: "Controls",
     activePaths: ["/styleguide/controls"],

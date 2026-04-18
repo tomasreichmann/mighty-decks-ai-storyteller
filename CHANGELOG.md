@@ -38,6 +38,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Tighten the inputs lab so button rows stay aligned with the shared field height ladder and frame `TextField`/`TextArea` as the shared default input variants.
 - Clarify contributor guidance so style-only changes do not need brittle class-name or DOM-structure tests; prefer manual or visual verification unless behavior or contracts change.
 - Rework the hidden `/styleguide` playground into an overview plus scoped `Cards`, `Tags`, `Controls`, and `Session Chat` pages with a shared secondary nav.
+
+### Fixed
+
+- Web: make location, encounter, and quest markdown embeds selectable in the MDX editor, and add canonical `LocationCard` shortcode normalization plus toolbar insertion for location-authored markdown fields.
 - Make `Tag` the reusable chip shell for read-only labels, editable tag rows, and connection status pills.
 - Tighten the Exiles legacy importer so it promotes curated actor and asset cards, copies imported stills into `AdventureArtifactStore`, and rewrites named markdown references to canonical `GameCard` embeds.
 - Refactor Adventure Module and Campaign authoring so the route files are thin shells over a shared context-plus-reducer authoring store with extracted screen/session shells, shared autosave orchestration, and optimistic edit saves.
