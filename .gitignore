@@ -31,3 +31,7 @@ apps/server/output/campaigns/*
 apps/server/output/adventure-modules/*
 !apps/server/output/adventure-modules/am-mo18tx38tgy2q1/
 !apps/server/output/adventure-modules/am-mo18tx38tgy2q1/**
+
+# Keep the Exiles of the Hungry Void image artifact store versioned in Git.
+!apps/server/output/adventure-artifacts/
+!apps/server/output/adventure-artifacts/**
