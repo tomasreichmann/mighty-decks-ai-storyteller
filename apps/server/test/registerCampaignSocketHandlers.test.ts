@@ -42,6 +42,7 @@ class FakeSocket {
 class FakeIo {
   public readonly emitted: Array<{ room: string; event: string; payload: unknown }> = [];
   private connectionHandler: ((socket: FakeSocket) => void) | null = null;
+  private readonly sockets: FakeSocket[] = [];
 
   public on(event: string, handler: (socket: FakeSocket) => void): void {
     if (event === "connection") {
@@ -50,6 +51,7 @@ class FakeIo {
   }
 
   public connect(socket: FakeSocket): void {
+    this.sockets.push(socket);
     this.connectionHandler?.(socket);
   }
 
@@ -57,6 +59,11 @@ class FakeIo {
     return {
       emit: (event: string, payload: unknown) => {
         this.emitted.push({ room, event, payload });
+        for (const socket of this.sockets) {
+          if (socket.rooms.has(room)) {
+            socket.emit(event, payload);
+          }
+        }
       },
     };
   }
@@ -447,5 +454,58 @@ test("registerCampaignSocketHandlers broadcasts table updates and enforces remov
   assert.equal(
     playerSocket.emitted.at(-1)?.event,
     "campaign_session_error",
+  );
+});
+
+test("registerCampaignSocketHandlers does not overwrite a joined role with a stale session snapshot", async () => {
+  const { store, campaign, session } = await createFixture();
+  const io = new FakeIo();
+  registerCampaignSocketHandlers(io as never, store);
+
+  const originalGetSession = store.getSession.bind(store);
+  let releaseInitialSessionRead: (() => void) | null = null;
+  const initialSessionReadHeld = new Promise<void>((resolve) => {
+    releaseInitialSessionRead = resolve;
+  });
+  let holdNextSessionRead = true;
+
+  store.getSession = async (...args) => {
+    const result = await originalGetSession(...args);
+    if (holdNextSessionRead) {
+      holdNextSessionRead = false;
+      await initialSessionReadHeld;
+    }
+    return result;
+  };
+
+  const playerSocket = new FakeSocket("socket-player");
+  io.connect(playerSocket);
+
+  const joinSessionPromise = playerSocket.trigger("join_campaign_session", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+  });
+
+  await playerSocket.trigger("join_campaign_session_role", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "player-1",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  releaseInitialSessionRead?.();
+  await joinSessionPromise;
+
+  const playerStates = playerSocket.emitted
+    .filter((entry) => entry.event === "campaign_session_state")
+    .map((entry) => entry.payload as { participants: Array<{ participantId: string }> });
+  assert.ok(playerStates.length >= 2);
+  assert.equal(
+    playerStates.at(-1)?.participants.some(
+      (participant) => participant.participantId === "player-1",
+    ),
+    true,
   );
 });

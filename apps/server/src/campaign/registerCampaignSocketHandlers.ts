@@ -113,7 +113,7 @@ export const registerCampaignSocketHandlers = (
           sessionId: payload.sessionId,
           participantId: payload.participantId,
         });
-        socket.emit("campaign_session_state", session);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
       } catch (error) {
         emitSessionError(
           socket,

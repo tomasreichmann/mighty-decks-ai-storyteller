@@ -50,6 +50,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Server: stop `join_campaign_session` from replaying a stale session snapshot over a newer role-join state, which could leave campaign players unable to claim a character until refresh.
 - Server: seed new Adventure Modules with starter component opportunities, fragment artifact manifest entries, valid starter quest graphs, and slug-derived quest ids so create-module and quest authoring flows no longer fail shared-schema validation.
 - Web: thread resolved locations through Adventure Module authoring, campaign storyteller sessions, and campaign player sessions so shared location cards stay available alongside the other authored content.
 - Web: tighten the shared styleguide location-card lab wording to describe it as a hidden internal style reference hub.

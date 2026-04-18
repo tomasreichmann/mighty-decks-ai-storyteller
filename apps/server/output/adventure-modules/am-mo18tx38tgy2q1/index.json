@@ -25,20 +25,188 @@
     "mini_campaign"
   ],
   "storytellerSummaryFragmentId": "frag-storyteller-summary",
-  "storytellerSummaryMarkdown": "# Storyteller Summary\n\n![](/api/adventure-artifacts/void-horror-4669a2c690bf1b093878.png)\n\n## Premise\n\nThe Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\n\n## Campaign Intent\n\nThis is the introductory chapter of the campaign. The players are introduced to their characters and the ship they have been exiled on. They need to work together to get the ship operational and escape the Void Horror that appears as they are about to leave.\n\n## Imported Encounter Spine\n\n* Dumped in the Void\n* An Abandoned Research Station\n* Dead in space\n* Mining Colony Has a Pest Problem\n* Transport in Distress\n* Graveyard Bazaar\n* Cursed Prison Transport\n* Missile Stockpile Raid\n* Siege of Rock Bottom\n* Trip into the Unknown",
+  "storytellerSummaryMarkdown": "# Storyteller Summary\n\n![](/api/adventure-artifacts/void-horror-4669a2c690bf1b093878.png)\n## Premise\n\nThe Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\n\n## Campaign Intent\n\nThis is the introductory chapter of the campaign. The players are introduced to their characters and the ship they have been exiled on. They need to work together to get the ship operational and escape the <GameCard type=\"ActorCard\" slug=\"void-horror\" /> that appears as they are about to leave.\n\n## Imported Encounter Spine\n- Dumped in the Void\n- An Abandoned Research Station\n- Dead in space\n- Mining Colony Has a Pest Problem\n- Transport in Distress\n- Graveyard Bazaar\n- Cursed Prison Transport\n- Missile Stockpile Raid\n- Siege of Rock Bottom\n- Trip into the Unknown",
   "playerSummaryFragmentId": "frag-player-summary",
-  "playerSummaryMarkdown": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\nYou are exiles flying a broken corvette at the edge of the Hungry Void. Survive long enough to repair your ship, pick your battles, and decide what kind of crew you will become.\n\n## Playable Archetypes\n\n<GameCard type=\"OutcomeCard\" slug=\"special-action\" /> <GameCard type=\"EffectCard\" slug=\"injury\" /> <GameCard type=\"StuntCard\" slug=\"dontGiveUp\" /> <GameCard type=\"ActorCard\" slug=\"machinist-priest-heretic\" /> <GameCard type=\"CounterCard\" slug=\"suffocation\" /><LocationCard slug=\"the-ship\" /><EncounterCard slug=\"dumped-in-the-void\" /><QuestCard slug=\"chapter-0-exiles-of-the-hungry-void\" /><GameCard type=\"AssetCard\" slug=\"base_light_weapon\" modifierSlug=\"base_fast\" /> <GameCard type=\"AssetCard\" slug=\"alien-container\" /><QuestCard slug=\"chapter-0-exiles-of-the-hungry-void\" />",
+  "playerSummaryMarkdown": "# Player Summary\n![](/api/adventure-artifacts/exiles-of-the-hungry-void-title-36059ffa4f9afb3dc1d4.jpg)\nThe Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\nYou are exiles flying a broken corvette at the edge of the Hungry Void. Survive long enough to repair your ship, pick your battles, and decide what kind of crew you will become.\n## Playable Archetypes\n- <GameCard type=\"ActorCard\" slug=\"machinist-priest-heretic\" />\n- <GameCard type=\"ActorCard\" slug=\"crimson-witch-warlock\" />\n- <GameCard type=\"ActorCard\" slug=\"augmented-veteran\" />\n- <GameCard type=\"ActorCard\" slug=\"noble-empath\" />\n- <GameCard type=\"ActorCard\" slug=\"void-seer\" />\n- <GameCard type=\"ActorCard\" slug=\"synthetic-medic\" />",
   "paletteFragmentId": "frag-palette",
   "settingFragmentId": "frag-setting",
   "componentMapFragmentId": "frag-component-map",
   "locationFragmentIds": [
-    "frag-location-the-ship"
+    "frag-location-the-ship",
+    "frag-location-docking-bay",
+    "frag-location-cargo-hold",
+    "frag-location-reactor",
+    "frag-location-engines",
+    "frag-location-spin-drive",
+    "frag-location-weapon-station",
+    "frag-location-missile-bay",
+    "frag-location-sealed-corridor",
+    "frag-location-crew-quarters",
+    "frag-location-life-support",
+    "frag-location-cockpit",
+    "frag-location-sensor-array",
+    "frag-location-pirate-docking-bay",
+    "frag-location-pirate-cargo-hold",
+    "frag-location-pirate-crew-quarters",
+    "frag-location-pirate-spin-drive",
+    "frag-location-pirate-engine-room",
+    "frag-location-pirate-reactor",
+    "frag-location-pirate-shield-generator",
+    "frag-location-pirate-weapons-station",
+    "frag-location-pirate-cockpit"
   ],
   "locationDetails": [
     {
       "fragmentId": "frag-location-the-ship",
       "introductionMarkdown": "This page describes the player ship",
       "descriptionMarkdown": "## GM Intent\n\nThis page describes the player ship\n\n# The Ship\n\n## Stage\n\nLegacy area-stage diagram omitted during normalized import.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-docking-bay",
+      "titleImageUrl": "/api/adventure-artifacts/docking-bay-63de54ac4b3c469379e9.png",
+      "introductionMarkdown": "This is where you arrived.",
+      "descriptionMarkdown": "    -   A small imperial shuttle sits in mostly empty dock. You could use it to board an enemy ship, if it's engines are disabled.\n    -   🔎 There is a box of rations, enough for now.\n    -   🔎 You noticed there is frost spreading on the outside door, but you cannot see anything outside.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-cargo-hold",
+      "titleImageUrl": "/api/adventure-artifacts/cargo-hold-202afa0e160b9f892887.png",
+      "introductionMarkdown": "The corvette still has a cargo bay with a single box of food rations.",
+      "descriptionMarkdown": "- The ship is gutted and stripped down, so there is not much left to store here yet.\n- The crew starts with a single box of food rations and whatever they can salvage from the wreck.\n- Treat this hold as the ship's current stash until the crew starts scavenging the Hungry Void.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-reactor",
+      "titleImageUrl": "/api/adventure-artifacts/reactor-99836c3e8add9c720018.png",
+      "introductionMarkdown": "Normally this is where the ship's power comes from. You can route it from here to different ship's system or even put it in overdrive and distribute some extra power.",
+      "descriptionMarkdown": "    -   If fully operational:\n        -   It should supply up to 3PU, but could be upgraded at specialized docks.\n        -   You can put it in manual overdrive and supply up to 3 extra PU.\n    -   It is running on minimal power, supplying just 1PU. All power is routed to life-support.\n    -   🔎 The fuel is almost gone and there does not seem to be any more.\n    -   🔎 Looks like there used to be some upgrades providing better energy output, but those have been uninstalled since.\n    -   🔎 Looking inside the reactor is mesmerizing. You would have sworn you saw a dark shape in the reflection of its window behind you. There was nobody there.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-engines",
+      "titleImageUrl": "/api/adventure-artifacts/engine-room-e8d353054b6ec0d933a4.png",
+      "introductionMarkdown": "They are un-powered. They need 1PU to provide thrust to move around and maneuver during fights.",
+      "descriptionMarkdown": "    -   Even with these engines operational, you are so far from anything, it will take years before you reach anything worth the effort.\n    -   Manning this station can provide extra speed.\n    -   They can be upgraded to provide advantage over ships with weaker engines.\n    -   🔎 When the engines are running, they sometimes pick up a strange echo, like when flying through a magnetic field. But you are pretty far away from anything that can have one.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-spin-drive",
+      "titleImageUrl": "/api/adventure-artifacts/spin-drive-0272c9d7519a20661052.png",
+      "introductionMarkdown": "The spin drive is un-powered. It needs 1PU for 5 turns to get enough charge to jump to the next system.",
+      "descriptionMarkdown": "- Manning this station can reduce spin-up time.\n- Its huge rings move almost imperceptibly slow on their own.\n- The console seems to require a hardware key, but it is nowhere to be found.\n- There is an Incendiary grenade strapped to the ring with the safety pin still in.\n- When the spin drive starts to power up, sensors register rising pressure on the outside of the hull without an apparent reason.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-weapon-station",
+      "titleImageUrl": "/api/adventure-artifacts/weapons-station-436da3cb55bbcb0d221c.png",
+      "introductionMarkdown": "You can fire the ship's weapons from here.",
+      "descriptionMarkdown": "    -   All but one of the weapon systems were uninstalled. A single laser array is left, but it is malfunctioning.\n    -   Manning this station can increase damage or fire rate.\n    -   📅 As you investigated the malfunctioning laser, there was a buildup of energy from a damaged capacitor and the resulting spark ignited wiring hanging from the ceiling. The fire is quickly spreading.\n    -   🔎 If repaired, you can use it to target a specific room on the enemy ship. It causes 1 Damage to target system if not absorbed by shield in exchange for 1PU.\n    -   🔎 Repairing requires 1 Spare part.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-missile-bay",
+      "titleImageUrl": "/api/adventure-artifacts/missile-bay-97234afe5d3d668c403b.png",
+      "introductionMarkdown": "Deploying a missile requires someone to manually put the missile into the launcher, but does not cost any power.",
+      "descriptionMarkdown": "    -   Missiles pass through shields, but cost ammunition.\n    -   Manning this station is required for operation.\n    -   🔎 There are several parts lying around maybe enough to build a single missile.\n    -   🔎 Someone tried to stuff reactor fuel to a missile warhead. There is enough of it to run the reactor for a foreseeable future\n    -   📅 Building a missile: As you were lowering one of the missile warheads from the crane, it suddenly released and the warhead fell from two meters and with a terrible clank hit the floor denting it deeply. It stopped rolling in front of your feet. Nothing happened.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-sealed-corridor",
+      "titleImageUrl": "/api/adventure-artifacts/elevator-0bad159122ccb9891981.png",
+      "introductionMarkdown": "There is a sealed corridor. It looks like someone tried really hard to make sure nothing can enter or exit the corridor.",
+      "descriptionMarkdown": "    -   🔎 It looks like there are more rooms there, but unsealing would require hiring a specialized crew with some serious equipment.\n    -   🔎 You hear faint scratching from the other side.\n    -   🏺 There are still two **Instant sealants** (Insulating Resource) stacked against the wall. You can use these to immediately seal a hull breach.\n    -   💡 It will become possible to open this in Graveyard Bazaar",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-crew-quarters",
+      "titleImageUrl": "/api/adventure-artifacts/crew-quarters-fb4b60ee93280b0a8dca.png",
+      "introductionMarkdown": "_There is a room with enough cots to fit 8 people. Throw the window in the door you see a man in military uniform lying on the bed, unmoving. There is a hardware key hanging around his neck._",
+      "descriptionMarkdown": "    -   This room is closed off, because it is unpressurized. You cannot re-pressurize it from here.\n    -   🏺 The dead person was holding onto 2 **Synth-blood injectors** (Healing x2)",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-life-support",
+      "titleImageUrl": "/api/adventure-artifacts/life-support-7cc06593453ccad5dd9c.png",
+      "introductionMarkdown": "Manning this station, you can re-pressure or de-pressure any room on the ship, control the temperature onboard and of the shower water, and reusing of waste water.",
+      "descriptionMarkdown": "    -   🏺 There is are 2 **Spin batteries** (Pushing Surge) lying on the floor. You can use these to fully charge the Spin drive and jump away. They are very expensive and damaging to the spin drive, only to be used as the last resort.\n    -   🔎 de-pressuring is useful in case of a fire or hostile boarding.\n    -   🔎 Water is not running at the moment. The water in the boiler seems to be frozen solid.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-cockpit",
+      "titleImageUrl": "/api/adventure-artifacts/cockpit-435a2f81c0be0c184b58.png",
+      "introductionMarkdown": "You can navigate the ship from here.",
+      "descriptionMarkdown": "    -   🏺 You can find a bottle of **Imperial standard issue brandy** (Comfort x2) - there's enough for 2 people to get nicely buzzed.\n    -   🔎 The orientation indicator must be broken, it is slowly spinning. You check the stars to make sure the ship is stationary.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-sensor-array",
+      "titleImageUrl": "/api/adventure-artifacts/sensor-array-b8329e59ab1bed4cfeae.png",
+      "introductionMarkdown": "The sensors are un-powered, but in working condition. They require 1PU to operate.",
+      "descriptionMarkdown": "- There are communicators for everyone here, enough to keep the crew linked between nearby vessels.\n- Manning this station lets you survey nearby points of interest from here.\n- You can survey enemy ships to find out what systems they have, so that you can target them.\n- You can search for life signs onboard and set alerts for hostile boarding.\n- The life-sign detector is clearly malfunctioning and shows life signs appearing and disappearing all over the ship.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-docking-bay",
+      "titleImageUrl": "/api/adventure-artifacts/docking-bay-63de54ac4b3c469379e9.png",
+      "introductionMarkdown": "The Xithrax operate from a beat-up stolen corvette looking for easy prey.",
+      "descriptionMarkdown": "- The pirate ship is already damaged before the fight starts.\n- This bay is the most likely boarding and salvage point once the raiders close with prey.\n- The visible pirate ship layout places the docking bay on the upper row of the corvette.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-cargo-hold",
+      "titleImageUrl": "/api/adventure-artifacts/cargo-hold-202afa0e160b9f892887.png",
+      "introductionMarkdown": "The raiders are hunting a smugglers' transport for loot and easy plunder.",
+      "descriptionMarkdown": "- Use this hold as the likely place where the Xithrax keep stolen cargo and boarding gear.\n- The visible pirate ship layout places the cargo hold beside the docking bay.\n- If the pirates are defeated without exploding the ship, this is a natural salvage target.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-crew-quarters",
+      "titleImageUrl": "/api/adventure-artifacts/crew-quarters-fb4b60ee93280b0a8dca.png",
+      "introductionMarkdown": "Sensors show several life signs that do not appear to be moving.",
+      "descriptionMarkdown": "- The raiders are running a skeleton crew.\n- This room is a good place to show how thinly staffed the pirate corvette really is.\n- The visible pirate ship layout places the crew quarters on the upper row.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-spin-drive",
+      "titleImageUrl": "/api/adventure-artifacts/spin-drive-0272c9d7519a20661052.png",
+      "introductionMarkdown": "When signs of the Void Horror show up, the pirates get spooked and try to flee.",
+      "descriptionMarkdown": "- The Xithrax are bold only while they think the fight is simple.\n- Once the supernatural pressure rises, this room becomes the pirates' escape plan.\n- The visible pirate ship layout places the spin drive at the center of the ship.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-engine-room",
+      "titleImageUrl": "/api/adventure-artifacts/engine-room-e8d353054b6ec0d933a4.png",
+      "introductionMarkdown": "The pirate corvette is chasing a transport through an asteroid field.",
+      "descriptionMarkdown": "- Navigating the field requires enough thrust to stay on the smugglers' tail.\n- If the crew wants to slow or trap the pirates, the engine room is a clean target.\n- The visible pirate ship layout places the engine room on the middle row.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-reactor",
+      "titleImageUrl": "/api/adventure-artifacts/reactor-99836c3e8add9c720018.png",
+      "introductionMarkdown": "The pirate reactor is damaged and forces the ship to alternate between weapons.",
+      "descriptionMarkdown": "- Sensors show the raiders alternating between their disruptor and laser array.\n- Damaging or depowering this room should immediately reduce the pirate ship's pressure output.\n- The visible pirate ship layout places the reactor beside the engine room.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-shield-generator",
+      "titleImageUrl": "/api/adventure-artifacts/shield-generator-4cba0cdd2221c9828238.png",
+      "introductionMarkdown": "The pirate layout includes a shield generator guarding the ship's core rooms.",
+      "descriptionMarkdown": "- Treat this room as the pirate ship's main defense against energy weapons.\n- It sits directly above the weapons station in the visible layout.\n- The damaged reactor makes every powered defense feel like a tradeoff for the raiders.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-weapons-station",
+      "titleImageUrl": "/api/adventure-artifacts/weapons-station-436da3cb55bbcb0d221c.png",
+      "introductionMarkdown": "The pirate corvette carries a disruptor and a laser array.",
+      "descriptionMarkdown": "- Sensors identify a disruptor that de-powers a system by 1PU for 1 turn.\n- The pirates also have a laser array that damages a system by 1 Damage.\n- Their damaged reactor means they are alternating between these weapons instead of running everything at once.",
+      "mapPins": []
+    },
+    {
+      "fragmentId": "frag-location-pirate-cockpit",
+      "titleImageUrl": "/api/adventure-artifacts/cockpit-435a2f81c0be0c184b58.png",
+      "introductionMarkdown": "The pirates are focused on the transport until someone forces them to turn and engage.",
+      "descriptionMarkdown": "- The chase runs through an asteroid field, so the cockpit crew is balancing pursuit with survival.\n- If the players attack, the raiders turn to engage your ship from here.\n- The visible pirate ship layout places the cockpit at the front of the corvette.",
       "mapPins": []
     }
   ],
@@ -160,16 +328,7 @@
       "isPlayerCharacter": false
     }
   ],
-  "counters": [
-    {
-      "slug": "suffocation",
-      "iconSlug": "danger",
-      "title": "Suffocation",
-      "currentValue": 0,
-      "maxValue": 4,
-      "description": ""
-    }
-  ],
+  "counters": [],
   "assetFragmentIds": [
     "frag-asset-alien-container",
     "frag-asset-biskma",
@@ -185,7 +344,7 @@
       "noun": "Alien Container",
       "nounDescription": "A strange sealed container that nobody at the Bazaar wants to touch.",
       "adjectiveDescription": "It is stuck to the ground and smells like bad luck.",
-      "iconUrl": "/api/adventure-artifacts/alien-container-png-5e942f245be850d8595f.png",
+      "iconUrl": "/api/adventure-artifacts/alien-container-bc31b0793d9e49d3aff9.png",
       "overlayUrl": ""
     },
     {
@@ -315,8 +474,7 @@
     },
     {
       "fragmentId": "frag-quest-chapter-3-cursed-prison-transport",
-      "questId": "quest-chapter-3-cursed-prison-transport",
-      "titleImageUrl": "/api/adventure-artifacts/a-lone-warrior-cloaked-and-determined-stands-on--af8fe492f540-656d2d0c4697-b0-i0.png"
+      "questId": "quest-chapter-3-cursed-prison-transport"
     }
   ],
   "imagePromptFragmentIds": [],
@@ -399,6 +557,384 @@
         "imported",
         "chapter-0",
         "ship"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-docking-bay",
+      "kind": "location",
+      "title": "Docking Bay",
+      "path": "locations/docking-bay.mdx",
+      "summary": "This is where you arrived.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-cargo-hold",
+      "kind": "location",
+      "title": "Cargo Hold",
+      "path": "locations/cargo-hold.mdx",
+      "summary": "The corvette still has a cargo bay with a single box of food rations.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-reactor",
+      "kind": "location",
+      "title": "Reactor",
+      "path": "locations/reactor.mdx",
+      "summary": "Normally this is where the ship's power comes from. You can route it from here to different ship's system or even put it in overdrive and distribute some extra power.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-engines",
+      "kind": "location",
+      "title": "Engines",
+      "path": "locations/engines.mdx",
+      "summary": "They are un powered. They need 1PU to provide thrust to move around and maneuver during fights.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-spin-drive",
+      "kind": "location",
+      "title": "Spin Drive",
+      "path": "locations/spin-drive.mdx",
+      "summary": "The spin drive is un-powered and needs five turns of charge to jump away.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-weapon-station",
+      "kind": "location",
+      "title": "Weapon Station",
+      "path": "locations/weapon-station.mdx",
+      "summary": "You can fire the ship's weapons from here.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-missile-bay",
+      "kind": "location",
+      "title": "Missile Bay",
+      "path": "locations/missile-bay.mdx",
+      "summary": "Deploying a missile requires someone to manually put the missile into the launcher, but does not cost any power.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-sealed-corridor",
+      "kind": "location",
+      "title": "Sealed Corridor",
+      "path": "locations/sealed-corridor.mdx",
+      "summary": "There is a sealed corridor. It looks like someone tried really hard to make sure nothing can enter or exit the corridor.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-crew-quarters",
+      "kind": "location",
+      "title": "Crew Quarters",
+      "path": "locations/crew-quarters.mdx",
+      "summary": "There is a room with enough cots to fit 8 people. Throw the window in the door you see a man in military uniform lying on the bed, unmoving. There is a hardware key hanging around his neck.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-life-support",
+      "kind": "location",
+      "title": "Life Support",
+      "path": "locations/life-support.mdx",
+      "summary": "Manning this station, you can re pressure or de pressure any room on the ship, control the temperature onboard and of the shower water, and reusing of waste water.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-cockpit",
+      "kind": "location",
+      "title": "Cockpit",
+      "path": "locations/cockpit.mdx",
+      "summary": "You can navigate the ship from here.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-sensor-array",
+      "kind": "location",
+      "title": "Sensor Array",
+      "path": "locations/sensor-array.mdx",
+      "summary": "The sensors are un-powered, but in working condition.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship",
+        "ship-system",
+        "player-ship",
+        "dumped-in-the-void"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-docking-bay",
+      "kind": "location",
+      "title": "Pirate Docking Bay",
+      "path": "locations/pirate-docking-bay.mdx",
+      "summary": "The Xithrax operate from a beat-up stolen corvette looking for easy prey.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-cargo-hold",
+      "kind": "location",
+      "title": "Pirate Cargo Hold",
+      "path": "locations/pirate-cargo-hold.mdx",
+      "summary": "The raiders are hunting a smugglers' transport for loot and easy plunder.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-crew-quarters",
+      "kind": "location",
+      "title": "Pirate Crew Quarters",
+      "path": "locations/pirate-crew-quarters.mdx",
+      "summary": "Sensors show several life signs that do not appear to be moving.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-spin-drive",
+      "kind": "location",
+      "title": "Pirate Spin Drive",
+      "path": "locations/pirate-spin-drive.mdx",
+      "summary": "When signs of the Void Horror show up, the pirates get spooked and try to flee.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-engine-room",
+      "kind": "location",
+      "title": "Pirate Engine Room",
+      "path": "locations/pirate-engine-room.mdx",
+      "summary": "The pirate corvette is chasing a transport through an asteroid field.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-reactor",
+      "kind": "location",
+      "title": "Pirate Reactor",
+      "path": "locations/pirate-reactor.mdx",
+      "summary": "The pirate reactor is damaged and forces the ship to alternate between weapons.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-shield-generator",
+      "kind": "location",
+      "title": "Pirate Shield Generator",
+      "path": "locations/pirate-shield-generator.mdx",
+      "summary": "The pirate layout includes a shield generator guarding the ship's core rooms.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-weapons-station",
+      "kind": "location",
+      "title": "Pirate Weapons Station",
+      "path": "locations/pirate-weapons-station.mdx",
+      "summary": "The pirate corvette carries a disruptor and a laser array.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-pirate-cockpit",
+      "kind": "location",
+      "title": "Pirate Cockpit",
+      "path": "locations/pirate-cockpit.mdx",
+      "summary": "The pirates are focused on the transport until someone forces them to turn and engage.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1",
+        "ship",
+        "ship-system",
+        "pirate-ship",
+        "transport-in-distress"
       ],
       "containsSpoilers": false,
       "intendedAudience": "shared"
@@ -1560,7 +2096,7 @@
       "sourceFragmentId": "frag-index",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-storyteller-summary",
@@ -1570,7 +2106,7 @@
       "sourceFragmentId": "frag-storyteller-summary",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-player-summary",
@@ -1580,7 +2116,7 @@
       "sourceFragmentId": "frag-player-summary",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-palette",
@@ -1590,7 +2126,7 @@
       "sourceFragmentId": "frag-palette",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-setting",
@@ -1600,7 +2136,7 @@
       "sourceFragmentId": "frag-setting",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-location-the-ship",
@@ -1610,7 +2146,217 @@
       "sourceFragmentId": "frag-location-the-ship",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-docking-bay",
+      "kind": "mdx",
+      "path": "locations/docking-bay.mdx",
+      "title": "Docking Bay",
+      "sourceFragmentId": "frag-location-docking-bay",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-cargo-hold",
+      "kind": "mdx",
+      "path": "locations/cargo-hold.mdx",
+      "title": "Cargo Hold",
+      "sourceFragmentId": "frag-location-cargo-hold",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-reactor",
+      "kind": "mdx",
+      "path": "locations/reactor.mdx",
+      "title": "Reactor",
+      "sourceFragmentId": "frag-location-reactor",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-engines",
+      "kind": "mdx",
+      "path": "locations/engines.mdx",
+      "title": "Engines",
+      "sourceFragmentId": "frag-location-engines",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-spin-drive",
+      "kind": "mdx",
+      "path": "locations/spin-drive.mdx",
+      "title": "Spin Drive",
+      "sourceFragmentId": "frag-location-spin-drive",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-weapon-station",
+      "kind": "mdx",
+      "path": "locations/weapon-station.mdx",
+      "title": "Weapon Station",
+      "sourceFragmentId": "frag-location-weapon-station",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-missile-bay",
+      "kind": "mdx",
+      "path": "locations/missile-bay.mdx",
+      "title": "Missile Bay",
+      "sourceFragmentId": "frag-location-missile-bay",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-sealed-corridor",
+      "kind": "mdx",
+      "path": "locations/sealed-corridor.mdx",
+      "title": "Sealed Corridor",
+      "sourceFragmentId": "frag-location-sealed-corridor",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-crew-quarters",
+      "kind": "mdx",
+      "path": "locations/crew-quarters.mdx",
+      "title": "Crew Quarters",
+      "sourceFragmentId": "frag-location-crew-quarters",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-life-support",
+      "kind": "mdx",
+      "path": "locations/life-support.mdx",
+      "title": "Life Support",
+      "sourceFragmentId": "frag-location-life-support",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-cockpit",
+      "kind": "mdx",
+      "path": "locations/cockpit.mdx",
+      "title": "Cockpit",
+      "sourceFragmentId": "frag-location-cockpit",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-sensor-array",
+      "kind": "mdx",
+      "path": "locations/sensor-array.mdx",
+      "title": "Sensor Array",
+      "sourceFragmentId": "frag-location-sensor-array",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-docking-bay",
+      "kind": "mdx",
+      "path": "locations/pirate-docking-bay.mdx",
+      "title": "Pirate Docking Bay",
+      "sourceFragmentId": "frag-location-pirate-docking-bay",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-cargo-hold",
+      "kind": "mdx",
+      "path": "locations/pirate-cargo-hold.mdx",
+      "title": "Pirate Cargo Hold",
+      "sourceFragmentId": "frag-location-pirate-cargo-hold",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-crew-quarters",
+      "kind": "mdx",
+      "path": "locations/pirate-crew-quarters.mdx",
+      "title": "Pirate Crew Quarters",
+      "sourceFragmentId": "frag-location-pirate-crew-quarters",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-spin-drive",
+      "kind": "mdx",
+      "path": "locations/pirate-spin-drive.mdx",
+      "title": "Pirate Spin Drive",
+      "sourceFragmentId": "frag-location-pirate-spin-drive",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-engine-room",
+      "kind": "mdx",
+      "path": "locations/pirate-engine-room.mdx",
+      "title": "Pirate Engine Room",
+      "sourceFragmentId": "frag-location-pirate-engine-room",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-reactor",
+      "kind": "mdx",
+      "path": "locations/pirate-reactor.mdx",
+      "title": "Pirate Reactor",
+      "sourceFragmentId": "frag-location-pirate-reactor",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-shield-generator",
+      "kind": "mdx",
+      "path": "locations/pirate-shield-generator.mdx",
+      "title": "Pirate Shield Generator",
+      "sourceFragmentId": "frag-location-pirate-shield-generator",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-weapons-station",
+      "kind": "mdx",
+      "path": "locations/pirate-weapons-station.mdx",
+      "title": "Pirate Weapons Station",
+      "sourceFragmentId": "frag-location-pirate-weapons-station",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-pirate-cockpit",
+      "kind": "mdx",
+      "path": "locations/pirate-cockpit.mdx",
+      "title": "Pirate Cockpit",
+      "sourceFragmentId": "frag-location-pirate-cockpit",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-machinist-priest-heretic",
@@ -1620,7 +2366,7 @@
       "sourceFragmentId": "frag-actor-machinist-priest-heretic",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-crimson-witch-warlock",
@@ -1630,7 +2376,7 @@
       "sourceFragmentId": "frag-actor-crimson-witch-warlock",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-augmented-veteran",
@@ -1640,7 +2386,7 @@
       "sourceFragmentId": "frag-actor-augmented-veteran",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-noble-empath",
@@ -1650,7 +2396,7 @@
       "sourceFragmentId": "frag-actor-noble-empath",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-void-seer",
@@ -1660,7 +2406,7 @@
       "sourceFragmentId": "frag-actor-void-seer",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-synthetic-medic",
@@ -1670,7 +2416,7 @@
       "sourceFragmentId": "frag-actor-synthetic-medic",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-void-horror",
@@ -1680,7 +2426,7 @@
       "sourceFragmentId": "frag-actor-void-horror",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-xithrax-raiders",
@@ -1690,7 +2436,7 @@
       "sourceFragmentId": "frag-actor-xithrax-raiders",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-tunnel-critter",
@@ -1700,7 +2446,7 @@
       "sourceFragmentId": "frag-actor-tunnel-critter",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-tunnel-critter-brood-mother",
@@ -1710,7 +2456,7 @@
       "sourceFragmentId": "frag-actor-tunnel-critter-brood-mother",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-machinist-church",
@@ -1720,7 +2466,7 @@
       "sourceFragmentId": "frag-actor-machinist-church",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-smugglers",
@@ -1730,7 +2476,7 @@
       "sourceFragmentId": "frag-actor-smugglers",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-void-seers",
@@ -1740,7 +2486,7 @@
       "sourceFragmentId": "frag-actor-void-seers",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-death-cultists",
@@ -1750,7 +2496,7 @@
       "sourceFragmentId": "frag-actor-death-cultists",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-actor-hadeans",
@@ -1760,7 +2506,7 @@
       "sourceFragmentId": "frag-actor-hadeans",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-asset-alien-container",
@@ -1770,7 +2516,7 @@
       "sourceFragmentId": "frag-asset-alien-container",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-asset-biskma",
@@ -1780,7 +2526,7 @@
       "sourceFragmentId": "frag-asset-biskma",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-asset-ritual-of-raising-dead",
@@ -1790,7 +2536,7 @@
       "sourceFragmentId": "frag-asset-ritual-of-raising-dead",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-asset-obsidian-idol",
@@ -1800,7 +2546,7 @@
       "sourceFragmentId": "frag-asset-obsidian-idol",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-asset-disruptor-mk-i",
@@ -1810,7 +2556,7 @@
       "sourceFragmentId": "frag-asset-disruptor-mk-i",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-dumped-in-the-void",
@@ -1820,7 +2566,7 @@
       "sourceFragmentId": "frag-encounter-dumped-in-the-void",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-an-abandoned-research-station",
@@ -1830,7 +2576,7 @@
       "sourceFragmentId": "frag-encounter-an-abandoned-research-station",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-dead-in-space",
@@ -1840,7 +2586,7 @@
       "sourceFragmentId": "frag-encounter-dead-in-space",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-mining-colony-has-a-pest-problem",
@@ -1850,7 +2596,7 @@
       "sourceFragmentId": "frag-encounter-mining-colony-has-a-pest-problem",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-transport-in-distress",
@@ -1860,7 +2606,7 @@
       "sourceFragmentId": "frag-encounter-transport-in-distress",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-graveyard-bazaar",
@@ -1870,7 +2616,7 @@
       "sourceFragmentId": "frag-encounter-graveyard-bazaar",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-cursed-prison-transport",
@@ -1880,7 +2626,7 @@
       "sourceFragmentId": "frag-encounter-cursed-prison-transport",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-missile-stockpile-raid",
@@ -1890,7 +2636,7 @@
       "sourceFragmentId": "frag-encounter-missile-stockpile-raid",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-siege-of-rock-bottom",
@@ -1900,7 +2646,7 @@
       "sourceFragmentId": "frag-encounter-siege-of-rock-bottom",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-encounter-trip-into-the-unknown",
@@ -1910,7 +2656,7 @@
       "sourceFragmentId": "frag-encounter-trip-into-the-unknown",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-quest-chapter-0-exiles-of-the-hungry-void",
@@ -1920,7 +2666,7 @@
       "sourceFragmentId": "frag-quest-chapter-0-exiles-of-the-hungry-void",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-quest-chapter-1-an-abandoned-research-station",
@@ -1930,7 +2676,7 @@
       "sourceFragmentId": "frag-quest-chapter-1-an-abandoned-research-station",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-quest-chapter-2-graveyard-bazaar",
@@ -1940,7 +2686,7 @@
       "sourceFragmentId": "frag-quest-chapter-2-graveyard-bazaar",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-quest-chapter-3-cursed-prison-transport",
@@ -1950,7 +2696,7 @@
       "sourceFragmentId": "frag-quest-chapter-3-cursed-prison-transport",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     },
     {
       "artifactId": "artifact-frag-component-map",
@@ -1960,10 +2706,10 @@
       "sourceFragmentId": "frag-component-map",
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
-      "createdAtIso": "2026-04-16T08:54:44.444Z"
+      "createdAtIso": "2026-04-18T18:00:29.007Z"
     }
   ],
   "notes": "Imported from legacy Exiles of the Hungry Void MDX. Legacy UI widgets were normalized to markdown.",
-  "updatedAtIso": "2026-04-18T15:26:12.894Z",
+  "updatedAtIso": "2026-04-18T18:00:29.237Z",
   "postMvpExtension": true
 }

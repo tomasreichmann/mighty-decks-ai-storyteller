@@ -69,6 +69,13 @@ const RulesStuntsPage = lazy(async () => ({
 const ScreenPage = lazy(async () => ({
   default: (await import("./routes/ScreenPage")).ScreenPage,
 }));
+const SpaceshipPage = lazy(async () => ({
+  default: (await import("./routes/SpaceshipPage")).SpaceshipPage,
+}));
+const StyleguideActorTokenPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideActorTokenPage"))
+    .StyleguideActorTokenPage,
+}));
 const StyleguideIndexPage = lazy(async () => ({
   default: (await import("./routes/StyleguideIndexPage")).StyleguideIndexPage,
 }));
@@ -336,6 +343,14 @@ export const App = (): JSX.Element => {
             }
           />
           <Route
+            path="/styleguide/actor-token"
+            element={
+              <RouteShellBoundary>
+                <StyleguideActorTokenPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
             path="/styleguide/typography"
             element={
               <RouteShellBoundary>
@@ -465,6 +480,14 @@ export const App = (): JSX.Element => {
         </Route>
 
         <Route element={<NoHeaderFitScreenLayout />}>
+          <Route
+            path="/spaceship"
+            element={
+              <RouteShellBoundary>
+                <SpaceshipPage />
+              </RouteShellBoundary>
+            }
+          />
           <Route
             path="/styleguide/session-chat-player"
             element={

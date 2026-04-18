@@ -86,6 +86,35 @@ interface QuestRecord {
   entryNodeId: string;
 }
 
+interface LegacyLocationSection {
+  summary: string;
+  introductionMarkdown: string;
+  descriptionMarkdown: string;
+  titleImageUrl?: string;
+}
+
+interface ShipLocationRecord {
+  fragment: AdventureModuleFragmentRef;
+  detail: {
+    fragmentId: string;
+    introductionMarkdown: string;
+    descriptionMarkdown: string;
+    titleImageUrl?: string;
+    mapPins: [];
+  };
+  resolved: {
+    fragmentId: string;
+    locationSlug: string;
+    title: string;
+    summary?: string;
+    titleImageUrl?: string;
+    introductionMarkdown: string;
+    descriptionMarkdown: string;
+    mapPins: [];
+  };
+  content: string;
+}
+
 const CAMPAIGN_TITLE = "Exiles of the Hungry Void";
 const SOURCE_MODULE_ID = "source-exiles-of-the-hungry-void";
 
@@ -369,6 +398,95 @@ const buildAssetContent = (options: {
       return allLines[index - 1]?.length > 0;
     })
     .join("\n");
+
+const trimMarkdownBlock = (lines: readonly string[]): string => {
+  let start = 0;
+  let end = lines.length;
+  while (start < end && lines[start]?.trim().length === 0) {
+    start += 1;
+  }
+  while (end > start && lines[end - 1]?.trim().length === 0) {
+    end -= 1;
+  }
+  return lines.slice(start, end).join("\n");
+};
+
+const markdownToPlainText = (value: string): string =>
+  value
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[_*`>#-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const stripBulletPrefix = (line: string): string => line.replace(/^\s*-\s+/, "").trim();
+
+const extractMarkdownImageUrl = (line: string): string | undefined => {
+  const match = line.match(/!\[[^\]]*\]\(([^)]+)\)/);
+  return match?.[1];
+};
+
+const extractLegacyLocationSection = (
+  content: string,
+  label: string,
+): LegacyLocationSection | null => {
+  const lines = content.split("\n");
+  const titlePattern = new RegExp(`^-\\s+\\*\\*${escapeRegExp(label)}\\*\\*\\s*$`, "i");
+  const startIndex = lines.findIndex((line) => titlePattern.test(line));
+  if (startIndex < 0) {
+    return null;
+  }
+
+  let imageIndex = -1;
+  for (let index = startIndex - 1; index >= 0; index -= 1) {
+    const current = lines[index];
+    if (current.trim().length === 0) {
+      continue;
+    }
+    if (extractMarkdownImageUrl(current)) {
+      imageIndex = index;
+    }
+    break;
+  }
+
+  let endIndex = lines.length;
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    const current = lines[index] ?? "";
+    if (extractMarkdownImageUrl(current)) {
+      let nextContentIndex = index + 1;
+      while (nextContentIndex < lines.length && lines[nextContentIndex]?.trim().length === 0) {
+        nextContentIndex += 1;
+      }
+      if (
+        nextContentIndex < lines.length &&
+        /^-\s+\*\*.+\*\*\s*$/.test(lines[nextContentIndex] ?? "")
+      ) {
+        endIndex = index;
+        break;
+      }
+    }
+    if (/^##\s+/.test(current) || /^###\s+/.test(current) || /^-\s+\*\*.+\*\*\s*$/.test(current)) {
+      endIndex = index;
+      break;
+    }
+  }
+
+  const sectionLines = lines.slice(startIndex + 1, endIndex);
+  const bulletLines = sectionLines.filter((line) => /^\s*-\s+/.test(line));
+  const introductionMarkdown = stripBulletPrefix(
+    bulletLines[0] ?? trimMarkdownBlock(sectionLines),
+  );
+  const descriptionMarkdown = trimMarkdownBlock(sectionLines.slice(1));
+  const titleImageUrl =
+    imageIndex >= 0 ? extractMarkdownImageUrl(lines[imageIndex] ?? "") : undefined;
+
+  return {
+    summary: truncate(markdownToPlainText(introductionMarkdown), 320),
+    introductionMarkdown,
+    descriptionMarkdown: descriptionMarkdown.length > 0 ? descriptionMarkdown : introductionMarkdown,
+    titleImageUrl,
+  };
+};
 
 const curatedActorDefinitions: readonly CuratedActorDefinition[] = [
   {
@@ -838,6 +956,74 @@ const toFragment = (options: {
   containsSpoilers: options.containsSpoilers ?? false,
   intendedAudience: options.intendedAudience ?? "shared",
 });
+
+const buildLocationContent = (options: {
+  title: string;
+  introductionMarkdown: string;
+  descriptionMarkdown: string;
+  titleImageUrl?: string;
+}): string =>
+  [
+    `# ${options.title}`,
+    "",
+    ...(options.titleImageUrl ? [`![](${options.titleImageUrl})`, ""] : []),
+    "## Introduction",
+    "",
+    options.introductionMarkdown,
+    "",
+    "## Description",
+    "",
+    options.descriptionMarkdown,
+  ].join("\n");
+
+const createShipLocationRecord = (options: {
+  slug: string;
+  title: string;
+  summary?: string;
+  tags: string[];
+  introductionMarkdown: string;
+  descriptionMarkdown: string;
+  titleImageUrl?: string;
+}): ShipLocationRecord => {
+  const fragmentId = makeFragmentId("location", options.slug);
+  const fragment = toFragment({
+    fragmentId,
+    kind: "location",
+    title: options.title,
+    path: `locations/${options.slug}.mdx`,
+    summary: options.summary,
+    tags: options.tags,
+    containsSpoilers: false,
+    intendedAudience: "shared",
+  });
+
+  return {
+    fragment,
+    detail: {
+      fragmentId,
+      ...(options.titleImageUrl ? { titleImageUrl: options.titleImageUrl } : {}),
+      introductionMarkdown: options.introductionMarkdown,
+      descriptionMarkdown: options.descriptionMarkdown,
+      mapPins: [],
+    },
+    resolved: {
+      fragmentId,
+      locationSlug: options.slug,
+      title: options.title,
+      ...(options.summary ? { summary: truncate(options.summary, 320) } : {}),
+      ...(options.titleImageUrl ? { titleImageUrl: options.titleImageUrl } : {}),
+      introductionMarkdown: options.introductionMarkdown,
+      descriptionMarkdown: options.descriptionMarkdown,
+      mapPins: [],
+    },
+    content: buildLocationContent({
+      title: options.title,
+      titleImageUrl: options.titleImageUrl,
+      introductionMarkdown: options.introductionMarkdown,
+      descriptionMarkdown: options.descriptionMarkdown,
+    }),
+  };
+};
 
 const loadLegacyPages = async (sourceDir: string): Promise<LegacyPage[]> => {
   const fileNames = (await readdir(sourceDir))
@@ -1335,6 +1521,402 @@ export const translateExilesAdventureModule = async (
     intendedAudience: "shared",
   });
 
+  const dumpedInTheVoidEncounter = encounterRecords.find(
+    (record) => record.resolved.encounterSlug === "dumped-in-the-void",
+  );
+  const transportInDistressEncounter = encounterRecords.find(
+    (record) => record.resolved.encounterSlug === "transport-in-distress",
+  );
+
+  if (!dumpedInTheVoidEncounter || !transportInDistressEncounter) {
+    throw new Error(
+      "Exiles import requires dumped-in-the-void and transport-in-distress encounter content.",
+    );
+  }
+
+  const playerShipTags = ["exiles", "imported", "chapter-0", "ship", "ship-system", "player-ship"];
+  const pirateShipTags = ["exiles", "imported", "chapter-1", "ship", "ship-system", "pirate-ship"];
+
+  const resolveShipLocationTitleImage = (...candidatePaths: string[]): string | undefined =>
+    findLegacyArtifactUrl(legacyArtifactUrlsByPath, ...candidatePaths);
+
+  const playerDockingBaySection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Docking bay") ??
+    {
+      summary: "This is where you arrived.",
+      introductionMarkdown: "This is where you arrived.",
+      descriptionMarkdown:
+        "- A small imperial shuttle sits in the mostly empty dock.\n- There is a box of food rations nearby.\n- Frost is spreading on the outside door.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/docking_bay.png"),
+    };
+  const playerReactorSection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Reactor") ??
+    {
+      summary: "The reactor is running on minimal power.",
+      introductionMarkdown: "The reactor is running on minimal power.",
+      descriptionMarkdown:
+        "- Normally this is where the ship's power comes from.\n- It is running on minimal power, supplying just 1PU.\n- All power is routed to life-support.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/reactor.png"),
+    };
+  const playerEnginesSection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Engines") ??
+    {
+      summary: "The engines are un-powered.",
+      introductionMarkdown: "The engines are un-powered.",
+      descriptionMarkdown:
+        "- They need 1PU to provide thrust and maneuver during fights.\n- Manning this station can provide extra speed.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/engine_room.png"),
+    };
+  const playerSpinDriveSection = {
+    summary: "The spin drive is un-powered and needs five turns of charge to jump away.",
+    introductionMarkdown:
+      "The spin drive is un-powered. It needs 1PU for 5 turns to get enough charge to jump to the next system.",
+    descriptionMarkdown: [
+      "- Manning this station can reduce spin-up time.",
+      "- Its huge rings move almost imperceptibly slow on their own.",
+      "- The console seems to require a hardware key, but it is nowhere to be found.",
+      "- There is an Incendiary grenade strapped to the ring with the safety pin still in.",
+      "- When the spin drive starts to power up, sensors register rising pressure on the outside of the hull without an apparent reason.",
+    ].join("\n"),
+    titleImageUrl: resolveShipLocationTitleImage("locations/spin_drive.png"),
+  };
+  const playerWeaponStationSection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Weapon station") ??
+    {
+      summary: "You can fire the ship's weapons from here.",
+      introductionMarkdown: "You can fire the ship's weapons from here.",
+      descriptionMarkdown:
+        "- All but one of the weapon systems were uninstalled.\n- A single laser array is left, but it is malfunctioning.\n- Manning this station can increase damage or fire rate.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/weapons_station.png"),
+    };
+  const playerMissileBaySection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Missile bay") ??
+    {
+      summary: "Deploying a missile requires manual loading.",
+      introductionMarkdown: "Deploying a missile requires manual loading.",
+      descriptionMarkdown:
+        "- Missiles pass through shields, but cost ammunition.\n- Manning this station is required for operation.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/missile_bay.png"),
+    };
+  const playerSealedCorridorSection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Sealed corridor") ??
+    {
+      summary: "There is a sealed corridor on the ship.",
+      introductionMarkdown: "There is a sealed corridor on the ship.",
+      descriptionMarkdown:
+        "- It looks like someone tried really hard to make sure nothing can enter or exit.\n- There are more rooms beyond it, but unsealing would require specialized equipment.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/elevator.png"),
+    };
+  const playerCrewQuartersSection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Crew quarters") ??
+    {
+      summary: "There is a room with enough cots to fit eight people.",
+      introductionMarkdown: "There is a room with enough cots to fit eight people.",
+      descriptionMarkdown:
+        "- Through the window you see a dead Imperial officer on a bed.\n- The room is closed off because it is unpressurized.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/crew_quarters.png"),
+    };
+  const playerLifeSupportSection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Life support") ??
+    {
+      summary: "This station controls pressure and temperature aboard the ship.",
+      introductionMarkdown: "This station controls pressure and temperature aboard the ship.",
+      descriptionMarkdown:
+        "- You can re-pressure or de-pressure any room from here.\n- De-pressuring is useful in case of fire or hostile boarding.\n- The water in the boiler seems frozen solid.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/life_support.png"),
+    };
+  const playerCockpitSection =
+    extractLegacyLocationSection(dumpedInTheVoidEncounter.content, "Cockpit") ??
+    {
+      summary: "You can navigate the ship from here.",
+      introductionMarkdown: "You can navigate the ship from here.",
+      descriptionMarkdown:
+        "- The cockpit still has a bottle of Imperial brandy.\n- The orientation indicator looks broken and slowly spins.",
+      titleImageUrl: resolveShipLocationTitleImage("locations/cockpit.png"),
+    };
+  const playerSensorArraySection = {
+    summary: "The sensors are un-powered, but in working condition.",
+    introductionMarkdown:
+      "The sensors are un-powered, but in working condition. They require 1PU to operate.",
+    descriptionMarkdown: [
+      "- There are communicators for everyone here, enough to keep the crew linked between nearby vessels.",
+      "- Manning this station lets you survey nearby points of interest from here.",
+      "- You can survey enemy ships to find out what systems they have, so that you can target them.",
+      "- You can search for life signs onboard and set alerts for hostile boarding.",
+      "- The life-sign detector is clearly malfunctioning and shows life signs appearing and disappearing all over the ship.",
+    ].join("\n"),
+    titleImageUrl: resolveShipLocationTitleImage("locations/sensor_array.png"),
+  };
+
+  const playerShipLocationRecords: ShipLocationRecord[] = [
+    createShipLocationRecord({
+      slug: "docking-bay",
+      title: "Docking Bay",
+      summary: playerDockingBaySection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerDockingBaySection.introductionMarkdown,
+      descriptionMarkdown: playerDockingBaySection.descriptionMarkdown,
+      titleImageUrl:
+        playerDockingBaySection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/docking_bay.png"),
+    }),
+    createShipLocationRecord({
+      slug: "cargo-hold",
+      title: "Cargo Hold",
+      summary: "The corvette still has a cargo bay with a single box of food rations.",
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown:
+        "The corvette still has a cargo bay with a single box of food rations.",
+      descriptionMarkdown: [
+        "- The ship is gutted and stripped down, so there is not much left to store here yet.",
+        "- The crew starts with a single box of food rations and whatever they can salvage from the wreck.",
+        "- Treat this hold as the ship's current stash until the crew starts scavenging the Hungry Void.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/cargo_hold.png"),
+    }),
+    createShipLocationRecord({
+      slug: "reactor",
+      title: "Reactor",
+      summary: playerReactorSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerReactorSection.introductionMarkdown,
+      descriptionMarkdown: playerReactorSection.descriptionMarkdown,
+      titleImageUrl:
+        playerReactorSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/reactor.png"),
+    }),
+    createShipLocationRecord({
+      slug: "engines",
+      title: "Engines",
+      summary: playerEnginesSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerEnginesSection.introductionMarkdown,
+      descriptionMarkdown: playerEnginesSection.descriptionMarkdown,
+      titleImageUrl:
+        playerEnginesSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/engine_room.png"),
+    }),
+    createShipLocationRecord({
+      slug: "spin-drive",
+      title: "Spin Drive",
+      summary: playerSpinDriveSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerSpinDriveSection.introductionMarkdown,
+      descriptionMarkdown: playerSpinDriveSection.descriptionMarkdown,
+      titleImageUrl:
+        playerSpinDriveSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/spin_drive.png"),
+    }),
+    createShipLocationRecord({
+      slug: "weapon-station",
+      title: "Weapon Station",
+      summary: playerWeaponStationSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerWeaponStationSection.introductionMarkdown,
+      descriptionMarkdown: playerWeaponStationSection.descriptionMarkdown,
+      titleImageUrl:
+        playerWeaponStationSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/weapons_station.png"),
+    }),
+    createShipLocationRecord({
+      slug: "missile-bay",
+      title: "Missile Bay",
+      summary: playerMissileBaySection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerMissileBaySection.introductionMarkdown,
+      descriptionMarkdown: playerMissileBaySection.descriptionMarkdown,
+      titleImageUrl:
+        playerMissileBaySection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/missile_bay.png"),
+    }),
+    createShipLocationRecord({
+      slug: "sealed-corridor",
+      title: "Sealed Corridor",
+      summary: playerSealedCorridorSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerSealedCorridorSection.introductionMarkdown,
+      descriptionMarkdown: playerSealedCorridorSection.descriptionMarkdown,
+      titleImageUrl:
+        playerSealedCorridorSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/elevator.png"),
+    }),
+    createShipLocationRecord({
+      slug: "crew-quarters",
+      title: "Crew Quarters",
+      summary: playerCrewQuartersSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerCrewQuartersSection.introductionMarkdown,
+      descriptionMarkdown: playerCrewQuartersSection.descriptionMarkdown,
+      titleImageUrl:
+        playerCrewQuartersSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/crew_quarters.png"),
+    }),
+    createShipLocationRecord({
+      slug: "life-support",
+      title: "Life Support",
+      summary: playerLifeSupportSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerLifeSupportSection.introductionMarkdown,
+      descriptionMarkdown: playerLifeSupportSection.descriptionMarkdown,
+      titleImageUrl:
+        playerLifeSupportSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/life_support.png"),
+    }),
+    createShipLocationRecord({
+      slug: "cockpit",
+      title: "Cockpit",
+      summary: playerCockpitSection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerCockpitSection.introductionMarkdown,
+      descriptionMarkdown: playerCockpitSection.descriptionMarkdown,
+      titleImageUrl:
+        playerCockpitSection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/cockpit.png"),
+    }),
+    createShipLocationRecord({
+      slug: "sensor-array",
+      title: "Sensor Array",
+      summary: playerSensorArraySection.summary,
+      tags: [...playerShipTags, "dumped-in-the-void"],
+      introductionMarkdown: playerSensorArraySection.introductionMarkdown,
+      descriptionMarkdown: playerSensorArraySection.descriptionMarkdown,
+      titleImageUrl:
+        playerSensorArraySection.titleImageUrl ??
+        resolveShipLocationTitleImage("locations/sensor_array.png"),
+    }),
+  ];
+
+  const pirateShipLocationRecords: ShipLocationRecord[] = [
+    createShipLocationRecord({
+      slug: "pirate-docking-bay",
+      title: "Pirate Docking Bay",
+      summary: "The Xithrax operate from a beat-up stolen corvette looking for easy prey.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "The Xithrax operate from a beat-up stolen corvette looking for easy prey.",
+      descriptionMarkdown: [
+        "- The pirate ship is already damaged before the fight starts.",
+        "- This bay is the most likely boarding and salvage point once the raiders close with prey.",
+        "- The visible pirate ship layout places the docking bay on the upper row of the corvette.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/docking_bay.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-cargo-hold",
+      title: "Pirate Cargo Hold",
+      summary: "The raiders are hunting a smugglers' transport for loot and easy plunder.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "The raiders are hunting a smugglers' transport for loot and easy plunder.",
+      descriptionMarkdown: [
+        "- Use this hold as the likely place where the Xithrax keep stolen cargo and boarding gear.",
+        "- The visible pirate ship layout places the cargo hold beside the docking bay.",
+        "- If the pirates are defeated without exploding the ship, this is a natural salvage target.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/cargo_hold.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-crew-quarters",
+      title: "Pirate Crew Quarters",
+      summary: "Sensors show several life signs that do not appear to be moving.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "Sensors show several life signs that do not appear to be moving.",
+      descriptionMarkdown: [
+        "- The raiders are running a skeleton crew.",
+        "- This room is a good place to show how thinly staffed the pirate corvette really is.",
+        "- The visible pirate ship layout places the crew quarters on the upper row.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/crew_quarters.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-spin-drive",
+      title: "Pirate Spin Drive",
+      summary: "When signs of the Void Horror show up, the pirates get spooked and try to flee.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "When signs of the Void Horror show up, the pirates get spooked and try to flee.",
+      descriptionMarkdown: [
+        "- The Xithrax are bold only while they think the fight is simple.",
+        "- Once the supernatural pressure rises, this room becomes the pirates' escape plan.",
+        "- The visible pirate ship layout places the spin drive at the center of the ship.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/spin_drive.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-engine-room",
+      title: "Pirate Engine Room",
+      summary: "The pirate corvette is chasing a transport through an asteroid field.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "The pirate corvette is chasing a transport through an asteroid field.",
+      descriptionMarkdown: [
+        "- Navigating the field requires enough thrust to stay on the smugglers' tail.",
+        "- If the crew wants to slow or trap the pirates, the engine room is a clean target.",
+        "- The visible pirate ship layout places the engine room on the middle row.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/engine_room.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-reactor",
+      title: "Pirate Reactor",
+      summary: "The pirate reactor is damaged and forces the ship to alternate between weapons.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "The pirate reactor is damaged and forces the ship to alternate between weapons.",
+      descriptionMarkdown: [
+        "- Sensors show the raiders alternating between their disruptor and laser array.",
+        "- Damaging or depowering this room should immediately reduce the pirate ship's pressure output.",
+        "- The visible pirate ship layout places the reactor beside the engine room.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/reactor.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-shield-generator",
+      title: "Pirate Shield Generator",
+      summary: "The pirate layout includes a shield generator guarding the ship's core rooms.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "The pirate layout includes a shield generator guarding the ship's core rooms.",
+      descriptionMarkdown: [
+        "- Treat this room as the pirate ship's main defense against energy weapons.",
+        "- It sits directly above the weapons station in the visible layout.",
+        "- The damaged reactor makes every powered defense feel like a tradeoff for the raiders.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/shield_generator.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-weapons-station",
+      title: "Pirate Weapons Station",
+      summary: "The pirate corvette carries a disruptor and a laser array.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "The pirate corvette carries a disruptor and a laser array.",
+      descriptionMarkdown: [
+        "- Sensors identify a disruptor that de-powers a system by 1PU for 1 turn.",
+        "- The pirates also have a laser array that damages a system by 1 Damage.",
+        "- Their damaged reactor means they are alternating between these weapons instead of running everything at once.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/weapons_station.png"),
+    }),
+    createShipLocationRecord({
+      slug: "pirate-cockpit",
+      title: "Pirate Cockpit",
+      summary: "The pirates are focused on the transport until someone forces them to turn and engage.",
+      tags: [...pirateShipTags, "transport-in-distress"],
+      introductionMarkdown:
+        "The pirates are focused on the transport until someone forces them to turn and engage.",
+      descriptionMarkdown: [
+        "- The chase runs through an asteroid field, so the cockpit crew is balancing pursuit with survival.",
+        "- If the players attack, the raiders turn to engage your ship from here.",
+        "- The visible pirate ship layout places the cockpit at the front of the corvette.",
+      ].join("\n"),
+      titleImageUrl: resolveShipLocationTitleImage("locations/cockpit.png"),
+    }),
+  ];
+
+  const shipLocationRecords = [...playerShipLocationRecords, ...pirateShipLocationRecords];
+
   const playerSummaryFragmentId = "frag-player-summary";
   const storytellerSummaryFragmentId = "frag-storyteller-summary";
   const paletteFragmentId = "frag-palette";
@@ -1393,6 +1975,7 @@ export const translateExilesAdventureModule = async (
       intendedAudience: "shared",
     }),
     locationFragment,
+    ...shipLocationRecords.map((record) => record.fragment),
     ...actorRecords.map((record) => record.fragment),
     ...assetRecords.map((record) => record.fragment),
     ...encounterRecords.map((record) => record.fragment),
@@ -1455,6 +2038,10 @@ export const translateExilesAdventureModule = async (
         normalizedShip.content,
       ].join("\n"),
     },
+    ...shipLocationRecords.map((record) => ({
+      fragment: record.fragment,
+      content: record.content,
+    })),
     ...actorRecords.map((record) => ({
       fragment: record.fragment,
       content: record.content,
@@ -1838,7 +2425,7 @@ export const translateExilesAdventureModule = async (
     paletteFragmentId,
     settingFragmentId,
     componentMapFragmentId,
-    locationFragmentIds: [locationFragmentId],
+    locationFragmentIds: [locationFragmentId, ...shipLocationRecords.map((record) => record.fragment.fragmentId)],
     locationDetails: [
       {
         fragmentId: locationFragmentId,
@@ -1847,6 +2434,7 @@ export const translateExilesAdventureModule = async (
         descriptionMarkdown: normalizedShip.content,
         mapPins: [],
       },
+      ...shipLocationRecords.map((record) => record.detail),
     ],
     actorFragmentIds: actorRecords.map((record) => record.fragment.fragmentId),
     actorCards: actorRecords.map((record) => ({
@@ -1909,6 +2497,7 @@ export const translateExilesAdventureModule = async (
         descriptionMarkdown: normalizedShip.content,
         mapPins: [],
       },
+      ...shipLocationRecords.map((record) => record.resolved),
     ],
     encounters: encounterRecords.map((record) => record.resolved),
     quests: questRecords.map((record) => record.resolved),

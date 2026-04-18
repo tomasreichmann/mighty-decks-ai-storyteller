@@ -540,7 +540,7 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
   assert.equal(translated.index.slug, "exiles-of-the-hungry-void");
   assert.equal(translated.index.sessionScope, "mini_campaign");
   assert.equal(translated.index.launchProfile, "dual");
-  assert.equal(translated.index.locationFragmentIds.length, 1);
+  assert.equal(translated.index.locationFragmentIds.length, 22);
   assert.equal(translated.index.encounterFragmentIds.length, 10);
   assert.equal(translated.index.questFragmentIds.length, 4);
   assert.equal(translated.index.actorFragmentIds.length, 15);
@@ -595,6 +595,60 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
     /<GameCard type="ActorCard" slug="void-horror" \/>/,
   );
   assert.doesNotMatch(settingFragment?.content ?? "", /<Columns|<StuntCard|<LinkList/);
+
+  const shipLocationSlugs = translated.locations.map((location) => location.locationSlug);
+  assert.ok(shipLocationSlugs.includes("the-ship"));
+  assert.ok(shipLocationSlugs.includes("docking-bay"));
+  assert.ok(shipLocationSlugs.includes("cargo-hold"));
+  assert.ok(shipLocationSlugs.includes("reactor"));
+  assert.ok(shipLocationSlugs.includes("engines"));
+  assert.ok(shipLocationSlugs.includes("spin-drive"));
+  assert.ok(shipLocationSlugs.includes("weapon-station"));
+  assert.ok(shipLocationSlugs.includes("missile-bay"));
+  assert.ok(shipLocationSlugs.includes("sealed-corridor"));
+  assert.ok(shipLocationSlugs.includes("crew-quarters"));
+  assert.ok(shipLocationSlugs.includes("life-support"));
+  assert.ok(shipLocationSlugs.includes("cockpit"));
+  assert.ok(shipLocationSlugs.includes("sensor-array"));
+  assert.ok(shipLocationSlugs.includes("pirate-docking-bay"));
+  assert.ok(shipLocationSlugs.includes("pirate-cargo-hold"));
+  assert.ok(shipLocationSlugs.includes("pirate-crew-quarters"));
+  assert.ok(shipLocationSlugs.includes("pirate-spin-drive"));
+  assert.ok(shipLocationSlugs.includes("pirate-engine-room"));
+  assert.ok(shipLocationSlugs.includes("pirate-reactor"));
+  assert.ok(shipLocationSlugs.includes("pirate-shield-generator"));
+  assert.ok(shipLocationSlugs.includes("pirate-weapons-station"));
+  assert.ok(shipLocationSlugs.includes("pirate-cockpit"));
+
+  const playerDockingBay = translated.locations.find(
+    (location) => location.locationSlug === "docking-bay",
+  );
+  assert.ok(playerDockingBay);
+  assert.match(playerDockingBay?.summary ?? "", /arrived/i);
+  assert.match(playerDockingBay?.descriptionMarkdown ?? "", /imperial shuttle/i);
+
+  const playerReactor = translated.locations.find(
+    (location) => location.locationSlug === "reactor",
+  );
+  assert.ok(playerReactor);
+  assert.match(playerReactor?.descriptionMarkdown ?? "", /supplying just 1PU/i);
+
+  const pirateWeaponsStation = translated.locations.find(
+    (location) => location.locationSlug === "pirate-weapons-station",
+  );
+  assert.ok(pirateWeaponsStation);
+  assert.match(pirateWeaponsStation?.descriptionMarkdown ?? "", /disruptor/i);
+  assert.match(pirateWeaponsStation?.descriptionMarkdown ?? "", /laser array/i);
+
+  const playerDockingBayFragment = translated.fragments.find(
+    (fragment) => fragment.fragment.path === "locations/docking-bay.mdx",
+  );
+  assert.ok(playerDockingBayFragment);
+
+  const pirateCockpitFragment = translated.fragments.find(
+    (fragment) => fragment.fragment.path === "locations/pirate-cockpit.mdx",
+  );
+  assert.ok(pirateCockpitFragment);
 
   const dumpedEncounter = translated.encounters.find(
     (encounter) => encounter.encounterSlug === "dumped-in-the-void",
@@ -834,7 +888,7 @@ test("imports translated Exiles content through AdventureModuleStore.importModul
   assert.equal(imported.index.sessionScope, "mini_campaign");
   assert.equal(imported.index.launchProfile, "dual");
   assert.equal(imported.index.status, "draft");
-  assert.equal(imported.locations.length, 1);
+  assert.equal(imported.locations.length, 22);
   assert.equal(imported.encounters.length, 10);
   assert.equal(imported.quests.length, 4);
   assert.equal(imported.actors.length, 15);
@@ -920,7 +974,7 @@ test("import CLI imports Exiles content into the adventure module store", async 
   };
   assert.equal(parsed.ok, true);
   assert.equal(parsed.result.module.index.slug, "exiles-of-the-hungry-void");
-  assert.equal(parsed.result.counts.locations, 1);
+  assert.equal(parsed.result.counts.locations, 22);
   assert.equal(parsed.result.counts.encounters, 10);
   assert.equal(parsed.result.counts.quests, 4);
   assert.equal(parsed.result.module.index.actorCards.length, 15);
@@ -932,7 +986,7 @@ test("import CLI imports Exiles content into the adventure module store", async 
   );
   assert.ok(loaded);
   assert.equal(loaded?.encounters.length, 10);
-  assert.equal(loaded?.locations.length, 1);
+  assert.equal(loaded?.locations.length, 22);
   assert.equal(loaded?.actors.length, 15);
   assert.equal(loaded?.assets.length, 5);
 });

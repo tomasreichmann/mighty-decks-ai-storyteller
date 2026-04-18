@@ -5,7 +5,9 @@ import { readFileSync } from "node:fs";
 test("App registers the hidden styleguide routes", () => {
   const source = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
 
+  assert.match(source, /SpaceshipPage/);
   assert.match(source, /StyleguideIndexPage/);
+  assert.match(source, /StyleguideActorTokenPage/);
   assert.match(source, /StyleguideTypographyPage/);
   assert.match(source, /StyleguideInputsPage/);
   assert.match(source, /StyleguideLoadingPage/);
@@ -23,7 +25,9 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /StyleguideSessionChatPlayerPage/);
   assert.match(source, /StyleguideSessionChatStorytellerPage/);
   assert.match(source, /RouteShellBoundary/);
+  assert.match(source, /path="\/spaceship"/);
   assert.match(source, /path="\/styleguide"/);
+  assert.match(source, /path="\/styleguide\/actor-token"/);
   assert.match(source, /path="\/styleguide\/typography"/);
   assert.match(source, /path="\/styleguide\/inputs"/);
   assert.match(source, /path="\/styleguide\/loading"/);
@@ -45,6 +49,14 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(
     source,
     /path="session-chat-storyteller"|path="\/styleguide\/session-chat-storyteller"/,
+  );
+  assert.match(
+    source,
+    /path="\/spaceship"[\s\S]*<RouteShellBoundary>[\s\S]*<SpaceshipPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/actor-token"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideActorTokenPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,
