@@ -13,8 +13,15 @@ import {
   writeModuleSystem,
   resolveSafePath,
 } from "./core";
-import { createQuestFragmentContent } from "./factory";
-import { makeId, AdventureModuleStoreRuntime } from "./shared";
+import {
+  createQuestFragmentContent,
+  createStarterQuestGraph,
+} from "./factory";
+import {
+  makeId,
+  makePrefixedIdentifier,
+  AdventureModuleStoreRuntime,
+} from "./shared";
 import { findQuestRecord, makeUniqueQuestSlug } from "./records";
 import { rollbackCreate, rollbackDelete, rollbackUpdate } from "./rollbacks";
 import { loadModuleDetail } from "./detail";
@@ -48,7 +55,7 @@ export const createQuest = async (
     };
     const questDetail = {
       fragmentId,
-      questId: `quest-${fragmentId}`,
+      questId: makePrefixedIdentifier("quest", questSlug),
     };
 
     const nextIndex = adventureModuleIndexSchema.parse({
@@ -58,17 +65,12 @@ export const createQuest = async (
       fragments: [...loaded.index.fragments, fragmentRef],
       questGraphs: [
         ...loaded.index.questGraphs,
-        {
+        createStarterQuestGraph({
           questId: questDetail.questId,
+          questSlug,
           title: normalizedTitle,
           summary: `A new quest for ${normalizedTitle}`,
-          hooks: [],
-          nodes: [],
-          edges: [],
-          entryNodeIds: [],
-          conclusionNodeIds: [],
-          conclusions: [],
-        },
+        }),
       ],
       artifacts: [
         ...loaded.index.artifacts,

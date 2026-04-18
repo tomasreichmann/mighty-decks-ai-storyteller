@@ -193,6 +193,20 @@ export const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
     }
     questDetailsByFragmentId.set(fragmentId, questDetailRecord);
   }
+  const rawQuestGraphs = Array.isArray(normalized.questGraphs) ? normalized.questGraphs : [];
+  const fallbackQuestIdByFragmentId = new Map<string, string>();
+  for (const [index, fragmentId] of questFragmentIds.entries()) {
+    const questGraph = rawQuestGraphs[index];
+    const questGraphRecord =
+      questGraph && typeof questGraph === "object" && !Array.isArray(questGraph)
+        ? (questGraph as Record<string, unknown>)
+        : undefined;
+    const questId =
+      typeof questGraphRecord?.questId === "string" && questGraphRecord.questId.trim().length > 0
+        ? questGraphRecord.questId
+        : `quest-${fragmentId}`;
+    fallbackQuestIdByFragmentId.set(fragmentId, questId);
+  }
   const rawAssetCards = Array.isArray(normalized.assetCards) ? normalized.assetCards : [];
   const assetCardsByFragmentId = new Map<string, Record<string, unknown>>();
   for (const assetCard of rawAssetCards) {
@@ -253,7 +267,7 @@ export const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
         questId:
           typeof existing?.questId === "string" && existing.questId.trim().length > 0
             ? existing.questId
-            : `quest-${fragmentId}`,
+            : (fallbackQuestIdByFragmentId.get(fragmentId) ?? `quest-${fragmentId}`),
         ...(typeof existing?.titleImageUrl === "string" &&
         existing.titleImageUrl.trim().length > 0
           ? { titleImageUrl: existing.titleImageUrl.trim() }

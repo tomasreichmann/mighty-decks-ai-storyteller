@@ -42,7 +42,7 @@ export const composeLocationFragmentContent = (
 export const normalizeLocationFragmentContent = (content: string): string =>
   content.replace(/\r\n/g, "\n").trim();
 
-const createStarterQuestGraph = (input: {
+export const createStarterQuestGraph = (input: {
   questId: string;
   questSlug: string;
   title: string;
@@ -130,6 +130,37 @@ const createStarterQuestGraph = (input: {
   };
 };
 
+const createStarterComponentOpportunities = (): AdventureModuleIndex["componentOpportunities"] => [
+  {
+    opportunityId: "opp-primary-encounter-pressure",
+    componentType: "counter",
+    strength: "recommended",
+    timing: "during_action",
+    fragmentId: "frag-encounter-main",
+    fragmentKind: "encounter",
+    placementLabel: "Encounter Pressure",
+    trigger: "Escalate the opening encounter when the players hesitate or the threat advances.",
+    rationale:
+      "Gives the starter draft a visible pressure tool tied to the first playable beat.",
+    notes: "Replace this seed with module-specific opportunities as authoring progresses.",
+  },
+];
+
+const createStarterArtifacts = (
+  fragments: ReadonlyArray<AdventureModuleIndex["fragments"][number]>,
+  nowIso: string,
+): AdventureModuleIndex["artifacts"] =>
+  fragments.map((fragment) => ({
+    artifactId: `artifact-${fragment.fragmentId}`,
+    kind: "mdx",
+    path: fragment.path,
+    title: fragment.title,
+    sourceFragmentId: fragment.fragmentId,
+    contentType: "text/markdown",
+    generatedBy: "author",
+    createdAtIso: nowIso,
+  }));
+
 export const createDefaultFragmentContent = (
   index: AdventureModuleIndex,
 ): AdventureModuleDetail["fragments"] => {
@@ -181,7 +212,7 @@ export const createBlankIndex = (input: {
   launchProfile?: AdventureModuleIndex["launchProfile"];
   nowIso: string;
 }): AdventureModuleIndex => {
-  const fragments = [
+  const fragments: AdventureModuleIndex["fragments"] = [
     {
       fragmentId: "frag-index",
       kind: "index",
@@ -292,10 +323,12 @@ export const createBlankIndex = (input: {
       containsSpoilers: true,
       intendedAudience: "storyteller",
     },
-  ] as const;
+  ];
 
   const hint = input.seedPrompt?.trim().slice(0, 220);
   const premise = hint && hint.length > 0 ? hint : "Draft adventure module premise.";
+  const componentOpportunities = createStarterComponentOpportunities();
+  const artifacts = createStarterArtifacts(fragments, input.nowIso);
 
   return adventureModuleIndexSchema.parse({
     moduleId: input.moduleId,
@@ -371,8 +404,8 @@ export const createBlankIndex = (input: {
         assetFragmentId: "frag-asset-main",
       }),
     ],
-    componentOpportunities: [],
-    artifacts: [],
+    componentOpportunities,
+    artifacts,
     publishedAtIso: undefined,
     updatedAtIso: input.nowIso,
     postMvpExtension: true,

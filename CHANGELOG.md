@@ -15,11 +15,13 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add hidden `/spaceship` and `/styleguide/actor-token` labs for the first Exiles ship-combat prototype, including low-fi ship panes, actor strips, energy tokens, effect stacks, and a visual-only card-library overlay shell.
 - Web: add a dedicated `/styleguide/loading` lab that showcases the shared `LoadingIndicator` progress ring and `PendingIndicator` dot state, and surface it from the styleguide overview and section nav.
 - Web: add dedicated `/styleguide/labels` and `/styleguide/messages` styleguide labs, and surface both from the shared secondary nav and router so contributors can validate sticker labels and semantic callouts in isolation.
 
 ### Changed
 
+- Server: expand the Exiles importer and tracked module bundle so the player corvette and pirate raider ship cards are normalized into reusable location entries while preserving the legacy `the-ship` overview.
 - Web: replace the app's plain loading copy with shared `PendingIndicator` dot states for loading panels and action buttons, while keeping the quantified progress ring in the styleguide loading lab.
 - Web: tighten the shared scene-card frame so long location, encounter, and quest text gets more padding and clamps earlier with a visible ellipsis instead of crowding the border.
 - Web: replace the `/styleguide` overview component grid with a design reference hub covering design principles, the full semantic color-family ledger as swatches with hex values, shared-component rules, and component use cases.
@@ -48,6 +50,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Server: seed new Adventure Modules with starter component opportunities, fragment artifact manifest entries, valid starter quest graphs, and slug-derived quest ids so create-module and quest authoring flows no longer fail shared-schema validation.
 - Web: thread resolved locations through Adventure Module authoring, campaign storyteller sessions, and campaign player sessions so shared location cards stay available alongside the other authored content.
 - Web: tighten the shared styleguide location-card lab wording to describe it as a hidden internal style reference hub.
 - Web: make location, encounter, and quest markdown embeds selectable and inline-flow friendly in the MDX editor, and add canonical `LocationCard` shortcode normalization plus toolbar insertion for location-authored markdown fields.
@@ -62,6 +65,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Docs
 
+- Document the spaceship combat prototype scope, low-fi wireframes, reusable component plan, deferred drag/drop model, and imported Exiles location mapping in `docs/22-spaceship-combat-prototype.md`.
 - Document the new styleguide labs, shared primitive API conventions, and root class-name naming rule in the UI component and contributor docs.
 
 ### Added
