@@ -4,6 +4,7 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
+  AdventureModuleResolvedLocation,
   AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
@@ -24,6 +25,7 @@ interface AdventureModuleQuestEditorProps {
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   encounters?: AdventureModuleResolvedEncounter[];
+  locations?: AdventureModuleResolvedLocation[];
   quests?: AdventureModuleResolvedQuest[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
@@ -190,6 +192,7 @@ export const AdventureModuleQuestEditor = ({
   counters = [],
   assets = [],
   encounters = [],
+  locations = [],
   quests = [],
   smartContextDocument,
   editable,
@@ -296,6 +299,7 @@ export const AdventureModuleQuestEditor = ({
         counters={counters}
         assets={assets}
         encounters={encounters}
+        locations={locations}
         quests={quests}
         value={quest.content}
         editable={editable}

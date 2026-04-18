@@ -62,11 +62,33 @@ test("GameCard renders location content without leaking internal location metada
   assert.match(markup, /The Drowned Gate District/);
   assert.match(
     markup,
-    /Catwalks groan over dark water channels while the pumps[\s\S]*thrum beneath the district\./,
+    /Catwalks groan over dark water channels while the[\s\S]*pumps thrum beneath the district\./,
   );
   assert.doesNotMatch(markup, /ImageCard-driven direction/);
   assert.doesNotMatch(markup, /drowned-gate-district/);
   assert.doesNotMatch(markup, /map pins/i);
+});
+
+test("GameCard keeps long location intros padded and clamped", () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GameCard, {
+      type: "location",
+      location: {
+        ...sampleLocation,
+        introductionMarkdown:
+          "Situation The district floods in pulses whenever the old pumps kick on. Catwalks groan above dark water channels, and every route offers speed at different risk.",
+      },
+    }),
+  );
+
+  assert.match(
+    markup,
+    /<text x="22" y="168"[^>]*>Situation The district floods in pulses whenever the<\/text>/,
+  );
+  assert.match(
+    markup,
+    /<text x="22" y="185"[^>]*>old pumps kick on\. Catwalks groan above dark water\.\.\.<\/text>/,
+  );
 });
 
 test("GameCard renders encounter content without leaking prerequisites", () => {
@@ -78,7 +100,7 @@ test("GameCard renders encounter content without leaking prerequisites", () => {
   );
 
   assert.match(markup, /Bridge Tribute Checkpoint/);
-  assert.match(markup, /Pay, bluff, or break through an armored toll blockade\./);
+  assert.match(markup, /Pay, bluff, or break through an armored toll[\s\S]*blockade\./);
   assert.doesNotMatch(markup, /Suggested for level 3\+/);
 });
 
@@ -93,7 +115,7 @@ test("GameCard renders quest content without leaking the quest slug", () => {
   assert.match(markup, /Recover the Shard/);
   assert.match(
     markup,
-    /Retrieve a stolen lantern shard before rival factions[\s\S]*claim it\./,
+    /Retrieve a stolen lantern shard before rival[\s\S]*factions claim it\./,
   );
   assert.doesNotMatch(markup, /recover-the-shard/);
 });

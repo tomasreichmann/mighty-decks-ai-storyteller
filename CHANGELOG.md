@@ -41,6 +41,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: thread resolved locations through Adventure Module authoring, campaign storyteller sessions, and campaign player sessions so shared location cards stay available alongside the other authored content.
+- Web: tighten the shared styleguide location-card lab wording to describe it as a hidden internal style reference hub.
 - Web: make location, encounter, and quest markdown embeds selectable and inline-flow friendly in the MDX editor, and add canonical `LocationCard` shortcode normalization plus toolbar insertion for location-authored markdown fields.
 - Web: add a circular detail-link overlay to location, encounter, quest, actor, counter, and custom asset authoring cards so authors can open the matching detail route in a new tab without losing node-selection delete behavior, while leaving default assets and other static cards link-free.
 - Make `Tag` the reusable chip shell for read-only labels, editable tag rows, and connection status pills.

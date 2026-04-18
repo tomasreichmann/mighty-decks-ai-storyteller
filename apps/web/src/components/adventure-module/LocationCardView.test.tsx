@@ -28,8 +28,8 @@ test("LocationCardView wraps long location summaries before the footer edge", ()
 
   assert.match(
     markup,
-    /A drowned dwarf-hall of toppled pillars, black water,<\/text>/,
+    /A drowned dwarf-hall of toppled pillars, black<\/text>/,
   );
-  assert.match(markup, /and brittle bridges\.<\/text>/);
-  assert.doesNotMatch(markup, /black water, and<\/text>/);
+  assert.match(markup, /water, and brittle bridges\.<\/text>/);
+  assert.doesNotMatch(markup, /black water, and brittle bridges\.<\/text>/);
 });

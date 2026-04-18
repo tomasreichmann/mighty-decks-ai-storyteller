@@ -11,7 +11,9 @@ const SCENE_CARD_INNER_HEIGHT = 200;
 const SCENE_CARD_RADIUS = 7;
 const SCENE_DESCRIPTION_LINE_HEIGHT_TOTAL = 17;
 const SCENE_DESCRIPTION_BASELINE_OFFSET = 20;
-const SCENE_DESCRIPTION_MAX_CHARS_PER_LINE = 56;
+const SCENE_TITLE_MAX_CHARS_PER_LINE = 30;
+const SCENE_DESCRIPTION_LEFT_PADDING = 22;
+const SCENE_DESCRIPTION_MAX_CHARS_PER_LINE = 52;
 
 interface SceneCardFrameProps {
   imageUrl: string;
@@ -37,7 +39,7 @@ export const SceneCardFrame = ({
   const titleText = toTextContent(title, 96);
   const descriptionText = toTextContent(description, 170);
   const iconText = toTextContent(typeIcon, 4) || "?";
-  const titleLines = wrapText(titleText, 32, 2);
+  const titleLines = wrapText(titleText, SCENE_TITLE_MAX_CHARS_PER_LINE, 2);
   const descriptionLines = wrapText(
     descriptionText,
     SCENE_DESCRIPTION_MAX_CHARS_PER_LINE,
@@ -157,7 +159,7 @@ export const SceneCardFrame = ({
         {descriptionLines.map((line, index) => (
           <text
             key={`${line}-${index}`}
-            x="18"
+            x={SCENE_DESCRIPTION_LEFT_PADDING}
             y={
               descriptionBandY +
               SCENE_DESCRIPTION_BASELINE_OFFSET +

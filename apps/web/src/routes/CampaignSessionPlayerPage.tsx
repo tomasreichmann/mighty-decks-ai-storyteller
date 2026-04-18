@@ -178,6 +178,7 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
         actors: campaign?.actors ?? [],
         counters: campaign?.counters ?? [],
         assets: campaign?.assets ?? [],
+        locations: campaign?.locations ?? [],
         encounters: campaign?.encounters ?? [],
         quests: campaign?.quests ?? [],
       }),

@@ -95,6 +95,7 @@ export const CampaignStorytellerSessionShell = ({
         actors: detail?.actors ?? [],
         counters: detail?.counters ?? [],
         assets: detail?.assets ?? [],
+        locations: detail?.locations ?? [],
         encounters: detail?.encounters ?? [],
         quests: detail?.quests ?? [],
       }),
