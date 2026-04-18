@@ -9,6 +9,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Changed
 
 - Repo: keep the `Exiles of the Hungry Void` campaign bundle under `apps/server/output/campaigns/am-mnc41bwp4karwa` trackable in Git by carving it out of the broad `output/` ignore rule.
+- Repo: keep the `Exiles of the Hungry Void` adventure module bundle under `apps/server/output/adventure-modules/am-mo18tx38tgy2q1` trackable in Git by carving it out of the broad `output/` ignore rule.
 
 ### Added
 

@@ -1,0 +1,1969 @@
+{
+  "moduleId": "am-mo18tx38tgy2q1",
+  "slug": "exiles-of-the-hungry-void",
+  "title": "Exiles of the Hungry Void",
+  "summary": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.",
+  "premise": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.",
+  "intent": "This is the introductory chapter of the campaign. The players are introduced to their characters and the ship they have been exiled on. They need to work together to get the ship operational and escape the Void Horror that appears as they are about to leave.",
+  "status": "draft",
+  "version": 1,
+  "sessionScope": "mini_campaign",
+  "launchProfile": "dual",
+  "authoringControlDefault": "curate_select",
+  "dos": [
+    "Keep the ship's fragility and momentum visible.",
+    "Make every jump feel like a tradeoff between survival and ambition."
+  ],
+  "donts": [
+    "Do not over-preserve legacy widgets at the expense of authorable markdown.",
+    "Do not bury scene pressure inside hidden GM notes only."
+  ],
+  "tags": [
+    "exiles",
+    "imported",
+    "sci-fi",
+    "mini_campaign"
+  ],
+  "storytellerSummaryFragmentId": "frag-storyteller-summary",
+  "storytellerSummaryMarkdown": "# Storyteller Summary\n\n![](/api/adventure-artifacts/void-horror-4669a2c690bf1b093878.png)\n\n## Premise\n\nThe Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\n\n## Campaign Intent\n\nThis is the introductory chapter of the campaign. The players are introduced to their characters and the ship they have been exiled on. They need to work together to get the ship operational and escape the Void Horror that appears as they are about to leave.\n\n## Imported Encounter Spine\n\n* Dumped in the Void\n* An Abandoned Research Station\n* Dead in space\n* Mining Colony Has a Pest Problem\n* Transport in Distress\n* Graveyard Bazaar\n* Cursed Prison Transport\n* Missile Stockpile Raid\n* Siege of Rock Bottom\n* Trip into the Unknown",
+  "playerSummaryFragmentId": "frag-player-summary",
+  "playerSummaryMarkdown": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\nYou are exiles flying a broken corvette at the edge of the Hungry Void. Survive long enough to repair your ship, pick your battles, and decide what kind of crew you will become.\n\n## Playable Archetypes\n\n<GameCard type=\"OutcomeCard\" slug=\"special-action\" /> <GameCard type=\"EffectCard\" slug=\"injury\" /> <GameCard type=\"StuntCard\" slug=\"dontGiveUp\" /> <GameCard type=\"ActorCard\" slug=\"machinist-priest-heretic\" /> <GameCard type=\"CounterCard\" slug=\"suffocation\" /><LocationCard slug=\"the-ship\" /><EncounterCard slug=\"dumped-in-the-void\" /><QuestCard slug=\"chapter-0-exiles-of-the-hungry-void\" /><GameCard type=\"AssetCard\" slug=\"base_light_weapon\" modifierSlug=\"base_fast\" /> <GameCard type=\"AssetCard\" slug=\"alien-container\" /><QuestCard slug=\"chapter-0-exiles-of-the-hungry-void\" />",
+  "paletteFragmentId": "frag-palette",
+  "settingFragmentId": "frag-setting",
+  "componentMapFragmentId": "frag-component-map",
+  "locationFragmentIds": [
+    "frag-location-the-ship"
+  ],
+  "locationDetails": [
+    {
+      "fragmentId": "frag-location-the-ship",
+      "introductionMarkdown": "This page describes the player ship",
+      "descriptionMarkdown": "## GM Intent\n\nThis page describes the player ship\n\n# The Ship\n\n## Stage\n\nLegacy area-stage diagram omitted during normalized import.",
+      "mapPins": []
+    }
+  ],
+  "actorFragmentIds": [
+    "frag-actor-machinist-priest-heretic",
+    "frag-actor-crimson-witch-warlock",
+    "frag-actor-augmented-veteran",
+    "frag-actor-noble-empath",
+    "frag-actor-void-seer",
+    "frag-actor-synthetic-medic",
+    "frag-actor-void-horror",
+    "frag-actor-xithrax-raiders",
+    "frag-actor-tunnel-critter",
+    "frag-actor-tunnel-critter-brood-mother",
+    "frag-actor-machinist-church",
+    "frag-actor-smugglers",
+    "frag-actor-void-seers",
+    "frag-actor-death-cultists",
+    "frag-actor-hadeans"
+  ],
+  "actorCards": [
+    {
+      "fragmentId": "frag-actor-machinist-priest-heretic",
+      "baseLayerSlug": "cog",
+      "tacticalRoleSlug": "champion",
+      "isPlayerCharacter": true
+    },
+    {
+      "fragmentId": "frag-actor-crimson-witch-warlock",
+      "baseLayerSlug": "zealot",
+      "tacticalRoleSlug": "stalker",
+      "isPlayerCharacter": true
+    },
+    {
+      "fragmentId": "frag-actor-augmented-veteran",
+      "baseLayerSlug": "bruiser_red",
+      "tacticalRoleSlug": "brute",
+      "isPlayerCharacter": true
+    },
+    {
+      "fragmentId": "frag-actor-noble-empath",
+      "baseLayerSlug": "aristocrat",
+      "tacticalRoleSlug": "skirmisher",
+      "isPlayerCharacter": true
+    },
+    {
+      "fragmentId": "frag-actor-void-seer",
+      "baseLayerSlug": "manipulator",
+      "tacticalRoleSlug": "ranger",
+      "isPlayerCharacter": true
+    },
+    {
+      "fragmentId": "frag-actor-synthetic-medic",
+      "baseLayerSlug": "healer",
+      "tacticalRoleSlug": "ranger",
+      "isPlayerCharacter": true
+    },
+    {
+      "fragmentId": "frag-actor-void-horror",
+      "baseLayerSlug": "horror",
+      "tacticalRoleSlug": "tank",
+      "tacticalSpecialSlug": "corrupting",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-xithrax-raiders",
+      "baseLayerSlug": "animal_red",
+      "tacticalRoleSlug": "minion",
+      "tacticalSpecialSlug": "fast",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-tunnel-critter",
+      "baseLayerSlug": "animal_green",
+      "tacticalRoleSlug": "pawn",
+      "tacticalSpecialSlug": "irritating",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-tunnel-critter-brood-mother",
+      "baseLayerSlug": "animal_green",
+      "tacticalRoleSlug": "tank",
+      "tacticalSpecialSlug": "alpha",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-machinist-church",
+      "baseLayerSlug": "cog",
+      "tacticalRoleSlug": "champion",
+      "tacticalSpecialSlug": "armoured",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-smugglers",
+      "baseLayerSlug": "merchant",
+      "tacticalRoleSlug": "skirmisher",
+      "tacticalSpecialSlug": "fast",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-void-seers",
+      "baseLayerSlug": "manipulator",
+      "tacticalRoleSlug": "stalker",
+      "tacticalSpecialSlug": "corrupting",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-death-cultists",
+      "baseLayerSlug": "zealot",
+      "tacticalRoleSlug": "assassin",
+      "tacticalSpecialSlug": "corrupting",
+      "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-hadeans",
+      "baseLayerSlug": "horror",
+      "tacticalRoleSlug": "assassin",
+      "tacticalSpecialSlug": "corrupting",
+      "isPlayerCharacter": false
+    }
+  ],
+  "counters": [
+    {
+      "slug": "suffocation",
+      "iconSlug": "danger",
+      "title": "Suffocation",
+      "currentValue": 0,
+      "maxValue": 4,
+      "description": ""
+    }
+  ],
+  "assetFragmentIds": [
+    "frag-asset-alien-container",
+    "frag-asset-biskma",
+    "frag-asset-ritual-of-raising-dead",
+    "frag-asset-obsidian-idol",
+    "frag-asset-disruptor-mk-i"
+  ],
+  "assetCards": [
+    {
+      "fragmentId": "frag-asset-alien-container",
+      "kind": "custom",
+      "modifier": "Dangerous",
+      "noun": "Alien Container",
+      "nounDescription": "A strange sealed container that nobody at the Bazaar wants to touch.",
+      "adjectiveDescription": "It is stuck to the ground and smells like bad luck.",
+      "iconUrl": "/api/adventure-artifacts/alien-container-png-5e942f245be850d8595f.png",
+      "overlayUrl": ""
+    },
+    {
+      "fragmentId": "frag-asset-biskma",
+      "kind": "custom",
+      "modifier": "Ancient",
+      "noun": "Biskma",
+      "nounDescription": "An ancient data-reading device stolen during the siege of Rock Bottom.",
+      "adjectiveDescription": "Small, precious, and awkward to explain at customs.",
+      "iconUrl": "/assets/base/document.png",
+      "overlayUrl": ""
+    },
+    {
+      "fragmentId": "frag-asset-ritual-of-raising-dead",
+      "kind": "custom",
+      "modifier": "Forbidden",
+      "noun": "Ritual of raising dead",
+      "nounDescription": "A dark sorcery book that animates dead bodies at range.",
+      "adjectiveDescription": "Best kept away from open flames and curious cultists.",
+      "iconUrl": "/assets/base/document.png",
+      "overlayUrl": ""
+    },
+    {
+      "fragmentId": "frag-asset-obsidian-idol",
+      "kind": "custom",
+      "modifier": "Cursed",
+      "noun": "Obsidian Idol",
+      "nounDescription": "A pulsating idol in the shape of an unborn baby.",
+      "adjectiveDescription": "It is dangerous, valuable, and deeply unpleasant to carry.",
+      "iconUrl": "/assets/base/valuables.png",
+      "overlayUrl": ""
+    },
+    {
+      "fragmentId": "frag-asset-disruptor-mk-i",
+      "kind": "custom",
+      "modifier": "Salvaged",
+      "noun": "Disruptor Mk I",
+      "nounDescription": "A compact weapon that de-powers a system for a turn.",
+      "adjectiveDescription": "A salvaged ship weapon that likes to eat power.",
+      "iconUrl": "/assets/base/artillery_weapon.png",
+      "overlayUrl": ""
+    }
+  ],
+  "itemFragmentIds": [],
+  "encounterFragmentIds": [
+    "frag-encounter-dumped-in-the-void",
+    "frag-encounter-an-abandoned-research-station",
+    "frag-encounter-dead-in-space",
+    "frag-encounter-mining-colony-has-a-pest-problem",
+    "frag-encounter-transport-in-distress",
+    "frag-encounter-graveyard-bazaar",
+    "frag-encounter-cursed-prison-transport",
+    "frag-encounter-missile-stockpile-raid",
+    "frag-encounter-siege-of-rock-bottom",
+    "frag-encounter-trip-into-the-unknown"
+  ],
+  "encounterDetails": [
+    {
+      "fragmentId": "frag-encounter-dumped-in-the-void",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/dumped-7cbbd0449af380ba60e1.png"
+    },
+    {
+      "fragmentId": "frag-encounter-an-abandoned-research-station",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/abandoned-research-station-1b599107101807ef2e06.png"
+    },
+    {
+      "fragmentId": "frag-encounter-dead-in-space",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/dead-in-space-68f3c60340edc667d483.png"
+    },
+    {
+      "fragmentId": "frag-encounter-mining-colony-has-a-pest-problem",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/mining-colony-has-a-pest-problem-97dc21ce9da1dfedfdcf.png"
+    },
+    {
+      "fragmentId": "frag-encounter-transport-in-distress",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/a-transport-ship-in-distress-4527b5291da6685c7466.png"
+    },
+    {
+      "fragmentId": "frag-encounter-graveyard-bazaar",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/graveyard-bazaar-45eebc68a222be94926d.png"
+    },
+    {
+      "fragmentId": "frag-encounter-cursed-prison-transport",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/cursed-prison-transport-b5980bee1f903405fdb5.png"
+    },
+    {
+      "fragmentId": "frag-encounter-missile-stockpile-raid",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/missile-stockpile-raid-07a13498b9af15b35112.png"
+    },
+    {
+      "fragmentId": "frag-encounter-siege-of-rock-bottom",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/siege-of-rock-bottom-34890ffa2770593a5422.png"
+    },
+    {
+      "fragmentId": "frag-encounter-trip-into-the-unknown",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/trip-into-the-unknown-6a8323bf2cb83062a3c0.png"
+    }
+  ],
+  "questFragmentIds": [
+    "frag-quest-chapter-0-exiles-of-the-hungry-void",
+    "frag-quest-chapter-1-an-abandoned-research-station",
+    "frag-quest-chapter-2-graveyard-bazaar",
+    "frag-quest-chapter-3-cursed-prison-transport"
+  ],
+  "questDetails": [
+    {
+      "fragmentId": "frag-quest-chapter-0-exiles-of-the-hungry-void",
+      "questId": "quest-chapter-0-exiles-of-the-hungry-void"
+    },
+    {
+      "fragmentId": "frag-quest-chapter-1-an-abandoned-research-station",
+      "questId": "quest-chapter-1-an-abandoned-research-station"
+    },
+    {
+      "fragmentId": "frag-quest-chapter-2-graveyard-bazaar",
+      "questId": "quest-chapter-2-graveyard-bazaar"
+    },
+    {
+      "fragmentId": "frag-quest-chapter-3-cursed-prison-transport",
+      "questId": "quest-chapter-3-cursed-prison-transport",
+      "titleImageUrl": "/api/image/files/a-lone-warrior-cloaked-and-determined-stands-on--af8fe492f540-656d2d0c4697-b0-i0.png"
+    }
+  ],
+  "imagePromptFragmentIds": [],
+  "fragments": [
+    {
+      "fragmentId": "frag-index",
+      "kind": "index",
+      "title": "Index",
+      "path": "index.mdx",
+      "summary": "Imported module index.",
+      "tags": [
+        "index",
+        "imported"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-storyteller-summary",
+      "kind": "storyteller_summary",
+      "title": "Storyteller Summary",
+      "path": "storyteller-summary.mdx",
+      "summary": "Imported storyteller overview.",
+      "tags": [
+        "summary",
+        "spoilers",
+        "imported"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-player-summary",
+      "kind": "player_summary",
+      "title": "Player Summary",
+      "path": "player-summary.mdx",
+      "summary": "Spoiler-safe player invitation.",
+      "tags": [
+        "summary",
+        "players",
+        "imported"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "players"
+    },
+    {
+      "fragmentId": "frag-palette",
+      "kind": "palette",
+      "title": "Palette",
+      "path": "palette.mdx",
+      "summary": "Imported tone and table-use guidance.",
+      "tags": [
+        "palette",
+        "imported"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-setting",
+      "kind": "setting",
+      "title": "Setting",
+      "path": "setting.mdx",
+      "summary": "Imported Exiles setting and character overview.",
+      "tags": [
+        "setting",
+        "imported"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-location-the-ship",
+      "kind": "location",
+      "title": "The Ship",
+      "path": "locations/the-ship.mdx",
+      "summary": "This page describes the player ship",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0",
+        "ship"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-machinist-priest-heretic",
+      "kind": "actor",
+      "title": "Machinist-Priest Heretic",
+      "path": "actors/machinist-priest-heretic.mdx",
+      "summary": "An exiled engineer-priest who treats forbidden machine communion as holy work.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "player-option"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-crimson-witch-warlock",
+      "kind": "actor",
+      "title": "Crimson Witch/Warlock",
+      "path": "actors/crimson-witch-warlock.mdx",
+      "summary": "A hemomancer who fuels divination, alteration, and combat through blood magic.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "player-option"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-augmented-veteran",
+      "kind": "actor",
+      "title": "Augmented Veteran",
+      "path": "actors/augmented-veteran.mdx",
+      "summary": "A battle-scarred Legion deserter rebuilt for war and stubborn survival.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "player-option"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-noble-empath",
+      "kind": "actor",
+      "title": "Noble Empath",
+      "path": "actors/noble-empath.mdx",
+      "summary": "An impoverished noble whose status and empathic gifts still open doors.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "player-option"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-void-seer",
+      "kind": "actor",
+      "title": "Void-seer",
+      "path": "actors/void-seer.mdx",
+      "summary": "A navigator-mystic who reads the Void and bends space just enough to survive it.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "player-option"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-synthetic-medic",
+      "kind": "actor",
+      "title": "Synthetic Medic",
+      "path": "actors/synthetic-medic.mdx",
+      "summary": "An illegal sentient intelligence piloting a medic shell and looking for purpose.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "player-option"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-void-horror",
+      "kind": "actor",
+      "title": "Void Horror",
+      "path": "actors/void-horror.mdx",
+      "summary": "The hungry shadow that stalks the corvette whenever the spin drive wakes up.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-xithrax-raiders",
+      "kind": "actor",
+      "title": "Xithrax Raiders",
+      "path": "actors/xithrax-raiders.mdx",
+      "summary": "Bloodthirsty bug raiders who want loot fast and casualties faster.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-tunnel-critter",
+      "kind": "actor",
+      "title": "Tunnel Critter",
+      "path": "actors/tunnel-critter.mdx",
+      "summary": "A skittering tunnel nuisance that fights from shadows and scrap piles.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-tunnel-critter-brood-mother",
+      "kind": "actor",
+      "title": "Tunnel Critter Brood Mother",
+      "path": "actors/tunnel-critter-brood-mother.mdx",
+      "summary": "The hulking brood mother that sends the tunnel critters scattering or back into the fight.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-machinist-church",
+      "kind": "actor",
+      "title": "Machinist Church",
+      "path": "actors/machinist-church.mdx",
+      "summary": "Zealot engineers who treat every ship, relic, and bolt as sacred property.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-smugglers",
+      "kind": "actor",
+      "title": "Smugglers",
+      "path": "actors/smugglers.mdx",
+      "summary": "Pragmatic opportunists who trade in favors, cargo, and plausible deniability.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-void-seers",
+      "kind": "actor",
+      "title": "Void Seers",
+      "path": "actors/void-seers.mdx",
+      "summary": "A mystic navigational order that treats the Void as both threat and revelation.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-death-cultists",
+      "kind": "actor",
+      "title": "Death Cultists",
+      "path": "actors/death-cultists.mdx",
+      "summary": "Hadean corpse-venerators who bargain in funerary gifts and forbidden rituals.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-hadeans",
+      "kind": "actor",
+      "title": "Hadeans",
+      "path": "actors/hadeans.mdx",
+      "summary": "Death-obsessed cultists traveling a doomed vessel beneath a gas giant.",
+      "tags": [
+        "exiles",
+        "imported",
+        "actor",
+        "recurring-actor"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-alien-container",
+      "kind": "asset",
+      "title": "Alien Container",
+      "path": "assets/alien-container.mdx",
+      "summary": "A mysterious alien relic recovered from the Graveyard Bazaar.",
+      "tags": [
+        "exiles",
+        "imported",
+        "asset"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-biskma",
+      "kind": "asset",
+      "title": "Biskma",
+      "path": "assets/biskma.mdx",
+      "summary": "A relic data reader that the smugglers and Machinists both want back.",
+      "tags": [
+        "exiles",
+        "imported",
+        "asset"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-ritual-of-raising-dead",
+      "kind": "asset",
+      "title": "Ritual of raising dead",
+      "path": "assets/ritual-of-raising-dead.mdx",
+      "summary": "A forbidden tome salvaged from a doomed Hadean cult ship.",
+      "tags": [
+        "exiles",
+        "imported",
+        "asset"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-obsidian-idol",
+      "kind": "asset",
+      "title": "Obsidian Idol",
+      "path": "assets/obsidian-idol.mdx",
+      "summary": "A cursed valuable that can be sold or used in rituals if anyone is brave enough.",
+      "tags": [
+        "exiles",
+        "imported",
+        "asset"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-disruptor-mk-i",
+      "kind": "asset",
+      "title": "Disruptor Mk I",
+      "path": "assets/disruptor-mk-i.mdx",
+      "summary": "A weapon salvage that can shut systems down during a shipboard fight.",
+      "tags": [
+        "exiles",
+        "imported",
+        "asset"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-encounter-dumped-in-the-void",
+      "kind": "encounter",
+      "title": "Dumped in the Void",
+      "path": "encounters/dumped-in-the-void.mdx",
+      "summary": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-an-abandoned-research-station",
+      "kind": "encounter",
+      "title": "An Abandoned Research Station",
+      "path": "encounters/an-abandoned-research-station.mdx",
+      "summary": "You've picked up a faint, automated signal from a derelict Imperial research station, adrift and silent in the Void.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-dead-in-space",
+      "kind": "encounter",
+      "title": "Dead in space",
+      "path": "encounters/dead-in-space.mdx",
+      "summary": "A cryptic distress call from a Hadean cultist ship, which is slowly falling into a gas giant, offers a mysterious 'gift' in exchange for aid.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-mining-colony-has-a-pest-problem",
+      "kind": "encounter",
+      "title": "Mining Colony Has a Pest Problem",
+      "path": "encounters/mining-colony-has-a-pest-problem.mdx",
+      "summary": "An automated mining outpost offers a reward for clearing out hostile 'wildlife' that has infested their tunnels.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-transport-in-distress",
+      "kind": "encounter",
+      "title": "Transport in Distress",
+      "path": "encounters/transport-in-distress.mdx",
+      "summary": "You jump into a system to find a smugglers' transport being pursued by a pirate corvette through an asteroid field.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-graveyard-bazaar",
+      "kind": "encounter",
+      "title": "Graveyard Bazaar",
+      "path": "encounters/graveyard-bazaar.mdx",
+      "summary": "You dock at the Graveyard Bazaar, a sprawling, chaotic marketplace built from the wreckage of ancient starships, offering a rare moment of safety.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-2"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-cursed-prison-transport",
+      "kind": "encounter",
+      "title": "Cursed Prison Transport",
+      "path": "encounters/cursed-prison-transport.mdx",
+      "summary": "An Imperial prison transport ship issued a distress call.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-3"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-missile-stockpile-raid",
+      "kind": "encounter",
+      "title": "Missile Stockpile Raid",
+      "path": "encounters/missile-stockpile-raid.mdx",
+      "summary": "You detected a concentration of materials normally used for missile production at a nearby asteroid field.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-3"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-siege-of-rock-bottom",
+      "kind": "encounter",
+      "title": "Siege of Rock Bottom",
+      "path": "encounters/siege-of-rock-bottom.mdx",
+      "summary": "You detect an explosion of comm's traffic from a nearby smuggler station. It seems to be under attack by Machinist priests. The priests claim the smugglers have stolen a relic of great value. When the smugglers claimed they don't have it, the Machinist ships decided to take it by force. You can use the commotion to...",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-3"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-trip-into-the-unknown",
+      "kind": "encounter",
+      "title": "Trip into the Unknown",
+      "path": "encounters/trip-into-the-unknown.mdx",
+      "summary": "Unsettling gravity waves from a nearby nebula match the void entity's signature.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-3"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-quest-chapter-0-exiles-of-the-hungry-void",
+      "kind": "quest",
+      "title": "Chapter 0 - Exiles of the Hungry Void",
+      "path": "quests/chapter-0-exiles-of-the-hungry-void.mdx",
+      "summary": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-0"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-quest-chapter-1-an-abandoned-research-station",
+      "kind": "quest",
+      "title": "Chapter 1 - An Abandoned Research Station",
+      "path": "quests/chapter-1-an-abandoned-research-station.mdx",
+      "summary": "You've picked up a faint, automated signal from a derelict Imperial research station, adrift and silent in the Void.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-1"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-quest-chapter-2-graveyard-bazaar",
+      "kind": "quest",
+      "title": "Chapter 2 - Graveyard Bazaar",
+      "path": "quests/chapter-2-graveyard-bazaar.mdx",
+      "summary": "You dock at the Graveyard Bazaar, a sprawling, chaotic marketplace built from the wreckage of ancient starships, offering a rare moment of safety.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-2"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-quest-chapter-3-cursed-prison-transport",
+      "kind": "quest",
+      "title": "Chapter 3 - Cursed Prison Transport",
+      "path": "quests/chapter-3-cursed-prison-transport.mdx",
+      "summary": "An Imperial prison transport ship issued a distress call.",
+      "tags": [
+        "exiles",
+        "imported",
+        "chapter-3"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-component-map",
+      "kind": "component_map",
+      "title": "Component Map",
+      "path": "components/component-map.mdx",
+      "summary": "Imported component guidance and pressure cues.",
+      "tags": [
+        "components",
+        "imported"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    }
+  ],
+  "questGraphs": [
+    {
+      "questId": "quest-chapter-0-exiles-of-the-hungry-void",
+      "title": "Chapter 0 - Exiles of the Hungry Void",
+      "summary": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.",
+      "hooks": [
+        {
+          "hookId": "hook-quest-chapter-0-exiles-of-the-hungry-void",
+          "title": "Start Chapter 0",
+          "prompt": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.",
+          "entryNodeIds": [
+            "node-dumped-in-the-void"
+          ],
+          "clueExamples": [
+            "A distressed transmission or immediate survival need",
+            "Ship systems and crew pressure push the next choice"
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node-dumped-in-the-void",
+          "nodeType": "conclusion",
+          "title": "Dumped in the Void",
+          "summary": "The Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-dumped-in-the-void"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-void-horror"
+          ],
+          "assetFragmentIds": [],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Carry chapter fallout forward to the next jump."
+          ]
+        }
+      ],
+      "edges": [],
+      "entryNodeIds": [
+        "node-dumped-in-the-void"
+      ],
+      "conclusionNodeIds": [
+        "node-dumped-in-the-void"
+      ],
+      "conclusions": [
+        {
+          "conclusionId": "conclusion-quest-chapter-0-exiles-of-the-hungry-void",
+          "title": "Complete Chapter 0",
+          "summary": "The crew survives chapter 0 and carries new pressure into the next leg.",
+          "sampleOutcomes": [
+            "The ship escapes with new damage, debts, or enemies."
+          ],
+          "forwardHooks": [
+            "The next jump or distress signal opens the following chapter."
+          ]
+        }
+      ]
+    },
+    {
+      "questId": "quest-chapter-1-an-abandoned-research-station",
+      "title": "Chapter 1 - An Abandoned Research Station",
+      "summary": "You've picked up a faint, automated signal from a derelict Imperial research station, adrift and silent in the Void.",
+      "hooks": [
+        {
+          "hookId": "hook-quest-chapter-1-an-abandoned-research-station",
+          "title": "Start Chapter 1",
+          "prompt": "You've picked up a faint, automated signal from a derelict Imperial research station, adrift and silent in the Void.",
+          "entryNodeIds": [
+            "node-an-abandoned-research-station"
+          ],
+          "clueExamples": [
+            "A distressed transmission or immediate survival need",
+            "Ship systems and crew pressure push the next choice"
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node-an-abandoned-research-station",
+          "nodeType": "scene",
+          "title": "An Abandoned Research Station",
+          "summary": "You've picked up a faint, automated signal from a derelict Imperial research station, adrift and silent in the Void.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-an-abandoned-research-station"
+          ],
+          "actorFragmentIds": [],
+          "assetFragmentIds": [],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Advance to Dead in space."
+          ]
+        },
+        {
+          "nodeId": "node-dead-in-space",
+          "nodeType": "scene",
+          "title": "Dead in space",
+          "summary": "A cryptic distress call from a Hadean cultist ship, which is slowly falling into a gas giant, offers a mysterious 'gift' in exchange for aid.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-dead-in-space"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-hadeans"
+          ],
+          "assetFragmentIds": [
+            "frag-asset-ritual-of-raising-dead"
+          ],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Advance to Mining Colony Has a Pest Problem."
+          ]
+        },
+        {
+          "nodeId": "node-mining-colony-has-a-pest-problem",
+          "nodeType": "scene",
+          "title": "Mining Colony Has a Pest Problem",
+          "summary": "An automated mining outpost offers a reward for clearing out hostile 'wildlife' that has infested their tunnels.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-mining-colony-has-a-pest-problem"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-tunnel-critter",
+            "frag-actor-tunnel-critter-brood-mother"
+          ],
+          "assetFragmentIds": [],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Advance to Transport in Distress."
+          ]
+        },
+        {
+          "nodeId": "node-transport-in-distress",
+          "nodeType": "conclusion",
+          "title": "Transport in Distress",
+          "summary": "You jump into a system to find a smugglers' transport being pursued by a pirate corvette through an asteroid field.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-transport-in-distress"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-xithrax-raiders"
+          ],
+          "assetFragmentIds": [
+            "frag-asset-disruptor-mk-i"
+          ],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Carry chapter fallout forward to the next jump."
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "edgeId": "edge-node-an-abandoned-research-station-to-node-dead-in-space",
+          "fromNodeId": "node-an-abandoned-research-station",
+          "toNodeId": "node-dead-in-space",
+          "label": "Advance",
+          "clueHint": "Escalation or fallout points toward the next beat."
+        },
+        {
+          "edgeId": "edge-node-dead-in-space-to-node-mining-colony-has-a-pest-problem",
+          "fromNodeId": "node-dead-in-space",
+          "toNodeId": "node-mining-colony-has-a-pest-problem",
+          "label": "Advance",
+          "clueHint": "Escalation or fallout points toward the next beat."
+        },
+        {
+          "edgeId": "edge-node-mining-colony-has-a-pest-problem-to-node-transport-in-distress",
+          "fromNodeId": "node-mining-colony-has-a-pest-problem",
+          "toNodeId": "node-transport-in-distress",
+          "label": "Advance",
+          "clueHint": "Escalation or fallout points toward the next beat."
+        }
+      ],
+      "entryNodeIds": [
+        "node-an-abandoned-research-station"
+      ],
+      "conclusionNodeIds": [
+        "node-transport-in-distress"
+      ],
+      "conclusions": [
+        {
+          "conclusionId": "conclusion-quest-chapter-1-an-abandoned-research-station",
+          "title": "Complete Chapter 1",
+          "summary": "The crew survives chapter 1 and carries new pressure into the next leg.",
+          "sampleOutcomes": [
+            "The ship escapes with new damage, debts, or enemies."
+          ],
+          "forwardHooks": [
+            "The next jump or distress signal opens the following chapter."
+          ]
+        }
+      ]
+    },
+    {
+      "questId": "quest-chapter-2-graveyard-bazaar",
+      "title": "Chapter 2 - Graveyard Bazaar",
+      "summary": "You dock at the Graveyard Bazaar, a sprawling, chaotic marketplace built from the wreckage of ancient starships, offering a rare moment of safety.",
+      "hooks": [
+        {
+          "hookId": "hook-quest-chapter-2-graveyard-bazaar",
+          "title": "Start Chapter 2",
+          "prompt": "You dock at the Graveyard Bazaar, a sprawling, chaotic marketplace built from the wreckage of ancient starships, offering a rare moment of safety.",
+          "entryNodeIds": [
+            "node-graveyard-bazaar"
+          ],
+          "clueExamples": [
+            "A distressed transmission or immediate survival need",
+            "Ship systems and crew pressure push the next choice"
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node-graveyard-bazaar",
+          "nodeType": "conclusion",
+          "title": "Graveyard Bazaar",
+          "summary": "You dock at the Graveyard Bazaar, a sprawling, chaotic marketplace built from the wreckage of ancient starships, offering a rare moment of safety.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-graveyard-bazaar"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-smugglers",
+            "frag-actor-void-seers",
+            "frag-actor-death-cultists",
+            "frag-actor-machinist-church"
+          ],
+          "assetFragmentIds": [
+            "frag-asset-alien-container"
+          ],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Carry chapter fallout forward to the next jump."
+          ]
+        }
+      ],
+      "edges": [],
+      "entryNodeIds": [
+        "node-graveyard-bazaar"
+      ],
+      "conclusionNodeIds": [
+        "node-graveyard-bazaar"
+      ],
+      "conclusions": [
+        {
+          "conclusionId": "conclusion-quest-chapter-2-graveyard-bazaar",
+          "title": "Complete Chapter 2",
+          "summary": "The crew survives chapter 2 and carries new pressure into the next leg.",
+          "sampleOutcomes": [
+            "The ship escapes with new damage, debts, or enemies."
+          ],
+          "forwardHooks": [
+            "The next jump or distress signal opens the following chapter."
+          ]
+        }
+      ]
+    },
+    {
+      "questId": "quest-chapter-3-cursed-prison-transport",
+      "title": "Chapter 3 - Cursed Prison Transport",
+      "summary": "An Imperial prison transport ship issued a distress call.",
+      "hooks": [
+        {
+          "hookId": "hook-quest-chapter-3-cursed-prison-transport",
+          "title": "Start Chapter 3",
+          "prompt": "An Imperial prison transport ship issued a distress call.",
+          "entryNodeIds": [
+            "node-cursed-prison-transport"
+          ],
+          "clueExamples": [
+            "A distressed transmission or immediate survival need",
+            "Ship systems and crew pressure push the next choice"
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node-cursed-prison-transport",
+          "nodeType": "scene",
+          "title": "Cursed Prison Transport",
+          "summary": "An Imperial prison transport ship issued a distress call.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-cursed-prison-transport"
+          ],
+          "actorFragmentIds": [],
+          "assetFragmentIds": [
+            "frag-asset-obsidian-idol",
+            "frag-asset-ritual-of-raising-dead"
+          ],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Advance to Missile Stockpile Raid."
+          ]
+        },
+        {
+          "nodeId": "node-missile-stockpile-raid",
+          "nodeType": "scene",
+          "title": "Missile Stockpile Raid",
+          "summary": "You detected a concentration of materials normally used for missile production at a nearby asteroid field.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-missile-stockpile-raid"
+          ],
+          "actorFragmentIds": [],
+          "assetFragmentIds": [],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Advance to Siege of Rock Bottom."
+          ]
+        },
+        {
+          "nodeId": "node-siege-of-rock-bottom",
+          "nodeType": "scene",
+          "title": "Siege of Rock Bottom",
+          "summary": "You detect an explosion of comm's traffic from a nearby smuggler station. It seems to be under attack by Machinist priests. The priests claim the smugglers have stolen a relic of great value. When the smugglers claimed they don't have it, the Machinist ships decided to take it by force. You can use the commotion to...",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-siege-of-rock-bottom"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-machinist-church",
+            "frag-actor-smugglers"
+          ],
+          "assetFragmentIds": [
+            "frag-asset-biskma"
+          ],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Advance to Trip into the Unknown."
+          ]
+        },
+        {
+          "nodeId": "node-trip-into-the-unknown",
+          "nodeType": "conclusion",
+          "title": "Trip into the Unknown",
+          "summary": "Unsettling gravity waves from a nearby nebula match the void entity's signature.",
+          "locationFragmentId": "frag-location-the-ship",
+          "encounterFragmentIds": [
+            "frag-encounter-trip-into-the-unknown"
+          ],
+          "actorFragmentIds": [
+            "frag-actor-void-seers"
+          ],
+          "assetFragmentIds": [],
+          "itemFragmentIds": [],
+          "pressureCounterHint": "Use visible ship pressure, danger, or progress counters when a beat escalates.",
+          "exitNotes": [
+            "Carry chapter fallout forward to the next jump."
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "edgeId": "edge-node-cursed-prison-transport-to-node-missile-stockpile-raid",
+          "fromNodeId": "node-cursed-prison-transport",
+          "toNodeId": "node-missile-stockpile-raid",
+          "label": "Advance",
+          "clueHint": "Escalation or fallout points toward the next beat."
+        },
+        {
+          "edgeId": "edge-node-missile-stockpile-raid-to-node-siege-of-rock-bottom",
+          "fromNodeId": "node-missile-stockpile-raid",
+          "toNodeId": "node-siege-of-rock-bottom",
+          "label": "Advance",
+          "clueHint": "Escalation or fallout points toward the next beat."
+        },
+        {
+          "edgeId": "edge-node-siege-of-rock-bottom-to-node-trip-into-the-unknown",
+          "fromNodeId": "node-siege-of-rock-bottom",
+          "toNodeId": "node-trip-into-the-unknown",
+          "label": "Advance",
+          "clueHint": "Escalation or fallout points toward the next beat."
+        }
+      ],
+      "entryNodeIds": [
+        "node-cursed-prison-transport"
+      ],
+      "conclusionNodeIds": [
+        "node-trip-into-the-unknown"
+      ],
+      "conclusions": [
+        {
+          "conclusionId": "conclusion-quest-chapter-3-cursed-prison-transport",
+          "title": "Complete Chapter 3",
+          "summary": "The crew survives chapter 3 and carries new pressure into the next leg.",
+          "sampleOutcomes": [
+            "The ship escapes with new damage, debts, or enemies."
+          ],
+          "forwardHooks": [
+            "The next jump or distress signal opens the following chapter."
+          ]
+        }
+      ]
+    }
+  ],
+  "componentOpportunities": [
+    {
+      "opportunityId": "opp-setting-machinist-priest-heretic",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "setup",
+      "fragmentId": "frag-setting",
+      "fragmentKind": "setting",
+      "placementLabel": "Playable Archetype: Machinist-Priest Heretic",
+      "trigger": "When players choose their starting archetype.",
+      "rationale": "The intro page presents this as one of the campaign's primary player options."
+    },
+    {
+      "opportunityId": "opp-setting-crimson-witch-warlock",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "setup",
+      "fragmentId": "frag-setting",
+      "fragmentKind": "setting",
+      "placementLabel": "Playable Archetype: Crimson Witch/Warlock",
+      "trigger": "When players choose their starting archetype.",
+      "rationale": "The intro page presents this as one of the campaign's primary player options."
+    },
+    {
+      "opportunityId": "opp-setting-augmented-veteran",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "setup",
+      "fragmentId": "frag-setting",
+      "fragmentKind": "setting",
+      "placementLabel": "Playable Archetype: Augmented Veteran",
+      "trigger": "When players choose their starting archetype.",
+      "rationale": "The intro page presents this as one of the campaign's primary player options."
+    },
+    {
+      "opportunityId": "opp-setting-noble-empath",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "setup",
+      "fragmentId": "frag-setting",
+      "fragmentKind": "setting",
+      "placementLabel": "Playable Archetype: Noble Empath",
+      "trigger": "When players choose their starting archetype.",
+      "rationale": "The intro page presents this as one of the campaign's primary player options."
+    },
+    {
+      "opportunityId": "opp-setting-void-seer",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "setup",
+      "fragmentId": "frag-setting",
+      "fragmentKind": "setting",
+      "placementLabel": "Playable Archetype: Void-seer",
+      "trigger": "When players choose their starting archetype.",
+      "rationale": "The intro page presents this as one of the campaign's primary player options."
+    },
+    {
+      "opportunityId": "opp-setting-synthetic-medic",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "setup",
+      "fragmentId": "frag-setting",
+      "fragmentKind": "setting",
+      "placementLabel": "Playable Archetype: Synthetic Medic",
+      "trigger": "When players choose their starting archetype.",
+      "rationale": "The intro page presents this as one of the campaign's primary player options."
+    },
+    {
+      "opportunityId": "opp-setting-void-horror",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-setting",
+      "fragmentKind": "setting",
+      "placementLabel": "Recurring Threat: Void Horror",
+      "trigger": "When the intro warns about the creature hunting the corvette.",
+      "rationale": "The opening chapter establishes the Void Horror as the campaign's recurring threat."
+    },
+    {
+      "opportunityId": "opp-encounter-xithrax-raiders",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-transport-in-distress",
+      "fragmentKind": "encounter",
+      "placementLabel": "Raiders: Xithrax Raiders",
+      "trigger": "When the pirate corvette is introduced in the transport ambush.",
+      "rationale": "The transport scene names the Xithrax as the immediate hostile crew."
+    },
+    {
+      "opportunityId": "opp-encounter-hadeans",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-dead-in-space",
+      "fragmentKind": "encounter",
+      "placementLabel": "Cult Ship Crew: Hadeans",
+      "trigger": "When the dead cult ship is first revealed.",
+      "rationale": "Dead in Space centers the Hadeans and their forbidden ritual gift."
+    },
+    {
+      "opportunityId": "opp-encounter-tunnel-critter",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-mining-colony-has-a-pest-problem",
+      "fragmentKind": "encounter",
+      "placementLabel": "Infestation: Tunnel Critter",
+      "trigger": "When the mining colony's pest problem becomes a fight.",
+      "rationale": "The mining colony encounter frames the critters as the central infestation."
+    },
+    {
+      "opportunityId": "opp-encounter-tunnel-critter-brood-mother",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "during_action",
+      "fragmentId": "frag-encounter-mining-colony-has-a-pest-problem",
+      "fragmentKind": "encounter",
+      "placementLabel": "Boss: Tunnel Critter Brood Mother",
+      "trigger": "When the brood mother enters on round three.",
+      "rationale": "The mining colony encounter introduces the brood mother as the escalation beat."
+    },
+    {
+      "opportunityId": "opp-encounter-machinist-church",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-graveyard-bazaar",
+      "fragmentKind": "encounter",
+      "placementLabel": "Faction: Machinist Church",
+      "trigger": "When the bazaar turns into a faction negotiation or siege.",
+      "rationale": "The campaign uses the Machinist Church as a recurring pressure faction."
+    },
+    {
+      "opportunityId": "opp-encounter-smugglers",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-graveyard-bazaar",
+      "fragmentKind": "encounter",
+      "placementLabel": "Faction: Smugglers",
+      "trigger": "When the bazaar calls for allies, favors, or trade.",
+      "rationale": "The Smugglers are one of the recurring social factions in the campaign."
+    },
+    {
+      "opportunityId": "opp-encounter-void-seers",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-graveyard-bazaar",
+      "fragmentKind": "encounter",
+      "placementLabel": "Faction: Void Seers",
+      "trigger": "When the bazaar or nebula scenes mention their mystical order.",
+      "rationale": "The Void Seers thread through the bazaar and nebula chapters as a recurring order."
+    },
+    {
+      "opportunityId": "opp-encounter-death-cultists",
+      "componentType": "layered_actor",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-graveyard-bazaar",
+      "fragmentKind": "encounter",
+      "placementLabel": "Faction: Death Cultists",
+      "trigger": "When the bazaar lists the factions watching the concert.",
+      "rationale": "The Death Cultists are part of the bazaar's dangerous social landscape."
+    },
+    {
+      "opportunityId": "opp-encounter-disruptor-mk-i",
+      "componentType": "layered_asset",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-transport-in-distress",
+      "fragmentKind": "encounter",
+      "placementLabel": "Weapon Salvage: Disruptor Mk I",
+      "trigger": "When the pirate ship's weapon loadout is identified.",
+      "rationale": "The transport encounter explicitly calls out the disruptor as loot and threat."
+    },
+    {
+      "opportunityId": "opp-encounter-ritual-of-raising-dead",
+      "componentType": "layered_asset",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-dead-in-space",
+      "fragmentKind": "encounter",
+      "placementLabel": "Forbidden Tome: Ritual of Raising Dead",
+      "trigger": "When the cult ship's gift is revealed.",
+      "rationale": "Dead in Space centers the cursed ritual book as the encounter's key reveal."
+    },
+    {
+      "opportunityId": "opp-encounter-alien-container",
+      "componentType": "layered_asset",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-graveyard-bazaar",
+      "fragmentKind": "encounter",
+      "placementLabel": "Mystery Relic: Alien Container",
+      "trigger": "When the bazaar's strange relic is discovered.",
+      "rationale": "The Graveyard Bazaar frames the alien container as a stuck, unsettling puzzle item."
+    },
+    {
+      "opportunityId": "opp-encounter-biskma",
+      "componentType": "layered_asset",
+      "strength": "recommended",
+      "timing": "during_action",
+      "fragmentId": "frag-encounter-siege-of-rock-bottom",
+      "fragmentKind": "encounter",
+      "placementLabel": "Relic: Biskma",
+      "trigger": "When the siege reveals the stolen data-reading device.",
+      "rationale": "Siege of Rock Bottom turns Biskma into the coveted relic at the center of the conflict."
+    },
+    {
+      "opportunityId": "opp-encounter-obsidian-idol",
+      "componentType": "layered_asset",
+      "strength": "recommended",
+      "timing": "scene_start",
+      "fragmentId": "frag-encounter-cursed-prison-transport",
+      "fragmentKind": "encounter",
+      "placementLabel": "Cursed Artifact: Obsidian Idol",
+      "trigger": "When the prison pod opens to reveal the idol.",
+      "rationale": "The cursed prison transport encounter names the idol as the dangerous pod reward."
+    },
+    {
+      "opportunityId": "opp-exiles-import-pressure",
+      "componentType": "counter",
+      "strength": "recommended",
+      "timing": "during_action",
+      "fragmentId": "frag-encounter-dumped-in-the-void",
+      "fragmentKind": "encounter",
+      "placementLabel": "Imported Scene Pressure",
+      "trigger": "When the ship, crew, or immediate threat starts escalating.",
+      "rationale": "Exiles repeatedly frames survival through visible pressure and damage clocks."
+    }
+  ],
+  "artifacts": [
+    {
+      "artifactId": "artifact-frag-index",
+      "kind": "mdx",
+      "path": "index.mdx",
+      "title": "Index",
+      "sourceFragmentId": "frag-index",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-storyteller-summary",
+      "kind": "mdx",
+      "path": "storyteller-summary.mdx",
+      "title": "Storyteller Summary",
+      "sourceFragmentId": "frag-storyteller-summary",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-player-summary",
+      "kind": "mdx",
+      "path": "player-summary.mdx",
+      "title": "Player Summary",
+      "sourceFragmentId": "frag-player-summary",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-palette",
+      "kind": "mdx",
+      "path": "palette.mdx",
+      "title": "Palette",
+      "sourceFragmentId": "frag-palette",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-setting",
+      "kind": "mdx",
+      "path": "setting.mdx",
+      "title": "Setting",
+      "sourceFragmentId": "frag-setting",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-location-the-ship",
+      "kind": "mdx",
+      "path": "locations/the-ship.mdx",
+      "title": "The Ship",
+      "sourceFragmentId": "frag-location-the-ship",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-machinist-priest-heretic",
+      "kind": "mdx",
+      "path": "actors/machinist-priest-heretic.mdx",
+      "title": "Machinist-Priest Heretic",
+      "sourceFragmentId": "frag-actor-machinist-priest-heretic",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-crimson-witch-warlock",
+      "kind": "mdx",
+      "path": "actors/crimson-witch-warlock.mdx",
+      "title": "Crimson Witch/Warlock",
+      "sourceFragmentId": "frag-actor-crimson-witch-warlock",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-augmented-veteran",
+      "kind": "mdx",
+      "path": "actors/augmented-veteran.mdx",
+      "title": "Augmented Veteran",
+      "sourceFragmentId": "frag-actor-augmented-veteran",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-noble-empath",
+      "kind": "mdx",
+      "path": "actors/noble-empath.mdx",
+      "title": "Noble Empath",
+      "sourceFragmentId": "frag-actor-noble-empath",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-void-seer",
+      "kind": "mdx",
+      "path": "actors/void-seer.mdx",
+      "title": "Void-seer",
+      "sourceFragmentId": "frag-actor-void-seer",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-synthetic-medic",
+      "kind": "mdx",
+      "path": "actors/synthetic-medic.mdx",
+      "title": "Synthetic Medic",
+      "sourceFragmentId": "frag-actor-synthetic-medic",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-void-horror",
+      "kind": "mdx",
+      "path": "actors/void-horror.mdx",
+      "title": "Void Horror",
+      "sourceFragmentId": "frag-actor-void-horror",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-xithrax-raiders",
+      "kind": "mdx",
+      "path": "actors/xithrax-raiders.mdx",
+      "title": "Xithrax Raiders",
+      "sourceFragmentId": "frag-actor-xithrax-raiders",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-tunnel-critter",
+      "kind": "mdx",
+      "path": "actors/tunnel-critter.mdx",
+      "title": "Tunnel Critter",
+      "sourceFragmentId": "frag-actor-tunnel-critter",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-tunnel-critter-brood-mother",
+      "kind": "mdx",
+      "path": "actors/tunnel-critter-brood-mother.mdx",
+      "title": "Tunnel Critter Brood Mother",
+      "sourceFragmentId": "frag-actor-tunnel-critter-brood-mother",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-machinist-church",
+      "kind": "mdx",
+      "path": "actors/machinist-church.mdx",
+      "title": "Machinist Church",
+      "sourceFragmentId": "frag-actor-machinist-church",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-smugglers",
+      "kind": "mdx",
+      "path": "actors/smugglers.mdx",
+      "title": "Smugglers",
+      "sourceFragmentId": "frag-actor-smugglers",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-void-seers",
+      "kind": "mdx",
+      "path": "actors/void-seers.mdx",
+      "title": "Void Seers",
+      "sourceFragmentId": "frag-actor-void-seers",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-death-cultists",
+      "kind": "mdx",
+      "path": "actors/death-cultists.mdx",
+      "title": "Death Cultists",
+      "sourceFragmentId": "frag-actor-death-cultists",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-hadeans",
+      "kind": "mdx",
+      "path": "actors/hadeans.mdx",
+      "title": "Hadeans",
+      "sourceFragmentId": "frag-actor-hadeans",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-alien-container",
+      "kind": "mdx",
+      "path": "assets/alien-container.mdx",
+      "title": "Alien Container",
+      "sourceFragmentId": "frag-asset-alien-container",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-biskma",
+      "kind": "mdx",
+      "path": "assets/biskma.mdx",
+      "title": "Biskma",
+      "sourceFragmentId": "frag-asset-biskma",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-ritual-of-raising-dead",
+      "kind": "mdx",
+      "path": "assets/ritual-of-raising-dead.mdx",
+      "title": "Ritual of raising dead",
+      "sourceFragmentId": "frag-asset-ritual-of-raising-dead",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-obsidian-idol",
+      "kind": "mdx",
+      "path": "assets/obsidian-idol.mdx",
+      "title": "Obsidian Idol",
+      "sourceFragmentId": "frag-asset-obsidian-idol",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-disruptor-mk-i",
+      "kind": "mdx",
+      "path": "assets/disruptor-mk-i.mdx",
+      "title": "Disruptor Mk I",
+      "sourceFragmentId": "frag-asset-disruptor-mk-i",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-dumped-in-the-void",
+      "kind": "mdx",
+      "path": "encounters/dumped-in-the-void.mdx",
+      "title": "Dumped in the Void",
+      "sourceFragmentId": "frag-encounter-dumped-in-the-void",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-an-abandoned-research-station",
+      "kind": "mdx",
+      "path": "encounters/an-abandoned-research-station.mdx",
+      "title": "An Abandoned Research Station",
+      "sourceFragmentId": "frag-encounter-an-abandoned-research-station",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-dead-in-space",
+      "kind": "mdx",
+      "path": "encounters/dead-in-space.mdx",
+      "title": "Dead in space",
+      "sourceFragmentId": "frag-encounter-dead-in-space",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-mining-colony-has-a-pest-problem",
+      "kind": "mdx",
+      "path": "encounters/mining-colony-has-a-pest-problem.mdx",
+      "title": "Mining Colony Has a Pest Problem",
+      "sourceFragmentId": "frag-encounter-mining-colony-has-a-pest-problem",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-transport-in-distress",
+      "kind": "mdx",
+      "path": "encounters/transport-in-distress.mdx",
+      "title": "Transport in Distress",
+      "sourceFragmentId": "frag-encounter-transport-in-distress",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-graveyard-bazaar",
+      "kind": "mdx",
+      "path": "encounters/graveyard-bazaar.mdx",
+      "title": "Graveyard Bazaar",
+      "sourceFragmentId": "frag-encounter-graveyard-bazaar",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-cursed-prison-transport",
+      "kind": "mdx",
+      "path": "encounters/cursed-prison-transport.mdx",
+      "title": "Cursed Prison Transport",
+      "sourceFragmentId": "frag-encounter-cursed-prison-transport",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-missile-stockpile-raid",
+      "kind": "mdx",
+      "path": "encounters/missile-stockpile-raid.mdx",
+      "title": "Missile Stockpile Raid",
+      "sourceFragmentId": "frag-encounter-missile-stockpile-raid",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-siege-of-rock-bottom",
+      "kind": "mdx",
+      "path": "encounters/siege-of-rock-bottom.mdx",
+      "title": "Siege of Rock Bottom",
+      "sourceFragmentId": "frag-encounter-siege-of-rock-bottom",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-trip-into-the-unknown",
+      "kind": "mdx",
+      "path": "encounters/trip-into-the-unknown.mdx",
+      "title": "Trip into the Unknown",
+      "sourceFragmentId": "frag-encounter-trip-into-the-unknown",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-quest-chapter-0-exiles-of-the-hungry-void",
+      "kind": "mdx",
+      "path": "quests/chapter-0-exiles-of-the-hungry-void.mdx",
+      "title": "Chapter 0 - Exiles of the Hungry Void",
+      "sourceFragmentId": "frag-quest-chapter-0-exiles-of-the-hungry-void",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-quest-chapter-1-an-abandoned-research-station",
+      "kind": "mdx",
+      "path": "quests/chapter-1-an-abandoned-research-station.mdx",
+      "title": "Chapter 1 - An Abandoned Research Station",
+      "sourceFragmentId": "frag-quest-chapter-1-an-abandoned-research-station",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-quest-chapter-2-graveyard-bazaar",
+      "kind": "mdx",
+      "path": "quests/chapter-2-graveyard-bazaar.mdx",
+      "title": "Chapter 2 - Graveyard Bazaar",
+      "sourceFragmentId": "frag-quest-chapter-2-graveyard-bazaar",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-quest-chapter-3-cursed-prison-transport",
+      "kind": "mdx",
+      "path": "quests/chapter-3-cursed-prison-transport.mdx",
+      "title": "Chapter 3 - Cursed Prison Transport",
+      "sourceFragmentId": "frag-quest-chapter-3-cursed-prison-transport",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-component-map",
+      "kind": "mdx",
+      "path": "components/component-map.mdx",
+      "title": "Component Map",
+      "sourceFragmentId": "frag-component-map",
+      "contentType": "text/markdown",
+      "generatedBy": "pipeline",
+      "createdAtIso": "2026-04-16T08:54:44.444Z"
+    }
+  ],
+  "notes": "Imported from legacy Exiles of the Hungry Void MDX. Legacy UI widgets were normalized to markdown.",
+  "updatedAtIso": "2026-04-18T15:26:12.894Z",
+  "postMvpExtension": true
+}
