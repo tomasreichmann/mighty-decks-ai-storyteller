@@ -11,6 +11,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Repo: keep the `Exiles of the Hungry Void` campaign bundle under `apps/server/output/campaigns/am-mnc41bwp4karwa` trackable in Git by carving it out of the broad `output/` ignore rule.
 - Repo: keep the `Exiles of the Hungry Void` adventure module bundle under `apps/server/output/adventure-modules/am-mo18tx38tgy2q1` trackable in Git by carving it out of the broad `output/` ignore rule.
 - Repo: keep the shared `apps/server/output/adventure-artifacts` image store trackable in Git so the Exiles module's `/api/adventure-artifacts/*` image references resolve from a clean checkout.
+- Repo: move the Exiles quest 3 title image onto the tracked adventure-artifact route so it no longer depends on the ignored generated-image cache.
 
 ### Added
 
