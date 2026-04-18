@@ -38,6 +38,8 @@
 }
 
 .editorRoot :global([role="toolbar"]) {
+  position: relative;
+  z-index: 20;
   border-bottom: 2px solid #121b23;
   background: #ead9bd;
   padding-right: 5rem;

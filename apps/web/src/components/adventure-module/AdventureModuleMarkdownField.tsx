@@ -5,6 +5,7 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
+  AdventureModuleResolvedLocation,
   AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { AssetBaseSlug } from "@mighty-decks/spec/assetCards";
@@ -68,6 +69,10 @@ import {
   type EncounterCardOption,
 } from "../../lib/markdownEncounterComponents";
 import {
+  buildLocationCardOptions,
+  type LocationCardOption,
+} from "../../lib/markdownLocationComponents";
+import {
   buildQuestCardOptions,
   type QuestCardOption,
 } from "../../lib/markdownQuestComponents";
@@ -78,6 +83,7 @@ import {
 import {
   createEncounterCardJsx,
   createGameCardJsx,
+  createLocationCardJsx,
   createQuestCardJsx,
   normalizeLegacyGameCardMarkdown,
 } from "../../lib/gameCardMarkdown";
@@ -85,6 +91,7 @@ import { gameCardInlineFlowPlugin } from "../../lib/gameCardInlineFlowPlugin";
 import { normalizeMarkdownEditorChange } from "../../lib/markdownEditorChange";
 import { EncounterCardJsxEditor } from "./EncounterCardJsxEditor";
 import { GameCardJsxEditor } from "./GameCardJsxEditor";
+import { LocationCardJsxEditor } from "./LocationCardJsxEditor";
 import { QuestCardJsxEditor } from "./QuestCardJsxEditor";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
 
@@ -120,6 +127,7 @@ export interface AdventureModuleMarkdownFieldProps {
   actors?: AdventureModuleResolvedActor[];
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
+  locations?: AdventureModuleResolvedLocation[];
   encounters?: AdventureModuleResolvedEncounter[];
   quests?: AdventureModuleResolvedQuest[];
   value: string;
@@ -215,7 +223,12 @@ const renderSmartMenuTrigger = (
 interface CreateEditorPluginsArgs {
   insertType: ToolbarInsertType;
   insertSlug: string;
-  insertOptions: (GameCardOption | EncounterCardOption | QuestCardOption)[];
+  insertOptions: (
+    | GameCardOption
+    | LocationCardOption
+    | EncounterCardOption
+    | QuestCardOption
+  )[];
   genericAssetBaseSlug: string;
   genericAssetModifierSlug: string;
   insertDisabled: boolean;
@@ -231,6 +244,7 @@ type ToolbarInsertType =
   | GameCardType
   | "GenericAsset"
   | "CustomAsset"
+  | "LocationCard"
   | "EncounterCard"
   | "QuestCard";
 
@@ -248,15 +262,23 @@ const gameCardJsxDescriptor: JsxComponentDescriptor = {
 
 const encounterCardJsxDescriptor: JsxComponentDescriptor = {
   name: "EncounterCard",
-  kind: "flow",
+  kind: "text",
   props: [{ name: "slug", type: "string", required: true }],
   hasChildren: false,
   Editor: EncounterCardJsxEditor,
 };
 
+const locationCardJsxDescriptor: JsxComponentDescriptor = {
+  name: "LocationCard",
+  kind: "text",
+  props: [{ name: "slug", type: "string", required: true }],
+  hasChildren: false,
+  Editor: LocationCardJsxEditor,
+};
+
 const questCardJsxDescriptor: JsxComponentDescriptor = {
   name: "QuestCard",
-  kind: "flow",
+  kind: "text",
   props: [{ name: "slug", type: "string", required: true }],
   hasChildren: false,
   Editor: QuestCardJsxEditor,
@@ -296,6 +318,7 @@ const renderToolbarInsertControls = ({
           <option value="StuntCard">Stunt</option>
           <option value="ActorCard">Actor</option>
           <option value="CounterCard">Counter</option>
+          <option value="LocationCard">Location</option>
           <option value="EncounterCard">Encounter</option>
           <option value="QuestCard">Quest</option>
           <option value="GenericAsset">Generic Asset</option>
@@ -382,6 +405,7 @@ const createEditorPlugins = (toolbarArgs: CreateEditorPluginsArgs) => [
   jsxPlugin({
     jsxComponentDescriptors: [
       gameCardJsxDescriptor,
+      locationCardJsxDescriptor,
       encounterCardJsxDescriptor,
       questCardJsxDescriptor,
     ],
@@ -876,6 +900,7 @@ export const AdventureModuleMarkdownField = ({
   actors = [],
   counters = [],
   assets = [],
+  locations = [],
   encounters = [],
   quests = [],
   value,
@@ -920,6 +945,16 @@ export const AdventureModuleMarkdownField = ({
       ),
     [assets],
   );
+  const locationsBySlug = useMemo(
+    () =>
+      new Map(
+        locations.map((location) => [
+          location.locationSlug.toLocaleLowerCase(),
+          location,
+        ] as const),
+      ),
+    [locations],
+  );
   const encountersBySlug = useMemo(
     () =>
       new Map(
@@ -944,6 +979,10 @@ export const AdventureModuleMarkdownField = ({
   const encounterCardOptions = useMemo(
     () => buildEncounterCardOptions(encounters),
     [encounters],
+  );
+  const locationCardOptions = useMemo(
+    () => buildLocationCardOptions(locations),
+    [locations],
   );
   const questCardOptions = useMemo(() => buildQuestCardOptions(quests), [quests]);
   const genericAssetBaseOptions = useMemo(
@@ -997,16 +1036,20 @@ export const AdventureModuleMarkdownField = ({
   const resolvedInsertType: GameCardType =
     insertType === "GenericAsset" || insertType === "CustomAsset"
       ? "AssetCard"
-      : insertType === "EncounterCard" || insertType === "QuestCard"
+      : insertType === "LocationCard" ||
+          insertType === "EncounterCard" ||
+          insertType === "QuestCard"
         ? "OutcomeCard"
         : insertType;
   useEffect(() => {
     const options =
-      insertType === "EncounterCard"
-        ? encounterCardOptions
-        : insertType === "QuestCard"
-          ? questCardOptions
-        : gameCardOptionsByType[resolvedInsertType];
+      insertType === "LocationCard"
+        ? locationCardOptions
+        : insertType === "EncounterCard"
+          ? encounterCardOptions
+          : insertType === "QuestCard"
+            ? questCardOptions
+            : gameCardOptionsByType[resolvedInsertType];
     if (options.length === 0) {
       if (insertSlug !== "") {
         setInsertSlug("");
@@ -1021,6 +1064,7 @@ export const AdventureModuleMarkdownField = ({
     gameCardOptionsByType,
     insertSlug,
     insertType,
+    locationCardOptions,
     questCardOptions,
     resolvedInsertType,
   ]);
@@ -1035,7 +1079,12 @@ export const AdventureModuleMarkdownField = ({
     }
   }, [genericAssetBaseOptions, genericAssetBaseSlug]);
 
-  const handleInsertComponent = (componentMarkdown: string): boolean => {
+  const handleInsertComponent = (
+    componentMarkdown: string,
+    options: {
+      wrapWithNewlines?: boolean;
+    } = {},
+  ): boolean => {
     if (!editable || !editorRef.current) {
       return false;
     }
@@ -1045,7 +1094,10 @@ export const AdventureModuleMarkdownField = ({
       return false;
     }
 
-    const insertText = `\n${normalizedMarkdown}\n`;
+    const insertText =
+      options.wrapWithNewlines === false
+        ? normalizedMarkdown
+        : `\n${normalizedMarkdown}\n`;
     if (editorMarkdown.length + insertText.length > maxLength) {
       setInsertErrorMessage(
         `Inserting this card would exceed the ${maxLength.toLocaleString()} character limit.`,
@@ -1075,11 +1127,13 @@ export const AdventureModuleMarkdownField = ({
     onChange,
   });
   const insertOptions =
-    insertType === "EncounterCard"
-      ? encounterCardOptions
-      : insertType === "QuestCard"
-        ? questCardOptions
-        : gameCardOptionsByType[resolvedInsertType];
+    insertType === "LocationCard"
+      ? locationCardOptions
+      : insertType === "EncounterCard"
+        ? encounterCardOptions
+        : insertType === "QuestCard"
+          ? questCardOptions
+          : gameCardOptionsByType[resolvedInsertType];
   const insertHasChoices =
     insertType === "GenericAsset"
       ? genericAssetBaseOptions.length > 0
@@ -1114,10 +1168,33 @@ export const AdventureModuleMarkdownField = ({
         setInsertErrorMessage("Select an encounter before inserting.");
         return;
       }
-      if (!handleInsertComponent(createEncounterCardJsx(selectedEncounter.slug))) {
+      if (
+        !handleInsertComponent(createEncounterCardJsx(selectedEncounter.slug), {
+          wrapWithNewlines: false,
+        })
+      ) {
         return;
       }
       setInsertStatusMessage("Inserted Encounter card.");
+      return;
+    }
+
+    if (insertType === "LocationCard") {
+      const selectedLocation = locationCardOptions.find(
+        (option) => option.slug === insertSlug,
+      );
+      if (!selectedLocation) {
+        setInsertErrorMessage("Select a location before inserting.");
+        return;
+      }
+      if (
+        !handleInsertComponent(createLocationCardJsx(selectedLocation.slug), {
+          wrapWithNewlines: false,
+        })
+      ) {
+        return;
+      }
+      setInsertStatusMessage("Inserted Location card.");
       return;
     }
 
@@ -1129,7 +1206,11 @@ export const AdventureModuleMarkdownField = ({
         setInsertErrorMessage("Select a quest before inserting.");
         return;
       }
-      if (!handleInsertComponent(createQuestCardJsx(selectedQuest.slug))) {
+      if (
+        !handleInsertComponent(createQuestCardJsx(selectedQuest.slug), {
+          wrapWithNewlines: false,
+        })
+      ) {
         return;
       }
       setInsertStatusMessage("Inserted Quest card.");
@@ -1141,7 +1222,7 @@ export const AdventureModuleMarkdownField = ({
       setInsertErrorMessage("Select a card before inserting.");
       return;
     }
-    if (!handleInsertComponent(selected.jsx)) {
+    if (!handleInsertComponent(selected.jsx, { wrapWithNewlines: false })) {
       return;
     }
     setInsertStatusMessage(
@@ -1334,6 +1415,8 @@ export const AdventureModuleMarkdownField = ({
               countersBySlug,
               assets,
               assetsBySlug,
+              locations,
+              locationsBySlug,
               encounters,
               encountersBySlug,
               quests,

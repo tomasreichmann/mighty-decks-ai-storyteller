@@ -24,7 +24,22 @@ test("AdventureModuleMarkdownField exposes Encounter insertion with canonical En
 
   assert.match(source, /<option value="EncounterCard">Encounter<\/option>/);
   assert.match(source, /name: "EncounterCard"/);
+  assert.match(source, /kind: "text"/);
   assert.match(source, /createEncounterCardJsx/);
+  assert.match(source, /createEncounterCardJsx\(selectedEncounter\.slug\), \{\s*wrapWithNewlines: false,\s*\}\)/);
+});
+
+test("AdventureModuleMarkdownField exposes Location insertion with canonical LocationCard JSX", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /<option value="LocationCard">Location<\/option>/);
+  assert.match(source, /name: "LocationCard"/);
+  assert.match(source, /kind: "text"/);
+  assert.match(source, /createLocationCardJsx/);
+  assert.match(source, /createLocationCardJsx\(selectedLocation\.slug\), \{\s*wrapWithNewlines: false,\s*\}\)/);
 });
 
 test("AdventureModuleMarkdownField exposes Quest insertion with canonical QuestCard JSX", () => {
@@ -35,7 +50,9 @@ test("AdventureModuleMarkdownField exposes Quest insertion with canonical QuestC
 
   assert.match(source, /<option value="QuestCard">Quest<\/option>/);
   assert.match(source, /name: "QuestCard"/);
+  assert.match(source, /kind: "text"/);
   assert.match(source, /createQuestCardJsx/);
+  assert.match(source, /createQuestCardJsx\(selectedQuest\.slug\), \{\s*wrapWithNewlines: false,\s*\}\)/);
 });
 
 test("AdventureModuleMarkdownField uses the native item select and carries slug context in option titles", () => {

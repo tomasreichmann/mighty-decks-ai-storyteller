@@ -28,6 +28,7 @@ interface AdventureModuleLocationEditorProps {
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   encounters?: AdventureModuleResolvedEncounter[];
+  locations?: AdventureModuleResolvedLocation[];
   quests?: AdventureModuleResolvedQuest[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
@@ -221,6 +222,7 @@ export const AdventureModuleLocationEditor = ({
   counters = [],
   assets = [],
   encounters = [],
+  locations = [],
   quests = [],
   smartContextDocument,
   editable,
@@ -335,6 +337,7 @@ export const AdventureModuleLocationEditor = ({
         counters={counters}
         assets={assets}
         encounters={encounters}
+        locations={locations}
         quests={quests}
         value={location.introductionMarkdown}
         editable={editable}
@@ -354,6 +357,7 @@ export const AdventureModuleLocationEditor = ({
         counters={counters}
         assets={assets}
         encounters={encounters}
+        locations={locations}
         quests={quests}
         value={location.descriptionMarkdown}
         editable={editable}

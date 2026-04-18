@@ -5,23 +5,11 @@ import {
   type JsxEditorProps,
 } from "@mdxeditor/editor";
 import { useAuthoringContext } from "../../lib/authoring/store/AuthoringProvider";
-import {
-  resolveGameCard,
-  type GameCardType,
-} from "../../lib/markdownGameComponents";
+import { resolveLocationCard } from "../../lib/markdownLocationComponents";
 import { useGameCardCatalogContext } from "../../lib/gameCardCatalogContext";
-import { CardBoundary } from "../common/CardBoundary";
 import { SceneCardDetailLink } from "./SceneCardDetailLink";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
-import { GameCardView, InvalidGameCardView } from "./GameCardView";
-
-const isGameCardType = (value: string): value is GameCardType =>
-  value === "OutcomeCard" ||
-  value === "EffectCard" ||
-  value === "StuntCard" ||
-  value === "ActorCard" ||
-  value === "CounterCard" ||
-  value === "AssetCard";
+import { LocationCardView } from "./LocationCardView";
 
 const getStringAttribute = (
   mdastNode: JsxEditorProps["mdastNode"],
@@ -41,63 +29,52 @@ const hasNodeSelection = (
   nodeKey: string,
 ): boolean => lexical.$isNodeSelection(selection) && selection.has(nodeKey);
 
-export const GameCardJsxEditor = ({
+const InvalidLocationCardView = ({
+  slug,
+}: {
+  slug?: string;
+}): JSX.Element => {
+  const summary =
+    typeof slug === "string" && slug.trim().length > 0
+      ? `Location / ${slug}`
+      : "Missing or unknown location props";
+
+  return (
+    <span className="inline-flex max-w-[20rem] flex-col rounded border-2 border-dashed border-kac-iron-dark/70 bg-kac-bone-light/70 px-3 py-2 text-left font-ui text-xs text-kac-iron shadow-[2px_2px_0_0_#121b23]">
+      <span className="font-bold uppercase tracking-[0.08em] text-kac-iron-dark">
+        Invalid LocationCard
+      </span>
+      <span>{summary}</span>
+    </span>
+  );
+};
+
+export const LocationCardJsxEditor = ({
   mdastNode,
 }: JsxEditorProps): JSX.Element => {
   const { buildRoute, state } = useAuthoringContext();
   const { lexicalNode, parentEditor } = useNestedEditorContext();
-  const { actorsBySlug, countersBySlug, assetsBySlug } = useGameCardCatalogContext();
+  const { locationsBySlug } = useGameCardCatalogContext();
   const nodeKey = lexicalNode.getKey();
   const nodeType = lexicalNode.getType();
   const [isSelected, setIsSelected] = useState(false);
 
-  const type = getStringAttribute(mdastNode, "type");
   const slug = getStringAttribute(mdastNode, "slug");
-  const modifierSlug = getStringAttribute(mdastNode, "modifierSlug");
 
-  const resolvedGameCard = useMemo(() => {
-    if (!type || !slug || !isGameCardType(type)) {
+  const resolvedLocationCard = useMemo(() => {
+    if (!slug) {
       return null;
     }
-    return resolveGameCard(
-      type,
-      slug,
-      actorsBySlug,
-      countersBySlug,
-      assetsBySlug,
-      modifierSlug,
-    );
-  }, [actorsBySlug, assetsBySlug, countersBySlug, modifierSlug, slug, type]);
+    return resolveLocationCard(slug, locationsBySlug);
+  }, [locationsBySlug, slug]);
 
-  const detailLink = useMemo(() => {
+  const detailHref = useMemo(() => {
     const moduleSlug = state.detail?.index.slug;
-    if (!moduleSlug || !resolvedGameCard) {
+    if (!moduleSlug || !slug) {
       return null;
     }
-
-    switch (resolvedGameCard.type) {
-      case "ActorCard":
-        return {
-          href: buildRoute(moduleSlug, "actors", resolvedGameCard.actor.actorSlug),
-          label: `Open ${resolvedGameCard.actor.title} detail in a new tab`,
-        };
-      case "CounterCard":
-        return {
-          href: buildRoute(moduleSlug, "counters", resolvedGameCard.counter.slug),
-          label: `Open ${resolvedGameCard.counter.title} detail in a new tab`,
-        };
-      case "AssetCard":
-        if (resolvedGameCard.asset.kind !== "custom") {
-          return null;
-        }
-        return {
-          href: buildRoute(moduleSlug, "assets", resolvedGameCard.asset.assetSlug),
-          label: `Open ${resolvedGameCard.asset.title} detail in a new tab`,
-        };
-      default:
-        return null;
-    }
-  }, [buildRoute, resolvedGameCard, state.detail?.index.slug]);
+    return buildRoute(moduleSlug, "locations", slug);
+  }, [buildRoute, slug, state.detail?.index.slug]);
 
   useEffect(() => {
     const syncSelectedState = (): void => {
@@ -153,7 +130,7 @@ export const GameCardJsxEditor = ({
     };
   }, [nodeKey, nodeType, parentEditor]);
 
-  const handleClick = (event: MouseEvent<HTMLSpanElement>): void => {
+  const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -181,8 +158,9 @@ export const GameCardJsxEditor = ({
 
   return (
     <span className="relative z-0 inline-block align-top pb-4">
-      <span
-        className={`${styles.gameCardShell} ${isSelected ? styles.gameCardShellSelected : ""}`}
+      <button
+        type="button"
+        className={`${styles.gameCardShell} ${isSelected ? styles.gameCardShellSelected : ""} block appearance-none border-0 bg-transparent p-0 text-left cursor-pointer`}
         onMouseDown={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -191,24 +169,16 @@ export const GameCardJsxEditor = ({
         data-selected={isSelected ? "true" : "false"}
         contentEditable={false}
       >
-        {resolvedGameCard ? (
-          <CardBoundary
-            resetKey={`${type ?? "unknown"}-${slug ?? "unknown"}-${
-              modifierSlug ?? "base"
-            }`}
-            label="Card failed to render"
-            message="This preview could not render."
-            className="w-full max-w-[13rem]"
-          >
-            <GameCardView gameCard={resolvedGameCard} />
-          </CardBoundary>
+        {resolvedLocationCard ? (
+          <LocationCardView location={resolvedLocationCard.location} />
         ) : (
-          <InvalidGameCardView type={type} slug={slug} />
+          <InvalidLocationCardView slug={slug} />
         )}
-      </span>
-      {detailLink ? (
-        <SceneCardDetailLink href={detailLink.href} label={detailLink.label} />
-      ) : null}
+      </button>
+      <SceneCardDetailLink
+        href={detailHref}
+        label={`Open ${resolvedLocationCard?.location.title ?? "location"} detail in a new tab`}
+      />
     </span>
   );
 };

@@ -4,6 +4,7 @@ import type {
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
+  AdventureModuleResolvedLocation,
   AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 
@@ -16,6 +17,8 @@ export interface GameCardCatalogContextValue {
   countersBySlug: ReadonlyMap<string, AdventureModuleResolvedCounter>;
   assets: readonly AdventureModuleResolvedAsset[];
   assetsBySlug: ReadonlyMap<string, AdventureModuleResolvedAsset>;
+  locations: readonly AdventureModuleResolvedLocation[];
+  locationsBySlug: ReadonlyMap<string, AdventureModuleResolvedLocation>;
   encounters: readonly AdventureModuleResolvedEncounter[];
   encountersBySlug: ReadonlyMap<string, AdventureModuleResolvedEncounter>;
   quests: readonly AdventureModuleResolvedQuest[];
@@ -30,6 +33,10 @@ export interface GameCardCatalogContextValue {
 const EMPTY_ACTORS_BY_SLUG = new Map<string, AdventureModuleResolvedActor>();
 const EMPTY_COUNTERS_BY_SLUG = new Map<string, AdventureModuleResolvedCounter>();
 const EMPTY_ASSETS_BY_SLUG = new Map<string, AdventureModuleResolvedAsset>();
+const EMPTY_LOCATIONS_BY_SLUG = new Map<
+  string,
+  AdventureModuleResolvedLocation
+>();
 const EMPTY_ENCOUNTERS_BY_SLUG = new Map<
   string,
   AdventureModuleResolvedEncounter
@@ -44,6 +51,8 @@ export const GameCardCatalogContext =
     countersBySlug: EMPTY_COUNTERS_BY_SLUG,
     assets: [],
     assetsBySlug: EMPTY_ASSETS_BY_SLUG,
+    locations: [],
+    locationsBySlug: EMPTY_LOCATIONS_BY_SLUG,
     encounters: [],
     encountersBySlug: EMPTY_ENCOUNTERS_BY_SLUG,
     quests: [],
@@ -58,6 +67,7 @@ export const createGameCardCatalogContextValue = (
     actors?: readonly AdventureModuleResolvedActor[];
     counters?: readonly AdventureModuleResolvedCounter[];
     assets?: readonly AdventureModuleResolvedAsset[];
+    locations?: readonly AdventureModuleResolvedLocation[];
     encounters?: readonly AdventureModuleResolvedEncounter[];
     quests?: readonly AdventureModuleResolvedQuest[];
     onAdjustCounterValue?: (
@@ -71,6 +81,7 @@ export const createGameCardCatalogContextValue = (
     actors = [],
     counters = [],
     assets = [],
+    locations = [],
     encounters = [],
     quests = [],
     onAdjustCounterValue,
@@ -88,6 +99,13 @@ export const createGameCardCatalogContextValue = (
     assets,
     assetsBySlug: new Map(
       assets.map((asset) => [asset.assetSlug.toLocaleLowerCase(), asset]),
+    ),
+    locations,
+    locationsBySlug: new Map(
+      locations.map((location) => [
+        location.locationSlug.toLocaleLowerCase(),
+        location,
+      ]),
     ),
     encounters,
     encountersBySlug: new Map(

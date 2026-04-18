@@ -41,7 +41,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
-- Web: make location, encounter, and quest markdown embeds selectable in the MDX editor, and add canonical `LocationCard` shortcode normalization plus toolbar insertion for location-authored markdown fields.
+- Web: make location, encounter, and quest markdown embeds selectable and inline-flow friendly in the MDX editor, and add canonical `LocationCard` shortcode normalization plus toolbar insertion for location-authored markdown fields.
+- Web: add a circular detail-link overlay to location, encounter, quest, actor, counter, and custom asset authoring cards so authors can open the matching detail route in a new tab without losing node-selection delete behavior, while leaving default assets and other static cards link-free.
 - Make `Tag` the reusable chip shell for read-only labels, editable tag rows, and connection status pills.
 - Tighten the Exiles legacy importer so it promotes curated actor and asset cards, copies imported stills into `AdventureArtifactStore`, and rewrites named markdown references to canonical `GameCard` embeds.
 - Refactor Adventure Module and Campaign authoring so the route files are thin shells over a shared context-plus-reducer authoring store with extracted screen/session shells, shared autosave orchestration, and optimistic edit saves.

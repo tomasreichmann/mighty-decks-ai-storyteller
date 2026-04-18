@@ -20,4 +20,6 @@ test("AdventureModuleAssetEditor exposes custom asset fields, icon image picker,
   assert.match(source, /reauthor/i);
   assert.match(source, /ShortcodeField/);
   assert.match(source, /@asset\/\$\{asset\.assetSlug\}/);
+  assert.match(source, /SceneCardDetailLink/);
+  assert.match(source, /buildRoute\(moduleSlug, "assets", asset\.assetSlug\)/);
 });

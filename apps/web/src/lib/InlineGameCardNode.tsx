@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { lexical } from "@mdxeditor/editor";
 
 import { GameCardView, InvalidGameCardView } from "../components/adventure-module/GameCardView";
+import { SceneCardDetailLink } from "../components/adventure-module/SceneCardDetailLink";
 import { CardBoundary } from "../components/common/CardBoundary";
+import { useAuthoringContext } from "./authoring/store/AuthoringProvider";
 import styles from "../components/adventure-module/AdventureModulePlayerInfoTabPanel.module.css";
 import { useGameCardCatalogContext } from "./gameCardCatalogContext";
 import {
@@ -50,6 +52,7 @@ const InlineGameCardDecorator = ({
   lexicalNode,
   parentEditor,
 }: InlineGameCardDecoratorProps): JSX.Element => {
+  const { buildRoute, state } = useAuthoringContext();
   const { actorsBySlug, countersBySlug, assetsBySlug } = useGameCardCatalogContext();
   const nodeKey = lexicalNode.getKey();
   const nodeType = lexicalNode.getType();
@@ -71,6 +74,36 @@ const InlineGameCardDecorator = ({
       modifierSlug ?? undefined,
     );
   }, [actorsBySlug, assetsBySlug, cardType, countersBySlug, modifierSlug, slug]);
+
+  const detailLink = useMemo(() => {
+    const moduleSlug = state.detail?.index.slug;
+    if (!moduleSlug || !resolvedGameCard) {
+      return null;
+    }
+
+    switch (resolvedGameCard.type) {
+      case "ActorCard":
+        return {
+          href: buildRoute(moduleSlug, "actors", resolvedGameCard.actor.actorSlug),
+          label: `Open ${resolvedGameCard.actor.title} detail in a new tab`,
+        };
+      case "CounterCard":
+        return {
+          href: buildRoute(moduleSlug, "counters", resolvedGameCard.counter.slug),
+          label: `Open ${resolvedGameCard.counter.title} detail in a new tab`,
+        };
+      case "AssetCard":
+        if (resolvedGameCard.asset.kind !== "custom") {
+          return null;
+        }
+        return {
+          href: buildRoute(moduleSlug, "assets", resolvedGameCard.asset.assetSlug),
+          label: `Open ${resolvedGameCard.asset.title} detail in a new tab`,
+        };
+      default:
+        return null;
+    }
+  }, [buildRoute, resolvedGameCard, state.detail?.index.slug]);
 
   useEffect(() => {
     const syncSelectedState = (): void => {
@@ -153,26 +186,31 @@ const InlineGameCardDecorator = ({
   };
 
   return (
-    <span
-      className={`${styles.gameCardShell} ${isSelected ? styles.gameCardShellSelected : ""}`}
-      onMouseDown={(event) => {
-        event.preventDefault();
-      }}
-      onClick={handleClick}
-      data-selected={isSelected ? "true" : "false"}
-    >
-      {resolvedGameCard ? (
-        <CardBoundary
-          resetKey={`${cardType ?? "unknown"}-${slug ?? "unknown"}-${modifierSlug ?? "base"}`}
-          label="Card failed to render"
-          message="This inline card preview could not render."
-          className="w-full max-w-[13rem]"
-        >
-          <GameCardView gameCard={resolvedGameCard} />
-        </CardBoundary>
-      ) : (
-        <InvalidGameCardView type={cardType ?? undefined} slug={slug ?? undefined} />
-      )}
+    <span className="relative z-0 inline-block align-top pb-4">
+      <span
+        className={`${styles.gameCardShell} ${isSelected ? styles.gameCardShellSelected : ""}`}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
+        onClick={handleClick}
+        data-selected={isSelected ? "true" : "false"}
+      >
+        {resolvedGameCard ? (
+          <CardBoundary
+            resetKey={`${cardType ?? "unknown"}-${slug ?? "unknown"}-${modifierSlug ?? "base"}`}
+            label="Card failed to render"
+            message="This inline card preview could not render."
+            className="w-full max-w-[13rem]"
+          >
+            <GameCardView gameCard={resolvedGameCard} />
+          </CardBoundary>
+        ) : (
+          <InvalidGameCardView type={cardType ?? undefined} slug={slug ?? undefined} />
+        )}
+      </span>
+      {detailLink ? (
+        <SceneCardDetailLink href={detailLink.href} label={detailLink.label} />
+      ) : null}
     </span>
   );
 };

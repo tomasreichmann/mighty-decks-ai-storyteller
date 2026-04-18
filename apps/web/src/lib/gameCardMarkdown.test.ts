@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   createEncounterCardJsx,
   createGameCardJsx,
+  createLocationCardJsx,
   createQuestCardJsx,
   normalizeLegacyGameCardMarkdown,
 } from "./gameCardMarkdown";
@@ -41,6 +42,13 @@ test("createEncounterCardJsx emits canonical EncounterCard source", () => {
   assert.equal(
     createEncounterCardJsx("bridge-tribute-checkpoint"),
     '<EncounterCard slug="bridge-tribute-checkpoint" />',
+  );
+});
+
+test("createLocationCardJsx emits canonical LocationCard source", () => {
+  assert.equal(
+    createLocationCardJsx("drowned-gate"),
+    '<LocationCard slug="drowned-gate" />',
   );
 });
 
@@ -198,6 +206,27 @@ test("normalizeLegacyGameCardMarkdown upgrades encounter shortcodes to canonical
       '<EncounterCard slug="bridge-tribute-checkpoint" />',
       "",
       'Keep <EncounterCard slug="roofline-pursuit" /> ready for the aftermath.',
+    ].join("\n"),
+  );
+});
+
+test("normalizeLegacyGameCardMarkdown upgrades location shortcodes to canonical LocationCard JSX", () => {
+  const markdown = [
+    "Stage the opening waypoint.",
+    "",
+    "@location/drowned-gate",
+    "",
+    "Keep @location/upper-bazaar-archway ready for the next turn.",
+  ].join("\n");
+
+  assert.equal(
+    normalizeLegacyGameCardMarkdown(markdown),
+    [
+      "Stage the opening waypoint.",
+      "",
+      '<LocationCard slug="drowned-gate" />',
+      "",
+      'Keep <LocationCard slug="upper-bazaar-archway" /> ready for the next turn.',
     ].join("\n"),
   );
 });

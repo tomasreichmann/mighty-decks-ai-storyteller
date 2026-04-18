@@ -1,11 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type {
   AdventureModuleResolvedActor,
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
+  AdventureModuleResolvedLocation,
   AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
+import { useAuthoringContext } from "../../lib/authoring/store/AuthoringProvider";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { AssetCard } from "../cards/AssetCard";
@@ -17,6 +19,7 @@ import { TextField } from "../common/TextField";
 import { AdventureModuleGeneratedImagePicker } from "./AdventureModuleGeneratedImagePicker";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import { ShortcodeField } from "./ShortcodeField";
+import { SceneCardDetailLink } from "./SceneCardDetailLink";
 
 export interface AdventureModuleAssetEditorAsset {
   fragmentId: string;
@@ -38,6 +41,7 @@ interface AdventureModuleAssetEditorProps {
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   encounters?: AdventureModuleResolvedEncounter[];
+  locations?: AdventureModuleResolvedLocation[];
   quests?: AdventureModuleResolvedQuest[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
@@ -198,6 +202,7 @@ export const AdventureModuleAssetEditor = ({
   counters = [],
   assets = [],
   encounters = [],
+  locations = [],
   quests = [],
   smartContextDocument,
   editable,
@@ -216,6 +221,7 @@ export const AdventureModuleAssetEditor = ({
   onDelete,
   onAddAssetCardToSelection,
 }: AdventureModuleAssetEditorProps): JSX.Element => {
+  const { buildRoute, state } = useAuthoringContext();
   const resolveIconContextLines = useCallback(
     (selectedContextTags: string[]) =>
       buildAssetImageContextLines(
@@ -225,6 +231,18 @@ export const AdventureModuleAssetEditor = ({
       ),
     [asset, smartContextDocument],
   );
+
+  const detailLink = useMemo(() => {
+    const moduleSlug = state.detail?.index.slug;
+    if (!moduleSlug) {
+      return null;
+    }
+
+    return {
+      href: buildRoute(moduleSlug, "assets", asset.assetSlug),
+      label: `Open ${asset.title} detail in a new tab`,
+    };
+  }, [asset.assetSlug, asset.title, buildRoute, state.detail?.index.slug]);
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
@@ -251,16 +269,24 @@ export const AdventureModuleAssetEditor = ({
           ) : null}
         </div>
 
-        <AssetCard
-          className="mx-auto w-full max-w-[16rem]"
-          kind="custom"
-          modifier={asset.modifier}
-          noun={asset.noun}
-          nounDescription={asset.nounDescription}
-          adjectiveDescription={asset.adjectiveDescription}
-          iconUrl={asset.iconUrl}
-          overlayUrl={asset.overlayUrl}
-        />
+        <div className="relative z-0 mx-auto w-full max-w-[16rem] pb-4">
+          <AssetCard
+            className="w-full"
+            kind="custom"
+            modifier={asset.modifier}
+            noun={asset.noun}
+            nounDescription={asset.nounDescription}
+            adjectiveDescription={asset.adjectiveDescription}
+            iconUrl={asset.iconUrl}
+            overlayUrl={asset.overlayUrl}
+          />
+          {detailLink ? (
+            <SceneCardDetailLink
+              href={detailLink.href}
+              label={detailLink.label}
+            />
+          ) : null}
+        </div>
 
         <ShortcodeField
           shortcode={`@asset/${asset.assetSlug}`}
@@ -382,6 +408,7 @@ export const AdventureModuleAssetEditor = ({
           counters={counters}
           assets={assets}
           encounters={encounters}
+          locations={locations}
           quests={quests}
           value={asset.content}
           editable={editable}

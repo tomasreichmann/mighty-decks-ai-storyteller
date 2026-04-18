@@ -183,11 +183,11 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - The editor exposes standard markdown image support through the built-in image toolbar plus a compact image button that opens a reusable generate-or-pick modal and inserts canonical `![alt](url)` snippets.
-- Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
+- Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards. Authored actor, counter, and custom asset cards show the same small circular detail-link overlay when they resolve to module-authored detail routes, while built-in outcome/effect/stunt cards and default asset cards stay link-free.
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
-- The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
-- The custom item picker for authored cards, custom assets, encounters, and quests uses the native browser select so the editor shell cannot clip the menu; the selected item and each option carry the bare slug in their `title` tooltip, and the insert-control row wraps on narrow screens instead of overflowing horizontally.
+- The markdown toolbar also inserts module-authored locations, encounters, and quests as canonical `<LocationCard slug="..." />`, `<EncounterCard slug="..." />`, and `<QuestCard slug="..." />` JSX that can flow inline with surrounding text.
+- The custom item picker for authored cards, custom assets, locations, encounters, and quests uses the native browser select so the editor shell cannot clip the menu; the selected item and each option carry the bare slug in their `title` tooltip, and the insert-control row wraps on narrow screens instead of overflowing horizontally.
 - Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Player text must remain spoiler-safe at publish validation.
 
@@ -203,11 +203,11 @@ Behavior:
 - Edits autosave.
 - Both fields use MDXEditor with rich-text and source modes.
 - The editor exposes standard markdown image support through the built-in image toolbar plus a compact image button that opens a reusable generate-or-pick modal and inserts canonical `![alt](url)` snippets.
-- Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards.
+- Rich Text renders `GameCard` embeds inline using the same visuals as the rules reference cards. Authored actor, counter, and custom asset cards show the same small circular detail-link overlay when they resolve to module-authored detail routes, while built-in outcome/effect/stunt cards and default asset cards stay link-free.
 - Legacy `@outcome/...`, `@effect/...`, `@stunt/...`, and module-local `@actor/...`, `@counter/...`, `@asset/...`, and `@asset/.../<modifier-slug>` tokens normalize to canonical `<GameCard type="..." slug="..." />` source on load/save and plain-text paste.
 - The markdown toolbar splits asset insertion into `Generic Asset` (built-in base asset plus optional modifier) and `Custom Asset` (module-authored asset slug). Generic asset inserts emit canonical `<GameCard type="AssetCard" slug="..." modifierSlug="..." />` source.
-- The markdown toolbar also inserts module-authored encounters and quests as canonical `<EncounterCard slug="..." />` and `<QuestCard slug="..." />` blocks.
-- The custom item picker for authored cards, custom assets, encounters, and quests uses the same native-select-plus-slug-tooltip treatment as `Player Info`, keeping the toolbar compact without reintroducing clipped custom menus or horizontal overflow on narrow screens.
+- The markdown toolbar also inserts module-authored locations, encounters, and quests as canonical `<LocationCard slug="..." />`, `<EncounterCard slug="..." />`, and `<QuestCard slug="..." />` JSX that can flow inline with surrounding text.
+- The custom item picker for authored cards, custom assets, locations, encounters, and quests uses the same native-select-plus-slug-tooltip treatment as `Player Info`, keeping the toolbar compact without reintroducing clipped custom menus or horizontal overflow on narrow screens.
 - Legacy `@quest/<quest-slug>` shortcodes normalize to canonical `<QuestCard slug="..." />` source on load/save and plain-text paste.
 - Storyteller text can include spoilers.
 
@@ -365,7 +365,7 @@ Actor editor behavior:
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/actors/:actorSlug`.
 - Actor slug is generated from the saved title and updates when the actor name changes.
 - Actors marked `Player Character` seed the campaign's claimable character pool when a campaign is created from the module.
-- The editor shows a live layered preview assembled from base art, tactical role metadata, and optional tactical special overlay.
+- The editor shows a live layered preview assembled from base art, tactical role metadata, and optional tactical special overlay, and the preview card shows a small circular detail-link overlay in the bottom-right corner.
 - The detail surface shows a reusable shortcode row that displays `@actor/<actor-slug>` and copies it directly to the clipboard.
 
 Counter edit example fields:
@@ -381,7 +381,7 @@ Counter editor behavior:
 - Updates persist through `PUT /api/adventure-modules/:moduleId/counters/:counterSlug`.
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/counters/:counterSlug`.
 - Counter slug is generated from the saved title and updates when the counter name changes.
-- The editor shows a live `CounterCard` preview with shared `+` and `-` controls for current and max values.
+- The editor shows a live `CounterCard` preview with shared `+` and `-` controls for current and max values, and the preview card shows a small circular detail-link overlay in the bottom-right corner.
 - The detail surface shows a reusable shortcode row that displays `@counter/<counter-slug>` and copies it directly to the clipboard.
 
 Asset edit example fields:
@@ -402,7 +402,7 @@ Asset editor behavior:
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/assets/:assetSlug`.
 - Asset slug is generated from the saved title and updates when the asset name changes.
 - The editor supports icon-image selection and generation through the framed dialog picker, plus optional overlay URL entry and markdown body authoring.
-- The editor shows a live custom `AssetCard` preview with `custom` in the top-right heading and no modifier-side heading.
+- The editor shows a live custom `AssetCard` preview with `custom` in the top-right heading and no modifier-side heading, and the preview card shows a small circular detail-link overlay in the bottom-right corner.
 - Legacy layered module assets open with blank custom fields plus a migration notice.
 - Legacy layered module assets remain unsupported in normal markdown rendering until the custom fields are saved successfully.
 - The detail surface shows a reusable shortcode row that displays `@asset/<asset-slug>` and copies it directly to the clipboard.
@@ -424,6 +424,8 @@ Location editor behavior:
 - Location slug is generated from the saved title and updates when the location name changes.
 - The editor supports image selection and generation through the framed dialog picker for both title image and map image.
 - Map pins are stored by target `fragmentId`, can be added/removed/moved, exclude the current location from the picker, preview their linked content on hover, and navigate to the linked authoring route on click.
+- The introduction and description markdown fields support canonical `<LocationCard />`, `<EncounterCard />`, and `<QuestCard />` embeds; legacy `@location/<location-slug>` shortcodes normalize to canonical `<LocationCard slug="..." />` source on load/save and plain-text paste.
+- Each embedded location, encounter, and quest card shows a small circular overlay link that opens the matching detail route in a new tab while leaving the card surface selectable for keyboard delete.
 - The detail surface shows a reusable shortcode row that displays `@location/<location-slug>` and copies it directly to the clipboard.
 
 Encounter edit example fields:

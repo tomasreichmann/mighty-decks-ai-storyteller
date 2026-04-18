@@ -11,4 +11,6 @@ test("AdventureModuleCounterEditor exposes counter shortcode copy UI", () => {
   assert.match(source, /Counter slug:/);
   assert.match(source, /ShortcodeField/);
   assert.match(source, /@counter\/\$\{counter\.slug\}/);
+  assert.match(source, /SceneCardDetailLink/);
+  assert.match(source, /buildRoute\(moduleSlug, "counters", counter\.slug\)/);
 });

@@ -15,7 +15,7 @@ export type LegacyGameCardTokenType =
   | "asset";
 
 const INLINE_TOKEN_PATTERN =
-  /(^|\s)(@(outcome|effect|stunt|actor|counter|asset|encounter|quest)\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)(?=\s|$)/g;
+  /(^|\s)(@(outcome|effect|stunt|actor|counter|asset|location|encounter|quest)\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)(?=\s|$)/g;
 const FENCE_PATTERN = /^([`~]{3,})(.*)$/;
 const INLINE_CODE_SPLIT_PATTERN = /(`+[^`]*`+)/g;
 const INDENTED_CODE_LINE_PATTERN = /^(?: {4}|\t)/;
@@ -44,6 +44,9 @@ export const createGameCardJsx = (
 
 export const createEncounterCardJsx = (slug: string): string =>
   `<EncounterCard slug="${slug}" />`;
+
+export const createLocationCardJsx = (slug: string): string =>
+  `<LocationCard slug="${slug}" />`;
 
 export const createQuestCardJsx = (slug: string): string =>
   `<QuestCard slug="${slug}" />`;
@@ -103,6 +106,13 @@ const replaceLegacyTokensOutsideInlineCode = (value: string): string => {
       return segment.replace(
         INLINE_TOKEN_PATTERN,
         (_match, leadingWhitespace: string, token: string) => {
+          const locationMatch = /^@location\/([A-Za-z0-9_-]+)$/.exec(
+            token.trim(),
+          );
+          if (locationMatch) {
+            return `${leadingWhitespace}${createLocationCardJsx(locationMatch[1])}`;
+          }
+
           const encounterMatch = /^@encounter\/([A-Za-z0-9_-]+)$/.exec(
             token.trim(),
           );

@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import type { AdventureModuleResolvedCounter } from "@mighty-decks/spec/adventureModuleAuthoring";
 import type { CounterIconSlug } from "@mighty-decks/spec/counterCards";
+import { useAuthoringContext } from "../../lib/authoring/store/AuthoringProvider";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import { counterIcons } from "../../data/counterCards";
 import { CounterCard } from "../cards/CounterCard";
@@ -8,6 +10,7 @@ import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
 import { ShortcodeField } from "./ShortcodeField";
+import { SceneCardDetailLink } from "./SceneCardDetailLink";
 
 interface AdventureModuleCounterEditorProps {
   counter: AdventureModuleResolvedCounter;
@@ -45,6 +48,20 @@ export const AdventureModuleCounterEditor = ({
   onDelete,
   onAddCounterCardToSelection,
 }: AdventureModuleCounterEditorProps): JSX.Element => {
+  const { buildRoute, state } = useAuthoringContext();
+
+  const detailLink = useMemo(() => {
+    const moduleSlug = state.detail?.index.slug;
+    if (!moduleSlug) {
+      return null;
+    }
+
+    return {
+      href: buildRoute(moduleSlug, "counters", counter.slug),
+      label: `Open ${counter.title} detail in a new tab`,
+    };
+  }, [buildRoute, counter.slug, counter.title, state.detail?.index.slug]);
+
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
       <Panel contentClassName="stack gap-4">
@@ -69,34 +86,42 @@ export const AdventureModuleCounterEditor = ({
           ) : null}
         </div>
 
-        <CounterCard
-          className="mx-auto w-full max-w-[16rem]"
-          iconSlug={counter.iconSlug}
-          title={counter.title}
-          currentValue={counter.currentValue}
-          maxValue={counter.maxValue}
-          description={counter.description}
-          onDecrement={
-            onAdjustCounterValue
-              ? () => onAdjustCounterValue(counter.slug, -1)
-              : undefined
-          }
-          onIncrement={
-            onAdjustCounterValue
-              ? () => onAdjustCounterValue(counter.slug, 1)
-              : undefined
-          }
-          onDecrementMaxValue={
-            onAdjustCounterValue && typeof counter.maxValue === "number"
-              ? () => onAdjustCounterValue(counter.slug, -1, "max")
-              : undefined
-          }
-          onIncrementMaxValue={
-            onAdjustCounterValue && typeof counter.maxValue === "number"
-              ? () => onAdjustCounterValue(counter.slug, 1, "max")
-              : undefined
-          }
-        />
+        <div className="relative z-0 mx-auto w-full max-w-[13rem] pb-4">
+          <CounterCard
+            className="w-full"
+            iconSlug={counter.iconSlug}
+            title={counter.title}
+            currentValue={counter.currentValue}
+            maxValue={counter.maxValue}
+            description={counter.description}
+            onDecrement={
+              onAdjustCounterValue
+                ? () => onAdjustCounterValue(counter.slug, -1)
+                : undefined
+            }
+            onIncrement={
+              onAdjustCounterValue
+                ? () => onAdjustCounterValue(counter.slug, 1)
+                : undefined
+            }
+            onDecrementMaxValue={
+              onAdjustCounterValue && typeof counter.maxValue === "number"
+                ? () => onAdjustCounterValue(counter.slug, -1, "max")
+                : undefined
+            }
+            onIncrementMaxValue={
+              onAdjustCounterValue && typeof counter.maxValue === "number"
+                ? () => onAdjustCounterValue(counter.slug, 1, "max")
+                : undefined
+            }
+          />
+          {detailLink ? (
+            <SceneCardDetailLink
+              href={detailLink.href}
+              label={detailLink.label}
+            />
+          ) : null}
+        </div>
 
         <ShortcodeField
           shortcode={`@counter/${counter.slug}`}

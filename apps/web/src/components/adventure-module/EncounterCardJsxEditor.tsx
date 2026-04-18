@@ -4,8 +4,10 @@ import {
   useNestedEditorContext,
   type JsxEditorProps,
 } from "@mdxeditor/editor";
+import { useAuthoringContext } from "../../lib/authoring/store/AuthoringProvider";
 import { resolveEncounterCard } from "../../lib/markdownEncounterComponents";
 import { useGameCardCatalogContext } from "../../lib/gameCardCatalogContext";
+import { SceneCardDetailLink } from "./SceneCardDetailLink";
 import styles from "./AdventureModulePlayerInfoTabPanel.module.css";
 import { EncounterCardView, InvalidEncounterCardView } from "./EncounterCardView";
 
@@ -30,6 +32,7 @@ const hasNodeSelection = (
 export const EncounterCardJsxEditor = ({
   mdastNode,
 }: JsxEditorProps): JSX.Element => {
+  const { buildRoute, state } = useAuthoringContext();
   const { lexicalNode, parentEditor } = useNestedEditorContext();
   const { encountersBySlug } = useGameCardCatalogContext();
   const nodeKey = lexicalNode.getKey();
@@ -44,6 +47,14 @@ export const EncounterCardJsxEditor = ({
     }
     return resolveEncounterCard(slug, encountersBySlug);
   }, [encountersBySlug, slug]);
+
+  const detailHref = useMemo(() => {
+    const moduleSlug = state.detail?.index.slug;
+    if (!moduleSlug || !slug) {
+      return null;
+    }
+    return buildRoute(moduleSlug, "encounters", slug);
+  }, [buildRoute, slug, state.detail?.index.slug]);
 
   useEffect(() => {
     const syncSelectedState = (): void => {
@@ -99,7 +110,7 @@ export const EncounterCardJsxEditor = ({
     };
   }, [nodeKey, nodeType, parentEditor]);
 
-  const handleClick = (event: MouseEvent<HTMLDivElement>): void => {
+  const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -126,19 +137,28 @@ export const EncounterCardJsxEditor = ({
   };
 
   return (
-    <div
-      className={`${styles.gameCardShell} ${isSelected ? styles.gameCardShellSelected : ""} block`}
-      onMouseDown={(event) => {
-        event.preventDefault();
-      }}
-      onClick={handleClick}
-      data-selected={isSelected ? "true" : "false"}
-    >
-      {resolvedEncounterCard ? (
-        <EncounterCardView encounter={resolvedEncounterCard.encounter} />
-      ) : (
-        <InvalidEncounterCardView slug={slug} />
-      )}
-    </div>
+    <span className="relative z-0 inline-block align-top pb-4">
+      <button
+        type="button"
+        className={`${styles.gameCardShell} ${isSelected ? styles.gameCardShellSelected : ""} block appearance-none border-0 bg-transparent p-0 text-left cursor-pointer`}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onClick={handleClick}
+        data-selected={isSelected ? "true" : "false"}
+        contentEditable={false}
+      >
+        {resolvedEncounterCard ? (
+          <EncounterCardView encounter={resolvedEncounterCard.encounter} />
+        ) : (
+          <InvalidEncounterCardView slug={slug} />
+        )}
+      </button>
+      <SceneCardDetailLink
+        href={detailHref}
+        label={`Open ${resolvedEncounterCard?.encounter.title ?? "encounter"} detail in a new tab`}
+      />
+    </span>
   );
 };

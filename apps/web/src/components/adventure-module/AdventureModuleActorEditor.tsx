@@ -1,10 +1,13 @@
+import { useMemo } from "react";
 import type {
   AdventureModuleResolvedActor,
   AdventureModuleResolvedAsset,
   AdventureModuleResolvedCounter,
   AdventureModuleResolvedEncounter,
+  AdventureModuleResolvedLocation,
   AdventureModuleResolvedQuest,
 } from "@mighty-decks/spec/adventureModuleAuthoring";
+import { useAuthoringContext } from "../../lib/authoring/store/AuthoringProvider";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 import type { CounterAdjustTarget } from "../../lib/gameCardCatalogContext";
 import {
@@ -20,6 +23,7 @@ import { TextField } from "../common/TextField";
 import { Toggle } from "../common/Toggle";
 import { AdventureModuleMarkdownField } from "./AdventureModuleMarkdownField";
 import { ShortcodeField } from "./ShortcodeField";
+import { SceneCardDetailLink } from "./SceneCardDetailLink";
 
 interface AdventureModuleActorEditorProps {
   actor: AdventureModuleResolvedActor;
@@ -27,6 +31,7 @@ interface AdventureModuleActorEditorProps {
   counters?: AdventureModuleResolvedCounter[];
   assets?: AdventureModuleResolvedAsset[];
   encounters?: AdventureModuleResolvedEncounter[];
+  locations?: AdventureModuleResolvedLocation[];
   quests?: AdventureModuleResolvedQuest[];
   smartContextDocument: SmartInputDocumentContext;
   editable: boolean;
@@ -62,6 +67,7 @@ export const AdventureModuleActorEditor = ({
   counters = [],
   assets = [],
   encounters = [],
+  locations = [],
   quests = [],
   smartContextDocument,
   editable,
@@ -78,6 +84,20 @@ export const AdventureModuleActorEditor = ({
   onDelete,
   onAddActorCardToSelection,
 }: AdventureModuleActorEditorProps): JSX.Element => {
+  const { buildRoute, state } = useAuthoringContext();
+
+  const detailLink = useMemo(() => {
+    const moduleSlug = state.detail?.index.slug;
+    if (!moduleSlug) {
+      return null;
+    }
+
+    return {
+      href: buildRoute(moduleSlug, "actors", actor.actorSlug),
+      label: `Open ${actor.title} detail in a new tab`,
+    };
+  }, [actor.actorSlug, actor.title, buildRoute, state.detail?.index.slug]);
+
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
       <Panel contentClassName="stack gap-4">
@@ -102,12 +122,20 @@ export const AdventureModuleActorEditor = ({
           ) : null}
         </div>
 
-        <ActorCard
-          className="mx-auto w-full max-w-[16rem]"
-          baseLayerSlug={actor.baseLayerSlug}
-          tacticalRoleSlug={actor.tacticalRoleSlug}
-          tacticalSpecialSlug={actor.tacticalSpecialSlug}
-        />
+        <div className="relative z-0 mx-auto w-full max-w-[16rem] pb-4">
+          <ActorCard
+            className="w-full"
+            baseLayerSlug={actor.baseLayerSlug}
+            tacticalRoleSlug={actor.tacticalRoleSlug}
+            tacticalSpecialSlug={actor.tacticalSpecialSlug}
+          />
+          {detailLink ? (
+            <SceneCardDetailLink
+              href={detailLink.href}
+              label={detailLink.label}
+            />
+          ) : null}
+        </div>
 
         <ShortcodeField
           shortcode={`@actor/${actor.actorSlug}`}
@@ -221,10 +249,11 @@ export const AdventureModuleActorEditor = ({
           description="Author the actor's public face, agenda, pressure moves, and other reusable guidance. Actor GameCards render inline in Rich Text."
           selfContextTag="Storyteller Info"
           smartContextDocument={smartContextDocument}
-          actors={actors}
+        actors={actors}
         counters={counters}
         assets={assets}
         encounters={encounters}
+        locations={locations}
         quests={quests}
         value={actor.content}
           editable={editable}
