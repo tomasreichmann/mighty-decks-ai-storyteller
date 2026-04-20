@@ -19,6 +19,8 @@ const sortLocations = (
 export const ShipPane = ({ pane }: ShipPaneProps): JSX.Element => {
   const topRow = sortLocations(pane.locations, "top");
   const bottomRow = sortLocations(pane.locations, "bottom");
+  const locationGridClassName =
+    "grid gap-4 overflow-x-auto pb-3 justify-items-start [grid-template-columns:repeat(auto-fit,minmax(20.75rem,1fr))]";
 
   return (
     <section
@@ -28,7 +30,7 @@ export const ShipPane = ({ pane }: ShipPaneProps): JSX.Element => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,245,192,0.14),transparent_42%),radial-gradient(circle_at_bottom,rgba(128,160,188,0.14),transparent_35%),repeating-linear-gradient(90deg,rgba(255,255,255,0.03)_0px,rgba(255,255,255,0.03)_1px,transparent_1px,transparent_44px),repeating-linear-gradient(0deg,rgba(255,255,255,0.03)_0px,rgba(255,255,255,0.03)_1px,transparent_1px,transparent_44px)]" />
       <div className="relative z-10 stack gap-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="stack gap-2">
+          <div className="stack max-w-2xl gap-2">
             <Label color={pane.emphasis === "player" ? "gold" : "blood"} size="lg">
               {pane.faction}
             </Label>
@@ -50,7 +52,7 @@ export const ShipPane = ({ pane }: ShipPaneProps): JSX.Element => {
         </div>
 
         <div className="grid gap-6">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+          <div className={locationGridClassName}>
             {topRow.map((location) => (
               <ShipLocationCard key={location.locationId} location={location} />
             ))}
@@ -60,19 +62,19 @@ export const ShipPane = ({ pane }: ShipPaneProps): JSX.Element => {
             <div className="absolute inset-y-0 left-[4%] right-[4%] rounded-full bg-[repeating-linear-gradient(90deg,rgba(18,27,35,0.12)_0px,rgba(18,27,35,0.12)_10px,transparent_10px,transparent_20px)]" />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+          <div className={locationGridClassName}>
             {bottomRow.map((location) => (
               <ShipLocationCard key={location.locationId} location={location} />
             ))}
           </div>
         </div>
 
-        <div className="rounded-[1.25rem] border-[3px] border-kac-iron bg-[linear-gradient(180deg,rgba(255,253,245,0.95)_0%,rgba(236,184,123,0.88)_100%)] p-4 shadow-[5px_5px_0_0_#121b23]">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <Text variant="emphasised" color="iron" className="text-lg">
+        <div className="stack gap-3 border-t border-kac-iron/15 pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Text variant="emphasised" color="steel-light" className="text-lg">
               Crew Strip
             </Text>
-            <Text variant="note" color="iron-light" className="text-xs !opacity-100">
+            <Text variant="note" color="steel-light" className="text-xs !opacity-100">
               Actor cards stay grounded while tokens show room position.
             </Text>
           </div>

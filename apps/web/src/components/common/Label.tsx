@@ -49,7 +49,7 @@ export const Label = ({
   return (
     <span
       className={cn(
-        "label inline-flex items-center border-2 border-kac-iron",
+        "label inline-flex w-fit self-start items-center border-2 border-kac-iron",
         labelSizeClassMap[size],
         "font-heading text-xs/none font-bold uppercase tracking-wide",
         "shadow-[3px_3px_0_0_#121b23]",

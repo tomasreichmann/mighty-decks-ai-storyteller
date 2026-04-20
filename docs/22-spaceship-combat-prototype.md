@@ -30,7 +30,7 @@ It also expands the normalized Exiles adventure module so the ship cards exist a
 
 - `/spaceship`
   - hidden route
-  - full-screen, no-header shell
+  - full-screen, no-header shell with vertical scrolling so wrapped panes stay reachable
   - local seeded scene state only
 - `/styleguide/actor-token`
   - hidden route
@@ -83,6 +83,10 @@ Both routes are intentionally unlinked from primary navigation.
 +---------------------------------------------------------------+
 ```
 
+The overlay now uses the shared dialog shell and previews locations with the
+shared `LocationCard` component while rendering effects with the shared
+`EffectCard` preview used elsewhere in the app.
+
 ### `/styleguide/actor-token`
 
 ```text
@@ -112,12 +116,12 @@ Both routes are intentionally unlinked from primary navigation.
 ### Card and token primitives
 
 - `ShipLocationCard`
-  - renders a single ship location
-  - shows title, type, level, summary, status, effect stacks, tokens, and image
+  - renders a single ship location around the shared `LocationCard`
+  - shows an adjustable `Tag`-based level pill, status, effect stacks, tokens, and actor markers
   - consumes `moduleLocationSlug` so scene items stay aligned with imported module locations
 - `ShipEffectStack`
-  - renders stacked effect cards
-  - supports row-aware top/bottom placement
+  - renders full-size stacked effect cards
+  - always stacks upward, regardless of location row
 - `ActorToken`
   - circular portrait token with label and optional subtitle
   - reused in the scene and in `/styleguide/actor-token`
@@ -125,11 +129,16 @@ Both routes are intentionally unlinked from primary navigation.
   - compact token for current energy assignment
 - `SpaceshipActorStrip`
   - renders actor cards anchored to the bottom of a pane
-  - shows peeking Injury and Distress stacks
+  - shows full-size Injury and Distress stacks using shared `EffectCard` piles
+    and the same upward overlap logic as the session-table card stacks
+  - centers the effect piles behind the actor column so the visible peeks stay
+    tucked under the card instead of drifting to the pane edge
 - `CardLibraryOverlay`
-  - visual-only overlay shell for staged card selection
+  - shared overlay shell for staged card selection and library previews
   - open/close and selection state work in milestone 1
   - `Insert` is intentionally disabled
+  - location entries use the shared `LocationCard` preview and effect entries
+    use the shared `EffectCard` preview
 
 ### Shared UI primitives reused
 
@@ -137,8 +146,10 @@ Both routes are intentionally unlinked from primary navigation.
 - `Panel`
 - `Button`
 - `Text`
+- `Overlay`
 - `ActorCard`
 - existing modal shell patterns
+- `Tag`
 
 No new UI dependency was added for this milestone.
 
@@ -190,7 +201,7 @@ The current seeded data already includes `lastTouchedOrder` and `moduleLocationS
 - Effect stacks stay attached to their owning location or actor card; they do not float independently in milestone 1.
 - Top-row locations show effect stacks above the card.
 - Bottom-row locations show effect stacks below the card.
-- Actor-card Injury and Distress stacks sit under the actor card with only the top edge visible.
+- Actor-card Injury and Distress stacks sit centered behind the actor card with only the top edge visible.
 
 This mirrors the intended combat board rules without implementing interaction yet.
 

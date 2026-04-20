@@ -11,6 +11,7 @@ export interface LayeredCardProps extends Omit<
 > {
   backgroundUri?: string;
   imageUri?: string;
+  imageLabel?: ReactNode;
   imageOverlayUri?: string;
   noun?: ReactNode;
   nounEffect?: ReactNode;
@@ -109,6 +110,7 @@ export const LayeredCard = ({
   backgroundUri = "/backgrounds/paper-with-image-shadow.png",
   imageUri,
   imageOverlayUri,
+  imageLabel,
   noun = " ",
   nounEffect,
   nounDeck,
@@ -183,14 +185,30 @@ export const LayeredCard = ({
         />
 
         {imageUri ? (
-          <image
-            href={imageUri}
-            x="15"
-            y="12"
-            width="17"
-            height="17"
-            preserveAspectRatio="xMidYMid meet"
-          />
+          imageLabel ? (
+            <foreignObject x="12" y="10" width="118" height="22">
+              <div className="flex h-full w-full items-center gap-1 overflow-hidden text-kac-iron">
+                <img
+                  src={imageUri}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-[17px] w-[17px] shrink-0 object-contain"
+                />
+                <div className="min-w-0 truncate font-ui text-[9px] font-bold leading-none tracking-[0.05em]">
+                  {imageLabel}
+                </div>
+              </div>
+            </foreignObject>
+          ) : (
+            <image
+              href={imageUri}
+              x="15"
+              y="12"
+              width="17"
+              height="17"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          )
         ) : null}
 
         <text
