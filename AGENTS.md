@@ -153,6 +153,13 @@ Create `.env.local` (not committed):
 - `OR_TEXT_CONTINUITY_MODEL=...`
 - `OR_TEXT_PITCH_MODEL=...`
 - `OR_IMAGE_MODEL=black-forest-labs/flux.2-klein-4b`
+- `AI_TEXT_PROVIDER=openrouter` # `openrouter` | `claude_cli` | `groq`
+- `GROQ_API_KEY=...` # only when `AI_TEXT_PROVIDER=groq`
+- `GROQ_TEXT_NARRATIVE_MODEL=meta-llama/llama-4-scout-17b-16e-instruct`
+- `GROQ_TEXT_SCENE_MODEL=llama-3.1-8b-instant`
+- `GROQ_TEXT_OUTCOME_MODEL=llama-3.1-8b-instant`
+- `GROQ_TEXT_CONTINUITY_MODEL=llama-3.1-8b-instant`
+- `GROQ_TEXT_PITCH_MODEL=meta-llama/llama-4-scout-17b-16e-instruct`
 - `TEXT_CALL_TIMEOUT_MS=30000`
 - `TURN_DEADLINE_MS=18000`
 - `IMAGE_TIMEOUT_MS=30000`

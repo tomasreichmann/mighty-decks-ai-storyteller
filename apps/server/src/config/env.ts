@@ -19,10 +19,27 @@ for (const candidate of envCandidates) {
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(8081),
   CORS_ORIGINS: z.string().min(1).default("http://localhost:5173"),
-  AI_TEXT_PROVIDER: z.enum(["openrouter", "claude_cli"]).default("openrouter"),
+  AI_TEXT_PROVIDER: z
+    .enum(["openrouter", "claude_cli", "groq"])
+    .default("openrouter"),
   CLAUDE_CLI_MODEL: z.string().min(1).default("claude-sonnet-4-20250514"),
   CLAUDE_CLI_MAX_CONCURRENT: z.coerce.number().int().min(1).max(10).default(2),
   OPENROUTER_API_KEY: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
+  GROQ_TEXT_NARRATIVE_MODEL: z
+    .string()
+    .min(1)
+    .default("meta-llama/llama-4-scout-17b-16e-instruct"),
+  GROQ_TEXT_SCENE_MODEL: z.string().min(1).default("llama-3.1-8b-instant"),
+  GROQ_TEXT_OUTCOME_MODEL: z.string().min(1).default("llama-3.1-8b-instant"),
+  GROQ_TEXT_CONTINUITY_MODEL: z
+    .string()
+    .min(1)
+    .default("llama-3.1-8b-instant"),
+  GROQ_TEXT_PITCH_MODEL: z
+    .string()
+    .min(1)
+    .default("meta-llama/llama-4-scout-17b-16e-instruct"),
   FAL_API_KEY: z.string().optional(),
   LEONARDO_API_KEY: z.string().optional(),
   FAL_API_BASE_URL: z.string().min(1).default("https://api.fal.ai/v1"),
@@ -179,6 +196,10 @@ export const env = {
     parsed.OPENROUTER_API_KEY && parsed.OPENROUTER_API_KEY.trim().length > 0
       ? parsed.OPENROUTER_API_KEY.trim()
       : null,
+  groqApiKey:
+    parsed.GROQ_API_KEY && parsed.GROQ_API_KEY.trim().length > 0
+      ? parsed.GROQ_API_KEY.trim()
+      : null,
   falApiKey:
     parsed.FAL_API_KEY && parsed.FAL_API_KEY.trim().length > 0
       ? parsed.FAL_API_KEY.trim()
@@ -188,11 +209,26 @@ export const env = {
       ? parsed.LEONARDO_API_KEY.trim()
       : null,
   models: {
-    narrativeDirector: parsed.OR_TEXT_NARRATIVE_MODEL,
-    sceneController: parsed.OR_TEXT_SCENE_MODEL,
-    outcomeDecider: parsed.OR_TEXT_OUTCOME_MODEL,
-    continuityKeeper: parsed.OR_TEXT_CONTINUITY_MODEL,
-    pitchGenerator: parsed.OR_TEXT_PITCH_MODEL,
+    narrativeDirector:
+      parsed.AI_TEXT_PROVIDER === "groq"
+        ? parsed.GROQ_TEXT_NARRATIVE_MODEL
+        : parsed.OR_TEXT_NARRATIVE_MODEL,
+    sceneController:
+      parsed.AI_TEXT_PROVIDER === "groq"
+        ? parsed.GROQ_TEXT_SCENE_MODEL
+        : parsed.OR_TEXT_SCENE_MODEL,
+    outcomeDecider:
+      parsed.AI_TEXT_PROVIDER === "groq"
+        ? parsed.GROQ_TEXT_OUTCOME_MODEL
+        : parsed.OR_TEXT_OUTCOME_MODEL,
+    continuityKeeper:
+      parsed.AI_TEXT_PROVIDER === "groq"
+        ? parsed.GROQ_TEXT_CONTINUITY_MODEL
+        : parsed.OR_TEXT_CONTINUITY_MODEL,
+    pitchGenerator:
+      parsed.AI_TEXT_PROVIDER === "groq"
+        ? parsed.GROQ_TEXT_PITCH_MODEL
+        : parsed.OR_TEXT_PITCH_MODEL,
     imageGenerator: parsed.OR_IMAGE_MODEL,
     imageGeneratorFallback: parsed.OR_IMAGE_MODEL_FALLBACK,
   },

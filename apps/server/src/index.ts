@@ -10,6 +10,7 @@ import type {
 } from "@mighty-decks/spec/campaignEvents";
 import type { ClientToServerEvents, ServerToClientEvents } from "@mighty-decks/spec/events";
 import { ClaudeCliClient } from "./ai/ClaudeCliClient";
+import { GroqClient } from "./ai/GroqClient";
 import { OpenRouterClient } from "./ai/OpenRouterClient";
 import type { TextCompletionClient } from "./ai/OpenRouterClient";
 import { StorytellerService } from "./ai/StorytellerService";
@@ -62,6 +63,8 @@ if (env.textProvider === "claude_cli") {
   });
   await cliClient.probe(app.log);
   textClient = cliClient;
+} else if (env.textProvider === "groq") {
+  textClient = new GroqClient({ apiKey: env.groqApiKey });
 }
 const falClient = new FalClient({
   apiKey: env.falApiKey,
@@ -138,20 +141,37 @@ const diagnosticsLogger = new AdventureDiagnosticsLogger({
   logDir: env.debugLogDir,
 });
 
+const isGroq = env.textProvider === "groq";
+const textFallbacks = isGroq
+  ? {
+      narrativeDirector: "llama-3.1-8b-instant",
+      sceneController: "llama-3.1-8b-instant",
+      outcomeDecider: "llama-3.1-8b-instant",
+      continuityKeeper: "llama-3.1-8b-instant",
+      pitchGenerator: "llama-3.1-8b-instant",
+    }
+  : {
+      narrativeDirector: "google/gemini-2.5-flash",
+      sceneController: "google/gemini-2.5-flash",
+      outcomeDecider: "google/gemini-2.5-flash-lite",
+      continuityKeeper: "deepseek/deepseek-v3.2",
+      pitchGenerator: "google/gemini-2.5-flash",
+    };
+
 const storyteller = new StorytellerService({
   textClient,
   openRouterClient,
   models: {
     narrativeDirector: env.models.narrativeDirector,
-    narrativeDirectorFallback: "google/gemini-2.5-flash",
+    narrativeDirectorFallback: textFallbacks.narrativeDirector,
     sceneController: env.models.sceneController,
-    sceneControllerFallback: "google/gemini-2.5-flash",
+    sceneControllerFallback: textFallbacks.sceneController,
     outcomeDecider: env.models.outcomeDecider,
-    outcomeDeciderFallback: "google/gemini-2.5-flash-lite",
+    outcomeDeciderFallback: textFallbacks.outcomeDecider,
     continuityKeeper: env.models.continuityKeeper,
-    continuityKeeperFallback: "deepseek/deepseek-v3.2",
+    continuityKeeperFallback: textFallbacks.continuityKeeper,
     pitchGenerator: env.models.pitchGenerator,
-    pitchGeneratorFallback: "google/gemini-2.5-flash",
+    pitchGeneratorFallback: textFallbacks.pitchGenerator,
     imageGenerator: env.models.imageGenerator,
     imageGeneratorFallback: env.models.imageGeneratorFallback,
   },
