@@ -24,6 +24,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Server: add Groq as an `AI_TEXT_PROVIDER` option (text-only; image generation continues via OpenRouter/Fal/Leonardo). New env vars: `GROQ_API_KEY`, `GROQ_TEXT_NARRATIVE_MODEL`, `GROQ_TEXT_SCENE_MODEL`, `GROQ_TEXT_OUTCOME_MODEL`, `GROQ_TEXT_CONTINUITY_MODEL`, `GROQ_TEXT_PITCH_MODEL`.
 - Web: add public privacy policy and terms of service pages, and link both from the shared footer alongside the home page.
 - Web: add a reusable `ConfirmationDialog` plus `useConfirmationDialog` hook for destructive actions with async pending states.
 - Web: extract a shared overlay shell for the spaceship card library and use shared `LocationCard` plus `EffectCard` previews inside the library grid.

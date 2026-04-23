@@ -1,4 +1,4 @@
-interface ChatCompletionResponse {
+export interface ChatCompletionResponse {
   choices?: Array<{
     message?: {
       content?: string | Array<{
@@ -18,7 +18,7 @@ interface ChatCompletionResponse {
   usage?: unknown;
 }
 
-interface ChatCompletionStreamChunk {
+export interface ChatCompletionStreamChunk {
   choices?: Array<{
     delta?: {
       content?: string | Array<{
@@ -52,7 +52,7 @@ interface ImageGenerationResponse {
 
 type MessageContent = string | Array<{ type?: string; text?: string }> | undefined;
 
-interface TextRequest {
+export interface TextRequest {
   model: string;
   prompt: string;
   timeoutMs: number;
@@ -92,7 +92,7 @@ export interface OpenRouterClientOptions {
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
-const parseMessageContent = (rawContent: MessageContent): string | null => {
+export const parseMessageContent = (rawContent: MessageContent): string | null => {
   if (typeof rawContent === "string") {
     const trimmed = rawContent.trim();
     return trimmed.length > 0 ? trimmed : null;
@@ -111,7 +111,7 @@ const parseMessageContent = (rawContent: MessageContent): string | null => {
   return flattened.length > 0 ? flattened : null;
 };
 
-const parseDeltaContent = (rawContent: MessageContent): string => {
+export const parseDeltaContent = (rawContent: MessageContent): string => {
   if (typeof rawContent === "string") {
     return rawContent;
   }
@@ -123,7 +123,7 @@ const parseDeltaContent = (rawContent: MessageContent): string => {
   return rawContent.map((part) => part.text ?? "").join("");
 };
 
-const createTimeoutSignal = (timeoutMs: number): AbortSignal => {
+export const createTimeoutSignal = (timeoutMs: number): AbortSignal => {
   return AbortSignal.timeout(timeoutMs);
 };
 
@@ -132,7 +132,7 @@ const MAX_ERROR_SNIPPET = 500;
 const shorten = (value: string, maxLength: number): string =>
   value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
 
-const parseJsonSafe = (raw: string): unknown | null => {
+export const parseJsonSafe = (raw: string): unknown | null => {
   try {
     return JSON.parse(raw) as unknown;
   } catch {
@@ -205,7 +205,7 @@ const readFirstNumberAtPaths = (
   return undefined;
 };
 
-const readUsage = (payload: unknown): OpenRouterUsage | undefined => {
+export const readUsage = (payload: unknown): OpenRouterUsage | undefined => {
   if (!isRecord(payload)) {
     return undefined;
   }
