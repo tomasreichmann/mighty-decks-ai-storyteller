@@ -41,10 +41,11 @@ The repo should not currently be read as a full implementation of Mighty Decks r
 
 - Node.js `22.x`
 - `pnpm@10` via Corepack (`corepack enable`)
-- An `OPENROUTER_API_KEY` for storyteller features and most AI-backed flows
+- An `OPENROUTER_API_KEY` for the default storyteller text provider and image generation
 - Optional: `cloudflared` for remote playtests outside your LAN
 - Optional: a Render account if you want to deploy the single-service setup
 - Optional: `FAL_API_KEY` and `LEONARDO_API_KEY` if you want alternative image generation providers or workflow-lab integrations
+- Optional: `GROQ_API_KEY` if you want `AI_TEXT_PROVIDER=groq` for text completions
 
 ## Repository Layout
 
@@ -96,9 +97,9 @@ pnpm -C apps/web dev --host
 
 ## AI Setup
 
-### Required for the storyteller runtime
+### Required for the default storyteller runtime
 
-- `OPENROUTER_API_KEY` enables the main storyteller, pitch generation, continuity, and default image generation flows.
+- `OPENROUTER_API_KEY` enables the default storyteller text provider, pitch generation, continuity, and default image generation flows.
 - The storyteller runtime reads model IDs from env so you can swap providers without code changes.
 
 Storyteller runtime defaults:
@@ -113,6 +114,21 @@ Storyteller runtime defaults:
 | Image Generator | `OR_IMAGE_MODEL` | `black-forest-labs/flux.2-klein-4b` |
 | Optional image fallback | `OR_IMAGE_MODEL_FALLBACK` | unset |
 
+### Optional text provider: Groq
+
+- Set `AI_TEXT_PROVIDER=groq` and `GROQ_API_KEY` to route text completions through Groq.
+- Keep `OPENROUTER_API_KEY` set if you still want the default image-generation flow.
+
+Groq text provider defaults:
+
+| Role | Env var | Default |
+| --- | --- | --- |
+| Narrative Director | `GROQ_TEXT_NARRATIVE_MODEL` | `meta-llama/llama-4-scout-17b-16e-instruct` |
+| Scene Controller | `GROQ_TEXT_SCENE_MODEL` | `llama-3.1-8b-instant` |
+| Outcome Decider | `GROQ_TEXT_OUTCOME_MODEL` | `llama-3.1-8b-instant` |
+| Continuity Keeper | `GROQ_TEXT_CONTINUITY_MODEL` | `llama-3.1-8b-instant` |
+| Pitch Generator | `GROQ_TEXT_PITCH_MODEL` | `meta-llama/llama-4-scout-17b-16e-instruct` |
+
 Runtime tuning env vars already exist in `.env.example`, including:
 
 - `TEXT_CALL_TIMEOUT_MS`
@@ -125,6 +141,7 @@ Runtime tuning env vars already exist in `.env.example`, including:
 
 - `FAL_API_KEY` enables FAL-backed image and workflow adapters.
 - `LEONARDO_API_KEY` enables Leonardo-backed image generation.
+- `AI_TEXT_PROVIDER=groq` plus `GROQ_API_KEY` and `GROQ_TEXT_*` model overrides enable Groq-backed text completions.
 - `WF_*` environment variables configure workflow-lab model defaults and timeouts. They are not required for the core storyteller MVP loop.
 
 If you only want the core AI storyteller runtime, start with `OPENROUTER_API_KEY` and the default model env vars.

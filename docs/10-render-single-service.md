@@ -44,6 +44,7 @@ Optional:
 - `DEBUG_MODE=false`
 - `MAX_ACTIVE_ADVENTURES=1`
 - model overrides (`OR_TEXT_*`, `OR_IMAGE_MODEL`, etc.)
+- `AI_TEXT_PROVIDER=groq` plus `GROQ_API_KEY` and `GROQ_TEXT_*` if you want Groq for text completions while keeping OpenRouter for images
 
 ## 4) Keep one instance
 
