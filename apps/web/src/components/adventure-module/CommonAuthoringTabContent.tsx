@@ -16,11 +16,13 @@ import { AdventureModuleQuestEditor } from "./AdventureModuleQuestEditor";
 import { AdventureModuleQuestsTabPanel } from "./AdventureModuleQuestsTabPanel";
 import { AdventureModuleStorytellerInfoTabPanel } from "./AdventureModuleStorytellerInfoTabPanel";
 import { AdventureModuleTabPlaceholder } from "./AdventureModuleTabPlaceholder";
+import { ConfirmationDialog } from "../common/ConfirmationDialog";
 import {
   AUTHORING_TABS,
   type AuthoringTab,
 } from "../../lib/authoring/sharedAuthoring";
 import { useAuthoringContext } from "../../lib/authoring/store/AuthoringProvider";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
 
 interface CommonAuthoringTabContentProps {
@@ -54,6 +56,24 @@ const buildMissingEntityDescription = (
   return `${entityLabel} "${entityId}" could not be found in this ${detailLabel}.`;
 };
 
+const buildEntityLabel = (form: string): string => {
+  switch (form) {
+    case "actor":
+      return "Actor";
+    case "location":
+      return "Location";
+    case "encounter":
+      return "Encounter";
+    case "quest":
+      return "Quest";
+    case "counter":
+      return "Counter";
+    case "asset":
+    default:
+      return "Asset";
+  }
+};
+
 export const CommonAuthoringTabContent = ({
   onAddActorCardToSelection,
   onAddLocationCardToSelection,
@@ -75,9 +95,11 @@ export const CommonAuthoringTabContent = ({
     adjustCounterValue,
     persistCoverImage,
   } = useAuthoringContext();
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
   const detail = state.detail;
   const activeTab = state.route.activeTab;
   const entityId = state.route.entityId;
+  const detailLabel = state.detailType === "campaign" ? "campaign" : "module";
 
   const smartContextDocument = useMemo<SmartInputDocumentContext>(
     () => ({
@@ -168,11 +190,34 @@ export const CommonAuthoringTabContent = ({
     [buildRoute, detail, state.forms.location?.fragmentId],
   );
 
+  const confirmDeleteEntity = (
+    form: "actor" | "location" | "encounter" | "quest" | "counter" | "asset",
+    slug: string,
+    title: string,
+  ): void => {
+    const entityLabel = buildEntityLabel(form);
+    requestConfirmation({
+      title: `Delete "${title}"?`,
+      description:
+        `This removes the ${entityLabel.toLowerCase()} from this ${detailLabel}. ` +
+        "Existing markdown references stay in place and will fall back when the item is gone.",
+      confirmLabel: `Delete ${entityLabel}`,
+      confirmColor: "blood",
+      onConfirm: () => deleteEntity(form, slug, title),
+    });
+  };
+
+  const renderWithConfirmation = (content: JSX.Element): JSX.Element => (
+    <>
+      {content}
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
+    </>
+  );
+
   if (!detail || !COMMON_TABS.has(activeTab as AuthoringTab)) {
     return null;
   }
 
-  const detailLabel = state.detailType === "campaign" ? "campaign" : "module";
   const activeActor =
     activeTab === "actors" && entityId
       ? detail.actors.find((actor) => actor.actorSlug === entityId) ?? null
@@ -203,74 +248,76 @@ export const CommonAuthoringTabContent = ({
 
   if (entityId) {
     if (activeTab === "actors") {
-      return activeActor && state.forms.actor ? (
-        <AdventureModuleActorEditor
-          actor={{
-            ...activeActor,
-            title: state.forms.actor.title,
-            summary: state.forms.actor.summary,
-            baseLayerSlug: state.forms.actor.baseLayerSlug,
-            tacticalRoleSlug: state.forms.actor.tacticalRoleSlug,
-            tacticalSpecialSlug: state.forms.actor.tacticalSpecialSlug,
-            isPlayerCharacter: state.forms.actor.isPlayerCharacter,
-            content: state.forms.actor.content,
-          }}
-          actors={detail.actors}
-          counters={detail.counters}
-          assets={detail.assets}
-          encounters={detail.encounters}
-          locations={detail.locations}
-          quests={detail.quests}
-          smartContextDocument={smartContextDocument}
-          editable={editable}
-          validationMessage={state.validation.actor}
-          onTitleChange={(nextValue) => changeField("actor", "title", nextValue)}
-          onSummaryChange={(nextValue) =>
-            changeField("actor", "summary", nextValue)
-          }
-          onBaseLayerChange={(nextValue) =>
-            changeField("actor", "baseLayerSlug", nextValue)
-          }
-          onTacticalRoleChange={(nextValue) =>
-            changeField("actor", "tacticalRoleSlug", nextValue)
-          }
-          onTacticalSpecialChange={(nextValue) =>
-            changeField("actor", "tacticalSpecialSlug", nextValue)
-          }
-          onIsPlayerCharacterChange={(nextValue) =>
-            changeField("actor", "isPlayerCharacter", nextValue)
-          }
-          onContentChange={(nextValue) =>
-            changeField("actor", "content", nextValue)
-          }
-          onFieldBlur={() => {
-            void flushForm("actor");
-          }}
-          onAdjustCounterValue={(counterSlug, delta, target) => {
-            void adjustCounterValue(counterSlug, delta, target);
-          }}
-          onDelete={() => {
-            void deleteEntity("actor", activeActor.actorSlug, activeActor.title);
-          }}
-          onAddActorCardToSelection={
-            onAddActorCardToSelection
-              ? () => onAddActorCardToSelection(activeActor.actorSlug)
-              : undefined
-          }
-        />
-      ) : (
-        <AdventureModuleTabPlaceholder
-          description={buildMissingEntityDescription(
-            activeTab,
-            entityId,
-            detailLabel,
-          )}
-        />
+      return renderWithConfirmation(
+        activeActor && state.forms.actor ? (
+          <AdventureModuleActorEditor
+            actor={{
+              ...activeActor,
+              title: state.forms.actor.title,
+              summary: state.forms.actor.summary,
+              baseLayerSlug: state.forms.actor.baseLayerSlug,
+              tacticalRoleSlug: state.forms.actor.tacticalRoleSlug,
+              tacticalSpecialSlug: state.forms.actor.tacticalSpecialSlug,
+              isPlayerCharacter: state.forms.actor.isPlayerCharacter,
+              content: state.forms.actor.content,
+            }}
+            actors={detail.actors}
+            counters={detail.counters}
+            assets={detail.assets}
+            encounters={detail.encounters}
+            locations={detail.locations}
+            quests={detail.quests}
+            smartContextDocument={smartContextDocument}
+            editable={editable}
+            validationMessage={state.validation.actor}
+            onTitleChange={(nextValue) => changeField("actor", "title", nextValue)}
+            onSummaryChange={(nextValue) =>
+              changeField("actor", "summary", nextValue)
+            }
+            onBaseLayerChange={(nextValue) =>
+              changeField("actor", "baseLayerSlug", nextValue)
+            }
+            onTacticalRoleChange={(nextValue) =>
+              changeField("actor", "tacticalRoleSlug", nextValue)
+            }
+            onTacticalSpecialChange={(nextValue) =>
+              changeField("actor", "tacticalSpecialSlug", nextValue)
+            }
+            onIsPlayerCharacterChange={(nextValue) =>
+              changeField("actor", "isPlayerCharacter", nextValue)
+            }
+            onContentChange={(nextValue) =>
+              changeField("actor", "content", nextValue)
+            }
+            onFieldBlur={() => {
+              void flushForm("actor");
+            }}
+            onAdjustCounterValue={(counterSlug, delta, target) => {
+              void adjustCounterValue(counterSlug, delta, target);
+            }}
+            onDelete={() => {
+              confirmDeleteEntity("actor", activeActor.actorSlug, activeActor.title);
+            }}
+            onAddActorCardToSelection={
+              onAddActorCardToSelection
+                ? () => onAddActorCardToSelection(activeActor.actorSlug)
+                : undefined
+            }
+          />
+        ) : (
+          <AdventureModuleTabPlaceholder
+            description={buildMissingEntityDescription(
+              activeTab,
+              entityId,
+              detailLabel,
+            )}
+          />
+        ),
       );
     }
 
     if (activeTab === "locations") {
-      return activeLocation && state.forms.location ? (
+      return renderWithConfirmation(activeLocation && state.forms.location ? (
         <AdventureModuleLocationEditor
           location={{
             ...activeLocation,
@@ -323,7 +370,7 @@ export const CommonAuthoringTabContent = ({
             void adjustCounterValue(counterSlug, delta, target);
           }}
           onDelete={() => {
-            void deleteEntity(
+            confirmDeleteEntity(
               "location",
               activeLocation.locationSlug,
               activeLocation.title,
@@ -343,11 +390,11 @@ export const CommonAuthoringTabContent = ({
             detailLabel,
           )}
         />
-      );
+      ));
     }
 
     if (activeTab === "encounters") {
-      return activeEncounter && state.forms.encounter ? (
+      return renderWithConfirmation(activeEncounter && state.forms.encounter ? (
         <AdventureModuleEncounterEditor
           encounter={{
             ...activeEncounter,
@@ -388,7 +435,7 @@ export const CommonAuthoringTabContent = ({
             void adjustCounterValue(counterSlug, delta, target);
           }}
           onDelete={() => {
-            void deleteEntity(
+            confirmDeleteEntity(
               "encounter",
               activeEncounter.encounterSlug,
               activeEncounter.title,
@@ -408,11 +455,11 @@ export const CommonAuthoringTabContent = ({
             detailLabel,
           )}
         />
-      );
+      ));
     }
 
     if (activeTab === "quests") {
-      return activeQuest && state.forms.quest ? (
+      return renderWithConfirmation(activeQuest && state.forms.quest ? (
         <AdventureModuleQuestEditor
           quest={{
             ...activeQuest,
@@ -447,7 +494,7 @@ export const CommonAuthoringTabContent = ({
             void adjustCounterValue(counterSlug, delta, target);
           }}
           onDelete={() => {
-            void deleteEntity("quest", activeQuest.questSlug, activeQuest.title);
+            confirmDeleteEntity("quest", activeQuest.questSlug, activeQuest.title);
           }}
           onAddQuestCardToSelection={
             onAddQuestCardToSelection
@@ -463,11 +510,11 @@ export const CommonAuthoringTabContent = ({
             detailLabel,
           )}
         />
-      );
+      ));
     }
 
     if (activeTab === "counters") {
-      return activeCounter && state.forms.counter ? (
+      return renderWithConfirmation(activeCounter && state.forms.counter ? (
         <AdventureModuleCounterEditor
           counter={{
             ...activeCounter,
@@ -516,7 +563,7 @@ export const CommonAuthoringTabContent = ({
             void adjustCounterValue(counterSlug, delta, target);
           }}
           onDelete={() => {
-            void deleteEntity(
+            confirmDeleteEntity(
               "counter",
               activeCounter.slug,
               activeCounter.title,
@@ -536,11 +583,11 @@ export const CommonAuthoringTabContent = ({
             detailLabel,
           )}
         />
-      );
+      ));
     }
 
     if (activeTab === "assets") {
-      return activeAsset && state.forms.asset ? (
+      return renderWithConfirmation(activeAsset && state.forms.asset ? (
         <AdventureModuleAssetEditor
           asset={{
             fragmentId: activeAsset.fragmentId,
@@ -592,7 +639,7 @@ export const CommonAuthoringTabContent = ({
             void flushForm("asset");
           }}
           onDelete={() => {
-            void deleteEntity("asset", activeAsset.assetSlug, activeAsset.title);
+            confirmDeleteEntity("asset", activeAsset.assetSlug, activeAsset.title);
           }}
           onAddAssetCardToSelection={
             onAddAssetCardToSelection
@@ -608,13 +655,13 @@ export const CommonAuthoringTabContent = ({
             detailLabel,
           )}
         />
-      );
+      ));
     }
   }
 
   switch (activeTab) {
     case "base":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleBaseTabPanel
           moduleId={detail.index.moduleId}
           creatorToken={creatorToken}
@@ -647,7 +694,7 @@ export const CommonAuthoringTabContent = ({
         />
       );
     case "player-info":
-      return (
+      return renderWithConfirmation(
         <AdventureModulePlayerInfoTabPanel
           summary={state.forms.playerInfo.summary}
           infoText={state.forms.playerInfo.infoText}
@@ -675,7 +722,7 @@ export const CommonAuthoringTabContent = ({
         />
       );
     case "storyteller-info":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleStorytellerInfoTabPanel
           summary={state.forms.storytellerInfo.summary}
           infoText={state.forms.storytellerInfo.infoText}
@@ -703,7 +750,7 @@ export const CommonAuthoringTabContent = ({
         />
       );
     case "actors":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleActorsTabPanel
           actors={detail.actors}
           editable={editable}
@@ -716,13 +763,13 @@ export const CommonAuthoringTabContent = ({
             navigateTo(buildRoute(detail.index.slug, "actors", actorSlug));
           }}
           onDeleteActor={(actorSlug, title) => {
-            void deleteEntity("actor", actorSlug, title);
+            confirmDeleteEntity("actor", actorSlug, title);
           }}
           onAddActorCardToSelection={onAddActorCardToSelection}
         />
       );
     case "locations":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleLocationsTabPanel
           locations={detail.locations}
           editable={editable}
@@ -735,13 +782,13 @@ export const CommonAuthoringTabContent = ({
             navigateTo(buildRoute(detail.index.slug, "locations", locationSlug));
           }}
           onDeleteLocation={(locationSlug, title) => {
-            void deleteEntity("location", locationSlug, title);
+            confirmDeleteEntity("location", locationSlug, title);
           }}
           onAddLocationCardToSelection={onAddLocationCardToSelection}
         />
       );
     case "encounters":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleEncountersTabPanel
           encounters={detail.encounters}
           editable={editable}
@@ -754,13 +801,13 @@ export const CommonAuthoringTabContent = ({
             navigateTo(buildRoute(detail.index.slug, "encounters", encounterSlug));
           }}
           onDeleteEncounter={(encounterSlug, title) => {
-            void deleteEntity("encounter", encounterSlug, title);
+            confirmDeleteEntity("encounter", encounterSlug, title);
           }}
           onAddEncounterCardToSelection={onAddEncounterCardToSelection}
         />
       );
     case "quests":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleQuestsTabPanel
           quests={detail.quests}
           editable={editable}
@@ -773,13 +820,13 @@ export const CommonAuthoringTabContent = ({
             navigateTo(buildRoute(detail.index.slug, "quests", questSlug));
           }}
           onDeleteQuest={(questSlug, title) => {
-            void deleteEntity("quest", questSlug, title);
+            confirmDeleteEntity("quest", questSlug, title);
           }}
           onAddQuestCardToSelection={onAddQuestCardToSelection}
         />
       );
     case "counters":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleCountersTabPanel
           counters={detail.counters}
           editable={editable}
@@ -792,7 +839,7 @@ export const CommonAuthoringTabContent = ({
             navigateTo(buildRoute(detail.index.slug, "counters", counterSlug));
           }}
           onDeleteCounter={(counterSlug, title) => {
-            void deleteEntity("counter", counterSlug, title);
+            confirmDeleteEntity("counter", counterSlug, title);
           }}
           onAddCounterCardToSelection={onAddCounterCardToSelection}
           onAdjustCounterValue={(counterSlug, delta, target) => {
@@ -801,7 +848,7 @@ export const CommonAuthoringTabContent = ({
         />
       );
     case "assets":
-      return (
+      return renderWithConfirmation(
         <AdventureModuleAssetsTabPanel
           assets={detail.assets}
           editable={editable}
@@ -814,7 +861,7 @@ export const CommonAuthoringTabContent = ({
             navigateTo(buildRoute(detail.index.slug, "assets", assetSlug));
           }}
           onDeleteAsset={(assetSlug, title) => {
-            void deleteEntity("asset", assetSlug, title);
+            confirmDeleteEntity("asset", assetSlug, title);
           }}
           onAddAssetCardToSelection={onAddAssetCardToSelection}
         />

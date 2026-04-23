@@ -192,6 +192,7 @@ List rules:
 - The list header exposes `Create Module` plus `Copy Author Token`.
 - Module cards use explicit in-card `Open Module` and `Create Campaign` actions rather than whole-card click targets.
 - Module cards surface author, tags, ownership/status pills, and cover art inside the shared story-tile shell.
+- Owned module cards also expose a bottom-right circular trash button that opens the shared confirmation dialog before deletion.
 - The module grid stays compact at one card on mobile, two on tablet, and three on desktop.
 
 ---
@@ -252,6 +253,7 @@ Tabs:
 - `encounters`: `AdventureModuleEncountersTabPanel` showing searchable `EncounterCard` entries, `Create Encounter`, compact shortcode rows, and delete actions
 - `quests`: `AdventureModuleQuestsTabPanel` showing searchable `QuestCard` entries, `Create Quest`, compact shortcode rows, and delete actions
 - the searchable entity lists reuse the shared compact depressed search shell and the same mobile/tablet/desktop 1/2/3 card grid
+- destructive list/detail actions in the shared authoring surfaces use the reusable `ConfirmationDialog` instead of native browser confirm prompts
 
 List-tab row actions:
 
@@ -373,6 +375,7 @@ Behavior:
 - keep one major surface per campaign card
 - keep `Create Campaign` in the page header for now, redirecting to `/adventure-module/list` until a direct in-list creation flow replaces it
 - reuse the same shared `StoryTileCard` shell as the module list, with visible source-module context and explicit `Open Campaign` plus `View Sessions` actions
+- expose a bottom-right circular trash button on each campaign card that opens the shared confirmation dialog before deletion
 - avoid nesting additional framed panels inside campaign cards for metadata rows or action groups
 - rely on spacing, hierarchy, and button grouping before adding extra framed chrome
 - the campaign grid follows the same one-on-mobile, two-on-tablet, three-on-desktop layout as the module list
@@ -458,6 +461,7 @@ Behavior:
 - reserve heavy framed panels for the primary transcript surface and avoid framing every inner subsection
 - keep player and storyteller transcript composers aligned on the same compact image-trigger-plus-modal flow so both roles can share generated images through the same raw-text transcript model
 - reuse the same entity editor components as Adventure Module authoring so compact shortcode rows appear in storyteller detail tabs too
+- run close-session and other destructive session actions through the shared `ConfirmationDialog` rather than native browser confirm prompts
 
 ---
 
@@ -1046,6 +1050,7 @@ Located in `apps/web/src/components/common/`:
 - `Message`
 - `Tag`
 - `ConnectionStatusPill`
+- `ConfirmationDialog`
 - `TextField` (shared single-line field with the `sm`/`md`/`lg` size ladder)
 - `TextArea` (shared multiline field with the `sm`/`md`/`lg` size ladder)
 - `Toggle`

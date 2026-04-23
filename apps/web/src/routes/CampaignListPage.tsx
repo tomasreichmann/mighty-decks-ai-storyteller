@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CampaignListItem } from "@mighty-decks/spec/campaign";
 import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Button } from "../components/common/Button";
+import { ConfirmationDialog } from "../components/common/ConfirmationDialog";
 import { CTAButton } from "../components/common/CTAButton";
 import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
@@ -11,8 +12,9 @@ import { ResponsiveCardGrid } from "../components/common/ResponsiveCardGrid";
 import { SearchField } from "../components/common/SearchField";
 import { Text } from "../components/common/Text";
 import { CampaignListCard } from "../components/campaign/CampaignListCard";
-import { listCampaigns } from "../lib/campaignApi";
+import { deleteCampaign, listCampaigns } from "../lib/campaignApi";
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
+import { useConfirmationDialog } from "../hooks/useConfirmationDialog";
 
 const PAGE_SIZE = 20;
 
@@ -49,6 +51,23 @@ const compareCampaigns = (
   return right.updatedAtIso.localeCompare(left.updatedAtIso);
 };
 
+const TrashIcon = (): JSX.Element => (
+  <svg
+    viewBox="0 0 24 24"
+    className="h-3.5 w-3.5 fill-none stroke-current"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M6 6l1 14h10l1-14" />
+    <path d="M10 10v7" />
+    <path d="M14 10v7" />
+  </svg>
+);
+
 export const CampaignListPage = (): JSX.Element => {
   const creatorToken = useMemo(() => getAdventureModuleCreatorToken(), []);
   const [campaigns, setCampaigns] = useState<CampaignListItem[]>([]);
@@ -56,6 +75,7 @@ export const CampaignListPage = (): JSX.Element => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +137,32 @@ export const CampaignListPage = (): JSX.Element => {
     pageStart + PAGE_SIZE,
   );
 
+  const handleDeleteCampaign = (campaign: CampaignListItem): void => {
+    requestConfirmation({
+      title: `Delete "${campaign.title}"?`,
+      description:
+        "This removes the campaign and its saved authored content from the current UI. Existing sessions under this campaign will also be removed.",
+      confirmLabel: "Delete Campaign",
+      confirmColor: "blood",
+      onConfirm: async () => {
+        try {
+          await deleteCampaign(campaign.campaignId, creatorToken);
+          setCampaigns((current) =>
+            current.filter((candidate) => candidate.campaignId !== campaign.campaignId),
+          );
+          setError(null);
+        } catch (deleteError) {
+          setError(
+            deleteError instanceof Error
+              ? deleteError.message
+              : "Could not delete campaign.",
+          );
+          throw deleteError;
+        }
+      },
+    });
+  };
+
   return (
     <div className="app-shell stack py-8 gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -176,6 +222,8 @@ export const CampaignListPage = (): JSX.Element => {
         </Message>
       ) : null}
 
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
+
       {loading ? (
         <Panel contentClassName="flex justify-center">
           <PendingIndicator label="Loading campaigns" color="cloth" />
@@ -184,7 +232,22 @@ export const CampaignListPage = (): JSX.Element => {
         <>
           <ResponsiveCardGrid>
             {visibleCampaigns.map((campaign) => (
-              <CampaignListCard key={campaign.campaignId} campaign={campaign} />
+              <div key={campaign.campaignId} className="relative h-full">
+                <CampaignListCard campaign={campaign} />
+                <Button
+                  variant="circle"
+                  color="blood"
+                  size="sm"
+                  aria-label={`Delete ${campaign.title}`}
+                  title={`Delete ${campaign.title}`}
+                  className="absolute bottom-4 right-4 z-20"
+                  onClick={() => {
+                    handleDeleteCampaign(campaign);
+                  }}
+                >
+                  <TrashIcon />
+                </Button>
+              </div>
             ))}
           </ResponsiveCardGrid>
 

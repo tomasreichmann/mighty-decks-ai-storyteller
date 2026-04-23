@@ -8,6 +8,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: restyle the shared confirmation dialog to use a blood `Message` shell with an opaque white body so destructive prompts stay readable over the overlay backdrop.
+- Web: add bottom-right trash actions to Adventure Module and Campaign story tiles so both list pages can remove items in place.
+- Web: replace native browser confirm prompts with a shared confirmation dialog across authoring deletes, generated-image removal, session end/close actions, and image-lab deletion flows.
 - Web: make the hidden `/spaceship` board full-bleed across the viewport, swap the room cards to the shared `LocationCard` preview, and flatten the lower crew strip into an unframed section.
 - Web: let the hidden `/spaceship` shell scroll vertically so wrapped ship panes are no longer clipped below the fold.
 - Web: render `/spaceship` Injury and Distress consequences as full-size shared `EffectCard` piles stacked upward instead of flat label chips.
@@ -21,6 +24,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add a reusable `ConfirmationDialog` plus `useConfirmationDialog` hook for destructive actions with async pending states.
 - Web: extract a shared overlay shell for the spaceship card library and use shared `LocationCard` plus `EffectCard` previews inside the library grid.
 - Web: add hidden `/spaceship` and `/styleguide/actor-token` labs for the first Exiles ship-combat prototype, including low-fi ship panes, actor strips, energy tokens, effect stacks, and a visual-only card-library overlay shell.
 - Web: add a dedicated `/styleguide/loading` lab that showcases the shared `LoadingIndicator` progress ring and `PendingIndicator` dot state, and surface it from the styleguide overview and section nav.

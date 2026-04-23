@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "../common/Button";
+import { ConfirmationDialog } from "../common/ConfirmationDialog";
 import { ImageCard } from "../common/ImageCard";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { ResponsiveCardGrid } from "../common/ResponsiveCardGrid";
 import { SearchField } from "../common/SearchField";
 import { Text } from "../common/Text";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { ShortcodeField } from "./ShortcodeField";
 
 export type EntityListTab =
@@ -62,6 +64,7 @@ export const EntityList = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
 
   const normalizedSearchTerm = normalize(searchTerm);
 
@@ -90,13 +93,19 @@ export const EntityList = ({
   const pageStart = (effectivePage - 1) * PAGE_SIZE;
   const visibleItems = filteredItems.slice(pageStart, pageStart + PAGE_SIZE);
   const handleDeleteRequest = useCallback((title: string): void => {
-    if (!window.confirm(`Delete "${title}"?`)) {
-      return;
-    }
-    setDeleteNotice(
-      `Delete for "${title}" is a placeholder action and is not connected yet.`,
-    );
-  }, []);
+    requestConfirmation({
+      title: `Delete "${title}"?`,
+      description:
+        "This placeholder delete action is not wired to persistence yet. Confirming here will only show the existing local placeholder notice.",
+      confirmLabel: "Delete Placeholder",
+      confirmColor: "blood",
+      onConfirm: () => {
+        setDeleteNotice(
+          `Delete for "${title}" is a placeholder action and is not connected yet.`,
+        );
+      },
+    });
+  }, [requestConfirmation]);
 
   return (
     <div className="stack gap-4">
@@ -126,6 +135,8 @@ export const EntityList = ({
           {deleteNotice}
         </Message>
       ) : null}
+
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
 
       {items.length === 0 ? (
         <Panel>

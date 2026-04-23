@@ -26,3 +26,15 @@ test("adventureModuleApi exposes encounter CRUD helpers", () => {
   assert.match(source, /deleteAdventureModuleEncounter/);
   assert.match(source, /\/encounters/);
 });
+
+test("adventureModuleApi exposes top-level module deletion", () => {
+  const source = readFileSync(
+    new URL("./adventureModuleApi.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /deleteAdventureModule/);
+  assert.match(source, /adventureModuleDeleteResponseSchema/);
+  assert.match(source, /method: "DELETE"/);
+  assert.match(source, /\/api\/adventure-modules\/\$\{encodeURIComponent\(moduleId\)\}/);
+});

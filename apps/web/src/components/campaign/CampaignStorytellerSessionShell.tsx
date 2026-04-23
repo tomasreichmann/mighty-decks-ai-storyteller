@@ -18,6 +18,7 @@ import {
 } from "../adventure-module/AdventureModuleTabNav";
 import { AutosaveStatusBadge } from "../adventure-module/AutosaveStatusBadge";
 import { CommonAuthoringTabContent } from "../adventure-module/CommonAuthoringTabContent";
+import { ConfirmationDialog } from "../common/ConfirmationDialog";
 import { Message } from "../common/Message";
 import { Panel } from "../common/Panel";
 import { PendingIndicator } from "../PendingIndicator";
@@ -38,6 +39,7 @@ import { getCampaignSessionIdentity } from "../../lib/campaignSessionIdentity";
 import { createGameCardCatalogContextValue } from "../../lib/gameCardCatalogContext";
 import { appendMarkdownSnippet } from "../../lib/markdownImage";
 import type { SmartInputDocumentContext } from "../../lib/smartInputContext";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { RulesAssetsContent } from "../../routes/RulesAssetsPage";
 import { RulesEffectsContent } from "../../routes/RulesEffectsPage";
 import { RulesOutcomesContent } from "../../routes/RulesOutcomesPage";
@@ -63,6 +65,7 @@ export const CampaignStorytellerSessionShell = ({
 }: CampaignStorytellerSessionShellProps): JSX.Element => {
   const { state, buildRoute, navigateTo, refresh } =
     useAuthoringContext<CampaignDetail>();
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
   const [chatDraft, setChatDraft] = useState("");
   const [tableSelection, setTableSelection] = useState<
     StorytellerTableSelectionEntry[]
@@ -372,9 +375,16 @@ export const CampaignStorytellerSessionShell = ({
                 onSendSelectionToTarget={handleSendSelectionToTarget}
                 onRemoveStorytellerTableCard={handleRemoveStorytellerTableCard}
                 onCloseSession={() => {
-                  if (window.confirm("End this session now?")) {
-                    handleCloseStorytellerSession();
-                  }
+                  requestConfirmation({
+                    title: "End this session now?",
+                    description:
+                      "This closes the current storyteller session immediately for every connected participant.",
+                    confirmLabel: "End Session",
+                    confirmColor: "curse",
+                    onConfirm: () => {
+                      handleCloseStorytellerSession();
+                    },
+                  });
                 }}
                 onSendMessage={handleSendStorytellerMessage}
               />
@@ -386,6 +396,7 @@ export const CampaignStorytellerSessionShell = ({
           </>
         </SectionBoundary>
       ) : null}
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import type { AdventureModuleListItem } from "@mighty-decks/spec/adventureModule
 import { AdventureModuleCard } from "../components/adventure-module/AdventureModuleCard";
 import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Button } from "../components/common/Button";
+import { ConfirmationDialog } from "../components/common/ConfirmationDialog";
 import { CTAButton } from "../components/common/CTAButton";
 import { Heading } from "../components/common/Heading";
 import { Message } from "../components/common/Message";
@@ -12,8 +13,12 @@ import { PendingIndicator } from "../components/PendingIndicator";
 import { ResponsiveCardGrid } from "../components/common/ResponsiveCardGrid";
 import { SearchField } from "../components/common/SearchField";
 import { Text } from "../components/common/Text";
-import { listAdventureModules } from "../lib/adventureModuleApi";
+import {
+  deleteAdventureModule,
+  listAdventureModules,
+} from "../lib/adventureModuleApi";
 import { getAdventureModuleCreatorToken } from "../lib/adventureModuleIdentity";
+import { useConfirmationDialog } from "../hooks/useConfirmationDialog";
 
 const PAGE_SIZE = 20;
 const normalize = (value: string): string => value.trim().toLowerCase();
@@ -47,6 +52,23 @@ const compareModules = (left: AdventureModuleListItem, right: AdventureModuleLis
   return right.updatedAtIso.localeCompare(left.updatedAtIso);
 };
 
+const TrashIcon = (): JSX.Element => (
+  <svg
+    viewBox="0 0 24 24"
+    className="h-3.5 w-3.5 fill-none stroke-current"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M6 6l1 14h10l1-14" />
+    <path d="M10 10v7" />
+    <path d="M14 10v7" />
+  </svg>
+);
+
 export const AdventureModuleListPage = (): JSX.Element => {
   const navigate = useNavigate();
   const creatorToken = useMemo(() => getAdventureModuleCreatorToken(), []);
@@ -55,6 +77,7 @@ export const AdventureModuleListPage = (): JSX.Element => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +135,32 @@ export const AdventureModuleListPage = (): JSX.Element => {
   const effectivePage = Math.min(currentPage, pageCount);
   const pageStart = (effectivePage - 1) * PAGE_SIZE;
   const visibleModules = sortedAndFilteredModules.slice(pageStart, pageStart + PAGE_SIZE);
+
+  const handleDeleteModule = (module: AdventureModuleListItem): void => {
+    requestConfirmation({
+      title: `Delete "${module.title}"?`,
+      description:
+        "This removes the module from your list immediately. Archived or draft content tied to this module will no longer be available from the current UI.",
+      confirmLabel: "Delete Module",
+      confirmColor: "blood",
+      onConfirm: async () => {
+        try {
+          await deleteAdventureModule(module.moduleId, creatorToken);
+          setModules((current) =>
+            current.filter((candidate) => candidate.moduleId !== module.moduleId),
+          );
+          setError(null);
+        } catch (deleteError) {
+          setError(
+            deleteError instanceof Error
+              ? deleteError.message
+              : "Could not delete adventure module.",
+          );
+          throw deleteError;
+        }
+      },
+    });
+  };
 
   return (
     <div className="app-shell stack py-8 gap-4">
@@ -173,6 +222,8 @@ export const AdventureModuleListPage = (): JSX.Element => {
         </Message>
       ) : null}
 
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
+
       {loading ? (
         <Panel contentClassName="flex justify-center">
           <PendingIndicator label="Loading modules" color="cloth" />
@@ -181,7 +232,24 @@ export const AdventureModuleListPage = (): JSX.Element => {
         <>
           <ResponsiveCardGrid>
             {visibleModules.map((module) => (
-              <AdventureModuleCard key={module.moduleId} module={module} />
+              <div key={module.moduleId} className="relative h-full">
+                <AdventureModuleCard module={module} />
+                {module.ownedByRequester ? (
+                  <Button
+                    variant="circle"
+                    color="blood"
+                    size="sm"
+                    aria-label={`Delete ${module.title}`}
+                    title={`Delete ${module.title}`}
+                    className="absolute bottom-4 right-4 z-20"
+                    onClick={() => {
+                      handleDeleteModule(module);
+                    }}
+                  >
+                    <TrashIcon />
+                  </Button>
+                ) : null}
+              </div>
             ))}
           </ResponsiveCardGrid>
 

@@ -8,6 +8,7 @@ import {
   adventureModuleCloneRequestSchema,
   adventureModuleCreateRequestSchema,
   adventureModuleCreateResponseSchema,
+  adventureModuleDeleteResponseSchema,
   adventureModuleGetResponseSchema,
   adventureModuleListResponseSchema,
   adventureModulePreviewResponseSchema,
@@ -38,6 +39,7 @@ import {
   type AdventureModuleCloneRequest,
   type AdventureModuleCreateRequest,
   type AdventureModuleCreateResponse,
+  type AdventureModuleDeleteResponse,
   type AdventureModuleDetail,
   type AdventureModuleListItem,
   type AdventureModulePreviewResponse,
@@ -150,6 +152,20 @@ export const getAdventureModule = async (
     },
   );
   return adventureModuleGetResponseSchema.parse(payload);
+};
+
+export const deleteAdventureModule = async (
+  moduleId: string,
+  creatorToken?: string,
+): Promise<AdventureModuleDeleteResponse> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/adventure-modules/${encodeURIComponent(moduleId)}`),
+    {
+      method: "DELETE",
+      headers: buildHeaders(creatorToken),
+    },
+  );
+  return adventureModuleDeleteResponseSchema.parse(payload);
 };
 
 export const getAdventureModuleBySlug = async (

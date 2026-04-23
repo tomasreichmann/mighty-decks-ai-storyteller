@@ -17,6 +17,15 @@ test("campaignApi exposes campaign CRUD and session helpers", () => {
   assert.match(source, /\/sessions/);
 });
 
+test("campaignApi exposes top-level campaign deletion", () => {
+  const source = readFileSync(new URL("./campaignApi.ts", import.meta.url), "utf8");
+
+  assert.match(source, /deleteCampaign/);
+  assert.match(source, /campaignDeleteResponseSchema/);
+  assert.match(source, /method: "DELETE"/);
+  assert.match(source, /\/api\/campaigns\/\$\{encodeURIComponent\(campaignId\)\}/);
+});
+
 test("campaignApi uses campaign socket event payload types for session flows", () => {
   const source = readFileSync(new URL("./socket.ts", import.meta.url), "utf8");
 

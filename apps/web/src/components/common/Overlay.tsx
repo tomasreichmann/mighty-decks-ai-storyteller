@@ -1,4 +1,4 @@
-import { useEffect, type PropsWithChildren } from "react";
+import { useEffect, type MouseEvent, type PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
 import { Panel, type PanelProps } from "./Panel";
 
@@ -7,6 +7,7 @@ interface OverlayProps extends PropsWithChildren {
   ariaLabel: string;
   onClose: () => void;
   tone?: PanelProps["tone"];
+  surface?: "panel" | "plain";
   panelClassName?: string;
   contentClassName?: string;
   backdropClassName?: string;
@@ -17,6 +18,7 @@ export const Overlay = ({
   ariaLabel,
   onClose,
   tone = "bone",
+  surface = "panel",
   panelClassName = "",
   contentClassName = "",
   backdropClassName = "",
@@ -43,6 +45,15 @@ export const Overlay = ({
     return null;
   }
 
+  const dialogProps = {
+    onClick: (event: MouseEvent<HTMLDivElement>): void => {
+      event.stopPropagation();
+    },
+    role: "dialog" as const,
+    "aria-modal": "true" as const,
+    "aria-label": ariaLabel,
+  };
+
   return (
     <div
       className={cn(
@@ -52,18 +63,24 @@ export const Overlay = ({
       onClick={onClose}
       role="presentation"
     >
-      <Panel
-        as="div"
-        className={cn("w-full", panelClassName)}
-        contentClassName={cn("stack gap-4", contentClassName)}
-        tone={tone}
-        onClick={(event) => event.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label={ariaLabel}
-      >
-        {children}
-      </Panel>
+      {surface === "plain" ? (
+        <div
+          className={cn("w-full", panelClassName, contentClassName)}
+          {...dialogProps}
+        >
+          {children}
+        </div>
+      ) : (
+        <Panel
+          as="div"
+          className={cn("w-full", panelClassName)}
+          contentClassName={cn("stack gap-4", contentClassName)}
+          tone={tone}
+          {...dialogProps}
+        >
+          {children}
+        </Panel>
+      )}
     </div>
   );
 };

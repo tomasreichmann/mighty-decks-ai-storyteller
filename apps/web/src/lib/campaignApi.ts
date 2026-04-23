@@ -1,11 +1,13 @@
 import {
   campaignCreateRequestSchema,
   campaignCreateResponseSchema,
+  campaignDeleteResponseSchema,
   campaignGetResponseSchema,
   campaignListResponseSchema,
   campaignListSessionsResponseSchema,
   campaignSessionResponseSchema,
   type CampaignCreateRequest,
+  type CampaignDeleteResponse,
   type CampaignDetail,
   type CampaignListItem,
   type CampaignSessionDetail,
@@ -81,6 +83,20 @@ export const createCampaign = async (
     body: JSON.stringify(campaignCreateRequestSchema.parse(request)),
   });
   return campaignCreateResponseSchema.parse(payload);
+};
+
+export const deleteCampaign = async (
+  campaignId: string,
+  creatorToken?: string,
+): Promise<CampaignDeleteResponse> => {
+  const payload = await fetchJson(
+    buildApiUrl(`/api/campaigns/${encodeURIComponent(campaignId)}`),
+    {
+      method: "DELETE",
+      headers: buildHeaders(creatorToken),
+    },
+  );
+  return campaignDeleteResponseSchema.parse(payload);
 };
 
 export const getCampaignBySlug = async (

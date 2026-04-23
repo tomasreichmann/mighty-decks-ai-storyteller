@@ -16,6 +16,7 @@ import {
   ButtonRadioGroup,
   type ButtonRadioGroupOption,
 } from "../common/ButtonRadioGroup";
+import { ConfirmationDialog } from "../common/ConfirmationDialog";
 import { InputDescriptionHint } from "../common/InputDescriptionHint";
 import { Label } from "../common/Label";
 import { Message } from "../common/Message";
@@ -24,6 +25,7 @@ import { Tags } from "../common/Tags";
 import { Text } from "../common/Text";
 import { TextField } from "../common/TextField";
 import { PendingIndicator } from "../PendingIndicator";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 
 const PROMPT_MAX_LENGTH = 4000;
 const WORKFLOW_CONTEXT_MAX_LENGTH = 1000;
@@ -232,6 +234,7 @@ export const AdventureModuleGeneratedImageField = ({
   const dragDepthRef = useRef(0);
   const handledGenerateJobIdRef = useRef<string>("");
   const handledEditJobIdRef = useRef<string>("");
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
   const {
     sortedModels,
     editModels,
@@ -506,29 +509,28 @@ export const AdventureModuleGeneratedImageField = ({
     async (item: GalleryImageItem): Promise<void> => {
       const isSelected =
         normalizeImageUrl(item.image.fileUrl) === normalizeImageUrl(value);
-      const confirmed = window.confirm(
-        isSelected
+      requestConfirmation({
+        title: "Remove image from gallery?",
+        description: isSelected
           ? "Remove this selected image from the gallery? The current selection will be cleared."
           : "Remove this image from the gallery?",
-      );
-      if (!confirmed) {
-        return;
-      }
-
-      setRemovingImageId(item.image.imageId);
-      try {
-        await deleteImage(item.image.imageId, item.group.groupKey);
-        if (isSelected) {
-          onChange("");
-        }
-        await refreshGallery();
-      } catch {
-        // The shared hook already surfaces the error message.
-      } finally {
-        setRemovingImageId(null);
-      }
+        confirmLabel: "Remove Image",
+        confirmColor: "blood",
+        onConfirm: async () => {
+          setRemovingImageId(item.image.imageId);
+          try {
+            await deleteImage(item.image.imageId, item.group.groupKey);
+            if (isSelected) {
+              onChange("");
+            }
+            await refreshGallery();
+          } finally {
+            setRemovingImageId(null);
+          }
+        },
+      });
     },
-    [deleteImage, onChange, refreshGallery, value],
+    [deleteImage, onChange, refreshGallery, requestConfirmation, value],
   );
 
   return (
@@ -659,6 +661,8 @@ export const AdventureModuleGeneratedImageField = ({
           {uploadError}
         </Text>
       ) : null}
+
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
 
       <GeneratedImage
         image={previewImage}
