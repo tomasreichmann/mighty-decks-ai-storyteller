@@ -1,10 +1,12 @@
 import { FormEvent, KeyboardEvent, useState } from "react";
 import { Button } from "./common/Button";
+import { ConfirmationDialog } from "./common/ConfirmationDialog";
 import { Section } from "./common/Section";
 import { Text } from "./common/Text";
 import { Message } from "./common/Message";
 import { Toggle } from "./common/Toggle";
 import { TextArea } from "./common/TextArea";
+import { useConfirmationDialog } from "../hooks/useConfirmationDialog";
 
 interface ActionComposerProps {
   connected: boolean;
@@ -25,6 +27,7 @@ export const ActionComposer = ({
 }: ActionComposerProps): JSX.Element => {
   const [draft, setDraft] = useState("");
   const [metagameEnabled, setMetagameEnabled] = useState(false);
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
   const disconnected = !connected;
   const canDraftNow = !disconnected && (metagameEnabled || allowDrafting);
   const canSendNow = !disconnected && (metagameEnabled || canSend);
@@ -94,9 +97,16 @@ export const ActionComposer = ({
                 type="button"
                 disabled={disconnected}
                 onClick={() => {
-                  if (window.confirm("End this session now?")) {
-                    onEndSession();
-                  }
+                  requestConfirmation({
+                    title: "End this session now?",
+                    description:
+                      "This closes the current session immediately for everyone connected to it.",
+                    confirmLabel: "End Session",
+                    confirmColor: "curse",
+                    onConfirm: () => {
+                      onEndSession();
+                    },
+                  });
                 }}
               >
                 End Session
@@ -155,6 +165,7 @@ export const ActionComposer = ({
           Disconnected from the server. Reconnect to send actions.
         </Message>
       ) : null}
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
     </Section>
   );
 };

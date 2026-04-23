@@ -8,6 +8,15 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: restyle the shared confirmation dialog to use a blood `Message` shell with an opaque white body so destructive prompts stay readable over the overlay backdrop.
+- Web: add bottom-right trash actions to Adventure Module and Campaign story tiles so both list pages can remove items in place.
+- Web: replace native browser confirm prompts with a shared confirmation dialog across authoring deletes, generated-image removal, session end/close actions, and image-lab deletion flows.
+- Web: make the hidden `/spaceship` board full-bleed across the viewport, swap the room cards to the shared `LocationCard` preview, and flatten the lower crew strip into an unframed section.
+- Web: let the hidden `/spaceship` shell scroll vertically so wrapped ship panes are no longer clipped below the fold.
+- Web: render `/spaceship` Injury and Distress consequences as full-size shared `EffectCard` piles stacked upward instead of flat label chips.
+- Web: replace the extra ship-location label with a compact `lvl` pill on `/spaceship`, and wire the +/- buttons to adjust the card's local room level.
+- Web: make shared `EffectCard` previews show the effect name beside the top-left icon, render spaceship effect stacks at full size, and switch the `/spaceship` level pill to the shared `Tag` shell.
+- Web: center the `/spaceship` crew-strip effect piles behind the actor cards so the stacked peeks stay tucked under the column instead of drifting left.
 - Repo: keep the `Exiles of the Hungry Void` campaign bundle under `apps/server/output/campaigns/am-mnc41bwp4karwa` trackable in Git by carving it out of the broad `output/` ignore rule.
 - Repo: keep the `Exiles of the Hungry Void` adventure module bundle under `apps/server/output/adventure-modules/am-mo18tx38tgy2q1` trackable in Git by carving it out of the broad `output/` ignore rule.
 - Repo: keep the shared `apps/server/output/adventure-artifacts` image store trackable in Git so the Exiles module's `/api/adventure-artifacts/*` image references resolve from a clean checkout.
@@ -16,6 +25,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Added
 
 - Server: add Groq as an `AI_TEXT_PROVIDER` option (text-only; image generation continues via OpenRouter/Fal/Leonardo). New env vars: `GROQ_API_KEY`, `GROQ_TEXT_NARRATIVE_MODEL`, `GROQ_TEXT_SCENE_MODEL`, `GROQ_TEXT_OUTCOME_MODEL`, `GROQ_TEXT_CONTINUITY_MODEL`, `GROQ_TEXT_PITCH_MODEL`.
+- Web: add public privacy policy and terms of service pages, and link both from the shared footer alongside the home page.
+- Web: add a reusable `ConfirmationDialog` plus `useConfirmationDialog` hook for destructive actions with async pending states.
+- Web: extract a shared overlay shell for the spaceship card library and use shared `LocationCard` plus `EffectCard` previews inside the library grid.
 - Web: add hidden `/spaceship` and `/styleguide/actor-token` labs for the first Exiles ship-combat prototype, including low-fi ship panes, actor strips, energy tokens, effect stacks, and a visual-only card-library overlay shell.
 - Web: add a dedicated `/styleguide/loading` lab that showcases the shared `LoadingIndicator` progress ring and `PendingIndicator` dot state, and surface it from the styleguide overview and section nav.
 - Web: add dedicated `/styleguide/labels` and `/styleguide/messages` styleguide labs, and surface both from the shared secondary nav and router so contributors can validate sticker labels and semantic callouts in isolation.
@@ -24,6 +36,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 - Server: expand the Exiles importer and tracked module bundle so the player corvette and pirate raider ship cards are normalized into reusable location entries while preserving the legacy `the-ship` overview.
 - Web: replace the app's plain loading copy with shared `PendingIndicator` dot states for loading panels and action buttons, while keeping the quantified progress ring in the styleguide loading lab.
+- Web: make the shared `Label` primitive shrink-wrap to its content so sticker labels no longer stretch in stacked layouts.
 - Web: tighten the shared scene-card frame so long location, encounter, and quest text gets more padding and clamps earlier with a visible ellipsis instead of crowding the border.
 - Web: replace the `/styleguide` overview component grid with a design reference hub covering design principles, the full semantic color-family ledger as swatches with hex values, shared-component rules, and component use cases.
 - Web: keep solid iron buttons on steel borders while iron ghost buttons retain iron borders, matching the shared button family split in the styleguide.

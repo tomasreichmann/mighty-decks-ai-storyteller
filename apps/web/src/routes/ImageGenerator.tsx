@@ -5,6 +5,7 @@ import {
   type ImageGeneration,
 } from "../components/GeneratedImage";
 import { Button } from "../components/common/Button";
+import { ConfirmationDialog } from "../components/common/ConfirmationDialog";
 import {
   ContextMenu,
   type ContextMenuRow,
@@ -23,6 +24,7 @@ import {
   IMAGE_RESOLUTION_PRESETS,
   useImageGeneration,
 } from "../hooks/useImageGeneration";
+import { useConfirmationDialog } from "../hooks/useConfirmationDialog";
 
 const SELECT_CLASSES =
   "w-full min-h-[42px] border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] px-3 py-2 text-sm text-kac-iron font-ui shadow-[inset_2px_2px_0_0_#9f8a6d,inset_-2px_-2px_0_0_#fff7e6]";
@@ -52,6 +54,7 @@ const FieldSticker = ({ children }: { children: string }): JSX.Element => (
 
 export const ImageGenerator = (): JSX.Element => {
   const [menuImageId, setMenuImageId] = useState<string | null>(null);
+  const { confirmation, requestConfirmation } = useConfirmationDialog();
   const {
     provider,
     sortedModels,
@@ -144,6 +147,8 @@ export const ImageGenerator = (): JSX.Element => {
           {error}
         </Message>
       ) : null}
+
+      {confirmation ? <ConfirmationDialog {...confirmation} /> : null}
 
       <SectionBoundary
         resetKey={`${provider}-${selectedModelId}-${resolutionPresetId}`}
@@ -372,9 +377,17 @@ export const ImageGenerator = (): JSX.Element => {
                     className:
                       "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
                     onSelect: () => {
-                      if (window.confirm("Delete this image?")) {
-                        void deleteImage(image.imageId);
-                      }
+                      requestConfirmation({
+                        title: "Delete this image?",
+                        description:
+                          "This removes the selected image from the current prompt and model group.",
+                        confirmLabel: "Delete Image",
+                        confirmColor: "blood",
+                        onConfirm: async () => {
+                          setMenuImageId(null);
+                          await deleteImage(image.imageId);
+                        },
+                      });
                     },
                   },
                   {
@@ -384,13 +397,17 @@ export const ImageGenerator = (): JSX.Element => {
                     className:
                       "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15",
                     onSelect: () => {
-                      if (
-                        window.confirm(
+                      requestConfirmation({
+                        title: `Delete batch ${image.batchIndex}?`,
+                        description:
                           `Delete batch ${image.batchIndex} and all of its images?`,
-                        )
-                      ) {
-                        void deleteBatch(image.batchIndex);
-                      }
+                        confirmLabel: "Delete Batch",
+                        confirmColor: "blood",
+                        onConfirm: async () => {
+                          setMenuImageId(null);
+                          await deleteBatch(image.batchIndex);
+                        },
+                      });
                     },
                   },
                 ];

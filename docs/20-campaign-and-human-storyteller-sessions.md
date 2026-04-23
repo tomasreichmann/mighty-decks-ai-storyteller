@@ -75,6 +75,7 @@ Current behaviors:
 
 - each campaign renders as the same shared cover-led story tile used by Adventure Modules, adapted with campaign-specific metadata
 - cards expose explicit `Open Campaign` and `View Sessions` buttons instead of relying on whole-card click targets
+- each card also exposes a bottom-right trash button that opens the shared confirmation dialog before deletion
 - the list header exposes `Create Campaign`, which currently redirects to `/adventure-module/list` so the user can choose a source module before forking
 - the list header also exposes `Copy Author Token` for CLI and API authoring workflows
 - source-module context is visible on the card so search matches on the source module have a visible on-screen explanation
@@ -249,7 +250,7 @@ The `Chat` tab currently includes:
 - inline rendering for supported component shortcodes pasted into transcript messages
 - inline rendering for markdown images embedded in transcript text
 - the same shared session transcript presenter used by the player view, so wrapper styling and participant/system message treatment stay in sync
-- close-session action
+- close-session action routed through the shared confirmation dialog
 - a compact session-nav row where the Mighty Decks logo links home, `Chat` stays first in the tab order, the autosave indicator sits immediately after the tab rail, and tablet/mobile use a labeled dropdown instead of the full button group
 
 The storyteller stays inside the same campaign-backed entity editors while the session is live.

@@ -570,6 +570,7 @@ const cardLibrary: CardLibraryEntry[] = [
     category: "Player Ship",
     summary: "Movement, evasive maneuvers, and the best window into the chaos.",
     badge: "Location",
+    imageUrl: "/api/adventure-artifacts/cockpit-435a2f81c0be0c184b58.png",
   },
   {
     entryId: "card-player-reactor",
@@ -578,6 +579,7 @@ const cardLibrary: CardLibraryEntry[] = [
     category: "Player Ship",
     summary: "Power routing, overdrive, and the whole ship’s pacing lever.",
     badge: "Location",
+    imageUrl: "/api/adventure-artifacts/reactor-99836c3e8add9c720018.png",
   },
   {
     entryId: "card-player-distress",
@@ -586,6 +588,7 @@ const cardLibrary: CardLibraryEntry[] = [
     category: "Effect",
     summary: "Damage that knocks a room one level lower per card.",
     badge: "Effect",
+    effectSlug: "distress",
   },
   {
     entryId: "card-player-freezing",
@@ -594,6 +597,7 @@ const cardLibrary: CardLibraryEntry[] = [
     category: "Effect",
     summary: "Decompression marker for hull breaches and cold-soaked rooms.",
     badge: "Effect",
+    effectSlug: "freezing",
   },
   {
     entryId: "card-energy-token",

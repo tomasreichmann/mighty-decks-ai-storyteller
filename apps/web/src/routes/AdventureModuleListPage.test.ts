@@ -19,3 +19,16 @@ test("AdventureModuleListPage lets the module card own the single open action", 
   assert.match(source, /Copy Author Token/);
   assert.doesNotMatch(source, /<Link/);
 });
+
+test("AdventureModuleListPage wires module deletion through the shared confirmation dialog", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleListPage.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /deleteAdventureModule/);
+  assert.match(source, /ConfirmationDialog/);
+  assert.match(source, /Delete Module/);
+  assert.match(source, /module\.ownedByRequester/);
+  assert.match(source, /filter\(\((module|candidate)\) => .*moduleId !== module\.moduleId/);
+});

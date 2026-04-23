@@ -1,21 +1,88 @@
-import type { ShipEffectInstance, ShipLocationRow } from "../../lib/spaceship/spaceshipTypes";
+import { GameCardView } from "../adventure-module/GameCardView";
+import { resolveGameCard } from "../../lib/markdownGameComponents";
+import type {
+  ShipEffectInstance,
+  ShipEffectType,
+} from "../../lib/spaceship/spaceshipTypes";
 import { cn } from "../../utils/cn";
 
 interface ShipEffectStackProps {
   effects: ShipEffectInstance[];
-  row: ShipLocationRow;
   className?: string;
 }
 
-const effectToneMap: Record<ShipEffectInstance["type"], string> = {
-  distress: "border-kac-blood-dark bg-kac-blood-lightest text-kac-blood-dark",
-  freezing: "border-kac-cloth-dark bg-kac-cloth-lightest text-kac-cloth-dark",
-  injury: "border-kac-fire-dark bg-kac-fire-lightest text-kac-fire-dark",
+const effectCardSlugByType: Record<ShipEffectType, string> = {
+  distress: "distress",
+  freezing: "freezing",
+  injury: "injury",
+};
+
+const effectCardFullHeightRem = 21.16;
+const effectCardHeaderHeightRem = 2.04;
+
+interface ShipEffectCardPileProps {
+  effectType: ShipEffectType;
+  count: number;
+}
+
+export const ShipEffectCardPile = ({
+  effectType,
+  count,
+}: ShipEffectCardPileProps): JSX.Element | null => {
+  if (count <= 0) {
+    return null;
+  }
+
+  const resolvedEffectCard = resolveGameCard(
+    "EffectCard",
+    effectCardSlugByType[effectType],
+  );
+
+  if (!resolvedEffectCard) {
+    return null;
+  }
+
+  const stackHeightRem =
+    effectCardFullHeightRem +
+    Math.max(count - 1, 0) * effectCardHeaderHeightRem;
+
+  return (
+    <div
+      aria-hidden="true"
+      className="relative flex w-[13rem] min-w-0 max-w-[13rem] shrink-0"
+      style={{
+        height: `${stackHeightRem}rem`,
+      }}
+    >
+      <div
+        className="relative w-full"
+        style={{
+          height: `${stackHeightRem}rem`,
+        }}
+      >
+        {Array.from({ length: count }).map((_, index) => {
+          const stackIndex = count - 1 - index;
+
+          return (
+            <div
+              key={`${effectType}-stack-${index}`}
+              className="absolute inset-x-0"
+              style={{
+                bottom: `${stackIndex * effectCardHeaderHeightRem}rem`,
+                zIndex: index + 1,
+              }}
+            >
+              <GameCardView gameCard={resolvedEffectCard} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 export const ShipEffectStack = ({
   effects,
-  row,
   className = "",
 }: ShipEffectStackProps): JSX.Element | null => {
   if (effects.length === 0) {
@@ -26,25 +93,16 @@ export const ShipEffectStack = ({
     <div
       data-effect-stack
       className={cn(
-        "ship-effect-stack absolute left-3 right-3 z-10 flex gap-2",
-        row === "top" ? "-top-5 justify-start" : "-bottom-5 justify-end",
+        "ship-effect-stack absolute left-3 right-3 bottom-full z-10 flex flex-wrap items-start justify-center gap-2",
         className,
       )}
     >
       {effects.map((effect) => (
-        <div
+        <ShipEffectCardPile
           key={effect.effectId}
-          className={cn(
-            "min-w-[4.25rem] rotate-[-2deg] rounded-sm border-2 px-2 py-1 shadow-[2px_2px_0_0_#121b23]",
-            effectToneMap[effect.type],
-          )}
-          title={effect.detail}
-        >
-          <p className="font-heading text-[0.72rem] font-bold uppercase leading-none">
-            {effect.label}
-          </p>
-          <p className="mt-1 font-ui text-[0.65rem] leading-tight">{effect.count}x</p>
-        </div>
+          effectType={effect.type}
+          count={effect.count}
+        />
       ))}
     </div>
   );

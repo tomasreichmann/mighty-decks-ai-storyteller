@@ -56,6 +56,7 @@ export const GameCardView = ({
         <LayeredCard
           className={cn("w-full max-w-[13rem]", className)}
           imageUri={gameCard.card.iconUri}
+          imageLabel={gameCard.card.title}
           noun={gameCard.card.title}
           nounDeck={gameCard.card.deck}
           nounCornerIcon="/types/effect.png"

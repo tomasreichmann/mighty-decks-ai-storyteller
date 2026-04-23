@@ -30,3 +30,14 @@ test("AdventureModuleGeneratedImageField renders gallery, generate, and edit con
   assert.doesNotMatch(source, /Lookup Existing/);
   assert.doesNotMatch(source, /\{model\.displayName\} - \{model\.modelId\}/);
 });
+
+test("AdventureModuleGeneratedImageField uses the shared confirmation dialog for gallery removal", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleGeneratedImageField.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /ConfirmationDialog/);
+  assert.doesNotMatch(source, /window\.confirm\(/);
+  assert.match(source, /Remove this selected image from the gallery/);
+});

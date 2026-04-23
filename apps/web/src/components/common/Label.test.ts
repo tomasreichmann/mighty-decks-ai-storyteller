@@ -13,6 +13,7 @@ test("Label uses color and size props instead of dynamic size strings", () => {
   assert.match(source, /"steel"/);
   assert.match(source, /labelToneClassMap/);
   assert.match(source, /labelSizeClassMap/);
+  assert.match(source, /w-fit self-start/);
   assert.doesNotMatch(source, /"text-" \+ size/);
   assert.doesNotMatch(source, /text-md\/\[0\.8\]/);
 });

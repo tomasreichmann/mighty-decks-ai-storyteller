@@ -97,6 +97,8 @@ export interface CardLibraryEntry {
   category: string;
   summary: string;
   badge: string;
+  imageUrl?: string;
+  effectSlug?: string;
 }
 
 export interface SpaceshipOverlayState {

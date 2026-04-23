@@ -82,6 +82,8 @@ User sees a list with:
 From this page:
 
 - Module cards are not whole-card links; explicit `Open Module` and `Create Campaign` buttons carry the primary actions.
+- Author-owned module cards also expose a bottom-right trash button.
+- Pressing the trash button opens the shared confirmation dialog instead of the browser's native confirm prompt.
 - `Open Module` redirects to `/adventure-module/:slug/player-info`.
 - `Create Campaign` creates a campaign fork from that module and redirects to `/campaign/:slug/base`.
 - `Create Module` redirects to `/adventure-module/new`.
@@ -124,6 +126,7 @@ Shell behavior:
 - The shared dialog keeps the selected-image preview directly below the drop zone and shows muted prompt/model metadata when the current selection comes from the generated-image store.
 - The shared dialog is now organized into `Gallery | Generate | Edit` modes so stored fal images can be reused, removed, regenerated, or edited from one consistent flow.
 - The route now delegates its shared title-row and common tab rendering through extracted `SharedAuthoringHeader` and `CommonAuthoringTabContent` components so module and campaign authoring stay aligned.
+- Shared authoring deletes now route through a reusable confirmation dialog with pending state instead of the browser's native confirm prompt.
 - Tabs render `Base`, `Player Info`, `Storyteller Info`, `Actors`, `Counters`, `Assets`, `Locations`, `Encounters`, `Quests`.
 - `Base` is editable in this step (`premise` + `Have` + `Avoid`).
 - `Player Info` is editable in this step (`player summary` + `player info text`).
@@ -474,7 +477,8 @@ Publish action:
 
 Archive action:
 
-- Triggered by `Delete` on module list.
+- Triggered by the bottom-right trash button on owned module list cards.
+- Uses the shared confirmation dialog before the delete request is sent.
 - Changes status to `archived` (no hard delete).
 - Archived modules are hidden from non-author list results.
 - Author can still view archived modules in author scope.

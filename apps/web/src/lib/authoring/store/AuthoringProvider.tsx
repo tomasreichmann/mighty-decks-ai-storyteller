@@ -737,7 +737,7 @@ export const AuthoringProvider = <
 
   const deleteEntity = useCallback(
     async (form: EntityFormKey, slugToDelete: string, title: string): Promise<void> => {
-      if (!state.detail || !editable || !window.confirm(`Delete "${title}"?`)) {
+      if (!state.detail || !editable) {
         return;
       }
       dispatch({ type: "setAutosaveState", status: "saving" });
@@ -764,7 +764,7 @@ export const AuthoringProvider = <
           type: "setAutosaveState",
           status: "error",
           message:
-            deleteError instanceof Error ? deleteError.message : `Could not delete ${form}.`,
+            deleteError instanceof Error ? deleteError.message : `Could not delete ${title}.`,
         });
       }
     },
