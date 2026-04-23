@@ -22,12 +22,16 @@ interface ActorCardTextWithIconsProps {
 
 const tokenPattern = /(\[[^\]]+\])/g;
 const iconTokenPattern = /^\[([a-zA-Z_]+)(\d*)\]$/;
+const actorBodyLineHeightClassName = "leading-[16px]";
+const actorBodyRowClassName = `flex min-h-4 items-center ${actorBodyLineHeightClassName}`;
 
 const ActorCardTextWithIcons = ({
   text,
   iconClassName,
 }: ActorCardTextWithIconsProps): JSX.Element => {
-  const fragments = text.split(tokenPattern).filter((fragment) => fragment !== "");
+  const fragments = text
+    .split(tokenPattern)
+    .filter((fragment) => fragment !== "");
 
   return (
     <>
@@ -44,7 +48,10 @@ const ActorCardTextWithIcons = ({
         }
 
         return (
-          <span key={fragmentIndex} className="inline-flex items-center">
+          <span
+            key={fragmentIndex}
+            className={cn("inline-flex items-center", actorBodyLineHeightClassName)}
+          >
             {Array.from({ length: iconCount }).map((_, iconIndex) => (
               <img
                 key={`${iconName}-${iconIndex}`}
@@ -66,7 +73,9 @@ const ActorCardTextWithIcons = ({
 };
 
 const getIconTextLength = (text: string): number => {
-  const fragments = text.split(tokenPattern).filter((fragment) => fragment !== "");
+  const fragments = text
+    .split(tokenPattern)
+    .filter((fragment) => fragment !== "");
   return fragments.reduce((length, fragment) => {
     const iconNameMatch = fragment.match(iconTokenPattern);
     if (!iconNameMatch) {
@@ -74,7 +83,9 @@ const getIconTextLength = (text: string): number => {
     }
     const [, , iconCountString = "1"] = iconNameMatch;
     const iconCount = Number.parseInt(iconCountString || "1", 10);
-    return Number.isFinite(iconCount) && iconCount > 0 ? length + iconCount : length;
+    return Number.isFinite(iconCount) && iconCount > 0
+      ? length + iconCount
+      : length;
   }, 0);
 };
 
@@ -87,10 +98,12 @@ const renderAction = (
   }
   if (typeof action === "string") {
     return (
-      <div key={actionIndex} className="flex min-h-5 flex-wrap items-center justify-end">
+      <div key={actionIndex} className={cn(actorBodyRowClassName, "flex-wrap justify-end")}>
         <ActorCardTextWithIcons
           text={action}
-          iconClassName={getIconTextLength(action) > 5 ? "mx-[-1px]" : undefined}
+          iconClassName={
+            getIconTextLength(action) > 5 ? "mx-[-1px]" : undefined
+          }
         />
       </div>
     );
@@ -99,7 +112,10 @@ const renderAction = (
   const { type, effect, splash, range, count } = action;
 
   return (
-    <div key={actionIndex} className="flex min-h-5 flex-wrap items-center justify-end gap-0.5">
+    <div
+      key={actionIndex}
+      className={cn(actorBodyRowClassName, "flex-wrap justify-end gap-0.5")}
+    >
       {count && count > 1 ? <span>{count}x</span> : null}
       <img
         src={getActorTextIconUri(type)}
@@ -137,7 +153,7 @@ const renderAction = (
         />
       ) : null}
       {range ? (
-        <>
+        <span className="inline-flex items-center whitespace-nowrap leading-[16px]">
           <img
             src={getActorTextIconUri("range")}
             alt=""
@@ -145,7 +161,7 @@ const renderAction = (
             className="h-4 w-4 object-contain"
           />
           <span>{range}</span>
-        </>
+        </span>
       ) : null}
     </div>
   );
@@ -156,7 +172,9 @@ const getLayeredActorCardProps = (
   specialSlug?: ActorTacticalSpecialSlug,
 ): LayeredCardProps => {
   const role = actorTacticalRoleMap[roleSlug];
-  const special = specialSlug ? actorTacticalSpecialMap[specialSlug] : undefined;
+  const special = specialSlug
+    ? actorTacticalSpecialMap[specialSlug]
+    : undefined;
   const specialToughnessBonus =
     special && "toughnessBonus" in special ? special.toughnessBonus : undefined;
   const specialActionBonuses =
@@ -166,8 +184,10 @@ const getLayeredActorCardProps = (
 
   const leftColumn = (
     <>
-      <div className="flex min-h-5 items-center justify-end">
-        {role.toughness ? <ActorCardTextWithIcons text={role.toughness} /> : null}
+      <div className={cn(actorBodyRowClassName, "justify-end")}>
+        {role.toughness ? (
+          <ActorCardTextWithIcons text={role.toughness} />
+        ) : null}
       </div>
       {(role.actions ?? []).map((action, index) => renderAction(action, index))}
     </>
@@ -175,19 +195,20 @@ const getLayeredActorCardProps = (
 
   const rightColumn = special ? (
     <>
-      <div className="flex min-h-5 items-center">
+      <div className={actorBodyRowClassName}>
         {specialToughnessBonus ? (
           <ActorCardTextWithIcons text={specialToughnessBonus} />
         ) : null}
       </div>
-      {(specialActionBonuses ?? []).map((actionBonus: string | null, index: number) =>
-        actionBonus ? (
-          <div key={`bonus-${index}`} className="flex min-h-5 items-center">
-            <ActorCardTextWithIcons text={actionBonus} />
-          </div>
-        ) : (
-          <div key={`bonus-${index}`} className="min-h-5" />
-        ),
+      {(specialActionBonuses ?? []).map(
+        (actionBonus: string | null, index: number) =>
+          actionBonus ? (
+            <div key={`bonus-${index}`} className={actorBodyRowClassName}>
+              <ActorCardTextWithIcons text={actionBonus} />
+            </div>
+          ) : (
+            <div key={`bonus-${index}`} className="min-h-4" />
+          ),
       )}
     </>
   ) : null;
@@ -200,22 +221,40 @@ const getLayeredActorCardProps = (
     adjectiveDeck: special?.deck,
     adjectiveCornerIcon: special ? "/types/actor.png" : undefined,
     adjectiveEffect: specialEffect ? (
-      <span className="font-semibold">
-        <ActorCardTextWithIcons text={specialEffect} iconClassName="mx-[-1px]" />
-      </span>
+      <div className={cn("flex min-h-4 items-center font-semibold", actorBodyLineHeightClassName)}>
+        <ActorCardTextWithIcons
+          text={specialEffect}
+          iconClassName="mx-[-1px]"
+        />
+      </div>
     ) : undefined,
-    imageOverlayUri: special ? getActorSpecialOverlayUri(special.slug) : undefined,
+    imageOverlayUri: special
+      ? getActorSpecialOverlayUri(special.slug)
+      : undefined,
     nounEffect: (
       <div className="flex w-full flex-row gap-2 font-semibold">
         <div className="basis-2/3 text-right">{leftColumn}</div>
         <div className="basis-1/3 text-left">{rightColumn}</div>
       </div>
     ),
+    nounEffectClassName:
+      "px-0 pb-1 text-[11px] leading-[16px] text-kac-iron-light whitespace-pre-wrap",
   };
 };
 
-export interface ActorCardProps
-  extends Omit<LayeredCardProps, "imageUri" | "imageOverlayUri" | "noun" | "nounDeck" | "nounCornerIcon" | "adjective" | "adjectiveDeck" | "adjectiveCornerIcon" | "adjectiveEffect" | "nounEffect"> {
+export interface ActorCardProps extends Omit<
+  LayeredCardProps,
+  | "imageUri"
+  | "imageOverlayUri"
+  | "noun"
+  | "nounDeck"
+  | "nounCornerIcon"
+  | "adjective"
+  | "adjectiveDeck"
+  | "adjectiveCornerIcon"
+  | "adjectiveEffect"
+  | "nounEffect"
+> {
   baseLayerSlug: ActorBaseLayerSlug;
   tacticalRoleSlug: ActorTacticalRoleSlug;
   tacticalSpecialSlug?: ActorTacticalSpecialSlug;

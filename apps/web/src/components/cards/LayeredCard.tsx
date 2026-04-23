@@ -65,11 +65,11 @@ const SvgHtmlText = ({
     <foreignObject x={x} y={y} width={width} height={height}>
       <div
         className={cn(
-          "flex h-full w-full items-center justify-center text-center text-kac-iron-light",
+          "flex h-full w-full items-center justify-center text-kac-iron-light",
           className,
         )}
       >
-        {children}
+        <div className="w-full text-center">{children}</div>
       </div>
     </foreignObject>
   );

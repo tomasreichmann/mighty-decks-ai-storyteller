@@ -8,6 +8,11 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: remove the extra horizontal padding from the actor body foreignObject so the range value stays on the first row.
+- Web: keep the actor action range icon and value together on one inline row so the `0` stays attached to the previous line.
+- Web: hardcode the actor-body row line height in `ActorCard` so the left and right action columns stay aligned.
+- Web: center SVG modifier-description icon rows inside `LayeredCard` so actor and asset effect text no longer drifts left in the card footer.
+- Web: render the Adventure Module authoring loader without a panel wrapper and center it vertically in the page while the module detail is still loading.
 - Web: restyle the shared confirmation dialog to use a blood `Message` shell with an opaque white body so destructive prompts stay readable over the overlay backdrop.
 - Web: add bottom-right trash actions to Adventure Module and Campaign story tiles so both list pages can remove items in place.
 - Web: replace native browser confirm prompts with a shared confirmation dialog across authoring deletes, generated-image removal, session end/close actions, and image-lab deletion flows.

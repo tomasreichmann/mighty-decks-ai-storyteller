@@ -18,7 +18,6 @@ import { CommonAuthoringTabContent } from "./CommonAuthoringTabContent";
 import { SharedAuthoringHeader } from "./SharedAuthoringHeader";
 import { CTAButton } from "../common/CTAButton";
 import { Message } from "../common/Message";
-import { Panel } from "../common/Panel";
 import { PendingIndicator } from "../PendingIndicator";
 import { SectionBoundary } from "../common/SectionBoundary";
 
@@ -80,7 +79,7 @@ export const AdventureModuleAuthoringScreen = (): JSX.Element => {
   );
 
   return (
-    <div className="app-shell stack py-8 gap-4">
+    <div className="app-shell stack flex-1 py-8 gap-4">
       <SharedAuthoringHeader
         title={state.forms.base.title}
         titleAriaLabel="Adventure module title"
@@ -140,9 +139,9 @@ export const AdventureModuleAuthoringScreen = (): JSX.Element => {
       ) : null}
 
       {state.loading ? (
-        <Panel contentClassName="flex justify-center">
+        <div className="flex flex-1 items-center justify-center py-10">
           <PendingIndicator label="Loading adventure module" color="cloth" />
-        </Panel>
+        </div>
       ) : null}
 
       {!state.loading && state.detail ? (
