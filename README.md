@@ -20,8 +20,11 @@ Current route families:
 - `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab`, `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId`
 - `/workflow-lab`, `/workflow-lab/:workflowId`
 - `/rules`, `/rules/outcomes`, `/rules/effects`, `/rules/stunts`, `/rules/assets`
+- `/privacy-policy`, `/terms-of-service`
 - `/styleguide`, `/styleguide/location-card`, `/styleguide/encounter-card` (hidden internal style reference hub)
 - `/image-lab`
+
+The shared footer links to the home page, privacy policy, and terms of service pages.
 
 ## Current Status
 

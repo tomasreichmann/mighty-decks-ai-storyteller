@@ -24,6 +24,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add public privacy policy and terms of service pages, and link both from the shared footer alongside the home page.
 - Web: add a reusable `ConfirmationDialog` plus `useConfirmationDialog` hook for destructive actions with async pending states.
 - Web: extract a shared overlay shell for the spaceship card library and use shared `LocationCard` plus `EffectCard` previews inside the library grid.
 - Web: add hidden `/spaceship` and `/styleguide/actor-token` labs for the first Exiles ship-combat prototype, including low-fi ship panes, actor strips, energy tokens, effect stacks, and a visual-only card-library overlay shell.

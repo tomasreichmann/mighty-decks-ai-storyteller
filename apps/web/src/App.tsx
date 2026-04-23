@@ -42,6 +42,9 @@ const ImageGenerator = lazy(async () => ({
 const LandingPage = lazy(async () => ({
   default: (await import("./routes/LandingPage")).LandingPage,
 }));
+const PrivacyPolicyPage = lazy(async () => ({
+  default: (await import("./routes/PrivacyPolicyPage")).PrivacyPolicyPage,
+}));
 const PlayerPage = lazy(async () => ({
   default: (await import("./routes/PlayerPage")).PlayerPage,
 }));
@@ -137,6 +140,9 @@ const StyleguideSessionChatPlayerPage = lazy(async () => ({
 const StyleguideSessionChatStorytellerPage = lazy(async () => ({
   default: (await import("./routes/StyleguideSessionChatStorytellerPage"))
     .StyleguideSessionChatStorytellerPage,
+}));
+const TermsOfServicePage = lazy(async () => ({
+  default: (await import("./routes/TermsOfServicePage")).TermsOfServicePage,
 }));
 const WorkflowLabPage = lazy(async () => ({
   default: (await import("./routes/WorkflowLabPage")).WorkflowLabPage,
@@ -251,6 +257,22 @@ export const App = (): JSX.Element => {
             element={
               <RouteShellBoundary>
                 <ImageGenerator />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/privacy-policy"
+            element={
+              <RouteShellBoundary>
+                <PrivacyPolicyPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/terms-of-service"
+            element={
+              <RouteShellBoundary>
+                <TermsOfServicePage />
               </RouteShellBoundary>
             }
           />

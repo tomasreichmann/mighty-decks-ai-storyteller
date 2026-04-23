@@ -23,6 +23,12 @@ interface ComicNavStyle extends CSSProperties {
   "--button-background-image": string;
 }
 
+interface FooterLink {
+  to: string;
+  label: string;
+  end?: boolean;
+}
+
 const navItems: NavItem[] = [
   {
     to: "/",
@@ -60,19 +66,39 @@ const navItems: NavItem[] = [
   },
 ].filter((item) => !(import.meta.env.PROD && item.hideInProduction));
 
+const footerLinks: FooterLink[] = [
+  { to: "/", label: "Home", end: true },
+  { to: "/privacy-policy", label: "Privacy Policy" },
+  { to: "/terms-of-service", label: "Terms of Service" },
+];
+
 const defaultFooterContent = (
-  <Text variant="emphasised" color="steel-dark" className="text-center">
-    Made by{" "}
-    <a
-      href="mailto:tomasreichmann@gmail.com"
-      target="_blank"
-      rel="noreferrer"
-      className="text-kac-gold-darker hover:underline"
-    >
-      Tomas Reichmann
-    </a>
-    &nbsp;2026
-  </Text>
+  <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+      {footerLinks.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.end}
+          className="text-sm font-bold uppercase tracking-[0.08em] text-kac-gold-darker hover:underline"
+        >
+          {item.label}
+        </NavLink>
+      ))}
+    </div>
+    <Text variant="emphasised" color="steel-dark" className="text-center">
+      Made by{" "}
+      <a
+        href="mailto:tomasreichmann@gmail.com"
+        target="_blank"
+        rel="noreferrer"
+        className="text-kac-gold-darker hover:underline"
+      >
+        Tomas Reichmann
+      </a>
+      &nbsp;2026
+    </Text>
+  </div>
 );
 
 export const Page = ({
