@@ -11,3 +11,19 @@ test("App registers the public privacy and terms routes", () => {
   assert.match(source, /path="\/terms-of-service"/);
   assert.match(source, /RouteShellBoundary/);
 });
+
+test("Legal pages do not use Panel wrappers for body content", () => {
+  const privacySource = readFileSync(
+    new URL("./PrivacyPolicyPage.tsx", import.meta.url),
+    "utf8",
+  );
+  const termsSource = readFileSync(
+    new URL("./TermsOfServicePage.tsx", import.meta.url),
+    "utf8",
+  );
+
+  for (const source of [privacySource, termsSource]) {
+    assert.doesNotMatch(source, /Panel/);
+    assert.doesNotMatch(source, /<Panel>/);
+  }
+});
