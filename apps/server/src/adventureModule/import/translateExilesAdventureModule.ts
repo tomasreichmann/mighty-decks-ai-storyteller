@@ -6,6 +6,7 @@ import {
 } from "@mighty-decks/spec/adventureModuleAuthoring";
 import {
   adventureModuleIndexSchema,
+  type AdventureModuleIndex,
   type AdventureModuleFragmentAudience,
   type AdventureModuleFragmentKind,
   type AdventureModuleFragmentRef,
@@ -161,6 +162,8 @@ interface CuratedActorDefinition {
   noteLines: string[];
   portraitPaths?: string[];
 }
+
+type ExilesCustomActorCard = AdventureModuleIndex["actorCards"][number]["custom"];
 
 interface CuratedAssetDefinition {
   title: string;
@@ -398,6 +401,24 @@ const buildAssetContent = (options: {
       return allLines[index - 1]?.length > 0;
     })
     .join("\n");
+
+const getActorBaseImageUri = (slug: ActorBaseLayerSlug): string =>
+  `/actors/base/${slug.replaceAll("_", "-")}.png`;
+
+const buildCustomActorCard = (
+  definition: CuratedActorDefinition,
+  imageUrls: string[],
+): ExilesCustomActorCard => ({
+  imageUrl: imageUrls[0] ?? getActorBaseImageUri(definition.baseLayerSlug),
+  adjective: definition.isPlayerCharacter
+    ? ""
+    : definition.tacticalSpecialSlug
+      ? titleCase(definition.tacticalSpecialSlug)
+      : "Recurring Actor",
+  noun: definition.title,
+  nounDescription: definition.summary,
+  adjectiveDescription: definition.noteLines.join("\n"),
+});
 
 const trimMarkdownBlock = (lines: readonly string[]): string => {
   let start = 0;
@@ -1306,6 +1327,7 @@ export const translateExilesAdventureModule = async (
     return {
       definition,
       fragment,
+      custom: buildCustomActorCard(definition, imageUrls),
       content: buildActorContent({
         title: definition.title,
         summary: definition.summary,
@@ -1355,8 +1377,10 @@ export const translateExilesAdventureModule = async (
       actorSlug: record.definition.slug,
       title: record.definition.title,
       summary: record.definition.summary,
+      mode: "custom" as const,
       baseLayerSlug: record.definition.baseLayerSlug,
       tacticalRoleSlug: record.definition.tacticalRoleSlug,
+      custom: record.custom,
       isPlayerCharacter: record.definition.isPlayerCharacter,
       content: record.content,
     };
@@ -2439,8 +2463,10 @@ export const translateExilesAdventureModule = async (
     actorFragmentIds: actorRecords.map((record) => record.fragment.fragmentId),
     actorCards: actorRecords.map((record) => ({
       fragmentId: record.fragment.fragmentId,
+      mode: "custom" as const,
       baseLayerSlug: record.definition.baseLayerSlug,
       tacticalRoleSlug: record.definition.tacticalRoleSlug,
+      custom: record.custom,
       ...(record.definition.tacticalSpecialSlug
         ? { tacticalSpecialSlug: record.definition.tacticalSpecialSlug }
         : {}),

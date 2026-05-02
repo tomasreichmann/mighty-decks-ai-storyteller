@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Server: reimport Exiles actors as custom actor cards using their curated portraits, names, summaries, and notes while preserving generic layer settings for editing; player options leave the adjective slot blank.
 - Web: move the actor card generic/custom mode switch into the card settings flow as a shared RockerSwitch and collapse custom actor icon insertion into steel ghost icon-name buttons.
 - Web: remove the extra horizontal padding from the actor body foreignObject so the range value stays on the first row.
 - Web: keep the actor action range icon and value together on one inline row so the `0` stays attached to the previous line.
@@ -72,6 +73,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: prevent long custom actor card titles from clipping by giving custom titles a taller compact text block.
 - Web: tighten the shared page header spacing at tablet and mobile widths so collapsed navigation no longer leaves desktop-sized padding above route content.
 - Server: stop `join_campaign_session` from replaying a stale session snapshot over a newer role-join state, which could leave campaign players unable to claim a character until refresh.
 - Server: seed new Adventure Modules with starter component opportunities, fragment artifact manifest entries, valid starter quest graphs, and slug-derived quest ids so create-module and quest authoring flows no longer fail shared-schema validation.

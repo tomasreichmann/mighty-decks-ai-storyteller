@@ -20,7 +20,10 @@ test("ActorCard supports custom actor card props and shared icon-token rendering
   assert.match(source, /ActorCardTextWithIcons/);
   assert.match(source, /multiline/);
   assert.match(source, /multilineLineClassName="justify-center"/);
-  assert.match(source, /nounClassName: "text-center"/);
+  assert.match(source, /nounBoxY: hasAdjective \? 164 : 146/);
+  assert.match(source, /nounBoxHeight: hasAdjective \? 38 : 46/);
+  assert.match(source, /nounEffectBoxY: hasAdjective \? 204 : undefined/);
+  assert.match(source, /hasAdjective \? "text-\[13px\] leading-\[0\.9\]" : "text-\[15px\] leading-\[0\.95\]"/);
   assert.match(source, /adjectiveClassName: "text-center"/);
   assert.match(source, /adjectiveDeck: undefined/);
   assert.match(source, /adjectiveCornerIcon: undefined/);

@@ -25,6 +25,10 @@ export interface LayeredCardProps extends Omit<
   adjectiveClassName?: string;
   nounEffectClassName?: string;
   adjectiveEffectClassName?: string;
+  nounBoxY?: number;
+  nounBoxHeight?: number;
+  nounEffectBoxY?: number;
+  nounEffectBoxHeight?: number;
 }
 
 interface SvgHtmlTextProps {
@@ -123,6 +127,10 @@ export const LayeredCard = ({
   adjectiveClassName,
   nounEffectClassName,
   adjectiveEffectClassName,
+  nounBoxY = 167,
+  nounBoxHeight = 24,
+  nounEffectBoxY = 194,
+  nounEffectBoxHeight = 84,
   className,
   ...restProps
 }: LayeredCardProps): JSX.Element => {
@@ -291,9 +299,9 @@ export const LayeredCard = ({
 
         <SvgHtmlText
           x={16}
-          y={167}
+          y={nounBoxY}
           width={172}
-          height={24}
+          height={nounBoxHeight}
           className={cn(
             "font-md-heading text-[20px] font-bold leading-none tracking-tight",
             nounClassName,
@@ -304,9 +312,9 @@ export const LayeredCard = ({
 
         <SvgHtmlText
           x={16}
-          y={194}
+          y={nounEffectBoxY}
           width={172}
-          height={84}
+          height={nounEffectBoxHeight}
           className={cn(
             "items-end justify-center px-2 pb-1 text-[11px] leading-[1.2] text-kac-iron-light whitespace-pre-wrap",
             nounEffectClassName,

@@ -426,7 +426,19 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
       storytellerSummaryMarkdown: string;
       playerSummaryMarkdown: string;
       actorFragmentIds: string[];
-      actorCards: Array<{ fragmentId: string; baseLayerSlug: string; tacticalRoleSlug: string }>;
+      actorCards: Array<{
+        fragmentId: string;
+        mode: string;
+        baseLayerSlug: string;
+        tacticalRoleSlug: string;
+        custom: {
+          imageUrl: string;
+          adjective: string;
+          noun: string;
+          nounDescription: string;
+          adjectiveDescription: string;
+        };
+      }>;
       assetFragmentIds: string[];
       assetCards: Array<
         | {
@@ -496,6 +508,14 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
       title: string;
       isPlayerCharacter: boolean;
       content: string;
+      mode: string;
+      custom: {
+        imageUrl: string;
+        adjective: string;
+        noun: string;
+        nounDescription: string;
+        adjectiveDescription: string;
+      };
       baseLayerSlug: string;
       tacticalRoleSlug: string;
     }>;
@@ -526,6 +546,10 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
   const voidHorrorRecord = await artifactStore.persistDataImageUri(
     createImageDataUri("image/png", "void-horror-inline"),
     { hint: "void-horror" },
+  );
+  const machinistPriestRecord = await artifactStore.persistDataImageUri(
+    createImageDataUri("image/png", "machinist-priest"),
+    { hint: "machinist-priest" },
   );
   const dockingBayRecord = await artifactStore.persistDataImageUri(
     createImageDataUri("image/png", "docking-bay"),
@@ -800,8 +824,24 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
     (actorCard) => actorCard.fragmentId === translated.index.actorFragmentIds[0],
   );
   assert.ok(firstActorCard);
+  assert.equal(firstActorCard?.mode, "custom");
   assert.equal(firstActorCard?.baseLayerSlug, "cog");
   assert.equal(firstActorCard?.tacticalRoleSlug, "champion");
+  assert.equal(firstActorCard?.custom.imageUrl, machinistPriestRecord.fileUrl);
+  assert.equal(firstActorCard?.custom.adjective, "");
+  assert.equal(firstActorCard?.custom.noun, "Machinist-Priest Heretic");
+  assert.match(
+    firstActorCard?.custom.nounDescription ?? "",
+    /forbidden machine communion as holy work/,
+  );
+  assert.match(firstActorCard?.custom.adjectiveDescription ?? "", /Servo-Arms/);
+
+  const machinistActor = translated.actors.find(
+    (actor) => actor.actorSlug === "machinist-priest-heretic",
+  );
+  assert.ok(machinistActor);
+  assert.equal(machinistActor?.mode, "custom");
+  assert.deepEqual(machinistActor?.custom, firstActorCard?.custom);
 
   const alienContainerAsset = translated.assets.find(
     (asset) => asset.assetSlug === "alien-container",

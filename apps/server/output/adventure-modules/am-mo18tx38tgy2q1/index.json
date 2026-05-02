@@ -230,101 +230,221 @@
   "actorCards": [
     {
       "fragmentId": "frag-actor-machinist-priest-heretic",
+      "mode": "custom",
       "baseLayerSlug": "cog",
       "tacticalRoleSlug": "champion",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/machinist-priest-9f0a775743dda3c817df.png",
+        "adjective": "",
+        "noun": "Machinist-Priest Heretic",
+        "nounDescription": "An exiled engineer-priest who treats forbidden machine communion as holy work.",
+        "adjectiveDescription": "Machine Speaker\nServo-Arms\nSpecialized Augments"
+      },
       "isPlayerCharacter": true
     },
     {
       "fragmentId": "frag-actor-crimson-witch-warlock",
+      "mode": "custom",
       "baseLayerSlug": "zealot",
       "tacticalRoleSlug": "stalker",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/crimson-witch-633cf2740535607fd59b.png",
+        "adjective": "",
+        "noun": "Crimson Witch/Warlock",
+        "nounDescription": "A hemomancer who fuels divination, alteration, and combat through blood magic.",
+        "adjectiveDescription": "Blood Sense\nHemomancy\nRitualist"
+      },
       "isPlayerCharacter": true
     },
     {
       "fragmentId": "frag-actor-augmented-veteran",
+      "mode": "custom",
       "baseLayerSlug": "bruiser_red",
       "tacticalRoleSlug": "brute",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/augmented-veteran-male-11058efeea83925b9b24.png",
+        "adjective": "",
+        "noun": "Augmented Veteran",
+        "nounDescription": "A battle-scarred Legion deserter rebuilt for war and stubborn survival.",
+        "adjectiveDescription": "Weapon Proficiency\nAugmented Body\nPain Inhibitor"
+      },
       "isPlayerCharacter": true
     },
     {
       "fragmentId": "frag-actor-noble-empath",
+      "mode": "custom",
       "baseLayerSlug": "aristocrat",
       "tacticalRoleSlug": "skirmisher",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/noble-empath-male-7a5acbf22a40f19e37c0.png",
+        "adjective": "",
+        "noun": "Noble Empath",
+        "nounDescription": "An impoverished noble whose status and empathic gifts still open doors.",
+        "adjectiveDescription": "Surface Thoughts\nEmpathic Touch\nNoble Lineage"
+      },
       "isPlayerCharacter": true
     },
     {
       "fragmentId": "frag-actor-void-seer",
+      "mode": "custom",
       "baseLayerSlug": "manipulator",
       "tacticalRoleSlug": "ranger",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/void-seer-male-0d111321f324bc460dfa.png",
+        "adjective": "",
+        "noun": "Void-seer",
+        "nounDescription": "A navigator-mystic who reads the Void and bends space just enough to survive it.",
+        "adjectiveDescription": "Certified Navigator\nSpace Folding\nGravity Manipulation"
+      },
       "isPlayerCharacter": true
     },
     {
       "fragmentId": "frag-actor-synthetic-medic",
+      "mode": "custom",
       "baseLayerSlug": "healer",
       "tacticalRoleSlug": "ranger",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/robot-surgeon-male-96a8910699a9d40cb268.png",
+        "adjective": "",
+        "noun": "Synthetic Medic",
+        "nounDescription": "An illegal sentient intelligence piloting a medic shell and looking for purpose.",
+        "adjectiveDescription": "Knowledge Base\nExpert Doctor\nVacuum Tolerance"
+      },
       "isPlayerCharacter": true
     },
     {
       "fragmentId": "frag-actor-void-horror",
+      "mode": "custom",
       "baseLayerSlug": "horror",
       "tacticalRoleSlug": "tank",
       "tacticalSpecialSlug": "corrupting",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/void-horror-4669a2c690bf1b093878.png",
+        "adjective": "Corrupting",
+        "noun": "Void Horror",
+        "nounDescription": "The hungry shadow that stalks the corvette whenever the spin drive wakes up.",
+        "adjectiveDescription": "The ship's recurring apex threat"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-xithrax-raiders",
+      "mode": "custom",
       "baseLayerSlug": "animal_red",
       "tacticalRoleSlug": "minion",
       "tacticalSpecialSlug": "fast",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/critter-raider-5350e2db4c3712029480.png",
+        "adjective": "Fast",
+        "noun": "Xithrax Raiders",
+        "nounDescription": "Bloodthirsty bug raiders who want loot fast and casualties faster.",
+        "adjectiveDescription": "Pirate corvette crew\nSame count as players"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-tunnel-critter",
+      "mode": "custom",
       "baseLayerSlug": "animal_green",
       "tacticalRoleSlug": "pawn",
       "tacticalSpecialSlug": "irritating",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/tunnel-critter-89dea1424fce1209f3c6.png",
+        "adjective": "Irritating",
+        "noun": "Tunnel Critter",
+        "nounDescription": "A skittering tunnel nuisance that fights from shadows and scrap piles.",
+        "adjectiveDescription": "Twice as many as the players"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-tunnel-critter-brood-mother",
+      "mode": "custom",
       "baseLayerSlug": "animal_green",
       "tacticalRoleSlug": "tank",
       "tacticalSpecialSlug": "alpha",
+      "custom": {
+        "imageUrl": "/api/adventure-artifacts/tunnel-critter-brood-mother-b2405aea5b329f1b9cf8.png",
+        "adjective": "Alpha",
+        "noun": "Tunnel Critter Brood Mother",
+        "nounDescription": "The hulking brood mother that sends the tunnel critters scattering or back into the fight.",
+        "adjectiveDescription": "Appears at the start of round three"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-machinist-church",
+      "mode": "custom",
       "baseLayerSlug": "cog",
       "tacticalRoleSlug": "champion",
       "tacticalSpecialSlug": "armoured",
+      "custom": {
+        "imageUrl": "/actors/base/cog.png",
+        "adjective": "Armoured",
+        "noun": "Machinist Church",
+        "nounDescription": "Zealot engineers who treat every ship, relic, and bolt as sacred property.",
+        "adjectiveDescription": "The priests laying siege to Rock Bottom"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-smugglers",
+      "mode": "custom",
       "baseLayerSlug": "merchant",
       "tacticalRoleSlug": "skirmisher",
       "tacticalSpecialSlug": "fast",
+      "custom": {
+        "imageUrl": "/actors/base/merchant.png",
+        "adjective": "Fast",
+        "noun": "Smugglers",
+        "nounDescription": "Pragmatic opportunists who trade in favors, cargo, and plausible deniability.",
+        "adjectiveDescription": "Allies of convenience"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-void-seers",
+      "mode": "custom",
       "baseLayerSlug": "manipulator",
       "tacticalRoleSlug": "stalker",
       "tacticalSpecialSlug": "corrupting",
+      "custom": {
+        "imageUrl": "/actors/base/manipulator.png",
+        "adjective": "Corrupting",
+        "noun": "Void Seers",
+        "nounDescription": "A mystic navigational order that treats the Void as both threat and revelation.",
+        "adjectiveDescription": "They vanish when the concert ends"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-death-cultists",
+      "mode": "custom",
       "baseLayerSlug": "zealot",
       "tacticalRoleSlug": "assassin",
       "tacticalSpecialSlug": "corrupting",
+      "custom": {
+        "imageUrl": "/actors/base/zealot.png",
+        "adjective": "Corrupting",
+        "noun": "Death Cultists",
+        "nounDescription": "Hadean corpse-venerators who bargain in funerary gifts and forbidden rituals.",
+        "adjectiveDescription": "The ritual gift on the dead ship"
+      },
       "isPlayerCharacter": false
     },
     {
       "fragmentId": "frag-actor-hadeans",
+      "mode": "custom",
       "baseLayerSlug": "horror",
       "tacticalRoleSlug": "assassin",
       "tacticalSpecialSlug": "corrupting",
+      "custom": {
+        "imageUrl": "/actors/base/horror.png",
+        "adjective": "Corrupting",
+        "noun": "Hadeans",
+        "nounDescription": "Death-obsessed cultists traveling a doomed vessel beneath a gas giant.",
+        "adjectiveDescription": "The crew in Dead in space"
+      },
       "isPlayerCharacter": false
     }
   ],
@@ -2710,6 +2830,6 @@
     }
   ],
   "notes": "Imported from legacy Exiles of the Hungry Void MDX. Legacy UI widgets were normalized to markdown.",
-  "updatedAtIso": "2026-04-18T18:00:29.237Z",
+  "updatedAtIso": "2026-05-02T22:17:39.978Z",
   "postMvpExtension": true
 }
