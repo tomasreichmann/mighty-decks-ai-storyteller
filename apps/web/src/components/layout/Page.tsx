@@ -1,4 +1,10 @@
-import { useEffect, useState, type CSSProperties, type PropsWithChildren, type ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  type CSSProperties,
+  type PropsWithChildren,
+  type ReactNode,
+} from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "../../utils/cn";
 import { Text } from "../common/Text";
@@ -122,8 +128,8 @@ export const Page = ({
       )}
     >
       {hideHeader ? null : (
-        <header className="overflow-visible pb-4">
-          <div className={cn("app-shell py-3 paper-shadow", styles.headerShell)}>
+        <header className={styles.pageHeader}>
+          <div className={cn("app-shell paper-shadow", styles.headerShell)}>
             <NavLink
               to="/"
               className={styles.brandLink}
@@ -143,7 +149,9 @@ export const Page = ({
               className={styles.comicNavToggle}
               aria-expanded={mobileNavOpen}
               aria-controls="primary-navigation"
-              aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-label={
+                mobileNavOpen ? "Close navigation menu" : "Open navigation menu"
+              }
               onClick={() => setMobileNavOpen((current) => !current)}
             >
               <span className={styles.comicNavToggleLine} />
@@ -153,33 +161,38 @@ export const Page = ({
 
             <nav
               id="primary-navigation"
-              className={cn(styles.comicNav, mobileNavOpen && styles.comicNavOpen)}
+              className={cn(
+                styles.comicNav,
+                mobileNavOpen && styles.comicNavOpen,
+              )}
               aria-label="Primary"
             >
-              {navItems.map((item) => {
-                const style: ComicNavStyle = {
-                  "--button-background-image": `url("${item.buttonBackgroundImage}")`,
-                };
+              <div className={styles.comicNavContent}>
+                {navItems.map((item) => {
+                  const style: ComicNavStyle = {
+                    "--button-background-image": `url("${item.buttonBackgroundImage}")`,
+                  };
 
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    style={style}
-                    className={({ isActive }) =>
-                      cn(
-                        styles.comicNavLink,
-                        item.linkClassName,
-                        isActive && styles.comicNavLinkActive,
-                      )
-                    }
-                    onClick={() => setMobileNavOpen(false)}
-                  >
-                    <span className={styles.comicNavLabel}>{item.label}</span>
-                  </NavLink>
-                );
-              })}
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      style={style}
+                      className={({ isActive }) =>
+                        cn(
+                          styles.comicNavLink,
+                          item.linkClassName,
+                          isActive && styles.comicNavLinkActive,
+                        )
+                      }
+                      onClick={() => setMobileNavOpen(false)}
+                    >
+                      <span className={styles.comicNavLabel}>{item.label}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
             </nav>
           </div>
         </header>
