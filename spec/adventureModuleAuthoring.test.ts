@@ -571,6 +571,77 @@ test("adventureModuleDetailSchema preserves actor player-character metadata", ()
   assert.equal(parsed.actors[0]?.isPlayerCharacter, true);
 });
 
+test("adventureModuleDetailSchema accepts resolved custom actors joined from actor metadata", () => {
+  const candidate = createValidModuleDetailCandidate();
+  candidate.index.actorCards[0] = {
+    fragmentId: "frag-actor-main",
+    mode: "custom",
+    baseLayerSlug: "aristocrat",
+    tacticalRoleSlug: "bomber",
+    tacticalSpecialSlug: "grabbing",
+    isPlayerCharacter: false,
+    custom: {
+      imageUrl: "/actors/base/aristocrat.png",
+      adjective: "Grabbing",
+      noun: "Bomber",
+      nounDescription:
+        "[toughness][toughness][toughness]\n[ranged][injury3][splash][range]0 (+[stuck])",
+      adjectiveDescription: "[melee] attack also deals +[stuck]",
+    },
+  };
+  candidate.actors[0] = {
+    ...candidate.actors[0],
+    mode: "custom",
+    baseLayerSlug: "aristocrat",
+    tacticalRoleSlug: "bomber",
+    tacticalSpecialSlug: "grabbing",
+    custom: {
+      imageUrl: "/actors/base/aristocrat.png",
+      adjective: "Grabbing",
+      noun: "Bomber",
+      nounDescription:
+        "[toughness][toughness][toughness]\n[ranged][injury3][splash][range]0 (+[stuck])",
+      adjectiveDescription: "[melee] attack also deals +[stuck]",
+    },
+  };
+
+  const parsed = adventureModuleDetailSchema.parse(candidate);
+
+  assert.equal(parsed.actors[0]?.mode, "custom");
+  assert.equal(parsed.actors[0]?.custom.noun, "Bomber");
+});
+
+test("adventureModuleDetailSchema rejects resolved actors that do not match custom metadata", () => {
+  const candidate = createValidModuleDetailCandidate();
+  candidate.index.actorCards[0] = {
+    ...candidate.index.actorCards[0],
+    mode: "custom",
+    custom: {
+      imageUrl: "/actors/base/aristocrat.png",
+      adjective: "Grabbing",
+      noun: "Bomber",
+      nounDescription: "[ranged][injury3][splash][range]0 (+[stuck])",
+      adjectiveDescription: "[melee] attack also deals +[stuck]",
+    },
+  };
+  candidate.actors[0] = {
+    ...candidate.actors[0],
+    mode: "custom",
+    custom: {
+      imageUrl: "/actors/base/aristocrat.png",
+      adjective: "Grabbing",
+      noun: "Saboteur",
+      nounDescription: "[ranged][injury3][splash][range]0 (+[stuck])",
+      adjectiveDescription: "[melee] attack also deals +[stuck]",
+    },
+  };
+
+  assert.throws(
+    () => adventureModuleDetailSchema.parse(candidate),
+    /resolved actor .* does not match index actor card metadata/i,
+  );
+});
+
 test("adventureModuleDetailSchema rejects resolved quests that do not match quest metadata", () => {
   const candidate = createValidModuleDetailCandidate();
   candidate.quests[0] = {
@@ -665,4 +736,28 @@ test("adventureModule actor request schemas accept player-character metadata", (
   });
 
   assert.equal(parsed.isPlayerCharacter, true);
+});
+
+test("adventureModule actor request schemas accept custom card metadata", () => {
+  const parsed = adventureModuleUpdateActorRequestSchema.parse({
+    title: "Chmaták",
+    summary: "Main actor driving pressure.",
+    mode: "custom",
+    baseLayerSlug: "aristocrat",
+    tacticalRoleSlug: "bomber",
+    tacticalSpecialSlug: "grabbing",
+    isPlayerCharacter: false,
+    custom: {
+      imageUrl: "/actors/base/aristocrat.png",
+      adjective: "Grabbing",
+      noun: "Bomber",
+      nounDescription:
+        "[toughness][toughness][toughness]\n[ranged][injury3][splash][range]0 (+[stuck])",
+      adjectiveDescription: "[melee] attack also deals +[stuck]",
+    },
+    content: "# Chmaták",
+  });
+
+  assert.equal(parsed.mode, "custom");
+  assert.equal(parsed.custom.noun, "Bomber");
 });

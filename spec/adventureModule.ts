@@ -206,9 +206,25 @@ export type AdventureModuleFragmentRef = z.infer<
 
 export const adventureModuleActorCardSchema = z.object({
   fragmentId: identifierSchema,
+  mode: z.enum(["generic", "custom"]).default("generic"),
   baseLayerSlug: actorBaseLayerSlugSchema,
   tacticalRoleSlug: actorTacticalRoleSlugSchema,
   tacticalSpecialSlug: actorTacticalSpecialSlugSchema.optional(),
+  custom: z
+    .object({
+      imageUrl: z.string().max(500).default(""),
+      adjective: z.string().max(120).default(""),
+      noun: z.string().max(120).default(""),
+      nounDescription: z.string().max(500).default(""),
+      adjectiveDescription: z.string().max(500).default(""),
+    })
+    .default({
+      imageUrl: "",
+      adjective: "",
+      noun: "",
+      nounDescription: "",
+      adjectiveDescription: "",
+    }),
   isPlayerCharacter: z.boolean().default(false),
 });
 export type AdventureModuleActorCard = z.infer<

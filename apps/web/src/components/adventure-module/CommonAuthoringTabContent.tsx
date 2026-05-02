@@ -147,9 +147,11 @@ export const CommonAuthoringTabContent = ({
           title: actor.title,
           summary: actor.summary,
           actorCard: {
+            mode: actor.mode,
             baseLayerSlug: actor.baseLayerSlug,
             tacticalRoleSlug: actor.tacticalRoleSlug,
             tacticalSpecialSlug: actor.tacticalSpecialSlug,
+            custom: actor.custom,
           },
           routePath: buildRoute(detail.index.slug, "actors", actor.actorSlug),
         }),
@@ -255,9 +257,11 @@ export const CommonAuthoringTabContent = ({
               ...activeActor,
               title: state.forms.actor.title,
               summary: state.forms.actor.summary,
+              mode: state.forms.actor.mode,
               baseLayerSlug: state.forms.actor.baseLayerSlug,
               tacticalRoleSlug: state.forms.actor.tacticalRoleSlug,
               tacticalSpecialSlug: state.forms.actor.tacticalSpecialSlug,
+              custom: state.forms.actor.custom,
               isPlayerCharacter: state.forms.actor.isPlayerCharacter,
               content: state.forms.actor.content,
             }}
@@ -274,6 +278,9 @@ export const CommonAuthoringTabContent = ({
             onSummaryChange={(nextValue) =>
               changeField("actor", "summary", nextValue)
             }
+            onModeChange={(nextValue) =>
+              changeField("actor", "mode", nextValue)
+            }
             onBaseLayerChange={(nextValue) =>
               changeField("actor", "baseLayerSlug", nextValue)
             }
@@ -282,6 +289,9 @@ export const CommonAuthoringTabContent = ({
             }
             onTacticalSpecialChange={(nextValue) =>
               changeField("actor", "tacticalSpecialSlug", nextValue)
+            }
+            onCustomChange={(nextValue) =>
+              changeField("actor", "custom", nextValue)
             }
             onIsPlayerCharacterChange={(nextValue) =>
               changeField("actor", "isPlayerCharacter", nextValue)

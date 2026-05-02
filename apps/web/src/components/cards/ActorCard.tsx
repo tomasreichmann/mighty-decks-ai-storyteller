@@ -13,81 +13,13 @@ import {
   type ActorCardAction,
 } from "../../data/actorCards";
 import { cn } from "../../utils/cn";
+import {
+  ActorCardTextWithIcons,
+  actorBodyLineHeightClassName,
+  actorBodyRowClassName,
+  getIconTextLength,
+} from "./ActorCardTextWithIcons";
 import { LayeredCard, type LayeredCardProps } from "./LayeredCard";
-
-interface ActorCardTextWithIconsProps {
-  text: string;
-  iconClassName?: string;
-}
-
-const tokenPattern = /(\[[^\]]+\])/g;
-const iconTokenPattern = /^\[([a-zA-Z_]+)(\d*)\]$/;
-const actorBodyLineHeightClassName = "leading-[16px]";
-const actorBodyRowClassName = `flex min-h-4 items-center ${actorBodyLineHeightClassName}`;
-
-const ActorCardTextWithIcons = ({
-  text,
-  iconClassName,
-}: ActorCardTextWithIconsProps): JSX.Element => {
-  const fragments = text
-    .split(tokenPattern)
-    .filter((fragment) => fragment !== "");
-
-  return (
-    <>
-      {fragments.map((fragment, fragmentIndex) => {
-        const iconNameMatch = fragment.match(iconTokenPattern);
-        if (!iconNameMatch) {
-          return <span key={fragmentIndex}>{fragment}</span>;
-        }
-
-        const [, iconName, iconCountString = "1"] = iconNameMatch;
-        const iconCount = Number.parseInt(iconCountString || "1", 10);
-        if (!Number.isFinite(iconCount) || iconCount < 1) {
-          return <span key={fragmentIndex}>{fragment}</span>;
-        }
-
-        return (
-          <span
-            key={fragmentIndex}
-            className={cn("inline-flex items-center", actorBodyLineHeightClassName)}
-          >
-            {Array.from({ length: iconCount }).map((_, iconIndex) => (
-              <img
-                key={`${iconName}-${iconIndex}`}
-                src={getActorTextIconUri(iconName)}
-                alt=""
-                aria-hidden="true"
-                className={cn(
-                  "inline-block h-4 w-4 object-contain align-middle",
-                  iconClassName,
-                  iconIndex > 0 ? "-ml-1" : "",
-                )}
-              />
-            ))}
-          </span>
-        );
-      })}
-    </>
-  );
-};
-
-const getIconTextLength = (text: string): number => {
-  const fragments = text
-    .split(tokenPattern)
-    .filter((fragment) => fragment !== "");
-  return fragments.reduce((length, fragment) => {
-    const iconNameMatch = fragment.match(iconTokenPattern);
-    if (!iconNameMatch) {
-      return length + fragment.length * 0.25;
-    }
-    const [, , iconCountString = "1"] = iconNameMatch;
-    const iconCount = Number.parseInt(iconCountString || "1", 10);
-    return Number.isFinite(iconCount) && iconCount > 0
-      ? length + iconCount
-      : length;
-  }, 0);
-};
 
 const renderAction = (
   action: ActorCardAction | undefined,
@@ -242,7 +174,7 @@ const getLayeredActorCardProps = (
   };
 };
 
-export interface ActorCardProps extends Omit<
+interface BaseActorCardProps extends Omit<
   LayeredCardProps,
   | "imageUri"
   | "imageOverlayUri"
@@ -255,20 +187,91 @@ export interface ActorCardProps extends Omit<
   | "adjectiveEffect"
   | "nounEffect"
 > {
-  baseLayerSlug: ActorBaseLayerSlug;
-  tacticalRoleSlug: ActorTacticalRoleSlug;
-  tacticalSpecialSlug?: ActorTacticalSpecialSlug;
   imageFit?: CSSProperties["objectFit"];
   imagePosition?: CSSProperties["objectPosition"];
 }
 
-export const ActorCard = ({
-  baseLayerSlug,
-  tacticalRoleSlug,
-  tacticalSpecialSlug,
-  className,
-  ...restProps
-}: ActorCardProps): JSX.Element => {
+interface GenericActorCardProps extends BaseActorCardProps {
+  kind?: "generic";
+  baseLayerSlug: ActorBaseLayerSlug;
+  tacticalRoleSlug: ActorTacticalRoleSlug;
+  tacticalSpecialSlug?: ActorTacticalSpecialSlug;
+}
+
+interface CustomActorCardProps extends BaseActorCardProps {
+  kind: "custom";
+  custom: {
+    imageUrl: string;
+    adjective: string;
+    noun: string;
+    nounDescription: string;
+    adjectiveDescription: string;
+  };
+}
+
+export type ActorCardProps = GenericActorCardProps | CustomActorCardProps;
+
+const getCustomLayeredActorCardProps = (
+  custom: CustomActorCardProps["custom"],
+): LayeredCardProps => {
+  const noun = custom.noun.trim();
+  const adjective = custom.adjective.trim();
+  const nounDescription = custom.nounDescription.trim();
+  const adjectiveDescription = custom.adjectiveDescription.trim();
+
+  return {
+    imageUri: custom.imageUrl.trim() || undefined,
+    noun: noun || "Custom Actor",
+    nounDeck: "custom",
+    nounCornerIcon: "/types/actor.png",
+    adjective: adjective || undefined,
+    adjectiveDeck: adjective ? "custom" : undefined,
+    adjectiveCornerIcon: adjective ? "/types/actor.png" : undefined,
+    nounEffect:
+      nounDescription.length > 0 ? (
+        <ActorCardTextWithIcons
+          text={nounDescription}
+          iconClassName={getIconTextLength(nounDescription) > 5 ? "mx-[-1px]" : undefined}
+        />
+      ) : undefined,
+    adjectiveEffect:
+      adjectiveDescription.length > 0 ? (
+        <div className={cn("font-semibold", actorBodyLineHeightClassName)}>
+          <ActorCardTextWithIcons
+            text={adjectiveDescription}
+            iconClassName="mx-[-1px]"
+          />
+        </div>
+      ) : undefined,
+    nounEffectClassName:
+      "px-2 pb-1 text-[11px] leading-[16px] text-kac-iron-light whitespace-pre-wrap",
+    adjectiveEffectClassName:
+      "px-2 text-[11px] leading-[16px] text-kac-iron whitespace-pre-wrap",
+  };
+};
+
+export const ActorCard = (props: ActorCardProps): JSX.Element => {
+  if (props.kind === "custom") {
+    const { kind: _kind, custom, className, ...layeredRestProps } = props;
+    void _kind;
+    return (
+      <LayeredCard
+        className={cn("ActorCard", className)}
+        {...getCustomLayeredActorCardProps(custom)}
+        {...layeredRestProps}
+      />
+    );
+  }
+
+  const {
+    kind: _kind,
+    className,
+    baseLayerSlug,
+    tacticalRoleSlug,
+    tacticalSpecialSlug,
+    ...layeredRestProps
+  } = props;
+  void _kind;
   const layeredProps = getLayeredActorCardProps(
     tacticalRoleSlug,
     tacticalSpecialSlug,
@@ -279,7 +282,7 @@ export const ActorCard = ({
       imageUri={getActorBaseImageUri(baseLayerSlug)}
       className={cn("ActorCard", className)}
       {...layeredProps}
-      {...restProps}
+      {...layeredRestProps}
     />
   );
 };

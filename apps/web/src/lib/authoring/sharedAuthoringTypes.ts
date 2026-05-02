@@ -23,9 +23,11 @@ export interface ActorFormState {
   actorSlug: string;
   title: string;
   summary: string;
+  mode: AdventureModuleDetail["actors"][number]["mode"];
   baseLayerSlug: AdventureModuleDetail["actors"][number]["baseLayerSlug"];
   tacticalRoleSlug: AdventureModuleDetail["actors"][number]["tacticalRoleSlug"];
   tacticalSpecialSlug?: AdventureModuleDetail["actors"][number]["tacticalSpecialSlug"];
+  custom: AdventureModuleDetail["actors"][number]["custom"];
   isPlayerCharacter: boolean;
   content: string;
 }

@@ -249,9 +249,11 @@ export class AdventureModuleStore {
     creatorToken?: string;
     title: string;
     summary: string;
+    mode: AdventureModuleIndex["actorCards"][number]["mode"];
     baseLayerSlug: AdventureModuleIndex["actorCards"][number]["baseLayerSlug"];
     tacticalRoleSlug: AdventureModuleIndex["actorCards"][number]["tacticalRoleSlug"];
     tacticalSpecialSlug?: AdventureModuleIndex["actorCards"][number]["tacticalSpecialSlug"];
+    custom: AdventureModuleIndex["actorCards"][number]["custom"];
     isPlayerCharacter: boolean;
     content: string;
   }): Promise<AdventureModuleDetail> {

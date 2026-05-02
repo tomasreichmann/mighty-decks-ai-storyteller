@@ -224,7 +224,7 @@ Primary action:
 
 List behavior:
 
-- The tab renders a searchable grid of layered `ActorCard` entries resolved from module actor fragments.
+- The tab renders a searchable grid of `ActorCard` entries resolved from module actor fragments, using each actor's active generic/custom card mode.
 - Each actor card shows title, summary, and stable shortcode text.
 - The compact `ShortcodeField` row copies `@actor/<actor-slug>` for manual insertion in markdown source mode.
 - `Delete` removes the actor immediately after confirmation and leaves existing markdown embeds untouched so they fall back to invalid-card rendering.
@@ -356,9 +356,9 @@ Actor edit example fields:
 
 - Actor name.
 - Short summary.
-- Base layer.
-- Tactical role.
-- Optional tactical special.
+- Card mode toggle (`Make Custom` / `Make Generic`).
+- Generic mode: base layer, tactical role, and optional tactical special.
+- Custom mode: custom actor image, adjective, noun, noun description, and adjective description.
 - `Player Character` toggle.
 - Markdown body with inline actor `GameCard` rendering.
 
@@ -368,7 +368,11 @@ Actor editor behavior:
 - Deletes persist through `DELETE /api/adventure-modules/:moduleId/actors/:actorSlug`.
 - Actor slug is generated from the saved title and updates when the actor name changes.
 - Actors marked `Player Character` seed the campaign's claimable character pool when a campaign is created from the module.
-- The editor shows a live layered preview assembled from base art, tactical role metadata, and optional tactical special overlay, and the preview card shows a small circular detail-link overlay in the bottom-right corner.
+- New actors start in generic mode with base/role/special controls.
+- `Make Custom` seeds the custom card once from the current generic card when all custom fields are empty, using the base image, role name as noun, special name as adjective, merged role/special action rows as noun description, and special text as adjective description.
+- `Make Generic` switches the active render mode back to the generic card without discarding custom fields; switching to custom likewise preserves the original generic layer settings.
+- Custom noun and adjective descriptions use a hybrid body-text editor that stores plain text with canonical actor icon tokens such as `[ranged]`, `[injury3]`, and `[stuck]`.
+- The editor shows a live card preview for whichever mode is active, and the preview card shows a small circular detail-link overlay in the bottom-right corner.
 - The detail surface shows a reusable shortcode row that displays `@actor/<actor-slug>` and copies it directly to the clipboard.
 
 Counter edit example fields:

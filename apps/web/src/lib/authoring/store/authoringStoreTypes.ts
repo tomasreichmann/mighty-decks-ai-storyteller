@@ -151,9 +151,11 @@ export interface AuthoringDomainAdapter<
     payload: {
       title: string;
       summary: string;
+      mode: TDetail["actors"][number]["mode"];
       baseLayerSlug: TDetail["actors"][number]["baseLayerSlug"];
       tacticalRoleSlug: TDetail["actors"][number]["tacticalRoleSlug"];
       tacticalSpecialSlug?: TDetail["actors"][number]["tacticalSpecialSlug"] | null;
+      custom: TDetail["actors"][number]["custom"];
       isPlayerCharacter: boolean;
       content: string;
     },

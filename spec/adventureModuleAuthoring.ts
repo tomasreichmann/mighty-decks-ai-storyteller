@@ -137,9 +137,25 @@ export const adventureModuleResolvedActorSchema = z.object({
   actorSlug: slugSchema,
   title: shortTextSchema,
   summary: mediumTextSchema.optional(),
+  mode: z.enum(["generic", "custom"]).default("generic"),
   baseLayerSlug: actorBaseLayerSlugSchema,
   tacticalRoleSlug: actorTacticalRoleSlugSchema,
   tacticalSpecialSlug: actorTacticalSpecialSlugSchema.optional(),
+  custom: z
+    .object({
+      imageUrl: z.string().max(500).default(""),
+      adjective: z.string().max(120).default(""),
+      noun: z.string().max(120).default(""),
+      nounDescription: z.string().max(500).default(""),
+      adjectiveDescription: z.string().max(500).default(""),
+    })
+    .default({
+      imageUrl: "",
+      adjective: "",
+      noun: "",
+      nounDescription: "",
+      adjectiveDescription: "",
+    }),
   isPlayerCharacter: z.boolean().default(false),
   content: z.string().max(200_000).default(""),
 });
@@ -281,9 +297,16 @@ export const adventureModuleDetailSchema = z
         continue;
       }
       if (
+        actor.mode !== actorCard.mode ||
         actor.baseLayerSlug !== actorCard.baseLayerSlug ||
         actor.tacticalRoleSlug !== actorCard.tacticalRoleSlug ||
         actor.tacticalSpecialSlug !== actorCard.tacticalSpecialSlug ||
+        actor.custom.imageUrl !== actorCard.custom.imageUrl ||
+        actor.custom.adjective !== actorCard.custom.adjective ||
+        actor.custom.noun !== actorCard.custom.noun ||
+        actor.custom.nounDescription !== actorCard.custom.nounDescription ||
+        actor.custom.adjectiveDescription !==
+          actorCard.custom.adjectiveDescription ||
         actor.isPlayerCharacter !== actorCard.isPlayerCharacter
       ) {
         ctx.addIssue({
@@ -624,11 +647,27 @@ export type AdventureModuleUpdateQuestResponse = z.infer<
 export const adventureModuleUpdateActorRequestSchema = z.object({
   title: shortTextSchema,
   summary: z.string().max(500).default(""),
+  mode: z.enum(["generic", "custom"]).default("generic"),
   baseLayerSlug: actorBaseLayerSlugSchema,
   tacticalRoleSlug: actorTacticalRoleSlugSchema,
   tacticalSpecialSlug: z
     .union([actorTacticalSpecialSlugSchema, z.null()])
     .optional(),
+  custom: z
+    .object({
+      imageUrl: z.string().max(500).default(""),
+      adjective: z.string().max(120).default(""),
+      noun: z.string().max(120).default(""),
+      nounDescription: z.string().max(500).default(""),
+      adjectiveDescription: z.string().max(500).default(""),
+    })
+    .default({
+      imageUrl: "",
+      adjective: "",
+      noun: "",
+      nounDescription: "",
+      adjectiveDescription: "",
+    }),
   isPlayerCharacter: z.boolean().default(false),
   content: z.string().max(200_000).default(""),
 });

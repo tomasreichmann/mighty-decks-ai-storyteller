@@ -303,9 +303,14 @@ export const CampaignSessionPlayerPage = (): JSX.Element => {
                     <div key={actor.fragmentId} className="flex flex-wrap items-start gap-4">
                       <ActorCard
                         className="w-full max-w-[13rem] shrink-0"
-                        baseLayerSlug={actor.baseLayerSlug}
-                        tacticalRoleSlug={actor.tacticalRoleSlug}
-                        tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
+                        {...(actor.mode === "custom"
+                          ? { kind: "custom" as const, custom: actor.custom }
+                          : {
+                              baseLayerSlug: actor.baseLayerSlug,
+                              tacticalRoleSlug: actor.tacticalRoleSlug,
+                              tacticalSpecialSlug:
+                                actor.tacticalSpecialSlug ?? undefined,
+                            })}
                       />
                       <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3 rounded-sm border-2 border-kac-iron/15 bg-kac-bone-light/70 px-3 py-3">
                         <div className="stack min-w-0 gap-1">

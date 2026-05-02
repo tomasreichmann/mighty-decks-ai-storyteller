@@ -276,8 +276,15 @@ export const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
     }),
     actorCards: actorFragmentIds.map((fragmentId) => {
       const existing = actorCardsByFragmentId.get(fragmentId);
+      const existingCustom =
+        existing?.custom &&
+        typeof existing.custom === "object" &&
+        !Array.isArray(existing.custom)
+          ? (existing.custom as Record<string, unknown>)
+          : {};
       return {
         fragmentId,
+        mode: existing?.mode === "custom" ? "custom" : "generic",
         baseLayerSlug:
           typeof existing?.baseLayerSlug === "string" &&
           existing.baseLayerSlug.trim().length > 0
@@ -292,6 +299,26 @@ export const normalizeStoredIndexCandidate = (candidate: unknown): unknown => {
         existing.tacticalSpecialSlug.trim().length > 0
           ? { tacticalSpecialSlug: existing.tacticalSpecialSlug.trim() }
           : {}),
+        custom: {
+          imageUrl:
+            typeof existingCustom.imageUrl === "string"
+              ? existingCustom.imageUrl
+              : "",
+          adjective:
+            typeof existingCustom.adjective === "string"
+              ? existingCustom.adjective
+              : "",
+          noun:
+            typeof existingCustom.noun === "string" ? existingCustom.noun : "",
+          nounDescription:
+            typeof existingCustom.nounDescription === "string"
+              ? existingCustom.nounDescription
+              : "",
+          adjectiveDescription:
+            typeof existingCustom.adjectiveDescription === "string"
+              ? existingCustom.adjectiveDescription
+              : "",
+        },
         isPlayerCharacter: Boolean(existing?.isPlayerCharacter),
       };
     }),

@@ -29,6 +29,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web/Spec/Server: add dual-mode actor cards so authored actors can switch between generic base/role/special cards and custom image/title/body cards while preserving both sets of settings.
 - Server: add Groq as an `AI_TEXT_PROVIDER` option (text-only; image generation continues via OpenRouter/Fal/Leonardo). New env vars: `GROQ_API_KEY`, `GROQ_TEXT_NARRATIVE_MODEL`, `GROQ_TEXT_SCENE_MODEL`, `GROQ_TEXT_OUTCOME_MODEL`, `GROQ_TEXT_CONTINUITY_MODEL`, `GROQ_TEXT_PITCH_MODEL`.
 - Docs: document the Groq text-provider setup in `README.md`, `.env.example`, and the Render deploy guide.
 - Web: add public privacy policy and terms of service pages, and link both from the shared footer alongside the home page.
@@ -70,6 +71,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: tighten the shared page header spacing at tablet and mobile widths so collapsed navigation no longer leaves desktop-sized padding above route content.
 - Server: stop `join_campaign_session` from replaying a stale session snapshot over a newer role-join state, which could leave campaign players unable to claim a character until refresh.
 - Server: seed new Adventure Modules with starter component opportunities, fragment artifact manifest entries, valid starter quest graphs, and slug-derived quest ids so create-module and quest authoring flows no longer fail shared-schema validation.
 - Web: thread resolved locations through Adventure Module authoring, campaign storyteller sessions, and campaign player sessions so shared location cards stay available alongside the other authored content.

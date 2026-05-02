@@ -116,9 +116,11 @@ export const toActorFormState = (
   actorSlug: actor.actorSlug,
   title: actor.title,
   summary: actor.summary ?? "",
+  mode: actor.mode,
   baseLayerSlug: actor.baseLayerSlug,
   tacticalRoleSlug: actor.tacticalRoleSlug,
   tacticalSpecialSlug: actor.tacticalSpecialSlug,
+  custom: { ...actor.custom },
   isPlayerCharacter: actor.isPlayerCharacter,
   content: normalizeLegacyGameCardMarkdown(actor.content),
 });

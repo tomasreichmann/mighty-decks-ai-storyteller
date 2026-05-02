@@ -93,9 +93,17 @@ export const addActorFromPrompt = async (
     creatorToken: options.creatorToken,
     title: draft.title,
     summary: draft.summary,
+    mode: "generic",
     baseLayerSlug: draft.baseLayerSlug,
     tacticalRoleSlug: draft.tacticalRoleSlug,
     tacticalSpecialSlug: draft.tacticalSpecialSlug,
+    custom: {
+      imageUrl: "",
+      adjective: "",
+      noun: "",
+      nounDescription: "",
+      adjectiveDescription: "",
+    },
     isPlayerCharacter: draft.isPlayerCharacter,
     content: draft.content,
   });

@@ -20,6 +20,30 @@ export type ActorCardEffectType =
   | "push"
   | "boost";
 
+export const actorTextIconSlugs = [
+  "boost",
+  "burning",
+  "complication",
+  "direct",
+  "distress",
+  "freezing",
+  "heal",
+  "hindered",
+  "injury",
+  "melee",
+  "push",
+  "range",
+  "ranged",
+  "replace",
+  "shield",
+  "speed",
+  "splash",
+  "stuck",
+  "tactics",
+  "toughness",
+] as const;
+export type ActorTextIconSlug = (typeof actorTextIconSlugs)[number];
+
 export interface ActorCardEffect {
   effectType: ActorCardEffectType;
   amount: number;

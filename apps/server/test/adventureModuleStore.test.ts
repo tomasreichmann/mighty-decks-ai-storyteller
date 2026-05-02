@@ -51,6 +51,14 @@ test("creates, reads, updates, and previews adventure modules", async () => {
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       isPlayerCharacter: boolean;
+      mode: string;
+      custom: {
+        imageUrl: string;
+        adjective: string;
+        noun: string;
+        nounDescription: string;
+        adjectiveDescription: string;
+      };
       content: string;
     }>;
     index: {
@@ -59,6 +67,7 @@ test("creates, reads, updates, and previews adventure modules", async () => {
         baseLayerSlug: string;
         tacticalRoleSlug: string;
         isPlayerCharacter: boolean;
+        mode: string;
       }>;
     };
   };
@@ -68,6 +77,8 @@ test("creates, reads, updates, and previews adventure modules", async () => {
   assert.equal(createdActorState.actors?.length, 1);
   assert.equal(createdActorState.actors?.[0]?.actorSlug, "primary-actor");
   assert.equal(createdActorState.actors?.[0]?.isPlayerCharacter, false);
+  assert.equal(createdActorState.actors?.[0]?.mode, "generic");
+  assert.equal(createdActorState.index.actorCards?.[0]?.mode, "generic");
   assert.equal(typeof createdActorState.actors?.[0]?.content, "string");
 
   const fetchedByOwner = await store.getModule(created.index.moduleId, "token-a");
@@ -167,6 +178,14 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       tacticalSpecialSlug?: string;
+      mode?: string;
+      custom?: {
+        imageUrl: string;
+        adjective: string;
+        noun: string;
+        nounDescription: string;
+        adjectiveDescription: string;
+      };
       isPlayerCharacter: boolean;
       content: string;
     }) => Promise<unknown>;
@@ -185,6 +204,14 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
       baseLayerSlug: string;
       tacticalRoleSlug: string;
       tacticalSpecialSlug?: string;
+      mode: string;
+      custom: {
+        imageUrl: string;
+        adjective: string;
+        noun: string;
+        nounDescription: string;
+        adjectiveDescription: string;
+      };
       isPlayerCharacter: boolean;
       content: string;
     }>;
@@ -207,6 +234,15 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
     baseLayerSlug: "merchant",
     tacticalRoleSlug: "ranger",
     tacticalSpecialSlug: "fast",
+    mode: "custom",
+    custom: {
+      imageUrl: "/actors/base/merchant.png",
+      adjective: "Fast",
+      noun: "Ranger",
+      nounDescription:
+        "[toughness][toughness][toughness]\n[ranged][injury2][range]1-2\n[melee][injury2]",
+      adjectiveDescription: "Moves an extra zone per turn",
+    },
     isPlayerCharacter: false,
     content: "# River Smuggler Nyra\n\nControls the hidden canal routes.",
   })) as {
@@ -232,6 +268,15 @@ test("updates actor, counter, and asset slugs when titles change", async () => {
   assert.equal(updatedActor.baseLayerSlug, "merchant");
   assert.equal(updatedActor.tacticalRoleSlug, "ranger");
   assert.equal(updatedActor.tacticalSpecialSlug, "fast");
+  assert.equal(updatedActor.mode, "custom");
+  assert.deepEqual(updatedActor.custom, {
+    imageUrl: "/actors/base/merchant.png",
+    adjective: "Fast",
+    noun: "Ranger",
+    nounDescription:
+      "[toughness][toughness][toughness]\n[ranged][injury2][range]1-2\n[melee][injury2]",
+    adjectiveDescription: "Moves an extra zone per turn",
+  });
   assert.equal(updatedActor.isPlayerCharacter, false);
   assert.equal(
     updatedActor.content,

@@ -86,9 +86,13 @@ export const GameCardView = ({
       return (
         <ActorCard
           className={cn("w-full max-w-[13rem]", className)}
-          baseLayerSlug={gameCard.actor.baseLayerSlug}
-          tacticalRoleSlug={gameCard.actor.tacticalRoleSlug}
-          tacticalSpecialSlug={gameCard.actor.tacticalSpecialSlug}
+          {...(gameCard.actor.mode === "custom"
+            ? { kind: "custom" as const, custom: gameCard.actor.custom }
+            : {
+                baseLayerSlug: gameCard.actor.baseLayerSlug,
+                tacticalRoleSlug: gameCard.actor.tacticalRoleSlug,
+                tacticalSpecialSlug: gameCard.actor.tacticalSpecialSlug,
+              })}
         />
       );
     case "CounterCard":

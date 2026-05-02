@@ -355,9 +355,11 @@ export const AuthoringProvider = <
             {
               title: validated.title,
               summary: validated.summary,
+              mode: validated.mode,
               baseLayerSlug: validated.baseLayerSlug,
               tacticalRoleSlug: validated.tacticalRoleSlug,
               tacticalSpecialSlug: validated.tacticalSpecialSlug ?? null,
+              custom: validated.custom,
               isPlayerCharacter: validated.isPlayerCharacter,
               content: validated.content,
             },

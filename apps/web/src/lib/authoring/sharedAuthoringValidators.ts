@@ -198,75 +198,95 @@ export const validateActorForm = (
 ): {
   title: string;
   summary: string;
+  mode: ActorFormState["mode"];
   baseLayerSlug: ActorFormState["baseLayerSlug"];
   tacticalRoleSlug: ActorFormState["tacticalRoleSlug"];
   tacticalSpecialSlug?: ActorFormState["tacticalSpecialSlug"];
+  custom: ActorFormState["custom"];
   isPlayerCharacter: boolean;
   content: string;
   error?: string;
 } => {
   const title = form.title.trim();
+  const summary = form.summary.trim();
+  const custom = {
+    imageUrl: form.custom.imageUrl.trim(),
+    adjective: form.custom.adjective.trim(),
+    noun: form.custom.noun.trim(),
+    nounDescription: form.custom.nounDescription.trim(),
+    adjectiveDescription: form.custom.adjectiveDescription.trim(),
+  };
+  const content = normalizeLegacyGameCardMarkdown(form.content);
+  const basePayload = {
+    title,
+    summary,
+    mode: form.mode,
+    baseLayerSlug: form.baseLayerSlug,
+    tacticalRoleSlug: form.tacticalRoleSlug,
+    tacticalSpecialSlug: form.tacticalSpecialSlug,
+    custom,
+    isPlayerCharacter: form.isPlayerCharacter,
+    content,
+  };
   if (title.length === 0) {
     return {
-      title,
-      summary: form.summary.trim(),
-      baseLayerSlug: form.baseLayerSlug,
-      tacticalRoleSlug: form.tacticalRoleSlug,
-      tacticalSpecialSlug: form.tacticalSpecialSlug,
-      isPlayerCharacter: form.isPlayerCharacter,
-      content: normalizeLegacyGameCardMarkdown(form.content),
+      ...basePayload,
       error: "Actor name is required.",
     };
   }
   if (title.length > 120) {
     return {
-      title,
-      summary: form.summary.trim(),
-      baseLayerSlug: form.baseLayerSlug,
-      tacticalRoleSlug: form.tacticalRoleSlug,
-      tacticalSpecialSlug: form.tacticalSpecialSlug,
-      isPlayerCharacter: form.isPlayerCharacter,
-      content: normalizeLegacyGameCardMarkdown(form.content),
+      ...basePayload,
       error: "Actor name must be at most 120 characters.",
     };
   }
 
-  const summary = form.summary.trim();
   if (summary.length > 500) {
     return {
-      title,
-      summary,
-      baseLayerSlug: form.baseLayerSlug,
-      tacticalRoleSlug: form.tacticalRoleSlug,
-      tacticalSpecialSlug: form.tacticalSpecialSlug,
-      isPlayerCharacter: form.isPlayerCharacter,
-      content: normalizeLegacyGameCardMarkdown(form.content),
+      ...basePayload,
       error: "Actor summary must be at most 500 characters.",
     };
   }
 
-  const content = normalizeLegacyGameCardMarkdown(form.content);
+  if (custom.imageUrl.length > 500) {
+    return {
+      ...basePayload,
+      error: "Actor custom image URL must be at most 500 characters.",
+    };
+  }
+  if (custom.adjective.length > 120) {
+    return {
+      ...basePayload,
+      error: "Actor custom adjective must be at most 120 characters.",
+    };
+  }
+  if (custom.noun.length > 120) {
+    return {
+      ...basePayload,
+      error: "Actor custom noun must be at most 120 characters.",
+    };
+  }
+  if (custom.nounDescription.length > 500) {
+    return {
+      ...basePayload,
+      error: "Actor custom noun description must be at most 500 characters.",
+    };
+  }
+  if (custom.adjectiveDescription.length > 500) {
+    return {
+      ...basePayload,
+      error: "Actor custom adjective description must be at most 500 characters.",
+    };
+  }
   if (content.length > 200_000) {
     return {
-      title,
-      summary,
-      baseLayerSlug: form.baseLayerSlug,
-      tacticalRoleSlug: form.tacticalRoleSlug,
-      tacticalSpecialSlug: form.tacticalSpecialSlug,
-      isPlayerCharacter: form.isPlayerCharacter,
-      content,
+      ...basePayload,
       error: "Actor markdown must be at most 200000 characters.",
     };
   }
 
   return {
-    title,
-    summary,
-    baseLayerSlug: form.baseLayerSlug,
-    tacticalRoleSlug: form.tacticalRoleSlug,
-    tacticalSpecialSlug: form.tacticalSpecialSlug,
-    isPlayerCharacter: form.isPlayerCharacter,
-    content,
+    ...basePayload,
   };
 };
 

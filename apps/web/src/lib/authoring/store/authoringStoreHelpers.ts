@@ -77,9 +77,11 @@ interface OptimisticForms<TDetail extends SharedAuthoringDetail> {
     actorSlug: string;
     title: string;
     summary: string;
+    mode: TDetail["actors"][number]["mode"];
     baseLayerSlug: TDetail["actors"][number]["baseLayerSlug"];
     tacticalRoleSlug: TDetail["actors"][number]["tacticalRoleSlug"];
     tacticalSpecialSlug?: TDetail["actors"][number]["tacticalSpecialSlug"];
+    custom: TDetail["actors"][number]["custom"];
     isPlayerCharacter: boolean;
     content: string;
   } | null;
@@ -213,9 +215,11 @@ export const buildOptimisticDetail = <TDetail extends SharedAuthoringDetail>(
             ...entry,
             title: forms.actor.title,
             summary: forms.actor.summary,
+            mode: forms.actor.mode,
             baseLayerSlug: forms.actor.baseLayerSlug,
             tacticalRoleSlug: forms.actor.tacticalRoleSlug,
             tacticalSpecialSlug: forms.actor.tacticalSpecialSlug,
+            custom: { ...forms.actor.custom },
             isPlayerCharacter: forms.actor.isPlayerCharacter,
             content: forms.actor.content,
           }

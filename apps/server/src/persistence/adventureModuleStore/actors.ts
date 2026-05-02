@@ -109,9 +109,11 @@ export const updateActor = async (
     creatorToken?: string;
     title: string;
     summary: string;
+    mode: AdventureModuleIndex["actorCards"][number]["mode"];
     baseLayerSlug: AdventureModuleIndex["actorCards"][number]["baseLayerSlug"];
     tacticalRoleSlug: AdventureModuleIndex["actorCards"][number]["tacticalRoleSlug"];
     tacticalSpecialSlug?: AdventureModuleIndex["actorCards"][number]["tacticalSpecialSlug"];
+    custom: AdventureModuleIndex["actorCards"][number]["custom"];
     isPlayerCharacter: boolean;
     content: string;
   },
@@ -152,8 +154,10 @@ export const updateActor = async (
       }
       return {
         fragmentId: actorCard.fragmentId,
+        mode: options.mode,
         baseLayerSlug: options.baseLayerSlug,
         tacticalRoleSlug: options.tacticalRoleSlug,
+        custom: { ...options.custom },
         isPlayerCharacter: options.isPlayerCharacter,
         ...(options.tacticalSpecialSlug
           ? { tacticalSpecialSlug: options.tacticalSpecialSlug }

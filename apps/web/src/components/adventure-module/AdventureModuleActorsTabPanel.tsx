@@ -106,9 +106,13 @@ export const AdventureModuleActorsTabPanel = ({
               >
                 <ActorCard
                   className="mx-auto w-full max-w-[13rem] transition-transform duration-100 hover:-translate-y-0.5"
-                  baseLayerSlug={actor.baseLayerSlug}
-                  tacticalRoleSlug={actor.tacticalRoleSlug}
-                  tacticalSpecialSlug={actor.tacticalSpecialSlug}
+                  {...(actor.mode === "custom"
+                    ? { kind: "custom" as const, custom: actor.custom }
+                    : {
+                        baseLayerSlug: actor.baseLayerSlug,
+                        tacticalRoleSlug: actor.tacticalRoleSlug,
+                        tacticalSpecialSlug: actor.tacticalSpecialSlug,
+                      })}
                 />
                 <div className="stack gap-1">
                   <Text variant="emphasised" color="iron">

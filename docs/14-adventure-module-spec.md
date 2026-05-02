@@ -122,7 +122,12 @@ Actor-specific requirements:
 
 - Actor fragments remain normal markdown-backed `actor` fragments.
 - Module index authoring metadata includes an `actorCards` collection keyed by actor `fragmentId`.
-- Each actor-card metadata entry stores `baseLayerSlug`, `tacticalRoleSlug`, and optional `tacticalSpecialSlug`.
+- Each actor-card metadata entry stores `mode`, durable generic settings (`baseLayerSlug`, `tacticalRoleSlug`, optional `tacticalSpecialSlug`), and durable custom settings.
+- `mode` is either `generic` or `custom` and defaults to `generic` for existing modules.
+- New actors start in `generic` mode and render from the durable generic settings.
+- Custom actor settings are stored under `custom` as `imageUrl`, `adjective`, `noun`, `nounDescription`, and `adjectiveDescription`.
+- Custom actor descriptions store body-size plain text with canonical icon tokens such as `[melee]`, `[injury3]`, and `[stuck]`.
+- Switching an actor between `generic` and `custom` changes only the active render mode; inactive generic and custom settings remain stored so authors can switch back without losing work.
 - Every `actorFragmentId` must have exactly one matching actor-card metadata entry.
 - Resolved authoring reads join fragment metadata and actor-card metadata into an `actors` array for the web client.
 
@@ -387,6 +392,7 @@ The current implementation adds typed actor, counter, asset, location, encounter
 These endpoints:
 
 - create actor fragments with module-scoped slugs derived from the saved actor title
+- persist actor card `mode`, generic layer settings, custom image/title/body settings, and player-character metadata together with actor fragment references
 - create location fragments with module-scoped slugs derived from the saved location title
 - persist typed location metadata alongside location fragment references, including optional title image, introduction markdown, description markdown, optional map image, and map pins
 - persist typed layered-card metadata alongside fragment references
@@ -403,6 +409,7 @@ Legacy module compatibility:
 
 - Modules missing `locationDetails` metadata are backfilled with safe defaults on read, seeding `descriptionMarkdown` from the legacy raw fragment content.
 - Modules missing `actorCards` metadata are backfilled with safe defaults on read.
+- Actor-card records missing `mode` or `custom` are backfilled as `generic` actors with empty custom settings on read.
 - Modules missing `assetCards` metadata are backfilled into `legacy_layered` asset records on read.
 - Modules missing `encounterDetails` metadata are backfilled with safe defaults on read.
 - Modules missing `questDetails` metadata are backfilled from the stored quest graph order on read.

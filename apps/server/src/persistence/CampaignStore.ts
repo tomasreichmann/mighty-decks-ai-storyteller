@@ -905,10 +905,12 @@ export class CampaignStore {
       creatorToken: sharedCreatorToken,
       title: options.title,
       summary: options.summary,
+      mode: options.mode,
       baseLayerSlug: options.baseLayerSlug,
       tacticalRoleSlug: options.tacticalRoleSlug,
       tacticalSpecialSlug:
         options.tacticalSpecialSlug === null ? undefined : options.tacticalSpecialSlug,
+      custom: options.custom,
       isPlayerCharacter: options.isPlayerCharacter,
       content: options.content,
     });

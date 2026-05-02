@@ -16,9 +16,11 @@ export interface AdventureModuleLocationPinTarget {
   routePath: string;
   titleImageUrl?: string;
   actorCard?: {
+    mode: AdventureModuleResolvedActor["mode"];
     baseLayerSlug: AdventureModuleResolvedActor["baseLayerSlug"];
     tacticalRoleSlug: AdventureModuleResolvedActor["tacticalRoleSlug"];
     tacticalSpecialSlug?: AdventureModuleResolvedActor["tacticalSpecialSlug"];
+    custom: AdventureModuleResolvedActor["custom"];
   };
 }
 
@@ -74,9 +76,13 @@ const renderPinTargetPreview = (
       <div className="stack gap-2">
         <ActorCard
           className="mx-auto w-full max-w-[10rem]"
-          baseLayerSlug={target.actorCard.baseLayerSlug}
-          tacticalRoleSlug={target.actorCard.tacticalRoleSlug}
-          tacticalSpecialSlug={target.actorCard.tacticalSpecialSlug}
+          {...(target.actorCard.mode === "custom"
+            ? { kind: "custom" as const, custom: target.actorCard.custom }
+            : {
+                baseLayerSlug: target.actorCard.baseLayerSlug,
+                tacticalRoleSlug: target.actorCard.tacticalRoleSlug,
+                tacticalSpecialSlug: target.actorCard.tacticalSpecialSlug,
+              })}
         />
         <div className="stack gap-1">
           <Text variant="emphasised" color="iron" className="text-sm">

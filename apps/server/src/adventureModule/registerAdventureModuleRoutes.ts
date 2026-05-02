@@ -476,12 +476,14 @@ export const registerAdventureModuleRoutes = (
           creatorToken,
           title: payload.title,
           summary: payload.summary,
+          mode: payload.mode,
           baseLayerSlug: payload.baseLayerSlug,
           tacticalRoleSlug: payload.tacticalRoleSlug,
           tacticalSpecialSlug:
             payload.tacticalSpecialSlug === null
               ? undefined
               : payload.tacticalSpecialSlug,
+          custom: payload.custom,
           isPlayerCharacter: payload.isPlayerCharacter,
           content: payload.content,
         });

@@ -109,9 +109,13 @@ export const CampaignSessionMessageContent = ({
         >
           <ActorCard
             className="w-full max-w-[13rem] shrink-0"
-            baseLayerSlug={actor.baseLayerSlug}
-            tacticalRoleSlug={actor.tacticalRoleSlug}
-            tacticalSpecialSlug={actor.tacticalSpecialSlug ?? undefined}
+            {...(actor.mode === "custom"
+              ? { kind: "custom" as const, custom: actor.custom }
+              : {
+                  baseLayerSlug: actor.baseLayerSlug,
+                  tacticalRoleSlug: actor.tacticalRoleSlug,
+                  tacticalSpecialSlug: actor.tacticalSpecialSlug ?? undefined,
+                })}
           />
         </CardBoundary>
         <div className="stack min-w-0 flex-1 gap-1">

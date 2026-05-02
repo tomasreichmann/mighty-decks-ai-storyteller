@@ -336,6 +336,48 @@ test("adventureModuleIndexSchema accepts custom asset card metadata", () => {
   assert.equal(parsed.assetCards[0]?.kind, "custom");
 });
 
+test("adventureModuleIndexSchema defaults existing actor cards to generic mode", () => {
+  const parsed = adventureModuleIndexSchema.parse(createValidIndexCandidate());
+
+  assert.equal(parsed.actorCards[0]?.mode, "generic");
+  assert.deepEqual(parsed.actorCards[0]?.custom, {
+    imageUrl: "",
+    adjective: "",
+    noun: "",
+    nounDescription: "",
+    adjectiveDescription: "",
+  });
+});
+
+test("adventureModuleIndexSchema accepts custom actor card metadata while preserving generic settings", () => {
+  const parsed = adventureModuleIndexSchema.parse({
+    ...createValidIndexCandidate(),
+    actorCards: [
+      {
+        fragmentId: "frag-actor-main",
+        mode: "custom",
+        baseLayerSlug: "aristocrat",
+        tacticalRoleSlug: "bomber",
+        tacticalSpecialSlug: "grabbing",
+        isPlayerCharacter: false,
+        custom: {
+          imageUrl: "/actors/base/aristocrat.png",
+          adjective: "Grabbing",
+          noun: "Bomber",
+          nounDescription:
+            "[toughness][toughness][toughness]\n[ranged][injury3][splash][range]0 (+[stuck])",
+          adjectiveDescription: "[melee] attack also deals +[stuck]",
+        },
+      },
+    ],
+  });
+
+  assert.equal(parsed.actorCards[0]?.mode, "custom");
+  assert.equal(parsed.actorCards[0]?.baseLayerSlug, "aristocrat");
+  assert.equal(parsed.actorCards[0]?.custom.noun, "Bomber");
+  assert.match(parsed.actorCards[0]?.custom.nounDescription ?? "", /\(\+\[stuck\]\)/);
+});
+
 test("adventureModuleIndexSchema accepts tagged legacy layered asset metadata", () => {
   const parsed = adventureModuleIndexSchema.parse({
     ...createValidIndexCandidate(),
