@@ -25,6 +25,7 @@ test("AdventureModuleActorEditor exposes generic/custom card controls", () => {
 
   assert.match(source, /Make Custom/);
   assert.match(source, /Make Generic/);
+  assert.match(source, /RockerSwitch/);
   assert.match(source, /ActorIconTokenTextEditor/);
   assert.match(source, /AdventureModuleGeneratedImagePicker/);
 });

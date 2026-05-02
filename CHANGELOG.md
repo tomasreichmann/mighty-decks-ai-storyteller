@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: move the actor card generic/custom mode switch into the card settings flow as a shared RockerSwitch and collapse custom actor icon insertion into steel ghost icon-name buttons.
 - Web: remove the extra horizontal padding from the actor body foreignObject so the range value stays on the first row.
 - Web: keep the actor action range icon and value together on one inline row so the `0` stays attached to the previous line.
 - Web: hardcode the actor-body row line height in `ActorCard` so the left and right action columns stay aligned.

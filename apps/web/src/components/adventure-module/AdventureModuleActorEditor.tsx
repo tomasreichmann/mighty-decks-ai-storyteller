@@ -25,6 +25,7 @@ import { Panel } from "../common/Panel";
 import { Text } from "../common/Text";
 import { TextArea } from "../common/TextArea";
 import { TextField } from "../common/TextField";
+import { RockerSwitch } from "../common/RockerSwitch";
 import { Toggle } from "../common/Toggle";
 import { ActorIconTokenTextEditor } from "./ActorIconTokenTextEditor";
 import { AdventureModuleGeneratedImagePicker } from "./AdventureModuleGeneratedImagePicker";
@@ -310,18 +311,6 @@ export const AdventureModuleActorEditor = ({
             </Text>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            <button
-              type="button"
-              onClick={
-                actor.mode === "custom"
-                  ? () => onModeChange("generic")
-                  : handleMakeCustom
-              }
-              disabled={!editable}
-              className="inline-flex items-center rounded-full border-2 border-kac-gold-dark bg-kac-gold-light px-3 py-1 font-ui text-xs font-bold uppercase tracking-[0.08em] text-kac-iron shadow-[1px_1px_0_0_#121b23] transition duration-100 hover:brightness-[1.03] active:translate-y-[1px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-55 disabled:shadow-none"
-            >
-              {actor.mode === "custom" ? "Make Generic" : "Make Custom"}
-            </button>
             {onDelete ? (
               <button
                 type="button"
@@ -380,6 +369,23 @@ export const AdventureModuleActorEditor = ({
           description="Player characters can be claimed or created during campaign sessions."
           disabled={!editable}
         />
+
+        <div className="flex justify-start">
+          <RockerSwitch
+            active={actor.mode === "custom"}
+            color="cloth"
+            size="sm"
+            label="Card Mode"
+            inactiveText="Make Custom"
+            activeText="Make Generic"
+            disabled={!editable}
+            onClick={
+              actor.mode === "custom"
+                ? () => onModeChange("generic")
+                : handleMakeCustom
+            }
+          />
+        </div>
 
         {actor.mode === "generic" ? (
           <>

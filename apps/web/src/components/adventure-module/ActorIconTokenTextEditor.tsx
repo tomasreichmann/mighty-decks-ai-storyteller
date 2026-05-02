@@ -6,6 +6,7 @@ import {
 } from "../../data/actorCards";
 import { cn } from "../../utils/cn";
 import { ActorCardTextWithIcons } from "../cards/ActorCardTextWithIcons";
+import { Button } from "../common/Button";
 import { Text } from "../common/Text";
 
 interface ActorIconTokenTextEditorProps {
@@ -79,29 +80,41 @@ export const ActorIconTokenTextEditor = ({
         />
       </label>
 
-      <div className="flex flex-wrap gap-1.5" aria-label={`${label} icons`}>
-        {actorTextIconSlugs.map((slug) => (
-          <button
-            key={slug}
-            type="button"
-            className={cn(
-              "inline-flex h-8 w-8 items-center justify-center border-2 border-kac-iron bg-kac-bone-light shadow-[1px_1px_0_0_#121b23] transition duration-100 hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-none",
-              disabled ? "cursor-not-allowed opacity-55 shadow-none" : "",
-            )}
-            disabled={disabled}
-            title={`Insert [${slug}]`}
-            aria-label={`Insert ${slug} icon`}
-            onClick={() => insertToken(slug)}
-          >
-            <img
-              src={getActorTextIconUri(slug)}
-              alt=""
-              aria-hidden="true"
-              className="h-5 w-5 object-contain"
-            />
-          </button>
-        ))}
-      </div>
+      <details className="group border-2 border-kac-steel-dark/55 bg-kac-steel-light/20 px-2 py-1.5 shadow-[1px_1px_0_0_#121b23]">
+        <summary className="cursor-pointer list-none font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-kac-iron marker:hidden [&::-webkit-details-marker]:hidden">
+          Insert Icons
+        </summary>
+        <div
+          className="mt-2 flex flex-wrap gap-1.5"
+          aria-label={`${label} icons`}
+        >
+          {actorTextIconSlugs.map((slug) => (
+            <Button
+              key={slug}
+              type="button"
+              variant="ghost"
+              color="steel"
+              size="sm"
+              className={cn(
+                "min-h-7 gap-1.5 px-2 py-1 text-[10px] normal-case tracking-[0.02em]",
+                disabled ? "shadow-none" : "",
+              )}
+              disabled={disabled}
+              title={`Insert [${slug}]`}
+              aria-label={`Insert ${slug} icon`}
+              onClick={() => insertToken(slug)}
+            >
+              <img
+                src={getActorTextIconUri(slug)}
+                alt=""
+                aria-hidden="true"
+                className="h-4 w-4 object-contain"
+              />
+              <span>{slug}</span>
+            </Button>
+          ))}
+        </div>
+      </details>
 
       {value.trim().length > 0 ? (
         <div className="whitespace-pre-wrap border-2 border-kac-iron/20 bg-kac-bone-light/50 px-3 py-2 font-ui text-[11px] leading-[16px] text-kac-iron-light">
