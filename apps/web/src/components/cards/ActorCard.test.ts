@@ -18,6 +18,22 @@ test("ActorCard supports custom actor card props and shared icon-token rendering
   assert.match(source, /kind:\s*"custom"/);
   assert.match(source, /custom/);
   assert.match(source, /ActorCardTextWithIcons/);
+  assert.match(source, /multiline/);
+  assert.match(source, /multilineLineClassName="justify-center"/);
+  assert.match(source, /nounClassName: "text-center"/);
+  assert.match(source, /adjectiveClassName: "text-center"/);
+  assert.match(source, /adjectiveDeck: undefined/);
+  assert.match(source, /adjectiveCornerIcon: undefined/);
   assert.match(source, /nounDescription/);
   assert.match(source, /adjectiveDescription/);
+});
+
+test("ActorCardTextWithIcons can center multiline card rows", () => {
+  const source = readFileSync(
+    new URL("./ActorCardTextWithIcons.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /multilineLineClassName/);
+  assert.match(source, /"flex min-h-4 flex-wrap items-center"/);
 });

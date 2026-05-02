@@ -225,12 +225,16 @@ const getCustomLayeredActorCardProps = (
     nounDeck: "custom",
     nounCornerIcon: "/types/actor.png",
     adjective: adjective || undefined,
-    adjectiveDeck: adjective ? "custom" : undefined,
-    adjectiveCornerIcon: adjective ? "/types/actor.png" : undefined,
+    adjectiveDeck: undefined,
+    adjectiveCornerIcon: undefined,
+    nounClassName: "text-center",
+    adjectiveClassName: "text-center",
     nounEffect:
       nounDescription.length > 0 ? (
         <ActorCardTextWithIcons
           text={nounDescription}
+          multiline
+          multilineLineClassName="justify-center"
           iconClassName={getIconTextLength(nounDescription) > 5 ? "mx-[-1px]" : undefined}
         />
       ) : undefined,
@@ -239,6 +243,8 @@ const getCustomLayeredActorCardProps = (
         <div className={cn("font-semibold", actorBodyLineHeightClassName)}>
           <ActorCardTextWithIcons
             text={adjectiveDescription}
+            multiline
+            multilineLineClassName="justify-center"
             iconClassName="mx-[-1px]"
           />
         </div>

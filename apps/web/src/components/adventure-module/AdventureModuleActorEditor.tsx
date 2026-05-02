@@ -47,7 +47,9 @@ interface AdventureModuleActorEditorProps {
   onTitleChange: (nextValue: string) => void;
   onSummaryChange: (nextValue: string) => void;
   onModeChange: (nextValue: AdventureModuleResolvedActor["mode"]) => void;
-  onBaseLayerChange: (nextValue: AdventureModuleResolvedActor["baseLayerSlug"]) => void;
+  onBaseLayerChange: (
+    nextValue: AdventureModuleResolvedActor["baseLayerSlug"],
+  ) => void;
   onTacticalRoleChange: (
     nextValue: AdventureModuleResolvedActor["tacticalRoleSlug"],
   ) => void;
@@ -243,16 +245,17 @@ export const AdventureModuleActorEditor = ({
     };
   }, [actor.actorSlug, actor.title, buildRoute, state.detail?.index.slug]);
 
-  const actorCardProps = actor.mode === "custom"
-    ? {
-        kind: "custom" as const,
-        custom: actor.custom,
-      }
-    : {
-        baseLayerSlug: actor.baseLayerSlug,
-        tacticalRoleSlug: actor.tacticalRoleSlug,
-        tacticalSpecialSlug: actor.tacticalSpecialSlug,
-      };
+  const actorCardProps =
+    actor.mode === "custom"
+      ? {
+          kind: "custom" as const,
+          custom: actor.custom,
+        }
+      : {
+          baseLayerSlug: actor.baseLayerSlug,
+          tacticalRoleSlug: actor.tacticalRoleSlug,
+          tacticalSpecialSlug: actor.tacticalSpecialSlug,
+        };
 
   const resolveImageContextLines = useCallback(
     (selectedContextTags: string[]) =>
@@ -325,10 +328,7 @@ export const AdventureModuleActorEditor = ({
         </div>
 
         <div className="relative z-0 mx-auto w-full max-w-[16rem] pb-4">
-          <ActorCard
-            className="w-full"
-            {...actorCardProps}
-          />
+          <ActorCard className="w-full" {...actorCardProps} />
           {detailLink ? (
             <SceneCardDetailLink
               href={detailLink.href}
@@ -376,8 +376,8 @@ export const AdventureModuleActorEditor = ({
             color="cloth"
             size="sm"
             label="Card Mode"
-            inactiveText="Make Custom"
-            activeText="Make Generic"
+            inactiveText="Generic"
+            activeText="Custom"
             disabled={!editable}
             onClick={
               actor.mode === "custom"
@@ -390,7 +390,12 @@ export const AdventureModuleActorEditor = ({
         {actor.mode === "generic" ? (
           <>
             <label className="grid gap-1">
-              <Text as="span" variant="note" color="iron" className="text-base tracking-[0.04em]">
+              <Text
+                as="span"
+                variant="note"
+                color="iron"
+                className="text-base tracking-[0.04em]"
+              >
                 Base Layer
               </Text>
               <select
@@ -398,7 +403,8 @@ export const AdventureModuleActorEditor = ({
                 value={actor.baseLayerSlug}
                 onChange={(event) =>
                   onBaseLayerChange(
-                    event.target.value as AdventureModuleResolvedActor["baseLayerSlug"],
+                    event.target
+                      .value as AdventureModuleResolvedActor["baseLayerSlug"],
                   )
                 }
                 onBlur={onFieldBlur}
@@ -413,7 +419,12 @@ export const AdventureModuleActorEditor = ({
             </label>
 
             <label className="grid gap-1">
-              <Text as="span" variant="note" color="iron" className="text-base tracking-[0.04em]">
+              <Text
+                as="span"
+                variant="note"
+                color="iron"
+                className="text-base tracking-[0.04em]"
+              >
                 Tactical Role
               </Text>
               <select
@@ -421,7 +432,8 @@ export const AdventureModuleActorEditor = ({
                 value={actor.tacticalRoleSlug}
                 onChange={(event) =>
                   onTacticalRoleChange(
-                    event.target.value as AdventureModuleResolvedActor["tacticalRoleSlug"],
+                    event.target
+                      .value as AdventureModuleResolvedActor["tacticalRoleSlug"],
                   )
                 }
                 onBlur={onFieldBlur}
@@ -436,7 +448,12 @@ export const AdventureModuleActorEditor = ({
             </label>
 
             <label className="grid gap-1">
-              <Text as="span" variant="note" color="iron" className="text-base tracking-[0.04em]">
+              <Text
+                as="span"
+                variant="note"
+                color="iron"
+                className="text-base tracking-[0.04em]"
+              >
                 Tactical Special
               </Text>
               <select
@@ -445,7 +462,8 @@ export const AdventureModuleActorEditor = ({
                 onChange={(event) =>
                   onTacticalSpecialChange(
                     event.target.value.trim().length > 0
-                      ? (event.target.value as AdventureModuleResolvedActor["tacticalSpecialSlug"])
+                      ? (event.target
+                          .value as AdventureModuleResolvedActor["tacticalSpecialSlug"])
                       : undefined,
                   )
                 }
@@ -498,7 +516,9 @@ export const AdventureModuleActorEditor = ({
               label="Noun"
               maxLength={120}
               value={actor.custom.noun}
-              onChange={(event) => updateCustomField("noun", event.target.value)}
+              onChange={(event) =>
+                updateCustomField("noun", event.target.value)
+              }
               onBlur={onFieldBlur}
               disabled={!editable}
             />
@@ -538,13 +558,13 @@ export const AdventureModuleActorEditor = ({
           description="Author the actor's public face, agenda, pressure moves, and other reusable guidance. Actor GameCards render inline in Rich Text."
           selfContextTag="Storyteller Info"
           smartContextDocument={smartContextDocument}
-        actors={actors}
-        counters={counters}
-        assets={assets}
-        encounters={encounters}
-        locations={locations}
-        quests={quests}
-        value={actor.content}
+          actors={actors}
+          counters={counters}
+          assets={assets}
+          encounters={encounters}
+          locations={locations}
+          quests={quests}
+          value={actor.content}
           editable={editable}
           maxLength={MAX_MARKDOWN_LENGTH}
           onChange={onContentChange}
@@ -553,7 +573,11 @@ export const AdventureModuleActorEditor = ({
           contentEditableClassName="min-h-[18rem]"
         />
 
-        <Text variant="note" color="iron-light" className="text-sm !opacity-100">
+        <Text
+          variant="note"
+          color="iron-light"
+          className="text-sm !opacity-100"
+        >
           Actor slug: <code>{actor.actorSlug}</code>. It is regenerated from the
           actor name when you save.
         </Text>

@@ -81,3 +81,14 @@ test("AdventureModuleMarkdownField enables standard markdown image tooling and r
   assert.match(source, /MarkdownImageInsertButton/);
   assert.doesNotMatch(source, /GeneratedMarkdownImageInsertPanel/);
 });
+
+test("AdventureModuleMarkdownField keeps editor plugins stable across unrelated parent renders", () => {
+  const source = readFileSync(
+    new URL("./AdventureModuleMarkdownField.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /const handleInsertFromToolbar = useCallback/);
+  assert.match(source, /const catalogContextValue = useMemo/);
+  assert.match(source, /<GameCardCatalogContext\.Provider\s+value=\{catalogContextValue\}/);
+});

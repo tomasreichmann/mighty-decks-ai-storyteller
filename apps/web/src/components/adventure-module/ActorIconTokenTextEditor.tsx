@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import {
   actorTextIconSlugs,
   getActorTextIconUri,
@@ -7,7 +7,12 @@ import {
 import { cn } from "../../utils/cn";
 import { ActorCardTextWithIcons } from "../cards/ActorCardTextWithIcons";
 import { Button } from "../common/Button";
-import { Text } from "../common/Text";
+import {
+  FieldShell,
+  fieldControlBaseClassName,
+  fieldControlDepthClassName,
+  fieldControlStateClassName,
+} from "../common/FieldShell";
 
 interface ActorIconTokenTextEditorProps {
   label: string;
@@ -21,7 +26,7 @@ interface ActorIconTokenTextEditorProps {
 }
 
 const editorClassName =
-  "min-h-24 resize-y border-[3px] border-b-[6px] border-kac-iron bg-gradient-to-b from-[#fffdf5] to-kac-bone-light px-3 py-2 font-ui text-[11px] leading-[16px] text-kac-iron shadow-[2px_2px_0_0_#121b23] outline-none transition duration-100 focus-visible:border-kac-gold-darker focus-visible:ring-2 focus-visible:ring-kac-gold-dark/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-[1px_1px_0_0_#121b23]";
+  "min-h-24 resize-y px-3 py-2 text-[11px] leading-[16px]";
 
 export const ActorIconTokenTextEditor = ({
   label,
@@ -34,6 +39,8 @@ export const ActorIconTokenTextEditor = ({
   description,
 }: ActorIconTokenTextEditorProps): JSX.Element => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const generatedId = useId();
+  const inputId = `${label.toLowerCase().replace(/\s+/g, "-")}-${generatedId.replace(/:/g, "")}`;
 
   const insertToken = (slug: ActorTextIconSlug): void => {
     if (disabled) {
@@ -58,18 +65,23 @@ export const ActorIconTokenTextEditor = ({
 
   return (
     <div className="stack gap-2">
-      <label className="grid gap-1">
-        <Text as="span" variant="note" color="iron" className="text-base tracking-[0.04em]">
-          {label}
-        </Text>
-        {description ? (
-          <Text variant="body" color="iron-light" className="text-sm">
-            {description}
-          </Text>
-        ) : null}
+      <FieldShell
+        label={label}
+        description={description}
+        id={inputId}
+        showCharCount={typeof maxLength === "number"}
+        value={value}
+        maxLength={maxLength}
+      >
         <textarea
+          id={inputId}
           ref={textareaRef}
-          className={editorClassName}
+          className={cn(
+            fieldControlBaseClassName,
+            fieldControlDepthClassName,
+            fieldControlStateClassName,
+            editorClassName,
+          )}
           value={value}
           rows={rows}
           maxLength={maxLength}
@@ -78,11 +90,15 @@ export const ActorIconTokenTextEditor = ({
           disabled={disabled}
           spellCheck
         />
-      </label>
+      </FieldShell>
 
       <details className="group border-2 border-kac-steel-dark/55 bg-kac-steel-light/20 px-2 py-1.5 shadow-[1px_1px_0_0_#121b23]">
-        <summary className="cursor-pointer list-none font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-kac-iron marker:hidden [&::-webkit-details-marker]:hidden">
-          Insert Icons
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-kac-iron marker:hidden [&::-webkit-details-marker]:hidden">
+          <span>Insert Icons</span>
+          <span
+            aria-hidden="true"
+            className="h-0 w-0 border-y-[4px] border-l-[6px] border-y-transparent border-l-kac-iron transition-transform group-open:rotate-90"
+          />
         </summary>
         <div
           className="mt-2 flex flex-wrap gap-1.5"
@@ -118,7 +134,7 @@ export const ActorIconTokenTextEditor = ({
 
       {value.trim().length > 0 ? (
         <div className="whitespace-pre-wrap border-2 border-kac-iron/20 bg-kac-bone-light/50 px-3 py-2 font-ui text-[11px] leading-[16px] text-kac-iron-light">
-          <ActorCardTextWithIcons text={value} iconClassName="mx-[-1px]" />
+          <ActorCardTextWithIcons text={value} multiline iconClassName="mx-[-1px]" />
         </div>
       ) : null}
     </div>

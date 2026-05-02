@@ -4,6 +4,8 @@ import { cn } from "../../utils/cn";
 interface ActorCardTextWithIconsProps {
   text: string;
   iconClassName?: string;
+  multiline?: boolean;
+  multilineLineClassName?: string;
 }
 
 export const tokenPattern = /(\[[^\]]+\])/g;
@@ -14,29 +16,53 @@ export const actorBodyRowClassName = `flex min-h-4 items-center ${actorBodyLineH
 export const ActorCardTextWithIcons = ({
   text,
   iconClassName,
+  multiline = false,
+  multilineLineClassName,
 }: ActorCardTextWithIconsProps): JSX.Element => {
-  const fragments = text
-    .split(tokenPattern)
-    .filter((fragment) => fragment !== "");
+  const renderFragments = (line: string, lineIndex = 0): JSX.Element[] => {
+    const fragments = line
+      .split(tokenPattern)
+      .filter((fragment) => fragment !== "");
 
-  return (
-    <>
-      {fragments.map((fragment, fragmentIndex) => {
+    return fragments.map((fragment, fragmentIndex) => {
         const iconNameMatch = fragment.match(iconTokenPattern);
         if (!iconNameMatch) {
-          return <span key={fragmentIndex}>{fragment}</span>;
+          return (
+            <span
+              key={`${lineIndex}-${fragmentIndex}`}
+              className={cn(
+                "inline-flex min-h-4 items-center align-middle",
+                actorBodyLineHeightClassName,
+              )}
+            >
+              {fragment}
+            </span>
+          );
         }
 
         const [, iconName, iconCountString = "1"] = iconNameMatch;
         const iconCount = Number.parseInt(iconCountString || "1", 10);
         if (!Number.isFinite(iconCount) || iconCount < 1) {
-          return <span key={fragmentIndex}>{fragment}</span>;
+          return (
+            <span
+              key={`${lineIndex}-${fragmentIndex}`}
+              className={cn(
+                "inline-flex min-h-4 items-center align-middle",
+                actorBodyLineHeightClassName,
+              )}
+            >
+              {fragment}
+            </span>
+          );
         }
 
         return (
           <span
-            key={fragmentIndex}
-            className={cn("inline-flex items-center", actorBodyLineHeightClassName)}
+            key={`${lineIndex}-${fragmentIndex}`}
+            className={cn(
+              "inline-flex h-4 items-center align-middle",
+              actorBodyLineHeightClassName,
+            )}
           >
             {Array.from({ length: iconCount }).map((_, iconIndex) => (
               <img
@@ -45,7 +71,7 @@ export const ActorCardTextWithIcons = ({
                 alt=""
                 aria-hidden="true"
                 className={cn(
-                  "inline-block h-4 w-4 object-contain align-middle",
+                  "block h-4 w-4 object-contain",
                   iconClassName,
                   iconIndex > 0 ? "-ml-1" : "",
                 )}
@@ -53,7 +79,32 @@ export const ActorCardTextWithIcons = ({
             ))}
           </span>
         );
-      })}
+      });
+  };
+
+  if (multiline) {
+    const lines = text.split(/\r?\n/);
+    return (
+      <>
+        {lines.map((line, lineIndex) => (
+          <span
+            key={lineIndex}
+            className={cn(
+              "flex min-h-4 flex-wrap items-center",
+              actorBodyLineHeightClassName,
+              multilineLineClassName,
+            )}
+          >
+            {line.length > 0 ? renderFragments(line, lineIndex) : "\u00a0"}
+          </span>
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {renderFragments(text)}
     </>
   );
 };

@@ -23,8 +23,10 @@ test("AdventureModuleActorEditor exposes generic/custom card controls", () => {
     "utf8",
   );
 
-  assert.match(source, /Make Custom/);
-  assert.match(source, /Make Generic/);
+  assert.match(source, /Custom/);
+  assert.match(source, /Generic/);
+  assert.match(source, /inactiveText="Generic"/);
+  assert.match(source, /activeText="Custom"/);
   assert.match(source, /RockerSwitch/);
   assert.match(source, /ActorIconTokenTextEditor/);
   assert.match(source, /AdventureModuleGeneratedImagePicker/);

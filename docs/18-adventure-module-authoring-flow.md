@@ -356,7 +356,7 @@ Actor edit example fields:
 
 - Actor name.
 - Short summary.
-- Card mode RockerSwitch (`Make Custom` / `Make Generic`) placed above the mode-specific card controls.
+- Card mode RockerSwitch (`Generic` / `Custom`) placed above the mode-specific card controls.
 - Generic mode: base layer, tactical role, and optional tactical special.
 - Custom mode: custom actor image, adjective, noun, noun description, and adjective description.
 - `Player Character` toggle.
@@ -369,8 +369,8 @@ Actor editor behavior:
 - Actor slug is generated from the saved title and updates when the actor name changes.
 - Actors marked `Player Character` seed the campaign's claimable character pool when a campaign is created from the module.
 - New actors start in generic mode with base/role/special controls.
-- `Make Custom` seeds the custom card once from the current generic card when all custom fields are empty, using the base image, role name as noun, special name as adjective, merged role/special action rows as noun description, and special text as adjective description.
-- `Make Generic` switches the active render mode back to the generic card without discarding custom fields; switching to custom likewise preserves the original generic layer settings.
+- `Custom` seeds the custom card once from the current generic card when all custom fields are empty, using the base image, role name as noun, special name as adjective, merged role/special action rows as noun description, and special text as adjective description.
+- `Generic` switches the active render mode back to the generic card without discarding custom fields; switching to custom likewise preserves the original generic layer settings.
 - Custom noun and adjective descriptions use a hybrid body-text editor that stores plain text with canonical actor icon tokens such as `[ranged]`, `[injury3]`, and `[stuck]`; icon insertion is collapsed behind a wrapped steel ghost-button list showing each icon and token name.
 - The editor shows a live card preview for whichever mode is active, and the preview card shows a small circular detail-link overlay in the bottom-right corner.
 - The detail surface shows a reusable shortcode row that displays `@actor/<actor-slug>` and copies it directly to the clipboard.
@@ -599,5 +599,3 @@ Detailed frame-by-frame annotation content is defined in:
 
 - `docs/ux-design/adventure-module-authoring-flow-v1-frames.md`
 - `docs/ux-design/penpot/adventure-module-authoring-flow-v1/` (SVG import pack + manifest)
-
-

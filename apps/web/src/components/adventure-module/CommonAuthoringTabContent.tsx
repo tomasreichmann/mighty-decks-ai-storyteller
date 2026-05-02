@@ -114,7 +114,18 @@ export const CommonAuthoringTabContent = ({
       storytellerSummary: state.forms.storytellerInfo.summary,
       storytellerInfo: state.forms.storytellerInfo.infoText,
     }),
-    [detail?.index.intent, detail?.index.summary, state.forms],
+    [
+      detail?.index.intent,
+      detail?.index.summary,
+      state.forms.base.title,
+      state.forms.base.premise,
+      state.forms.base.haveTags,
+      state.forms.base.avoidTags,
+      state.forms.playerInfo.summary,
+      state.forms.playerInfo.infoText,
+      state.forms.storytellerInfo.summary,
+      state.forms.storytellerInfo.infoText,
+    ],
   );
 
   const locationPinTargetOptions = useMemo<AdventureModuleLocationPinTarget[]>(

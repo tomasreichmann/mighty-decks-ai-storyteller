@@ -10,6 +10,10 @@ test("ActorIconTokenTextEditor exposes collapsible steel icon token buttons", ()
 
   assert.match(source, /<details/);
   assert.match(source, /Insert Icons/);
+  assert.match(source, /group-open:rotate-90/);
+  assert.match(source, /border-l-\[6px\]/);
+  assert.match(source, /FieldShell/);
+  assert.match(source, /fieldControlDepthClassName/);
   assert.match(source, /<Button/);
   assert.match(source, /variant="ghost"/);
   assert.match(source, /color="steel"/);

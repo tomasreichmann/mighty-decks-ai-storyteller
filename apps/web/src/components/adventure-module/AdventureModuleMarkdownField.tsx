@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FocusEvent } from "react";
 import type {
   AdventureModuleResolvedActor,
@@ -1079,45 +1079,48 @@ export const AdventureModuleMarkdownField = ({
     }
   }, [genericAssetBaseOptions, genericAssetBaseSlug]);
 
-  const handleInsertComponent = (
-    componentMarkdown: string,
-    options: {
-      wrapWithNewlines?: boolean;
-    } = {},
-  ): boolean => {
-    if (!editable || !editorRef.current) {
-      return false;
-    }
+  const handleInsertComponent = useCallback(
+    (
+      componentMarkdown: string,
+      options: {
+        wrapWithNewlines?: boolean;
+      } = {},
+    ): boolean => {
+      if (!editable || !editorRef.current) {
+        return false;
+      }
 
-    const normalizedMarkdown = componentMarkdown.trim();
-    if (normalizedMarkdown.length === 0) {
-      return false;
-    }
+      const normalizedMarkdown = componentMarkdown.trim();
+      if (normalizedMarkdown.length === 0) {
+        return false;
+      }
 
-    const insertText =
-      options.wrapWithNewlines === false
-        ? normalizedMarkdown
-        : `\n${normalizedMarkdown}\n`;
-    if (editorMarkdown.length + insertText.length > maxLength) {
-      setInsertErrorMessage(
-        `Inserting this card would exceed the ${maxLength.toLocaleString()} character limit.`,
-      );
-      return false;
-    }
+      const insertText =
+        options.wrapWithNewlines === false
+          ? normalizedMarkdown
+          : `\n${normalizedMarkdown}\n`;
+      if (editorMarkdown.length + insertText.length > maxLength) {
+        setInsertErrorMessage(
+          `Inserting this card would exceed the ${maxLength.toLocaleString()} character limit.`,
+        );
+        return false;
+      }
 
-    editorRef.current.focus(() => {
-      editorRef.current?.insertMarkdown(insertText);
-    });
-    setInsertErrorMessage(null);
-    return true;
-  };
-  const handleInsertMarkdownImage = (snippet: string): boolean => {
+      editorRef.current.focus(() => {
+        editorRef.current?.insertMarkdown(insertText);
+      });
+      setInsertErrorMessage(null);
+      return true;
+    },
+    [editable, editorMarkdown, maxLength],
+  );
+  const handleInsertMarkdownImage = useCallback((snippet: string): boolean => {
     if (!handleInsertComponent(snippet)) {
       return false;
     }
     setInsertStatusMessage("Inserted markdown image.");
     return true;
-  };
+  }, [handleInsertComponent]);
 
   const smartActions = useMarkdownSmartActions({
     contextDescription,
@@ -1140,7 +1143,7 @@ export const AdventureModuleMarkdownField = ({
       : insertOptions.length > 0;
   const insertControlsDisabled = !editable || smartActions.running;
   const insertDisabled = insertControlsDisabled || !insertHasChoices;
-  const handleInsertFromToolbar = (): void => {
+  const handleInsertFromToolbar = useCallback((): void => {
     if (insertType === "GenericAsset") {
       const assetSlug = genericAssetBaseSlug.trim();
       if (!assetSlug) {
@@ -1230,7 +1233,19 @@ export const AdventureModuleMarkdownField = ({
         ? "Inserted Custom Asset card."
         : `Inserted ${gameCardTypeLabel[resolvedInsertType]} card.`,
     );
-  };
+  }, [
+    encounterCardOptions,
+    gameCardOptionsByType,
+    genericAssetBaseSlug,
+    genericAssetModifierSlug,
+    handleInsertComponent,
+    insertOptions,
+    insertSlug,
+    insertType,
+    locationCardOptions,
+    questCardOptions,
+    resolvedInsertType,
+  ]);
   const plugins = useMemo(
     () =>
       createEditorPlugins({
@@ -1268,6 +1283,38 @@ export const AdventureModuleMarkdownField = ({
       insertOptions,
       insertSlug,
       insertType,
+    ],
+  );
+  const catalogContextValue = useMemo(
+    () => ({
+      actors,
+      actorsBySlug,
+      counters,
+      countersBySlug,
+      assets,
+      assetsBySlug,
+      locations,
+      locationsBySlug,
+      encounters,
+      encountersBySlug,
+      quests,
+      questsBySlug,
+      onAdjustCounterValue,
+    }),
+    [
+      actors,
+      actorsBySlug,
+      assets,
+      assetsBySlug,
+      counters,
+      countersBySlug,
+      encounters,
+      encountersBySlug,
+      locations,
+      locationsBySlug,
+      onAdjustCounterValue,
+      quests,
+      questsBySlug,
     ],
   );
 
@@ -1408,21 +1455,7 @@ export const AdventureModuleMarkdownField = ({
         </div>
         <div className={styles.editorFrame}>
           <GameCardCatalogContext.Provider
-            value={{
-              actors,
-              actorsBySlug,
-              counters,
-              countersBySlug,
-              assets,
-              assetsBySlug,
-              locations,
-              locationsBySlug,
-              encounters,
-              encountersBySlug,
-              quests,
-              questsBySlug,
-              onAdjustCounterValue,
-            }}
+            value={catalogContextValue}
           >
             <MDXEditor
               ref={editorRef}
