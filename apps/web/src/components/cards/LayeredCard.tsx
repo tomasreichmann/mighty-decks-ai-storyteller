@@ -1,6 +1,6 @@
 import React from "react";
 import type { ComponentProps, ReactNode } from "react";
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "../../utils/cn";
 
 void React;
@@ -40,6 +40,11 @@ interface SvgHtmlTextProps {
   children?: ReactNode;
 }
 
+interface AutoFitSvgTextProps extends SvgHtmlTextProps {
+  fontSizePx: number;
+  minFontSizePx: number;
+}
+
 interface SvgHeaderRowProps {
   x: number;
   y: number;
@@ -74,6 +79,76 @@ const SvgHtmlText = ({
         )}
       >
         <div className="w-full text-center">{children}</div>
+      </div>
+    </foreignObject>
+  );
+};
+
+const AutoFitSvgText = ({
+  x,
+  y,
+  width,
+  height,
+  className,
+  children,
+  fontSizePx,
+  minFontSizePx,
+}: AutoFitSvgTextProps): JSX.Element => {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [fittedFontSize, setFittedFontSize] = useState(fontSizePx);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) {
+      return;
+    }
+
+    const fitText = () => {
+      let nextFontSize = fontSizePx;
+      inner.style.fontSize = `${nextFontSize}px`;
+
+      while (
+        nextFontSize > minFontSizePx &&
+        (inner.scrollWidth > outer.clientWidth ||
+          inner.scrollHeight > outer.clientHeight)
+      ) {
+        nextFontSize -= 0.5;
+        inner.style.fontSize = `${nextFontSize}px`;
+      }
+
+      setFittedFontSize(nextFontSize);
+    };
+
+    fitText();
+    const resizeObserver = new ResizeObserver(fitText);
+    resizeObserver.observe(outer);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [children, fontSizePx, minFontSizePx]);
+
+  return (
+    <foreignObject x={x} y={y} width={width} height={height}>
+      <div
+        ref={outerRef}
+        className={cn(
+          "flex h-full w-full items-center justify-center text-kac-iron-light",
+          className,
+        )}
+      >
+        <div
+          ref={innerRef}
+          className="w-full text-center"
+          style={{
+            fontSize: `${fittedFontSize}px`,
+            lineHeight: 1,
+          }}
+        >
+          {children}
+        </div>
       </div>
     </foreignObject>
   );
@@ -283,32 +358,36 @@ export const LayeredCard = ({
         ) : null}
 
         {adjective ? (
-          <SvgHtmlText
+          <AutoFitSvgText
             x={16}
             y={148}
             width={172}
             height={20}
+            fontSizePx={16}
+            minFontSizePx={11}
             className={cn(
-              "font-md-heading text-[16px] font-bold leading-none tracking-tight",
+              "font-md-heading font-bold leading-none tracking-tight",
               adjectiveClassName,
             )}
           >
             {adjective}
-          </SvgHtmlText>
+          </AutoFitSvgText>
         ) : null}
 
-        <SvgHtmlText
+        <AutoFitSvgText
           x={16}
           y={nounBoxY}
           width={172}
           height={nounBoxHeight}
+          fontSizePx={20}
+          minFontSizePx={12}
           className={cn(
-            "font-md-heading text-[20px] font-bold leading-none tracking-tight",
+            "font-md-heading font-bold leading-none tracking-tight",
             nounClassName,
           )}
         >
           {noun}
-        </SvgHtmlText>
+        </AutoFitSvgText>
 
         <SvgHtmlText
           x={16}

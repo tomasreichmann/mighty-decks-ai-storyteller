@@ -218,7 +218,6 @@ const getCustomLayeredActorCardProps = (
   const adjective = custom.adjective.trim();
   const nounDescription = custom.nounDescription.trim();
   const adjectiveDescription = custom.adjectiveDescription.trim();
-  const hasAdjective = adjective.length > 0;
 
   return {
     imageUri: custom.imageUrl.trim() || undefined,
@@ -228,14 +227,7 @@ const getCustomLayeredActorCardProps = (
     adjective: adjective || undefined,
     adjectiveDeck: undefined,
     adjectiveCornerIcon: undefined,
-    nounBoxY: hasAdjective ? 164 : 146,
-    nounBoxHeight: hasAdjective ? 38 : 46,
-    nounEffectBoxY: hasAdjective ? 204 : undefined,
-    nounEffectBoxHeight: hasAdjective ? 74 : undefined,
-    nounClassName: cn(
-      "text-center tracking-normal",
-      hasAdjective ? "text-[13px] leading-[0.9]" : "text-[15px] leading-[0.95]",
-    ),
+    nounClassName: "text-center",
     adjectiveClassName: "text-center",
     nounEffect:
       nounDescription.length > 0 ? (

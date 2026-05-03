@@ -12,6 +12,7 @@ export const tokenPattern = /(\[[^\]]+\])/g;
 export const iconTokenPattern = /^\[([a-zA-Z_]+)(\d*)\]$/;
 export const actorBodyLineHeightClassName = "leading-[16px]";
 export const actorBodyRowClassName = `flex min-h-4 items-center ${actorBodyLineHeightClassName}`;
+export const actorIconTextClassName = `inline min-h-4 align-middle ${actorBodyLineHeightClassName}`;
 
 export const ActorCardTextWithIcons = ({
   text,
@@ -31,7 +32,7 @@ export const ActorCardTextWithIcons = ({
             <span
               key={`${lineIndex}-${fragmentIndex}`}
               className={cn(
-                "inline-flex min-h-4 items-center align-middle",
+                "inline min-h-4 align-middle",
                 actorBodyLineHeightClassName,
               )}
             >
@@ -47,7 +48,7 @@ export const ActorCardTextWithIcons = ({
             <span
               key={`${lineIndex}-${fragmentIndex}`}
               className={cn(
-                "inline-flex min-h-4 items-center align-middle",
+                "inline min-h-4 align-middle",
                 actorBodyLineHeightClassName,
               )}
             >
@@ -60,7 +61,7 @@ export const ActorCardTextWithIcons = ({
           <span
             key={`${lineIndex}-${fragmentIndex}`}
             className={cn(
-              "inline-flex h-4 items-center align-middle",
+              "inline-flex h-4 items-center align-middle whitespace-nowrap",
               actorBodyLineHeightClassName,
             )}
           >
@@ -95,7 +96,13 @@ export const ActorCardTextWithIcons = ({
               multilineLineClassName,
             )}
           >
-            {line.length > 0 ? renderFragments(line, lineIndex) : "\u00a0"}
+            {line.length > 0 ? (
+              <span className={cn(actorIconTextClassName)}>
+                {renderFragments(line, lineIndex)}
+              </span>
+            ) : (
+              "\u00a0"
+            )}
           </span>
         ))}
       </>
@@ -103,9 +110,9 @@ export const ActorCardTextWithIcons = ({
   }
 
   return (
-    <>
+    <span className={cn(actorIconTextClassName)}>
       {renderFragments(text)}
-    </>
+    </span>
   );
 };
 

@@ -623,7 +623,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
         window.clearInterval(interval);
       }
     };
-  }, [job?.jobId, job?.status]);
+  }, [job?.jobId]);
 
   useEffect(() => {
     if (!editJob || editJob.status !== "running") {
@@ -673,7 +673,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
         window.clearInterval(interval);
       }
     };
-  }, [editJob?.jobId, editJob?.status]);
+  }, [editJob?.jobId]);
 
   useEffect(() => {
     if (!backgroundRemovalJob || backgroundRemovalJob.status !== "running") {
@@ -723,7 +723,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
         window.clearInterval(interval);
       }
     };
-  }, [backgroundRemovalJob?.jobId, backgroundRemovalJob?.status]);
+  }, [backgroundRemovalJob?.jobId]);
 
   const updateGroup = useCallback((nextGroup: GeneratedImageGroup) => {
     setGroup(nextGroup);

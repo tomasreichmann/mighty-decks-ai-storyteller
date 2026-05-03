@@ -76,6 +76,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 - Web/Server: make Fal edit and background-removal jobs inline local gallery/artifact images before provider calls, parse single-object Fal image results, show background-removal job errors in the dialog, and select successful background-removal outputs automatically.
 - Web/Server: pin shared image edits to `fal-ai/flux-pro/kontext` so the edit dialog uses the Fal endpoint shape that the server supports reliably.
+- Web: keep image job polling alive through the final group fetch so generated edits and background-removal outputs appear in the gallery and become selectable immediately.
+- Web: align custom actor card titles with generic actor cards, auto-fit long titles, and keep description icons inline with wrapping text.
 - Web: prevent long custom actor card titles from clipping by giving custom titles a taller compact text block.
 - Web: tighten the shared page header spacing at tablet and mobile widths so collapsed navigation no longer leaves desktop-sized padding above route content.
 - Server: stop `join_campaign_session` from replaying a stale session snapshot over a newer role-join state, which could leave campaign players unable to claim a character until refresh.
