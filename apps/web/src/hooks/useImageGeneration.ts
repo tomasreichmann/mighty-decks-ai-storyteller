@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   GeneratedImageGroup,
+  ImageBackgroundRemovalJob,
   ImageEditJob,
   ImageJob,
   ImageModelSummary,
   ImageProvider,
 } from "@mighty-decks/spec/imageGeneration";
 import {
+  createImageBackgroundRemovalJob,
   createImageEditJob,
   createImageJob,
   deleteBatchFromGroup,
   deleteImageFromGroup,
   fetchImageEditJob,
+  fetchImageBackgroundRemovalJob,
   fetchImageGroup,
   fetchImageJob,
   fetchImageModels,
@@ -121,6 +124,8 @@ const resolvePreferredModelId = (
   return availableModels[0]?.modelId ?? "";
 };
 
+export const KONTEXT_EDIT_MODEL_ID = "fal-ai/flux-pro/kontext";
+
 interface UseImageGenerationResult {
   provider: ImageProvider;
   models: ImageModelSummary[];
@@ -138,10 +143,12 @@ interface UseImageGenerationResult {
   group: GeneratedImageGroup | null;
   job: ImageJob | null;
   editJob: ImageEditJob | null;
+  backgroundRemovalJob: ImageBackgroundRemovalJob | null;
   loadingModels: boolean;
   loadingEditModels: boolean;
   submittingJob: boolean;
   submittingEditJob: boolean;
+  submittingBackgroundRemovalJob: boolean;
   refreshingGroup: boolean;
   error: string | null;
   resolvedResolution: { width: number; height: number };
@@ -164,6 +171,10 @@ interface UseImageGenerationResult {
     sourceImageUrl: string,
     promptOverride: string,
   ) => Promise<void>;
+  submitBackgroundRemovalJob: (
+    sourceImageUrl: string,
+    modelId: string,
+  ) => Promise<void>;
   selectActiveImage: (imageId: string, groupKeyOverride?: string) => Promise<void>;
   deleteImage: (imageId: string, groupKeyOverride?: string) => Promise<void>;
   deleteBatch: (batchIndex: number, groupKeyOverride?: string) => Promise<void>;
@@ -178,6 +189,8 @@ export const useImageGeneration = (): UseImageGenerationResult => {
   const [loadingEditModels, setLoadingEditModels] = useState(true);
   const [submittingJob, setSubmittingJob] = useState(false);
   const [submittingEditJob, setSubmittingEditJob] = useState(false);
+  const [submittingBackgroundRemovalJob, setSubmittingBackgroundRemovalJob] =
+    useState(false);
   const [refreshingGroup, setRefreshingGroup] = useState(false);
   const [favoriteModelIds, setFavoriteModelIds] = useState<string[]>(
     loadFavoriteModels("fal"),
@@ -195,6 +208,8 @@ export const useImageGeneration = (): UseImageGenerationResult => {
   const [group, setGroup] = useState<GeneratedImageGroup | null>(null);
   const [job, setJob] = useState<ImageJob | null>(null);
   const [editJob, setEditJob] = useState<ImageEditJob | null>(null);
+  const [backgroundRemovalJob, setBackgroundRemovalJob] =
+    useState<ImageBackgroundRemovalJob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const sortedModels = useMemo(
@@ -241,7 +256,9 @@ export const useImageGeneration = (): UseImageGenerationResult => {
           resolvePreferredModelId(current, nextModels, lastUsedModel),
         );
         setSelectedEditModelIdState((current) =>
-          resolvePreferredModelId(current, nextEditModels, lastUsedEditModel),
+          nextEditModels.some((candidate) => candidate.modelId === KONTEXT_EDIT_MODEL_ID)
+            ? KONTEXT_EDIT_MODEL_ID
+            : resolvePreferredModelId(current, nextEditModels, lastUsedEditModel),
         );
 
         if (generateResult.status === "rejected") {
@@ -302,6 +319,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     setGroup(null);
     setJob(null);
     setEditJob(null);
+    setBackgroundRemovalJob(null);
     setSelectedModelIdState("");
     setSelectedEditModelIdState("");
   }, []);
@@ -513,6 +531,50 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     [amount, provider, selectedEditModelId, useCache],
   );
 
+  const submitBackgroundRemovalJob = useCallback(
+    async (sourceImageUrl: string, modelId: string): Promise<void> => {
+      const normalizedSourceImageUrl = sourceImageUrl.trim();
+      const normalizedModelId = modelId.trim();
+      if (normalizedSourceImageUrl.length === 0) {
+        setError("Select an image before removing the background.");
+        return;
+      }
+      if (normalizedModelId.length === 0) {
+        setError("Select a background removal model first.");
+        return;
+      }
+
+      setSubmittingBackgroundRemovalJob(true);
+      setError(null);
+      setBackgroundRemovalJob(null);
+      try {
+        const createdJob = await createImageBackgroundRemovalJob({
+          provider,
+          model: normalizedModelId,
+          sourceImageUrl: normalizedSourceImageUrl,
+          useCache,
+          amount,
+        });
+        setBackgroundRemovalJob(createdJob);
+
+        if (createdJob.status !== "running") {
+          const loadedGroup = await fetchImageGroup(createdJob.groupKey);
+          setGroup(loadedGroup);
+        }
+      } catch (submitError) {
+        setError(
+          toSubmitErrorMessage(
+            submitError,
+            "Could not create background removal job.",
+          ),
+        );
+      } finally {
+        setSubmittingBackgroundRemovalJob(false);
+      }
+    },
+    [amount, provider, useCache],
+  );
+
   useEffect(() => {
     if (!job || job.status !== "running") {
       return;
@@ -613,6 +675,56 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     };
   }, [editJob?.jobId, editJob?.status]);
 
+  useEffect(() => {
+    if (!backgroundRemovalJob || backgroundRemovalJob.status !== "running") {
+      return;
+    }
+
+    let cancelled = false;
+    const targetJobId = backgroundRemovalJob.jobId;
+    let interval: number | null = null;
+
+    const pollOnce = async (): Promise<void> => {
+      try {
+        const nextJob = await fetchImageBackgroundRemovalJob(targetJobId);
+        if (cancelled) {
+          return;
+        }
+
+        setBackgroundRemovalJob(nextJob);
+        if (nextJob.status !== "running") {
+          const loadedGroup = await fetchImageGroup(nextJob.groupKey);
+          if (!cancelled) {
+            setGroup(loadedGroup);
+          }
+          if (interval !== null) {
+            window.clearInterval(interval);
+            interval = null;
+          }
+        }
+      } catch (pollError) {
+        if (!cancelled) {
+          setError(
+            pollError instanceof Error
+              ? pollError.message
+              : "Could not fetch background removal status.",
+          );
+        }
+      }
+    };
+
+    interval = window.setInterval(() => {
+      void pollOnce();
+    }, 1000);
+
+    return () => {
+      cancelled = true;
+      if (interval !== null) {
+        window.clearInterval(interval);
+      }
+    };
+  }, [backgroundRemovalJob?.jobId, backgroundRemovalJob?.status]);
+
   const updateGroup = useCallback((nextGroup: GeneratedImageGroup) => {
     setGroup(nextGroup);
   }, []);
@@ -703,10 +815,12 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     group,
     job,
     editJob,
+    backgroundRemovalJob,
     loadingModels,
     loadingEditModels,
     submittingJob,
     submittingEditJob,
+    submittingBackgroundRemovalJob,
     refreshingGroup,
     error,
     resolvedResolution,
@@ -726,6 +840,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     listAllGroups: listAllGroupsFn,
     submitJob,
     submitEditJob,
+    submitBackgroundRemovalJob,
     selectActiveImage,
     deleteImage,
     deleteBatch,

@@ -44,6 +44,34 @@ import { WorkflowRegistry } from "./workflow/workflowRegistry";
 import { resolveWebDistDir } from "./webDistDir";
 
 const app = Fastify({ logger: true });
+const ADVENTURE_ARTIFACT_FILE_ROUTE_BASE_PATH = "/api/adventure-artifacts/";
+
+const parseRouteFileName = (
+  sourceImageUrl: string,
+  routeBasePath: string,
+): string | null => {
+  let pathname: string;
+  try {
+    pathname = new URL(sourceImageUrl, "http://local").pathname;
+  } catch {
+    return null;
+  }
+
+  if (!pathname.startsWith(routeBasePath)) {
+    return null;
+  }
+
+  const encodedFileName = pathname.slice(routeBasePath.length);
+  if (encodedFileName.length === 0 || encodedFileName.includes("/")) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(encodedFileName);
+  } catch {
+    return null;
+  }
+};
 
 await app.register(cors, {
   origin: env.corsOrigins,
@@ -119,6 +147,32 @@ const imageGenerationService = new ImageGenerationService({
   falClient,
   leonardoClient,
   imageStore,
+  localImageResolver: async (sourceImageUrl) => {
+    const fileName = parseRouteFileName(
+      sourceImageUrl,
+      ADVENTURE_ARTIFACT_FILE_ROUTE_BASE_PATH,
+    );
+    if (!fileName) {
+      return null;
+    }
+
+    const record = await adventureArtifactStore.getFileRecord(fileName);
+    if (!record) {
+      return null;
+    }
+
+    const imageBuffer = await readFile(
+      adventureArtifactStore.resolveAbsolutePath(fileName),
+    );
+    if (imageBuffer.length === 0) {
+      throw new Error("Selected adventure artifact image file is empty.");
+    }
+
+    return {
+      imageBuffer,
+      contentType: record.contentType,
+    };
+  },
   maxActiveJobs: env.imageGeneration.maxActiveJobs,
   rateLimitPerMinute: env.imageGeneration.rateLimitPerMinute,
   downloadTimeoutMs: env.imageGeneration.pollTimeoutMs,

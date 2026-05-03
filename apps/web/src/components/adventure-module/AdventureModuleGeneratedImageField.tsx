@@ -2,11 +2,15 @@
 import type {
   GeneratedImageAsset,
   GeneratedImageGroup,
+  ImageBackgroundRemovalJob,
   ImageEditJob,
   ImageJob,
   ImageModelSummary,
 } from "@mighty-decks/spec/imageGeneration";
-import { useImageGeneration } from "../../hooks/useImageGeneration";
+import {
+  KONTEXT_EDIT_MODEL_ID,
+  useImageGeneration,
+} from "../../hooks/useImageGeneration";
 import { uploadAdventureArtifactImage } from "../../lib/adventureArtifactApi";
 import { toMarkdownPlainTextSnippet } from "../../lib/markdownSnippet";
 import { cn } from "../../utils/cn";
@@ -39,7 +43,7 @@ const PREFERRED_FAST_MODEL_IDS = [
   "fal-ai/fast-sdxl",
 ] as const;
 
-type ImageDialogMode = "gallery" | "generate" | "edit";
+type ImageDialogMode = "gallery" | "generate" | "edit" | "remove-background";
 
 interface GalleryImageItem {
   image: GeneratedImageAsset;
@@ -140,7 +144,7 @@ const toGalleryItems = (groups: GeneratedImageGroup[]): GalleryImageItem[] =>
 
 const resolveJobImage = (
   group: GeneratedImageGroup | null,
-  job: ImageJob | ImageEditJob | null,
+  job: ImageJob | ImageEditJob | ImageBackgroundRemovalJob | null,
 ): GeneratedImageAsset | null => {
   if (!group || !job || group.groupKey !== job.groupKey) {
     return null;
@@ -166,6 +170,7 @@ const modeOptions: ButtonRadioGroupOption<ImageDialogMode>[] = [
   { label: "Gallery", value: "gallery" },
   { label: "Generate", value: "generate" },
   { label: "Edit", value: "edit" },
+  { label: "Remove BG", value: "remove-background" },
 ];
 
 const renderModelOptions = (models: ImageModelSummary[]): JSX.Element[] =>
@@ -174,6 +179,25 @@ const renderModelOptions = (models: ImageModelSummary[]): JSX.Element[] =>
       {model.displayName}
     </option>
   ));
+
+const KONTEXT_EDIT_MODEL: ImageModelSummary = {
+  modelId: KONTEXT_EDIT_MODEL_ID,
+  displayName: "FLUX Pro Kontext",
+  description: "Fast Fal image edit model.",
+};
+
+const BACKGROUND_REMOVAL_MODELS: ImageModelSummary[] = [
+  {
+    modelId: "fal-ai/bria/background/remove",
+    displayName: "Bria Background Remove",
+    description: "Fast cutout model; best default for solid subject assets.",
+  },
+  {
+    modelId: "fal-ai/birefnet/v2",
+    displayName: "BiRefNet v2 Matting",
+    description: "Soft matting model for wispy or translucent subjects.",
+  },
+];
 
 export interface AdventureModuleGeneratedImageFieldProps {
   label: string;
@@ -222,6 +246,8 @@ export const AdventureModuleGeneratedImageField = ({
     ...defaultContextTags,
   ]);
   const [editPrompt, setEditPrompt] = useState("");
+  const [selectedBackgroundRemovalModelId, setSelectedBackgroundRemovalModelId] =
+    useState(BACKGROUND_REMOVAL_MODELS[0]!.modelId);
   const [preferredModelInitialized, setPreferredModelInitialized] =
     useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -234,6 +260,7 @@ export const AdventureModuleGeneratedImageField = ({
   const dragDepthRef = useRef(0);
   const handledGenerateJobIdRef = useRef<string>("");
   const handledEditJobIdRef = useRef<string>("");
+  const handledBackgroundRemovalJobIdRef = useRef<string>("");
   const { confirmation, requestConfirmation } = useConfirmationDialog();
   const {
     sortedModels,
@@ -244,10 +271,12 @@ export const AdventureModuleGeneratedImageField = ({
     group,
     job,
     editJob,
+    backgroundRemovalJob,
     loadingModels,
     loadingEditModels,
     submittingJob,
     submittingEditJob,
+    submittingBackgroundRemovalJob,
     error,
     setSelectedModelId,
     setSelectedEditModelId,
@@ -255,6 +284,7 @@ export const AdventureModuleGeneratedImageField = ({
     listAllGroups,
     submitJob,
     submitEditJob,
+    submitBackgroundRemovalJob,
     deleteImage,
     clearError,
   } = useImageGeneration();
@@ -313,6 +343,8 @@ export const AdventureModuleGeneratedImageField = ({
     dragDepthRef.current = 0;
     handledGenerateJobIdRef.current = "";
     handledEditJobIdRef.current = "";
+    handledBackgroundRemovalJobIdRef.current = "";
+    setSelectedBackgroundRemovalModelId(BACKGROUND_REMOVAL_MODELS[0]!.modelId);
     void refreshGallery();
   }, [clearError, defaultContextTags, identityKey, refreshGallery, setPrompt]);
 
@@ -348,6 +380,12 @@ export const AdventureModuleGeneratedImageField = ({
     () => toGalleryItems(galleryGroups),
     [galleryGroups],
   );
+
+  useEffect(() => {
+    if (selectedEditModelId !== KONTEXT_EDIT_MODEL_ID) {
+      setSelectedEditModelId(KONTEXT_EDIT_MODEL_ID);
+    }
+  }, [selectedEditModelId, setSelectedEditModelId]);
 
   const selectedGeneratedItem = useMemo(() => {
     const normalizedValue = normalizeImageUrl(value);
@@ -401,6 +439,30 @@ export const AdventureModuleGeneratedImageField = ({
       : null;
   }, [editJob, editPrompt, selectedEditModelId, value]);
 
+  const matchingBackgroundRemovalJob = useMemo(() => {
+    if (!backgroundRemovalJob) {
+      return null;
+    }
+
+    return backgroundRemovalJob.request.model === selectedBackgroundRemovalModelId &&
+      normalizeImageUrl(backgroundRemovalJob.request.sourceImageUrl) ===
+        normalizeImageUrl(value)
+      ? backgroundRemovalJob
+      : null;
+  }, [backgroundRemovalJob, selectedBackgroundRemovalModelId, value]);
+
+  const backgroundRemovalJobError = useMemo(() => {
+    if (!matchingBackgroundRemovalJob) {
+      return null;
+    }
+
+    return (
+      matchingBackgroundRemovalJob.items.find(
+        (item) => item.status === "failed" && item.error,
+      )?.error ?? null
+    );
+  }, [matchingBackgroundRemovalJob]);
+
   useEffect(() => {
     if (
       !matchingGenerateJob ||
@@ -410,11 +472,18 @@ export const AdventureModuleGeneratedImageField = ({
       return;
     }
 
-    handledGenerateJobIdRef.current = matchingGenerateJob.jobId;
-    const nextImage = resolveJobImage(group, matchingGenerateJob);
-    if (nextImage) {
-      onChange(nextImage.fileUrl);
+    if (matchingGenerateJob.status === "failed") {
+      handledGenerateJobIdRef.current = matchingGenerateJob.jobId;
+      void refreshGallery();
+      return;
     }
+
+    const nextImage = resolveJobImage(group, matchingGenerateJob);
+    if (!nextImage) {
+      return;
+    }
+    handledGenerateJobIdRef.current = matchingGenerateJob.jobId;
+    onChange(nextImage.fileUrl);
     void refreshGallery();
   }, [group, matchingGenerateJob, onChange, refreshGallery]);
 
@@ -427,13 +496,55 @@ export const AdventureModuleGeneratedImageField = ({
       return;
     }
 
-    handledEditJobIdRef.current = matchingEditJob.jobId;
-    const nextImage = resolveJobImage(group, matchingEditJob);
-    if (nextImage) {
-      onChange(nextImage.fileUrl);
+    if (matchingEditJob.status === "failed") {
+      handledEditJobIdRef.current = matchingEditJob.jobId;
+      void refreshGallery();
+      return;
     }
+
+    const nextImage = resolveJobImage(group, matchingEditJob);
+    if (!nextImage) {
+      return;
+    }
+    handledEditJobIdRef.current = matchingEditJob.jobId;
+    onChange(nextImage.fileUrl);
     void refreshGallery();
   }, [group, matchingEditJob, onChange, refreshGallery]);
+
+  useEffect(() => {
+    if (
+      !matchingBackgroundRemovalJob ||
+      matchingBackgroundRemovalJob.status === "running" ||
+      handledBackgroundRemovalJobIdRef.current ===
+        matchingBackgroundRemovalJob.jobId
+    ) {
+      return;
+    }
+
+    if (matchingBackgroundRemovalJob.status === "failed") {
+      handledBackgroundRemovalJobIdRef.current =
+        matchingBackgroundRemovalJob.jobId;
+      void refreshGallery();
+      return;
+    }
+
+    const nextImage = resolveJobImage(group, matchingBackgroundRemovalJob);
+    if (!nextImage) {
+      return;
+    }
+    handledBackgroundRemovalJobIdRef.current =
+      matchingBackgroundRemovalJob.jobId;
+    onChange(nextImage.fileUrl);
+    onBlur?.();
+    void refreshGallery();
+  }, [group, matchingBackgroundRemovalJob, onBlur, onChange, refreshGallery]);
+
+  const kontextEditModels = useMemo(() => {
+    const fromServer = editModels.find(
+      (candidate) => candidate.modelId === KONTEXT_EDIT_MODEL_ID,
+    );
+    return [fromServer ?? KONTEXT_EDIT_MODEL];
+  }, [editModels]);
 
   const hasPrompt = prompt.trim().length > 0;
   const hasEditPrompt = editPrompt.trim().length > 0;
@@ -442,6 +553,9 @@ export const AdventureModuleGeneratedImageField = ({
     submittingJob || matchingGenerateJob?.status === "running";
   const editPending =
     submittingEditJob || matchingEditJob?.status === "running";
+  const backgroundRemovalPending =
+    submittingBackgroundRemovalJob ||
+    matchingBackgroundRemovalJob?.status === "running";
   const canGenerate =
     !disabled &&
     !loadingModels &&
@@ -455,6 +569,11 @@ export const AdventureModuleGeneratedImageField = ({
     selectedEditModelId.trim().length > 0 &&
     hasEditPrompt &&
     !editPending;
+  const canRemoveBackground =
+    !disabled &&
+    hasSelectedImage &&
+    selectedBackgroundRemovalModelId.trim().length > 0 &&
+    !backgroundRemovalPending;
 
   const openFilePicker = (): void => {
     if (disabled || uploadingImage) {
@@ -666,8 +785,14 @@ export const AdventureModuleGeneratedImageField = ({
 
       <GeneratedImage
         image={previewImage}
-        pending={generatePending || editPending}
-        pendingLabel={editPending ? "Generating image edit..." : pendingLabel}
+        pending={generatePending || editPending || backgroundRemovalPending}
+        pendingLabel={
+          backgroundRemovalPending
+            ? "Removing background..."
+            : editPending
+              ? "Generating image edit..."
+              : pendingLabel
+        }
         emptyLabel={emptyLabel}
         implicitFailure={false}
       />
@@ -914,7 +1039,7 @@ export const AdventureModuleGeneratedImageField = ({
               onChange={(event) => setSelectedEditModelId(event.target.value)}
               disabled={disabled || loadingEditModels || editPending}
             >
-              {renderModelOptions(editModels)}
+              {renderModelOptions(kontextEditModels)}
             </select>
           </div>
 
@@ -956,6 +1081,81 @@ export const AdventureModuleGeneratedImageField = ({
               {matchingEditJob.generatedCount}, failed{" "}
               {matchingEditJob.failedCount})
             </Text>
+          ) : null}
+        </div>
+      ) : null}
+
+      {mode === "remove-background" ? (
+        <div className="stack gap-3">
+          <Text variant="note" color="iron-light" className="text-sm !opacity-100">
+            Remove the background from the currently selected image and save the
+            transparent PNG to the generated image gallery.
+          </Text>
+
+          <div className="stack items-start gap-1">
+            <Label color="bone" rotate={false}>
+              Background Model
+            </Label>
+            <select
+              className={SELECT_CLASSES}
+              value={selectedBackgroundRemovalModelId}
+              onChange={(event) =>
+                setSelectedBackgroundRemovalModelId(event.target.value)
+              }
+              disabled={disabled || backgroundRemovalPending}
+            >
+              {renderModelOptions(BACKGROUND_REMOVAL_MODELS)}
+            </select>
+          </div>
+
+          {!hasSelectedImage ? (
+            <Text
+              variant="note"
+              color="iron-light"
+              className="text-sm !opacity-100"
+            >
+              Select an image before removing its background.
+            </Text>
+          ) : null}
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              color="gold"
+              onClick={() => {
+                void submitBackgroundRemovalJob(
+                  value,
+                  selectedBackgroundRemovalModelId,
+                );
+              }}
+              disabled={!canRemoveBackground}
+            >
+              {backgroundRemovalPending ? (
+                <PendingIndicator label="Removing background" color="gold" />
+              ) : (
+                "Remove Background"
+              )}
+            </Button>
+          </div>
+
+          {matchingBackgroundRemovalJob ? (
+            <Text
+              variant="note"
+              color="iron-light"
+              className="text-sm !opacity-100"
+            >
+              Status: {matchingBackgroundRemovalJob.status} | completed{" "}
+              {matchingBackgroundRemovalJob.succeededCount}/
+              {matchingBackgroundRemovalJob.totalRequested} (cached{" "}
+              {matchingBackgroundRemovalJob.cachedCount}, generated{" "}
+              {matchingBackgroundRemovalJob.generatedCount}, failed{" "}
+              {matchingBackgroundRemovalJob.failedCount})
+            </Text>
+          ) : null}
+
+          {backgroundRemovalJobError ? (
+            <Message label="Background Removal Error" color="blood">
+              {backgroundRemovalJobError}
+            </Message>
           ) : null}
         </div>
       ) : null}

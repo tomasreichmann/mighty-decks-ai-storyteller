@@ -3,6 +3,8 @@ import test from "node:test";
 import {
   generatedImageAssetSchema,
   generatedImageGroupSchema,
+  imageBackgroundRemovalJobRequestSchema,
+  imageBackgroundRemovalJobResponseSchema,
   imageEditJobRequestSchema,
   imageEditJobResponseSchema,
   imageModelCapabilitySchema,
@@ -91,6 +93,46 @@ test("image edit job responses validate edit requests and job payloads", () => {
   });
 
   assert.equal(parsed.success, true);
+});
+
+test("image background removal jobs do not require edit prompts", () => {
+  const requestParsed = imageBackgroundRemovalJobRequestSchema.safeParse({
+    provider: "fal",
+    model: "fal-ai/bria/background/remove",
+    sourceImageUrl: "/api/image/files/base-image.png",
+    useCache: true,
+    amount: 1,
+  });
+  assert.equal(requestParsed.success, true);
+
+  const responseParsed = imageBackgroundRemovalJobResponseSchema.safeParse({
+    job: {
+      jobId: "bg-job-1",
+      createdAtIso: "2026-04-17T10:00:00.000Z",
+      updatedAtIso: "2026-04-17T10:00:00.000Z",
+      groupKey: "group-1",
+      promptHash: "a".repeat(64),
+      modelHash: "b".repeat(64),
+      request: requestParsed.success ? requestParsed.data : undefined,
+      status: "completed",
+      totalRequested: 1,
+      cachedCount: 0,
+      generatedCount: 1,
+      succeededCount: 1,
+      failedCount: 0,
+      items: [
+        {
+          requestIndex: 0,
+          status: "succeeded",
+          imageId: "image-1",
+          batchIndex: 0,
+          imageIndex: 0,
+        },
+      ],
+    },
+  });
+
+  assert.equal(responseParsed.success, true);
 });
 
 test("image model capability schema recognizes generate and edit values", () => {

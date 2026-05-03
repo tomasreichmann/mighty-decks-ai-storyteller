@@ -352,7 +352,7 @@ Behavior:
 - actor, counter, asset, location, encounter, and quest editors all show a shared shortcode row with inline shortcode text and a clipboard copy button
 - the shared image dialog uses a depressed `Selected Image URL` field with an inline clear button, a raw-image drop zone that uploads external images to the server, and a selected-image preview directly below the drop zone
 - when the selected image comes from the generated-image store, the preview shows muted prompt and model metadata under the image so long prompts stay visible without overwhelming the dialog
-- the shared image dialog now uses explicit `Gallery | Generate | Edit` modes: `Gallery` flattens stored fal images newest-first with hoverable prompt/model info and per-image removal, `Generate` keeps the text-to-image prompt flow, and `Edit` sends the selected image plus an edit prompt to fal-only image-edit models
+- the shared image dialog now uses explicit `Gallery | Generate | Edit | Remove BG` modes: `Gallery` flattens stored fal images newest-first with hoverable prompt/model info and per-image removal, `Generate` keeps the text-to-image prompt flow, `Edit` sends the selected image plus an edit prompt to `fal-ai/flux-pro/kontext`, and `Remove BG` creates transparent cutouts with Bria Background Remove or BiRefNet v2 Matting
 
 ---
 

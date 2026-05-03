@@ -181,6 +181,48 @@ test("FalClient generateImage polls queue status and loads result", async (t) =>
   );
 });
 
+test("FalClient reads single image objects from background removal results", async (t) => {
+  const originalFetch = globalThis.fetch;
+
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  globalThis.fetch = (async () =>
+    new Response(
+      JSON.stringify({
+        status: "COMPLETED",
+        image: {
+          url: "https://cdn.example.com/fal-background-removed.png",
+        },
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    )) as typeof fetch;
+
+  const client = new FalClient({
+    apiKey: "fal-test-key",
+    apiBaseUrl: "https://api.fal.test/v1",
+    queueBaseUrl: "https://queue.fal.test",
+    pollIntervalMs: 10,
+    pollTimeoutMs: 1000,
+  });
+
+  const result = await client.removeBackground({
+    model: "fal-ai/bria/background/remove",
+    sourceImageUrl: "data:image/png;base64,c291cmNl",
+  });
+
+  assert.equal(
+    result.imageUrl,
+    "https://cdn.example.com/fal-background-removed.png",
+  );
+});
+
 test("FalClient throws descriptive errors on non-2xx responses", async (t) => {
   const originalFetch = globalThis.fetch;
 

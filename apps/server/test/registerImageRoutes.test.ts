@@ -35,6 +35,27 @@ const waitForJob = async (
   throw new Error("Timed out waiting for route job completion.");
 };
 
+const waitForBackgroundRemovalJob = async (
+  app: ReturnType<typeof Fastify>,
+  jobId: string,
+): Promise<void> => {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    const response = await app.inject({
+      method: "GET",
+      url: `/api/image/background-removal-jobs/${jobId}`,
+    });
+    const payload = response.json() as {
+      job?: { status?: string };
+    };
+    if (payload.job?.status && payload.job.status !== "running") {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+
+  throw new Error("Timed out waiting for route background removal job completion.");
+};
+
 test("registerImageRoutes serves image files and rejects unsafe file names", async (t) => {
   const rootDir = await createTempDir();
   const app = Fastify();
@@ -141,6 +162,10 @@ test("registerImageRoutes validates payloads and exposes job lifecycle", async (
       imageUrl: "https://example.com/edited-from-route.png",
       status: "complete",
     }),
+    removeBackground: async () => ({
+      imageUrl: "https://example.com/background-removed-from-route.png",
+      status: "complete",
+    }),
   } as unknown as FalClient;
   const leonardoStub = {
     listModels: async () => [{ modelId: "leo-1", displayName: "Leonardo Model" }],
@@ -245,4 +270,65 @@ test("registerImageRoutes validates payloads and exposes job lifecycle", async (
     },
   });
   assert.equal(invalidEditJobResponse.statusCode, 400);
+
+  const invalidBackgroundRemovalResponse = await app.inject({
+    method: "POST",
+    url: "/api/image/background-removal-jobs",
+    payload: {
+      provider: "fal",
+      model: "fal-ai/bria/background/remove",
+    },
+  });
+  assert.equal(invalidBackgroundRemovalResponse.statusCode, 400);
+
+  const sourceReservation = await store.reserveBatchIndex({
+    provider: "fal",
+    prompt: "Route source",
+    model: "route-source-model",
+  });
+  const sourceImage = await store.saveGeneratedImage({
+    provider: "fal",
+    prompt: "Route source",
+    model: "route-source-model",
+    promptHash: sourceReservation.promptHash,
+    modelHash: sourceReservation.modelHash,
+    groupKey: sourceReservation.groupKey,
+    cacheKey: "route-source-cache",
+    batchIndex: sourceReservation.batchIndex,
+    imageIndex: 0,
+    resolution: {
+      width: 1024,
+      height: 1024,
+    },
+    sourceUrl: "https://example.com/route-source.png",
+    imageBuffer: Buffer.from("route-source-image"),
+    contentType: "image/png",
+  });
+
+  const createBackgroundRemovalResponse = await app.inject({
+    method: "POST",
+    url: "/api/image/background-removal-jobs",
+    payload: {
+      provider: "fal",
+      model: "fal-ai/bria/background/remove",
+      sourceImageUrl: sourceImage.image.fileUrl,
+      useCache: false,
+      amount: 1,
+    },
+  });
+  assert.equal(createBackgroundRemovalResponse.statusCode, 201);
+  const createdBackgroundRemoval = createBackgroundRemovalResponse.json() as {
+    job: { jobId: string; status: string };
+  };
+
+  await waitForBackgroundRemovalJob(app, createdBackgroundRemoval.job.jobId);
+  const finalBackgroundRemovalResponse = await app.inject({
+    method: "GET",
+    url: `/api/image/background-removal-jobs/${createdBackgroundRemoval.job.jobId}`,
+  });
+  const finalBackgroundRemovalPayload = finalBackgroundRemovalResponse.json() as {
+    job: { status: string; succeededCount: number };
+  };
+  assert.equal(finalBackgroundRemovalPayload.job.status, "completed");
+  assert.equal(finalBackgroundRemovalPayload.job.succeededCount, 1);
 });

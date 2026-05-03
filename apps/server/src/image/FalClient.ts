@@ -31,6 +31,11 @@ interface FalEditRequest {
   sourceImageUrl: string;
 }
 
+interface FalBackgroundRemovalRequest {
+  model: string;
+  sourceImageUrl: string;
+}
+
 type RecordLike = Record<string, unknown>;
 
 const isRecord = (value: unknown): value is RecordLike =>
@@ -203,6 +208,23 @@ const extractImageUrls = (payload: unknown): string[] => {
   const direct = readImageUrlCandidate(payload);
   if (direct) {
     return [direct];
+  }
+
+  const singleCandidates: unknown[] = [
+    payload.image,
+    payload.output,
+    isRecord(payload.data) ? payload.data.image : undefined,
+    isRecord(payload.data) ? payload.data.output : undefined,
+    isRecord(payload.response) ? payload.response.image : undefined,
+    isRecord(payload.response) ? payload.response.output : undefined,
+    isRecord(payload.result) ? payload.result.image : undefined,
+    isRecord(payload.result) ? payload.result.output : undefined,
+  ];
+  for (const candidate of singleCandidates) {
+    const resolved = readImageUrlCandidate(candidate);
+    if (resolved) {
+      return [resolved];
+    }
   }
 
   const candidateCollections: unknown[] = [
@@ -386,6 +408,66 @@ export class FalClient {
       extractStatusUrl(submitPayload),
       extractResponseUrl(submitPayload),
     );
+  }
+
+  public async removeBackground(
+    request: FalBackgroundRemovalRequest,
+  ): Promise<FalGenerationResult> {
+    if (!this.options.apiKey) {
+      throw new Error("fal.ai API key missing.");
+    }
+
+    const endpointPath = toEncodedEndpointPath(request.model);
+    if (endpointPath.length === 0) {
+      throw new Error("fal.ai model id is required.");
+    }
+
+    const submitUrl = `${this.queueBaseUrl}/${endpointPath}`;
+    const submitPayload = await this.requestJson(submitUrl, {
+      method: "POST",
+      body: JSON.stringify(this.buildBackgroundRemovalPayload(request)),
+    });
+    const submitImageUrls = extractImageUrls(submitPayload);
+    if (submitImageUrls.length > 0) {
+      return {
+        imageUrl: submitImageUrls[0]!,
+        status: extractStatus(submitPayload) ?? "completed",
+      };
+    }
+
+    const requestId = extractRequestId(submitPayload);
+    if (!requestId) {
+      throw new Error("fal.ai response did not include a request id.");
+    }
+
+    return this.pollUntilComplete(
+      submitUrl,
+      requestId,
+      extractStatusUrl(submitPayload),
+      extractResponseUrl(submitPayload),
+    );
+  }
+
+  private buildBackgroundRemovalPayload(
+    request: FalBackgroundRemovalRequest,
+  ): Record<string, unknown> {
+    const normalizedModel = normalizeEndpointId(request.model).toLowerCase();
+    if (normalizedModel === "fal-ai/birefnet/v2") {
+      return {
+        image_url: request.sourceImageUrl,
+        model: "Matting",
+        operating_resolution: "1024x1024",
+        output_mask: false,
+        refine_foreground: true,
+        output_format: "png",
+        mask_only: false,
+      };
+    }
+
+    return {
+      image_url: request.sourceImageUrl,
+      output_format: "png",
+    };
   }
 
   private async submitGeneration(

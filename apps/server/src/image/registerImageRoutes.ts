@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type {
+  ImageBackgroundRemovalJobRequest,
   ImageEditJobRequest,
   ImageGenerateJobRequest,
   ImageLookupGroupRequest,
@@ -231,6 +232,49 @@ export const registerImageRoutes = (
       return reply.send({ job });
     } catch (error) {
       return sendError(reply, error, "Could not fetch image edit job.");
+    }
+  });
+
+  app.post("/api/image/background-removal-jobs", async (request, reply) => {
+    try {
+      const job = await service.createBackgroundRemovalJob(
+        request.body as ImageBackgroundRemovalJobRequest,
+        request.ip,
+      );
+      return reply.code(201).send({ job });
+    } catch (error) {
+      return sendError(
+        reply,
+        error,
+        "Could not create image background removal job.",
+      );
+    }
+  });
+
+  app.get("/api/image/background-removal-jobs/:jobId", async (request, reply) => {
+    const params = request.params as { jobId?: string };
+    const jobId = params.jobId?.trim();
+    if (!jobId) {
+      return reply.code(400).send({
+        message: "jobId is required.",
+      });
+    }
+
+    try {
+      const job = service.getBackgroundRemovalJob(jobId);
+      if (!job) {
+        return reply.code(404).send({
+          message: "Image background removal job not found.",
+        });
+      }
+
+      return reply.send({ job });
+    } catch (error) {
+      return sendError(
+        reply,
+        error,
+        "Could not fetch image background removal job.",
+      );
     }
   });
 

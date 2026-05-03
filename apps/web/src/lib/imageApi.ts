@@ -1,5 +1,7 @@
 import type {
   GeneratedImageGroup,
+  ImageBackgroundRemovalJob,
+  ImageBackgroundRemovalJobRequest,
   ImageEditJob,
   ImageEditJobRequest,
   ImageGenerateJobRequest,
@@ -11,6 +13,7 @@ import type {
   ImageProvider,
 } from "@mighty-decks/spec/imageGeneration";
 import {
+  imageBackgroundRemovalJobResponseSchema,
   imageEditJobResponseSchema,
   imageGroupResponseSchema,
   imageGroupsResponseSchema,
@@ -155,6 +158,33 @@ export const fetchImageEditJob = async (jobId: string): Promise<ImageEditJob> =>
     buildApiUrl(`/api/image/edit-jobs/${encodeURIComponent(jobId)}`),
   );
   return imageEditJobResponseSchema.parse(payload).job;
+};
+
+export const createImageBackgroundRemovalJob = async (
+  request: ImageBackgroundRemovalJobRequest,
+): Promise<ImageBackgroundRemovalJob> => {
+  const payload = await fetchJson(
+    buildApiUrl("/api/image/background-removal-jobs"),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  );
+  return imageBackgroundRemovalJobResponseSchema.parse(payload).job;
+};
+
+export const fetchImageBackgroundRemovalJob = async (
+  jobId: string,
+): Promise<ImageBackgroundRemovalJob> => {
+  const payload = await fetchJson(
+    buildApiUrl(
+      `/api/image/background-removal-jobs/${encodeURIComponent(jobId)}`,
+    ),
+  );
+  return imageBackgroundRemovalJobResponseSchema.parse(payload).job;
 };
 
 export const setActiveImage = async (

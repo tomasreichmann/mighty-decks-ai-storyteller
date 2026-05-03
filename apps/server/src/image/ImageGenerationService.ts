@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import type {
   GeneratedImageGroup,
+  ImageBackgroundRemovalJob,
+  ImageBackgroundRemovalJobRequest,
   ImageEditJob,
   ImageEditJobRequest,
   ImageGenerateJobRequest,
@@ -15,6 +18,7 @@ import type {
   ImageSetActiveRequest,
 } from "@mighty-decks/spec/imageGeneration";
 import {
+  imageBackgroundRemovalJobRequestSchema,
   imageEditJobRequestSchema,
   imageGenerateJobRequestSchema,
   imageLookupGroupRequestSchema,
@@ -36,9 +40,15 @@ interface ImageGenerationServiceOptions {
   falClient: FalClient;
   leonardoClient: LeonardoClient;
   imageStore: ImageStore;
+  localImageResolver?: (sourceImageUrl: string) => Promise<LocalImageData | null>;
   maxActiveJobs: number;
   rateLimitPerMinute: number;
   downloadTimeoutMs: number;
+}
+
+interface LocalImageData {
+  imageBuffer: Buffer;
+  contentType: string;
 }
 
 interface ImageProviderClient {
@@ -53,6 +63,13 @@ interface ImageProviderClient {
   }>;
   editImage?(request: {
     prompt: string;
+    model: string;
+    sourceImageUrl: string;
+  }): Promise<{
+    imageUrl: string;
+    status: string;
+  }>;
+  removeBackground?(request: {
     model: string;
     sourceImageUrl: string;
   }): Promise<{
@@ -97,6 +114,20 @@ interface EditJobExecutionPlan {
   missingRequestIndices: number[];
 }
 
+interface BackgroundRemovalJobExecutionPlan {
+  provider: ImageProvider;
+  prompt: string;
+  model: string;
+  sourceImageUrl: string;
+  resolution: ImageResolution;
+  groupKey: string;
+  promptHash: string;
+  modelHash: string;
+  cacheKey: string;
+  batchIndex: number;
+  missingRequestIndices: number[];
+}
+
 const cloneImageJob = (job: ImageJob): ImageJob => ({
   ...job,
   request: {
@@ -116,6 +147,16 @@ const cloneImageEditJob = (job: ImageEditJob): ImageEditJob => ({
   items: job.items.map((item) => ({ ...item })),
 });
 
+const cloneImageBackgroundRemovalJob = (
+  job: ImageBackgroundRemovalJob,
+): ImageBackgroundRemovalJob => ({
+  ...job,
+  request: {
+    ...job.request,
+  },
+  items: job.items.map((item) => ({ ...item })),
+});
+
 const normalizeIpKey = (value: string): string => {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : "unknown";
@@ -126,9 +167,59 @@ const DEFAULT_EDIT_RESOLUTION: ImageResolution = {
   height: 1024,
 };
 
+const DEFAULT_BACKGROUND_REMOVAL_RESOLUTION: ImageResolution = {
+  width: 1024,
+  height: 1024,
+};
+
+const BACKGROUND_REMOVAL_PROMPTS_BY_MODEL: Record<string, string> = {
+  "fal-ai/bria/background/remove": "Remove background with Bria RMBG 2.0.",
+  "fal-ai/birefnet/v2": "Remove background with BiRefNet v2 Matting.",
+};
+
+const IMAGE_STORE_FILE_ROUTE_BASE_PATH = "/api/image/files/";
+
+const toBackgroundRemovalPrompt = (model: string): string =>
+  BACKGROUND_REMOVAL_PROMPTS_BY_MODEL[model.trim().toLowerCase()] ??
+  `Remove background with ${model.trim()}.`;
+
+const toDataImageUri = (image: LocalImageData): string =>
+  `data:${image.contentType};base64,${image.imageBuffer.toString("base64")}`;
+
+const parseRouteFileName = (
+  sourceImageUrl: string,
+  routeBasePath: string,
+): string | null => {
+  let pathname: string;
+  try {
+    pathname = new URL(sourceImageUrl, "http://local").pathname;
+  } catch {
+    return null;
+  }
+
+  if (!pathname.startsWith(routeBasePath)) {
+    return null;
+  }
+
+  const encodedFileName = pathname.slice(routeBasePath.length);
+  if (encodedFileName.length === 0 || encodedFileName.includes("/")) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(encodedFileName);
+  } catch {
+    return null;
+  }
+};
+
 export class ImageGenerationService {
   private readonly jobs = new Map<string, ImageJob>();
   private readonly editJobs = new Map<string, ImageEditJob>();
+  private readonly backgroundRemovalJobs = new Map<
+    string,
+    ImageBackgroundRemovalJob
+  >();
   private readonly activeJobIds = new Set<string>();
   private readonly requestTimestampsByIp = new Map<string, number[]>();
   private readonly maxActiveJobs: number;
@@ -405,6 +496,125 @@ export class ImageGenerationService {
     return cloneImageEditJob(job);
   }
 
+  public async createBackgroundRemovalJob(
+    request: ImageBackgroundRemovalJobRequest,
+    clientIp: string,
+  ): Promise<ImageBackgroundRemovalJob> {
+    const parsed = imageBackgroundRemovalJobRequestSchema.parse(request);
+    this.enforceRateLimit(clientIp);
+
+    if (parsed.provider !== "fal") {
+      throw new ImageGenerationError(
+        "Background removal is only available for the fal provider in MVP.",
+        400,
+      );
+    }
+
+    const providerClient = this.resolveProviderClient(parsed.provider);
+    if (typeof providerClient.removeBackground !== "function") {
+      throw new ImageGenerationError(
+        "Selected provider does not support background removal.",
+        400,
+      );
+    }
+
+    const provider = parsed.provider;
+    const model = parsed.model.trim();
+    const prompt = toBackgroundRemovalPrompt(model);
+    const promptHash = toPromptHash(prompt);
+    const modelHash = toModelHash(model);
+    const groupKey = toEditGroupKey(parsed.sourceImageUrl, prompt, provider, model);
+    const cacheKey = groupKey;
+    const cachedImages = parsed.useCache
+      ? this.options.imageStore.getGroup(groupKey)?.images ?? []
+      : [];
+    const selectedCachedImages = cachedImages.slice(0, parsed.amount);
+    const missingCount = Math.max(0, parsed.amount - selectedCachedImages.length);
+
+    let executionPlan: BackgroundRemovalJobExecutionPlan | null = null;
+    if (missingCount > 0) {
+      if (this.activeJobIds.size >= this.maxActiveJobs) {
+        throw new ImageGenerationError(
+          "Image generation is at capacity. Try again in a moment.",
+          429,
+        );
+      }
+
+      const reservation = await this.options.imageStore.reserveBatchIndex({
+        provider,
+        prompt,
+        model,
+        referenceImageUrl: parsed.sourceImageUrl,
+      });
+      const missingRequestIndices: number[] = [];
+      for (let index = selectedCachedImages.length; index < parsed.amount; index += 1) {
+        missingRequestIndices.push(index);
+      }
+
+      executionPlan = {
+        provider,
+        prompt,
+        model,
+        sourceImageUrl: parsed.sourceImageUrl,
+        resolution: DEFAULT_BACKGROUND_REMOVAL_RESOLUTION,
+        groupKey: reservation.groupKey,
+        promptHash: reservation.promptHash,
+        modelHash: reservation.modelHash,
+        cacheKey,
+        batchIndex: reservation.batchIndex,
+        missingRequestIndices,
+      };
+    }
+
+    const nowIso = new Date().toISOString();
+    const jobId = `imgbg-${randomUUID()}`;
+    const items: ImageJobItemProgress[] = [];
+
+    for (let index = 0; index < parsed.amount; index += 1) {
+      const cached = selectedCachedImages[index];
+      if (cached) {
+        items.push({
+          requestIndex: index,
+          status: "cached",
+          imageId: cached.imageId,
+          batchIndex: cached.batchIndex,
+          imageIndex: cached.imageIndex,
+        });
+        continue;
+      }
+
+      items.push({
+        requestIndex: index,
+        status: "pending",
+      });
+    }
+
+    const job: ImageBackgroundRemovalJob = {
+      jobId,
+      createdAtIso: nowIso,
+      updatedAtIso: nowIso,
+      groupKey: executionPlan?.groupKey ?? groupKey,
+      promptHash: executionPlan?.promptHash ?? promptHash,
+      modelHash: executionPlan?.modelHash ?? modelHash,
+      request: parsed,
+      status: missingCount === 0 ? "completed" : "running",
+      totalRequested: parsed.amount,
+      cachedCount: selectedCachedImages.length,
+      generatedCount: 0,
+      succeededCount: selectedCachedImages.length,
+      failedCount: 0,
+      items,
+    };
+    this.backgroundRemovalJobs.set(job.jobId, job);
+
+    if (executionPlan) {
+      this.activeJobIds.add(job.jobId);
+      void this.executeBackgroundRemovalJob(job.jobId, executionPlan);
+    }
+
+    return cloneImageBackgroundRemovalJob(job);
+  }
+
   public getJob(jobId: string): ImageJob | null {
     const job = this.jobs.get(jobId);
     return job ? cloneImageJob(job) : null;
@@ -413,6 +623,13 @@ export class ImageGenerationService {
   public getEditJob(jobId: string): ImageEditJob | null {
     const job = this.editJobs.get(jobId);
     return job ? cloneImageEditJob(job) : null;
+  }
+
+  public getBackgroundRemovalJob(
+    jobId: string,
+  ): ImageBackgroundRemovalJob | null {
+    const job = this.backgroundRemovalJobs.get(jobId);
+    return job ? cloneImageBackgroundRemovalJob(job) : null;
   }
 
   public async setActiveImage(
@@ -479,6 +696,29 @@ export class ImageGenerationService {
         ),
       );
       this.mutateEditJob(jobId, (job) => {
+        job.status = job.failedCount > 0 ? "failed" : "completed";
+      });
+    } finally {
+      this.activeJobIds.delete(jobId);
+    }
+  }
+
+  private async executeBackgroundRemovalJob(
+    jobId: string,
+    plan: BackgroundRemovalJobExecutionPlan,
+  ): Promise<void> {
+    try {
+      await Promise.all(
+        plan.missingRequestIndices.map((requestIndex, generatedIndex) =>
+          this.executeBackgroundRemovalJobItem(
+            jobId,
+            plan,
+            requestIndex,
+            generatedIndex,
+          ),
+        ),
+      );
+      this.mutateBackgroundRemovalJob(jobId, (job) => {
         job.status = job.failedCount > 0 ? "failed" : "completed";
       });
     } finally {
@@ -581,7 +821,9 @@ export class ImageGenerationService {
       const generated = await providerClient.editImage({
         prompt: plan.prompt,
         model: plan.model,
-        sourceImageUrl: plan.sourceImageUrl,
+        sourceImageUrl: await this.resolveProviderSourceImageUrl(
+          plan.sourceImageUrl,
+        ),
       });
       const downloaded = await this.downloadImage(generated.imageUrl);
       const stored = await this.options.imageStore.saveGeneratedImage({
@@ -630,6 +872,83 @@ export class ImageGenerationService {
     }
   }
 
+  private async executeBackgroundRemovalJobItem(
+    jobId: string,
+    plan: BackgroundRemovalJobExecutionPlan,
+    requestIndex: number,
+    generatedIndex: number,
+  ): Promise<void> {
+    this.mutateBackgroundRemovalJob(jobId, (job) => {
+      const item = job.items.find((candidate) => candidate.requestIndex === requestIndex);
+      if (!item) {
+        return;
+      }
+      item.status = "running";
+      item.batchIndex = plan.batchIndex;
+      item.imageIndex = generatedIndex;
+      delete item.error;
+    });
+
+    try {
+      const providerClient = this.resolveProviderClient(plan.provider);
+      if (typeof providerClient.removeBackground !== "function") {
+        throw new Error("Selected provider does not support background removal.");
+      }
+
+      const generated = await providerClient.removeBackground({
+        model: plan.model,
+        sourceImageUrl: await this.resolveProviderSourceImageUrl(
+          plan.sourceImageUrl,
+        ),
+      });
+      const downloaded = await this.downloadImage(generated.imageUrl);
+      const stored = await this.options.imageStore.saveGeneratedImage({
+        provider: plan.provider,
+        prompt: plan.prompt,
+        model: plan.model,
+        promptHash: plan.promptHash,
+        modelHash: plan.modelHash,
+        groupKey: plan.groupKey,
+        cacheKey: plan.cacheKey,
+        batchIndex: plan.batchIndex,
+        imageIndex: generatedIndex,
+        resolution: plan.resolution,
+        sourceUrl: generated.imageUrl,
+        referenceImageUrl: plan.sourceImageUrl,
+        imageBuffer: downloaded.imageBuffer,
+        contentType: downloaded.contentType,
+      });
+
+      this.mutateBackgroundRemovalJob(jobId, (job) => {
+        const item = job.items.find(
+          (candidate) => candidate.requestIndex === requestIndex,
+        );
+        if (!item) {
+          return;
+        }
+        item.status = "succeeded";
+        item.imageId = stored.image.imageId;
+        item.batchIndex = stored.image.batchIndex;
+        item.imageIndex = stored.image.imageIndex;
+        job.generatedCount += 1;
+        job.succeededCount += 1;
+      });
+    } catch (error) {
+      this.mutateBackgroundRemovalJob(jobId, (job) => {
+        const item = job.items.find(
+          (candidate) => candidate.requestIndex === requestIndex,
+        );
+        if (!item) {
+          return;
+        }
+        item.status = "failed";
+        item.error =
+          error instanceof Error ? error.message : "Background removal failed.";
+        job.failedCount += 1;
+      });
+    }
+  }
+
   private mutateJob(jobId: string, mutate: (job: ImageJob) => void): void {
     const job = this.jobs.get(jobId);
     if (!job) {
@@ -642,6 +961,19 @@ export class ImageGenerationService {
 
   private mutateEditJob(jobId: string, mutate: (job: ImageEditJob) => void): void {
     const job = this.editJobs.get(jobId);
+    if (!job) {
+      return;
+    }
+
+    mutate(job);
+    job.updatedAtIso = new Date().toISOString();
+  }
+
+  private mutateBackgroundRemovalJob(
+    jobId: string,
+    mutate: (job: ImageBackgroundRemovalJob) => void,
+  ): void {
+    const job = this.backgroundRemovalJobs.get(jobId);
     if (!job) {
       return;
     }
@@ -673,6 +1005,52 @@ export class ImageGenerationService {
     }
 
     return this.options.falClient;
+  }
+
+  private async resolveProviderSourceImageUrl(
+    sourceImageUrl: string,
+  ): Promise<string> {
+    const trimmedSourceImageUrl = sourceImageUrl.trim();
+    if (/^data:image\//i.test(trimmedSourceImageUrl)) {
+      return trimmedSourceImageUrl;
+    }
+
+    const imageStoreFileName = parseRouteFileName(
+      trimmedSourceImageUrl,
+      IMAGE_STORE_FILE_ROUTE_BASE_PATH,
+    );
+    if (imageStoreFileName) {
+      const image = await this.readImageStoreFileAsLocalImage(imageStoreFileName);
+      return toDataImageUri(image);
+    }
+
+    const localImage = await this.options.localImageResolver?.(
+      trimmedSourceImageUrl,
+    );
+    if (localImage) {
+      return toDataImageUri(localImage);
+    }
+
+    return trimmedSourceImageUrl;
+  }
+
+  private async readImageStoreFileAsLocalImage(
+    fileName: string,
+  ): Promise<LocalImageData> {
+    const imageFile = await this.options.imageStore.getImageFileRecord(fileName);
+    if (!imageFile) {
+      throw new Error("Selected generated image file was not found on the server.");
+    }
+
+    const imageBuffer = await readFile(imageFile.absolutePath);
+    if (imageBuffer.length === 0) {
+      throw new Error("Selected generated image file is empty.");
+    }
+
+    return {
+      imageBuffer,
+      contentType: imageFile.contentType,
+    };
   }
 
   private async downloadImage(sourceUrl: string): Promise<{

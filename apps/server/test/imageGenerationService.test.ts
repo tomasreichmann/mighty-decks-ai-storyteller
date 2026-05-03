@@ -44,6 +44,22 @@ const waitForEditJobFinalState = async (
   throw new Error("Timed out waiting for image edit job completion.");
 };
 
+const waitForBackgroundRemovalJobFinalState = async (
+  service: ImageGenerationService,
+  jobId: string,
+): Promise<void> => {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    const job = service.getBackgroundRemovalJob(jobId);
+    if (!job || job.status !== "running") {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+
+  throw new Error("Timed out waiting for image background removal job completion.");
+};
+
 const createLeonardoStub = (options: {
   delayMs?: number;
 } = {}): {
@@ -419,4 +435,188 @@ test("ImageGenerationService creates distinct edit groups for different source i
   assert.equal(secondGroup?.referenceImageUrl, "https://example.com/base-two.png");
   assert.equal(firstGroup?.images[0]?.referenceImageUrl, "https://example.com/base-one.png");
   assert.equal(secondGroup?.images[0]?.referenceImageUrl, "https://example.com/base-two.png");
+});
+
+test("ImageGenerationService creates and caches background removal jobs by source image", async (t) => {
+  const rootDir = await createTempDir();
+  const originalFetch = globalThis.fetch;
+
+  t.after(async () => {
+    globalThis.fetch = originalFetch;
+    await rm(rootDir, { recursive: true, force: true });
+  });
+
+  globalThis.fetch = (async () =>
+    new Response(Buffer.from("transparent"), {
+      status: 200,
+      headers: {
+        "Content-Type": "image/png",
+      },
+    })) as typeof fetch;
+
+  const store = new ImageStore({
+    rootDir,
+    fileRouteBasePath: "/api/image/files",
+  });
+  await store.initialize();
+
+  let removeBackgroundCalls = 0;
+  const falClient = {
+    listModels: async () => [],
+    generateImage: async () => ({
+      imageUrl: "https://example.com/generated.png",
+      status: "complete",
+    }),
+    editImage: async () => ({
+      imageUrl: "https://example.com/edited.png",
+      status: "complete",
+    }),
+    removeBackground: async () => {
+      removeBackgroundCalls += 1;
+      return {
+        imageUrl: "https://example.com/transparent.png",
+        status: "complete",
+      };
+    },
+  } as unknown as FalClient;
+
+  const service = new ImageGenerationService({
+    falClient,
+    leonardoClient: createLeonardoStub().client,
+    imageStore: store,
+    maxActiveJobs: 4,
+    rateLimitPerMinute: 10,
+    downloadTimeoutMs: 5000,
+  });
+
+  const firstJob = await service.createBackgroundRemovalJob(
+    {
+      provider: "fal",
+      model: "fal-ai/bria/background/remove",
+      sourceImageUrl: "https://example.com/source.png",
+      useCache: true,
+      amount: 1,
+    },
+    "127.0.0.1",
+  );
+  await waitForBackgroundRemovalJobFinalState(service, firstJob.jobId);
+
+  const finalFirstJob = service.getBackgroundRemovalJob(firstJob.jobId);
+  assert.equal(finalFirstJob?.status, "completed");
+  assert.equal(finalFirstJob?.succeededCount, 1);
+  assert.equal(removeBackgroundCalls, 1);
+
+  const secondJob = await service.createBackgroundRemovalJob(
+    {
+      provider: "fal",
+      model: "fal-ai/bria/background/remove",
+      sourceImageUrl: "https://example.com/source.png",
+      useCache: true,
+      amount: 1,
+    },
+    "127.0.0.1",
+  );
+
+  assert.equal(secondJob.status, "completed");
+  assert.equal(secondJob.cachedCount, 1);
+  assert.equal(removeBackgroundCalls, 1);
+
+  const group = service.getGroup(firstJob.groupKey);
+  assert.equal(group?.referenceImageUrl, "https://example.com/source.png");
+  assert.equal(group?.images[0]?.referenceImageUrl, "https://example.com/source.png");
+});
+
+test("ImageGenerationService inlines local image URLs before background removal", async (t) => {
+  const rootDir = await createTempDir();
+  const originalFetch = globalThis.fetch;
+
+  t.after(async () => {
+    globalThis.fetch = originalFetch;
+    await rm(rootDir, { recursive: true, force: true });
+  });
+
+  globalThis.fetch = (async () =>
+    new Response(Buffer.from("transparent"), {
+      status: 200,
+      headers: {
+        "Content-Type": "image/png",
+      },
+    })) as typeof fetch;
+
+  const store = new ImageStore({
+    rootDir,
+    fileRouteBasePath: "/api/image/files",
+  });
+  await store.initialize();
+
+  const sourceReservation = await store.reserveBatchIndex({
+    provider: "fal",
+    prompt: "Source portrait",
+    model: "source-model",
+  });
+  const storedSource = await store.saveGeneratedImage({
+    provider: "fal",
+    prompt: "Source portrait",
+    model: "source-model",
+    promptHash: sourceReservation.promptHash,
+    modelHash: sourceReservation.modelHash,
+    groupKey: sourceReservation.groupKey,
+    cacheKey: "source-cache",
+    batchIndex: sourceReservation.batchIndex,
+    imageIndex: 0,
+    resolution: { width: 1024, height: 1024 },
+    sourceUrl: "https://example.com/source.png",
+    imageBuffer: Buffer.from("source-image"),
+    contentType: "image/png",
+  });
+
+  let providerSourceImageUrl = "";
+  const falClient = {
+    listModels: async () => [],
+    generateImage: async () => ({
+      imageUrl: "https://example.com/generated.png",
+      status: "complete",
+    }),
+    removeBackground: async (request: {
+      model: string;
+      sourceImageUrl: string;
+    }) => {
+      providerSourceImageUrl = request.sourceImageUrl;
+      return {
+        imageUrl: "https://example.com/transparent.png",
+        status: "complete",
+      };
+    },
+  } as unknown as FalClient;
+
+  const service = new ImageGenerationService({
+    falClient,
+    leonardoClient: createLeonardoStub().client,
+    imageStore: store,
+    maxActiveJobs: 4,
+    rateLimitPerMinute: 10,
+    downloadTimeoutMs: 5000,
+  });
+
+  const job = await service.createBackgroundRemovalJob(
+    {
+      provider: "fal",
+      model: "fal-ai/bria/background/remove",
+      sourceImageUrl: storedSource.image.fileUrl,
+      useCache: false,
+      amount: 1,
+    },
+    "127.0.0.1",
+  );
+  await waitForBackgroundRemovalJobFinalState(service, job.jobId);
+
+  assert.match(providerSourceImageUrl, /^data:image\/png;base64,/);
+  assert.equal(
+    Buffer.from(providerSourceImageUrl.split(",")[1] ?? "", "base64").toString(),
+    "source-image",
+  );
+
+  const group = service.getGroup(job.groupKey);
+  assert.equal(group?.referenceImageUrl, storedSource.image.fileUrl);
+  assert.equal(group?.images[0]?.referenceImageUrl, storedSource.image.fileUrl);
 });

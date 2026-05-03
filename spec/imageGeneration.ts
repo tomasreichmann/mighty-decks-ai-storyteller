@@ -38,6 +38,17 @@ export const imageEditJobRequestSchema = z.object({
 });
 export type ImageEditJobRequest = z.infer<typeof imageEditJobRequestSchema>;
 
+export const imageBackgroundRemovalJobRequestSchema = z.object({
+  provider: imageProviderSchema.default("fal"),
+  model: z.string().min(1).max(200),
+  sourceImageUrl: z.string().min(1).max(4000),
+  useCache: z.boolean().default(true),
+  amount: z.number().int().min(1).max(8),
+});
+export type ImageBackgroundRemovalJobRequest = z.infer<
+  typeof imageBackgroundRemovalJobRequestSchema
+>;
+
 export const generatedImageAssetSchema = z.object({
   provider: imageProviderSchema.default("fal"),
   imageId: z.string().min(1),
@@ -133,6 +144,26 @@ export const imageEditJobSchema = z.object({
 });
 export type ImageEditJob = z.infer<typeof imageEditJobSchema>;
 
+export const imageBackgroundRemovalJobSchema = z.object({
+  jobId: z.string().min(1),
+  createdAtIso: z.string().datetime(),
+  updatedAtIso: z.string().datetime(),
+  groupKey: z.string().min(1),
+  promptHash: hashSchema,
+  modelHash: hashSchema,
+  request: imageBackgroundRemovalJobRequestSchema,
+  status: imageJobStatusSchema,
+  totalRequested: z.number().int().min(1),
+  cachedCount: z.number().int().nonnegative(),
+  generatedCount: z.number().int().nonnegative(),
+  succeededCount: z.number().int().nonnegative(),
+  failedCount: z.number().int().nonnegative(),
+  items: z.array(imageJobItemProgressSchema),
+});
+export type ImageBackgroundRemovalJob = z.infer<
+  typeof imageBackgroundRemovalJobSchema
+>;
+
 export const imageModelSummarySchema = z.object({
   modelId: z.string().min(1),
   displayName: z.string().min(1),
@@ -186,3 +217,10 @@ export const imageEditJobResponseSchema = z.object({
   job: imageEditJobSchema,
 });
 export type ImageEditJobResponse = z.infer<typeof imageEditJobResponseSchema>;
+
+export const imageBackgroundRemovalJobResponseSchema = z.object({
+  job: imageBackgroundRemovalJobSchema,
+});
+export type ImageBackgroundRemovalJobResponse = z.infer<
+  typeof imageBackgroundRemovalJobResponseSchema
+>;

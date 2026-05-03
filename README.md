@@ -44,7 +44,7 @@ The repo should not currently be read as a full implementation of Mighty Decks r
 - An `OPENROUTER_API_KEY` for the default storyteller text provider and image generation
 - Optional: `cloudflared` for remote playtests outside your LAN
 - Optional: a Render account if you want to deploy the single-service setup
-- Optional: `FAL_API_KEY` and `LEONARDO_API_KEY` if you want alternative image generation providers or workflow-lab integrations
+- Optional: `FAL_API_KEY` and `LEONARDO_API_KEY` if you want alternative image generation providers or workflow-lab integrations. The Adventure Module image dialog uses Fal for `fal-ai/flux-pro/kontext` image edits plus Bria/BiRefNet background removal.
 - Optional: `GROQ_API_KEY` if you want `AI_TEXT_PROVIDER=groq` for text completions
 
 ## Repository Layout
@@ -139,7 +139,7 @@ Runtime tuning env vars already exist in `.env.example`, including:
 
 ### Optional providers and advanced workflow settings
 
-- `FAL_API_KEY` enables FAL-backed image and workflow adapters.
+- `FAL_API_KEY` enables FAL-backed image and workflow adapters, including image edits through `fal-ai/flux-pro/kontext` and background removal through `fal-ai/bria/background/remove` or `fal-ai/birefnet/v2`.
 - `LEONARDO_API_KEY` enables Leonardo-backed image generation.
 - `AI_TEXT_PROVIDER=groq` plus `GROQ_API_KEY` and `GROQ_TEXT_*` model overrides enable Groq-backed text completions.
 - `WF_*` environment variables configure workflow-lab model defaults and timeouts. They are not required for the core storyteller MVP loop.
