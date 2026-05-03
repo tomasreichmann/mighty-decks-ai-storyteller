@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Server content: switch Exiles actor cards and actor detail images to the cropped profile portraits where available, and align persisted module ownership with the editable test module author.
 - Server: reimport Exiles actors as custom actor cards using their curated portraits, names, summaries, and notes while preserving generic layer settings for editing; player options leave the adjective slot blank.
 - Web: move the actor card generic/custom mode switch into the card settings flow as a shared RockerSwitch and collapse custom actor icon insertion into steel ghost icon-name buttons.
 - Web: remove the extra horizontal padding from the actor body foreignObject so the range value stays on the first row.

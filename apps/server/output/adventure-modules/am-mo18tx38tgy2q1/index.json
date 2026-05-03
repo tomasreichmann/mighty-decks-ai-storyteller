@@ -234,7 +234,7 @@
       "baseLayerSlug": "cog",
       "tacticalRoleSlug": "champion",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/machinist-priest-9f0a775743dda3c817df.png",
+        "imageUrl": "/api/adventure-artifacts/machinist-priest-profile-ec92bc7e9074ab3a50ec.png",
         "adjective": "",
         "noun": "Machinist-Priest Heretic",
         "nounDescription": "An exiled engineer-priest who treats forbidden machine communion as holy work.",
@@ -248,7 +248,7 @@
       "baseLayerSlug": "zealot",
       "tacticalRoleSlug": "stalker",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/crimson-witch-633cf2740535607fd59b.png",
+        "imageUrl": "/api/adventure-artifacts/crimson-witch-profile-6a80ff34e75573f61ca3.png",
         "adjective": "",
         "noun": "Crimson Witch/Warlock",
         "nounDescription": "A hemomancer who fuels divination, alteration, and combat through blood magic.",
@@ -262,7 +262,7 @@
       "baseLayerSlug": "bruiser_red",
       "tacticalRoleSlug": "brute",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/augmented-veteran-male-11058efeea83925b9b24.png",
+        "imageUrl": "/api/adventure-artifacts/augmented-veteran-male-profile-f520a85de6d856aee8ae.png",
         "adjective": "",
         "noun": "Augmented Veteran",
         "nounDescription": "A battle-scarred Legion deserter rebuilt for war and stubborn survival.",
@@ -276,7 +276,7 @@
       "baseLayerSlug": "aristocrat",
       "tacticalRoleSlug": "skirmisher",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/noble-empath-male-7a5acbf22a40f19e37c0.png",
+        "imageUrl": "/api/adventure-artifacts/noble-empath-male-profile-ec5aa9333c9ad2b90973.png",
         "adjective": "",
         "noun": "Noble Empath",
         "nounDescription": "An impoverished noble whose status and empathic gifts still open doors.",
@@ -290,7 +290,7 @@
       "baseLayerSlug": "manipulator",
       "tacticalRoleSlug": "ranger",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/void-seer-male-0d111321f324bc460dfa.png",
+        "imageUrl": "/api/adventure-artifacts/void-seer-male-profile-068f166010f79cfded63.png",
         "adjective": "",
         "noun": "Void-seer",
         "nounDescription": "A navigator-mystic who reads the Void and bends space just enough to survive it.",
@@ -304,7 +304,7 @@
       "baseLayerSlug": "healer",
       "tacticalRoleSlug": "ranger",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/robot-surgeon-male-96a8910699a9d40cb268.png",
+        "imageUrl": "/api/adventure-artifacts/robot-surgeon-male-profile-dea30fb20cdbdfbce28d.png",
         "adjective": "",
         "noun": "Synthetic Medic",
         "nounDescription": "An illegal sentient intelligence piloting a medic shell and looking for purpose.",
@@ -334,7 +334,7 @@
       "tacticalRoleSlug": "minion",
       "tacticalSpecialSlug": "fast",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/critter-raider-5350e2db4c3712029480.png",
+        "imageUrl": "/api/adventure-artifacts/critter-raider-2-profile-7131e9164eb17017ed88.png",
         "adjective": "Fast",
         "noun": "Xithrax Raiders",
         "nounDescription": "Bloodthirsty bug raiders who want loot fast and casualties faster.",
@@ -349,7 +349,7 @@
       "tacticalRoleSlug": "pawn",
       "tacticalSpecialSlug": "irritating",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/tunnel-critter-89dea1424fce1209f3c6.png",
+        "imageUrl": "/api/adventure-artifacts/tunnel-critter-profile-c23ddd80e85cb0f0f962.png",
         "adjective": "Irritating",
         "noun": "Tunnel Critter",
         "nounDescription": "A skittering tunnel nuisance that fights from shadows and scrap piles.",
@@ -364,7 +364,7 @@
       "tacticalRoleSlug": "tank",
       "tacticalSpecialSlug": "alpha",
       "custom": {
-        "imageUrl": "/api/adventure-artifacts/tunnel-critter-brood-mother-b2405aea5b329f1b9cf8.png",
+        "imageUrl": "/api/adventure-artifacts/tunnel-critter-brood-mother-profile-0bd36e6e77701dc9a546.png",
         "adjective": "Alpha",
         "noun": "Tunnel Critter Brood Mother",
         "nounDescription": "The hulking brood mother that sends the tunnel critters scattering or back into the fight.",
