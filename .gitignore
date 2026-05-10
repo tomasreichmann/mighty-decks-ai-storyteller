@@ -10,6 +10,9 @@ apps/server/logs
 .playwright-cli
 .superpowers/
 
+# Local dev command logs
+/dev*.log
+
 # Runtime/generated artifacts
 apps/server/output/
 output/
