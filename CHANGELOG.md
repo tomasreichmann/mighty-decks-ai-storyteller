@@ -32,6 +32,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add pure `/board` flex layout helpers plus controller/browser-global layout APIs for absolute-positioned item placement and smooth layout transitions.
+- Web: add a hidden full-screen `/board` lab with reusable board frame/context/controller primitives, pan/zoom controls, optional smooth API transitions, fit-to-frame behavior, and a browser-global script API for typed tabletop items.
 - Web/Spec/Server: add Fal background-removal jobs and expose Bria Background Remove plus BiRefNet v2 Matting in the shared image dialog.
 - Web/Spec/Server: add dual-mode actor cards so authored actors can switch between generic base/role/special cards and custom image/title/body cards while preserving both sets of settings.
 - Server: add Groq as an `AI_TEXT_PROVIDER` option (text-only; image generation continues via OpenRouter/Fal/Leonardo). New env vars: `GROQ_API_KEY`, `GROQ_TEXT_NARRATIVE_MODEL`, `GROQ_TEXT_SCENE_MODEL`, `GROQ_TEXT_OUTCOME_MODEL`, `GROQ_TEXT_CONTINUITY_MODEL`, `GROQ_TEXT_PITCH_MODEL`.
@@ -75,6 +77,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: move `/board` wheel zoom to a non-passive frame listener so pointer wheel zoom remains immediate without browser console errors.
+- Web: stabilize the hidden `/board` controller with a reducer-backed state flow so reset-then-zoom works immediately and repeated item insertion no longer triggers nested update loops.
 - Web/Server: make Fal edit and background-removal jobs inline local gallery/artifact images before provider calls, parse single-object Fal image results, show background-removal job errors in the dialog, and select successful background-removal outputs automatically.
 - Web/Server: pin shared image edits to `fal-ai/flux-pro/kontext` so the edit dialog uses the Fal endpoint shape that the server supports reliably.
 - Web: keep image job polling alive through the final group fetch so generated edits and background-removal outputs appear in the gallery and become selectable immediately.

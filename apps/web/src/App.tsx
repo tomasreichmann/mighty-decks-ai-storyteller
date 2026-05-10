@@ -36,6 +36,9 @@ const AdventureModuleListPage = lazy(async () => ({
 const AdventureModuleNewPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleNewPage")).AdventureModuleNewPage,
 }));
+const BoardPage = lazy(async () => ({
+  default: (await import("./routes/BoardPage")).BoardPage,
+}));
 const ImageGenerator = lazy(async () => ({
   default: (await import("./routes/ImageGenerator")).ImageGenerator,
 }));
@@ -502,6 +505,14 @@ export const App = (): JSX.Element => {
         </Route>
 
         <Route element={<NoHeaderFitScreenLayout />}>
+          <Route
+            path="/board"
+            element={
+              <RouteShellBoundary>
+                <BoardPage />
+              </RouteShellBoundary>
+            }
+          />
           <Route
             path="/spaceship"
             element={
