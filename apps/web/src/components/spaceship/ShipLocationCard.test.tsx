@@ -72,10 +72,9 @@ test("ShipLocationCard keeps the shared location card and local level controls",
   assert.match(source, /useState/);
   assert.match(source, /leading=\{/);
   assert.match(source, /trailing=\{/);
-  assert.doesNotMatch(source, /\bLabel\b/);
 });
 
-test("ShipLocationCard renders an attached Device Asset card", () => {
+test("ShipLocationCard renders an attached Device Asset card without extra device copy", () => {
   let renderer!: TestRenderer.ReactTestRenderer;
 
   act(() => {
@@ -84,9 +83,9 @@ test("ShipLocationCard renders an attached Device Asset card", () => {
 
   const text = collectText(renderer.toJSON());
 
-  assert.match(text, /Device/);
   assert.match(text, /Docking Clamps/);
   assert.match(text, /lvl 1/);
+  assert.equal(text.includes("Effective lvl"), false);
 });
 
 test("ShipLocationCard level pill increments and clamps at 1", () => {

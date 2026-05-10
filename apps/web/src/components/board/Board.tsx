@@ -1,10 +1,11 @@
-import { useCallback, type CSSProperties } from "react";
+import { useCallback, type CSSProperties, type ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { useBoard } from "./BoardProvider";
 import type { BoardItemRecord } from "../../lib/board/boardController";
 
 interface BoardProps {
   className?: string;
+  renderItem?: (item: BoardItemRecord) => ReactNode;
 }
 
 const itemToneClass = {
@@ -13,42 +14,13 @@ const itemToneClass = {
   image: "bg-kac-steel-light text-kac-iron rotate-[-0.4deg]",
 };
 
-const BoardItem = ({
+const DefaultBoardItemContent = ({
   item,
-  registerItemElement,
-  transitionDurationMs,
 }: {
   item: BoardItemRecord;
-  registerItemElement: (id: string, element: HTMLElement | null) => void;
-  transitionDurationMs: number;
 }): JSX.Element => {
-  const itemRef = useCallback(
-    (element: HTMLElement | null): void => {
-      registerItemElement(item.id, element);
-    },
-    [item.id, registerItemElement],
-  );
-  const style: CSSProperties = {
-    left: item.x,
-    top: item.y,
-    width: item.width,
-    minHeight: item.height,
-    zIndex: item.zIndex,
-    transform: `rotate(${item.rotation ?? 0}deg)`,
-    transitionProperty: "left, top, transform",
-    transitionDuration: `${transitionDurationMs}ms`,
-    transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
-  };
-
   return (
-    <article
-      ref={itemRef}
-      className={cn(
-        "board-item absolute flex flex-col gap-2 rounded-sm border-[3px] border-kac-iron p-4 shadow-[4px_4px_0_0_#121b23]",
-        itemToneClass[item.kind],
-      )}
-      style={style}
-    >
+    <>
       {item.kind === "image" && item.imageUrl ? (
         <img
           src={item.imageUrl}
@@ -70,11 +42,58 @@ const BoardItem = ({
       <span className="mt-auto font-ui text-[0.65rem] font-bold uppercase tracking-[0.08em] text-kac-iron/60">
         {Math.round(item.x)}, {Math.round(item.y)}
       </span>
+    </>
+  );
+};
+
+const BoardItem = ({
+  item,
+  registerItemElement,
+  transitionDurationMs,
+  renderItem,
+}: {
+  item: BoardItemRecord;
+  registerItemElement: (id: string, element: HTMLElement | null) => void;
+  transitionDurationMs: number;
+  renderItem?: (item: BoardItemRecord) => ReactNode;
+}): JSX.Element => {
+  const itemRef = useCallback(
+    (element: HTMLElement | null): void => {
+      registerItemElement(item.id, element);
+    },
+    [item.id, registerItemElement],
+  );
+  const style: CSSProperties = {
+    left: item.x,
+    top: item.y,
+    width: item.width,
+    minHeight: item.height,
+    zIndex: item.zIndex,
+    transform: `rotate(${item.rotation ?? 0}deg)`,
+    transitionProperty: "left, top, transform",
+    transitionDuration: `${transitionDurationMs}ms`,
+    transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+  };
+  const hasCustomRenderer = Boolean(renderItem);
+
+  return (
+    <article
+      ref={itemRef}
+      className={cn(
+        "board-item absolute",
+        hasCustomRenderer
+          ? "overflow-visible"
+          : "flex flex-col gap-2 rounded-sm border-[3px] border-kac-iron p-4 shadow-[4px_4px_0_0_#121b23]",
+        hasCustomRenderer ? null : itemToneClass[item.kind],
+      )}
+      style={style}
+    >
+      {renderItem ? renderItem(item) : <DefaultBoardItemContent item={item} />}
     </article>
   );
 };
 
-export const Board = ({ className }: BoardProps): JSX.Element => {
+export const Board = ({ className, renderItem }: BoardProps): JSX.Element => {
   const {
     boardSize,
     viewport,
@@ -95,19 +114,18 @@ export const Board = ({ className }: BoardProps): JSX.Element => {
   return (
     <div
       className={cn(
-        "board absolute left-0 top-0 overflow-hidden bg-kac-bone",
-        "bg-[linear-gradient(90deg,rgba(18,27,35,0.12)_1px,transparent_1px),linear-gradient(180deg,rgba(18,27,35,0.12)_1px,transparent_1px),radial-gradient(circle_at_22%_18%,rgba(255,249,227,0.32),transparent_28%),radial-gradient(circle_at_80%_72%,rgba(194,75,43,0.12),transparent_24%)] bg-[length:120px_120px,120px_120px,auto,auto]",
+        "board absolute left-0 top-0 overflow-visible bg-transparent",
         className,
       )}
       style={boardStyle}
     >
-      <div className="pointer-events-none absolute inset-6 border-2 border-dashed border-kac-iron/35" />
       {items.map((item) => (
         <BoardItem
           key={item.id}
           item={item}
           registerItemElement={registerItemElement}
           transitionDurationMs={transitionDurationMs}
+          renderItem={renderItem}
         />
       ))}
     </div>

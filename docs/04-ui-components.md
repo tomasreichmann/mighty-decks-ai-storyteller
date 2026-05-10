@@ -514,6 +514,7 @@ Components:
 - `StyleguideTagsPage`
 - `StyleguideControlsPage`
 - `StyleguideSessionChatPage`
+- `StyleguideTokensPage`
 - `GameCard` (location, encounter, and quest variants, internal)
 - `LocationCard` (styleguide-local image treatment)
 - `EncounterCard` (styleguide-local image treatment)
@@ -534,7 +535,7 @@ Behavior:
 - direct-route accessible but intentionally unlinked from the public app flows
 - `/styleguide` is now the overview and secondary-nav hub for the styleguide labs
 - the overview now reads as a design reference: principles, the complete color-family ledger shown as swatches with hex values, shared-component rules, and component use cases
-- the section nav provides access to `/styleguide/typography`, `/styleguide/labels`, `/styleguide/messages`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
+- the section nav provides access to `/styleguide/typography`, `/styleguide/labels`, `/styleguide/messages`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/tokens`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
 - the cards page is the primary gallery entry point; the detail routes remain direct drill-down pages for internal inspection but are not surfaced in the main styleguide nav
 
 ---
@@ -630,6 +631,23 @@ Behavior:
 
 - isolates the standard and high-emphasis button APIs so contributors can compare size and color behavior without the rest of the styleguide chrome
 - keeps the button family scoped to one page before it is reused in routes or labs
+
+---
+
+### `/styleguide/tokens`
+
+Hidden internal overview for circular table tokens.
+
+Components:
+
+- `StyleguideTokensPage`
+- `Token`
+
+Behavior:
+
+- showcases the shared `Token` primitive across the ten standard color families
+- documents the physical size ladder: `sm` 0.5in, `md` 1in, `lg` 2in, and `xl` 3in
+- shows labeled, image-only, selected, and pinging token states before the primitive is reused in board labs such as `/spaceship`
 
 ---
 
@@ -1042,6 +1060,7 @@ Behavior:
 Located in `apps/web/src/components/common/`:
 
 - `Button` (project variants/sizes; neutral default for standard and grouped actions with the shared `sm`/`md`/`lg` height ladder)
+- `Token` (circular image-backed table marker with the ten standard color families, physical `sm`/`md`/`lg`/`xl` size ladder, non-layout selected ring, and finite or infinite ping animation)
 - `ToggleButton` (straight-edged active/inactive option button for grouped controls using the shared `sm`/`md`/`lg` height ladder)
 - `RockerSwitch` (tilting active/inactive rocker control with optional tucked-under `Label` and the shared `sm`/`md`/`lg` height ladder)
 - `ButtonRadioGroup` (single-select grouped button control built from `ToggleButton` and the shared `sm`/`md`/`lg` height ladder)

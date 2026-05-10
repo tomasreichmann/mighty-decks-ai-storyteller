@@ -21,6 +21,9 @@ import {
 } from "./ActorCardTextWithIcons";
 import { LayeredCard, type LayeredCardProps } from "./LayeredCard";
 
+const customActorAdjectiveLineHeightClassName = "leading-[12px]";
+const customActorAdjectiveMinHeightClassName = "min-h-3";
+
 const renderAction = (
   action: ActorCardAction | undefined,
   actionIndex: number,
@@ -240,11 +243,13 @@ const getCustomLayeredActorCardProps = (
       ) : undefined,
     adjectiveEffect:
       adjectiveDescription.length > 0 ? (
-        <div className={cn("font-semibold", actorBodyLineHeightClassName)}>
+        <div className={cn("font-semibold", customActorAdjectiveLineHeightClassName)}>
           <ActorCardTextWithIcons
             text={adjectiveDescription}
             multiline
-            multilineLineClassName="justify-center"
+            lineHeightClassName={customActorAdjectiveLineHeightClassName}
+            minHeightClassName={customActorAdjectiveMinHeightClassName}
+            multilineLineClassName="min-h-3 justify-center leading-[12px]"
             iconClassName="mx-[-1px]"
           />
         </div>
@@ -252,7 +257,7 @@ const getCustomLayeredActorCardProps = (
     nounEffectClassName:
       "px-2 pb-1 text-[11px] leading-[16px] text-kac-iron-light whitespace-pre-wrap",
     adjectiveEffectClassName:
-      "px-2 text-[11px] leading-[16px] text-kac-iron whitespace-pre-wrap",
+      "px-2 text-[11px] leading-[12px] text-kac-iron whitespace-pre-wrap",
   };
 };
 

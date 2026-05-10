@@ -17,22 +17,13 @@ const effectCardSlugByType: Record<ShipEffectType, string> = {
   injury: "injury",
 };
 
-const effectCardFullHeightRem = 21.16;
-const effectCardHeaderHeightRem = 2.04;
-
-interface ShipEffectCardPileProps {
+interface ShipEffectCardSurfaceProps {
   effectType: ShipEffectType;
-  count: number;
 }
 
-export const ShipEffectCardPile = ({
+export const ShipEffectCardSurface = ({
   effectType,
-  count,
-}: ShipEffectCardPileProps): JSX.Element | null => {
-  if (count <= 0) {
-    return null;
-  }
-
+}: ShipEffectCardSurfaceProps): JSX.Element | null => {
   const resolvedEffectCard = resolveGameCard(
     "EffectCard",
     effectCardSlugByType[effectType],
@@ -42,43 +33,7 @@ export const ShipEffectCardPile = ({
     return null;
   }
 
-  const stackHeightRem =
-    effectCardFullHeightRem +
-    Math.max(count - 1, 0) * effectCardHeaderHeightRem;
-
-  return (
-    <div
-      aria-hidden="true"
-      className="relative flex w-[13rem] min-w-0 max-w-[13rem] shrink-0"
-      style={{
-        height: `${stackHeightRem}rem`,
-      }}
-    >
-      <div
-        className="relative w-full"
-        style={{
-          height: `${stackHeightRem}rem`,
-        }}
-      >
-        {Array.from({ length: count }).map((_, index) => {
-          const stackIndex = count - 1 - index;
-
-          return (
-            <div
-              key={`${effectType}-stack-${index}`}
-              className="absolute inset-x-0"
-              style={{
-                bottom: `${stackIndex * effectCardHeaderHeightRem}rem`,
-                zIndex: index + 1,
-              }}
-            >
-              <GameCardView gameCard={resolvedEffectCard} />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  return <GameCardView gameCard={resolvedEffectCard} />;
 };
 
 export const ShipEffectStack = ({
@@ -97,13 +52,14 @@ export const ShipEffectStack = ({
         className,
       )}
     >
-      {effects.map((effect) => (
-        <ShipEffectCardPile
-          key={effect.effectId}
-          effectType={effect.type}
-          count={effect.count}
-        />
-      ))}
+      {effects.flatMap((effect) =>
+        Array.from({ length: effect.count }, (_, index) => (
+          <ShipEffectCardSurface
+            key={`${effect.effectId}-${index}`}
+            effectType={effect.type}
+          />
+        )),
+      )}
     </div>
   );
 };

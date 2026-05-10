@@ -1,6 +1,7 @@
 import {
   useEffect,
   useRef,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
@@ -11,6 +12,19 @@ interface BoardFrameProps {
   children: ReactNode;
   className?: string;
 }
+
+export const getBoardFrameGridZoom = (zoom: number): number => {
+  if (!Number.isFinite(zoom) || zoom <= 0) {
+    return 1;
+  }
+
+  if (zoom >= 0.5) {
+    return zoom;
+  }
+
+  const magnitude = 2 ** (Math.ceil(-Math.log2(zoom)) - 1);
+  return Number((zoom * magnitude).toPrecision(12));
+};
 
 export const BoardFrame = ({
   children,
@@ -115,6 +129,15 @@ export const BoardFrame = ({
       dragRef.current = null;
     }
   };
+  const gridZoom = getBoardFrameGridZoom(viewport.zoom);
+  const textureSize = 28 * gridZoom;
+  const dotRadius = Math.max(0.7, 1.2 * gridZoom);
+  const dotFadeRadius = Math.max(dotRadius + 0.2, 1.4 * gridZoom);
+  const frameStyle: CSSProperties = {
+    backgroundImage: `radial-gradient(circle at center, rgba(255,249,227,0.42) 0 ${dotRadius}px, transparent ${dotFadeRadius}px)`,
+    backgroundPosition: `${-viewport.x * gridZoom}px ${-viewport.y * gridZoom}px`,
+    backgroundSize: `${textureSize}px ${textureSize}px`,
+  };
 
   return (
     <div
@@ -123,6 +146,7 @@ export const BoardFrame = ({
         "board-frame relative min-h-0 flex-1 touch-none select-none overflow-hidden border-[3px] border-kac-iron bg-kac-cloth-dark shadow-[inset_0_0_0_2px_rgba(255,250,227,0.2),6px_6px_0_0_#121b23]",
         className,
       )}
+      style={frameStyle}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

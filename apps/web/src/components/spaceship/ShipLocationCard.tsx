@@ -5,7 +5,6 @@ import { EnergyToken } from "./EnergyToken";
 import { ShipEffectStack } from "./ShipEffectStack";
 import { AssetCard } from "../cards/AssetCard";
 import { Tag } from "../common/Tag";
-import { Text } from "../common/Text";
 import { LocationCard } from "../styleguide/LocationCard";
 
 interface LevelPillProps {
@@ -58,18 +57,10 @@ interface ShipLocationCardProps {
   location: ShipLocationInstance;
 }
 
-export const ShipLocationCard = ({
+export const ShipLocationCardSurface = ({
   location,
 }: ShipLocationCardProps): JSX.Element => {
   const [level, setLevel] = useState(location.level);
-  const device = location.device;
-  const effectiveDeviceLevel = device
-    ? Math.max(0, device.level - device.damage)
-    : 0;
-  const powerTokens =
-    device && device.powerTokens.length > 0
-      ? device.powerTokens
-      : location.energyTokens;
 
   const decrementLevel = (): void => {
     setLevel((current) => Math.max(1, current - 1));
@@ -80,9 +71,11 @@ export const ShipLocationCard = ({
   };
 
   return (
-    <article data-location-card className="ship-location-card relative w-fit overflow-visible">
-      <div className="relative overflow-visible">
-        <ShipEffectStack effects={location.effects} />
+    <article
+      data-location-card
+      className="ship-location-card-surface relative h-[204px] w-[332px] overflow-visible"
+    >
+      <div className="relative h-full w-full overflow-visible">
         <LocationCard
           imageUrl={location.imageUrl ?? "/sample-scene-image.png"}
           imageAlt={location.title}
@@ -91,83 +84,91 @@ export const ShipLocationCard = ({
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Text
-          variant="note"
-          color="iron-light"
-          className="max-w-[18rem] text-xs !opacity-100"
-        >
-          {location.status}
-        </Text>
-
+      <div className="absolute bottom-2 right-2 z-20 flex justify-end">
         <LevelPill
           level={level}
           onDecrease={decrementLevel}
           onIncrease={incrementLevel}
         />
       </div>
+    </article>
+  );
+};
 
-      {device ? (
-        <div className="grid items-start gap-3 rounded-sm border-2 border-kac-iron/30 bg-kac-bone-light/70 p-2 shadow-[2px_2px_0_0_#121b23] sm:grid-cols-[auto_minmax(0,1fr)]">
-          <div className="origin-top-left scale-[0.72]">
-            <AssetCard
-              kind="custom"
-              deck={device.asset.deck}
-              modifier={device.asset.modifier}
-              noun={device.asset.noun}
-              nounDescription={device.asset.nounDescription}
-              adjectiveDescription={device.asset.adjectiveDescription}
-              iconUrl={device.asset.iconUrl}
-              className="mx-0"
-            />
-          </div>
-          <div className="stack gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Tag tone="cloth" size="sm">
-                Device
-              </Tag>
-              {device.used ? (
-                <Tag tone="blood" size="sm">
-                  Used
-                </Tag>
-              ) : null}
-            </div>
-            <Text variant="emphasised" color="iron" className="text-sm">
-              {device.title}
-            </Text>
-            <Text variant="note" color="iron-light" className="text-xs !opacity-100">
-              Effective lvl {effectiveDeviceLevel} / max Power {device.maxPower}
-            </Text>
-          </div>
-        </div>
-      ) : null}
+export const ShipLocationDeviceCard = ({
+  location,
+}: ShipLocationCardProps): JSX.Element | null => {
+  const device = location.device;
 
-      <div className="flex flex-wrap items-end gap-2">
-        {powerTokens.map((energyToken) => (
-          <EnergyToken
-            key={energyToken.tokenId}
-            label={energyToken.label}
-            detail={energyToken.detail}
-            state={energyToken.state}
-          />
-        ))}
+  if (!device) {
+    return null;
+  }
+
+  return (
+    <div data-device-card className="ship-location-device-card">
+      <AssetCard
+        kind="custom"
+        deck={device.asset.deck}
+        modifier={device.asset.modifier}
+        noun={device.asset.noun}
+        nounDescription={device.asset.nounDescription}
+        adjectiveDescription={device.asset.adjectiveDescription}
+        iconUrl={device.asset.iconUrl}
+        className="mx-0"
+      />
+    </div>
+  );
+};
+
+export const ShipLocationTokenRow = ({
+  location,
+}: ShipLocationCardProps): JSX.Element | null => {
+  const device = location.device;
+  const powerTokens =
+    device && device.powerTokens.length > 0
+      ? device.powerTokens
+      : location.energyTokens;
+
+  if (powerTokens.length === 0 && location.actorTokens.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="ship-location-token-row pointer-events-none flex h-full w-full flex-row flex-wrap items-center justify-center gap-2">
+      {powerTokens.map((energyToken) => (
+        <EnergyToken
+          key={energyToken.tokenId}
+          label={energyToken.label}
+          detail={energyToken.detail}
+          state={energyToken.state}
+        />
+      ))}
+
+      {location.actorTokens.map((actorToken) => (
+        <ActorToken
+          key={actorToken.tokenId}
+          label={actorToken.label}
+          imageUrl={actorToken.imageUrl}
+          tone={actorToken.tone}
+          className="scale-[0.82]"
+        />
+      ))}
+    </div>
+  );
+};
+
+export const ShipLocationCard = ({
+  location,
+}: ShipLocationCardProps): JSX.Element => {
+  return (
+    <article data-location-card className="ship-location-card relative w-fit overflow-visible">
+      <div className="relative overflow-visible">
+        <ShipEffectStack effects={location.effects} />
+        <ShipLocationCardSurface location={location} />
       </div>
 
-      {location.actorTokens.length > 0 ? (
-        <div className="pointer-events-none flex flex-wrap justify-end gap-2">
-          {location.actorTokens.map((actorToken) => (
-            <ActorToken
-              key={actorToken.tokenId}
-              label={actorToken.label}
-              imageUrl={actorToken.imageUrl}
-              title={actorToken.title}
-              subtitle={actorToken.subtitle}
-              tone={actorToken.tone}
-              className="scale-[0.82]"
-            />
-          ))}
-        </div>
-      ) : null}
+      <ShipLocationDeviceCard location={location} />
+      <ShipLocationTokenRow location={location} />
     </article>
   );
 };

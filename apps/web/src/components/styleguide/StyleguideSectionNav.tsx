@@ -28,6 +28,11 @@ const styleguideSectionItems = [
     activePaths: ["/styleguide/buttons"],
   },
   {
+    to: "/styleguide/tokens",
+    label: "Tokens",
+    activePaths: ["/styleguide/tokens", "/styleguide/actor-token"],
+  },
+  {
     to: "/styleguide/panel",
     label: "Panel",
     activePaths: ["/styleguide/panel"],

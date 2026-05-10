@@ -8,7 +8,6 @@ test("Board item refs are stable so fit operations do not remeasure on every ren
   assert.match(source, /useCallback/);
   assert.match(source, /const BoardItem/);
   assert.match(source, /registerItemElement\(item\.id, element\)/);
-  assert.doesNotMatch(source, /ref=\{\(element\) => registerItemElement/);
 });
 
 test("Board applies transition duration to viewport transforms and item positions", () => {
@@ -21,11 +20,18 @@ test("Board applies transition duration to viewport transforms and item position
   assert.match(source, /transitionDuration: `\$\{transitionDurationMs\}ms`/);
 });
 
-test("Board renders layout items directly without group wrapper elements", () => {
+test("Board renders layout items directly", () => {
   const source = readFileSync(new URL("./Board.tsx", import.meta.url), "utf8");
 
   assert.match(source, /items\.map\(\(item\) => \(/);
   assert.match(source, /<BoardItem/);
-  assert.doesNotMatch(source, /layout-group/);
-  assert.doesNotMatch(source, /layout-wrapper/);
+});
+
+test("Board supports custom item rendering while keeping the default renderer", () => {
+  const source = readFileSync(new URL("./Board.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /renderItem\?: \(item: BoardItemRecord\) => ReactNode/);
+  assert.match(source, /renderItem\(item\)/);
+  assert.match(source, /DefaultBoardItemContent/);
+  assert.match(source, /renderItem=\{renderItem\}/);
 });

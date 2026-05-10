@@ -20,8 +20,6 @@ export const SpaceshipPage = (): JSX.Element => {
       <div className="relative z-10 flex w-full flex-col gap-5 px-4 py-6 lg:px-6">
         <SpaceshipBoard
           scene={spaceshipScene}
-          label="Secret Route"
-          note="Static mockup, local state only"
           actionSlot={
             <Button
               aria-label="Open card library"

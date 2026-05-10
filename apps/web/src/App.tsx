@@ -85,6 +85,9 @@ const StyleguideActorTokenPage = lazy(async () => ({
   default: (await import("./routes/StyleguideActorTokenPage"))
     .StyleguideActorTokenPage,
 }));
+const StyleguideTokensPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideTokensPage")).StyleguideTokensPage,
+}));
 const StyleguideIndexPage = lazy(async () => ({
   default: (await import("./routes/StyleguideIndexPage")).StyleguideIndexPage,
 }));
@@ -375,6 +378,14 @@ export const App = (): JSX.Element => {
             element={
               <RouteShellBoundary>
                 <StyleguideActorTokenPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/tokens"
+            element={
+              <RouteShellBoundary>
+                <StyleguideTokensPage />
               </RouteShellBoundary>
             }
           />

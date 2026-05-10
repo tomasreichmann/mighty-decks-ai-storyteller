@@ -8,6 +8,25 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: add selected and finite/infinite ping states to the shared `Token` primitive and surface them in `/styleguide/tokens`.
+- Web: rebuild `/spaceship` actor tokens on the shared image-backed `Token` primitive while preserving centered labels below each portrait.
+- Web: remove the `/spaceship` ship-pane wrapper/glare board items, keep ship content as flat absolute-positioned board items, and normalize Device/Location card footprints while making board-frame dots scale with zoom.
+- Web: render the `/spaceship` Exiles Corvette crew with the authored custom Exiles actor cards and profile portraits instead of generic actor layers.
+- Web: place the updated `/spaceship` Exiles crew tokens on their ship Locations instead of stacking duplicate tokens on actor cards.
+- Web: simplify `/spaceship` actor tokens to show only the character name in the shared `Label` component.
+- Web: replace `/spaceship` Device cards with the generated sci-fi Device Asset cards used by `/rules/ship-combat`.
+- Web: tighten `LayeredCard` and custom `ActorCard` adjective-description line height and allow SVG text overflow so three-line card text fits without clipping.
+- Web: move `/spaceship` actor card rows into the scene-level board column so crew cards no longer overlap ship content.
+- Web: remove `/spaceship` actor callout text from the board so actor rows contain only cards, effect cards, and tokens.
+- Web: split `/spaceship` effect stacks into individual board-positioned effect cards so every visible game card is a board sibling.
+- Web: stack `/spaceship` Location effect cards behind the Location card with headers peeking above the card.
+- Web: include `/spaceship` Location effect headers in Device-to-Location spacing so Devices no longer cover peeking Effect headers.
+- Web: remove the fixed `/spaceship` ship block height so the board column stacks ship and crew blocks using actual layout bounds.
+- Web: shrink `/spaceship` ship title board items so pane focus bounds are no longer widened by invisible header space.
+- Web: wrap the board-frame dot-grid scale below each half-scale zoom level to avoid tiny-pattern rendering artifacts.
+- Web: show the live `/spaceship` board zoom under the Exiles title and remove the Secret Route label plus prototype note panel.
+- Web: move the hidden `/spaceship` visual lab onto the shared board primitives so ships, devices, locations, effects, energy tokens, actor tokens, and actor cards are positioned as flat board items with reusable layout helpers.
+- Web: simplify the hidden `/spaceship` board chrome, add Show All / ally / enemy fit controls, and move the pan/zoom dot-grid texture onto the shared board frame.
 - Server content: switch Exiles actor cards and actor detail images to the cropped profile portraits where available, and align persisted module ownership with the editable test module author.
 - Server: reimport Exiles actors as custom actor cards using their curated portraits, names, summaries, and notes while preserving generic layer settings for editing; player options leave the adjective slot blank.
 - Web: move the actor card generic/custom mode switch into the card settings flow as a shared RockerSwitch and collapse custom actor icon insertion into steel ghost icon-name buttons.
@@ -32,6 +51,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add a `/styleguide/tokens` lab for circular image tokens with the ten standard colors and 0.5in/1in/2in/3in sizes.
 - Web: add a `/board` fan layout helper and demo control for arc-based hand layouts with configurable overlap and arc angle.
 - Web: add `/board` stack, deck, and pile layout helpers plus demo controls for header-peek stacks, compact decks, rotated piles, and token-on-card placement.
 - Web: add pure `/board` flex layout helpers plus controller/browser-global layout APIs for absolute-positioned item placement and smooth layout transitions.

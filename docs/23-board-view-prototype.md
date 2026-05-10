@@ -4,6 +4,13 @@ The hidden `/board` route is a frontend-local lab for a reusable tabletop board
 viewer. It is not connected to adventure sessions, campaign state, Socket.IO, or
 server persistence.
 
+The hidden `/spaceship` visual lab consumes the same board primitives for a real
+prototype surface: ship metadata, Devices, Location cards, effect cards, token
+rows, actor cards, and actor consequence cards are
+all direct board items placed by pure layout helpers. Its route adds `Show All`,
+`Focus Ally Ship`, and `Focus Enemy Ship` controls that call the board fit APIs
+with pane-specific item IDs.
+
 ## Purpose
 
 - Show a large virtual board inside a full-screen frame.
@@ -62,7 +69,9 @@ single controller dispatch path.
 Board layouts are pure calculations over item boxes. They do not create React
 components, wrapper elements, or grouped DOM nodes. The rendered board keeps
 items as direct absolutely positioned children so later dragging and animated
-movement between layouts can update item `x`/`y` positions directly.
+movement between layouts can update item `x`/`y` positions directly. The board
+surface itself is transparent and `overflow-visible`; frame clipping remains the
+viewport boundary.
 
 The first helper is `flexLayout`, a CSS-flex-inspired row/column layout:
 
@@ -98,6 +107,17 @@ another layout calculation. The final result is still a flat list of item
 placements, not a DOM hierarchy.
 
 Future layout helpers should use the same box/result/apply model.
+
+The spaceship board layout follows that model by composing nested `flexLayout`
+and `stackLayout` results, then flattening them into direct item placements.
+Those exact coordinates are not a stable contract; use behavior-level tests for
+item creation and focus helper APIs rather than locking card positions.
+
+The frame owns the dot-grid texture. Its background position and size are driven
+from the current viewport so the grid pans and zooms with user actions while
+remaining visible behind transparent board content. Below each half-scale zoom
+level, such as 50%, 25%, and 12.5%, the grid scale wraps back into a readable
+range so zoomed-out views do not collapse the pattern into rendering artifacts.
 
 ## Smooth Transitions
 

@@ -8,6 +8,7 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /SpaceshipPage/);
   assert.match(source, /StyleguideIndexPage/);
   assert.match(source, /StyleguideActorTokenPage/);
+  assert.match(source, /StyleguideTokensPage/);
   assert.match(source, /StyleguideTypographyPage/);
   assert.match(source, /StyleguideInputsPage/);
   assert.match(source, /StyleguideLoadingPage/);
@@ -28,6 +29,7 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(source, /path="\/spaceship"/);
   assert.match(source, /path="\/styleguide"/);
   assert.match(source, /path="\/styleguide\/actor-token"/);
+  assert.match(source, /path="\/styleguide\/tokens"/);
   assert.match(source, /path="\/styleguide\/typography"/);
   assert.match(source, /path="\/styleguide\/inputs"/);
   assert.match(source, /path="\/styleguide\/loading"/);
@@ -57,6 +59,10 @@ test("App registers the hidden styleguide routes", () => {
   assert.match(
     source,
     /path="\/styleguide\/actor-token"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideActorTokenPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/styleguide\/tokens"[\s\S]*<RouteShellBoundary>[\s\S]*<StyleguideTokensPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,

@@ -132,6 +132,25 @@ h6 {
   line-height: 1.05;
   letter-spacing: 0.015em;
 }
+
+.animate-token-ping {
+  animation: token-ping 1.4s ease-out;
+  animation-iteration-count: var(--token-ping-count, 1);
+  will-change: opacity, transform;
+}
+
+@keyframes token-ping {
+  from {
+    opacity: 0.38;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
 .paper-shadow {
   position: relative;
 }

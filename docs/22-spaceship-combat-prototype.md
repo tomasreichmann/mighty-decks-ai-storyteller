@@ -44,7 +44,9 @@ tokens, actor/minis tokens, and status/effect cards.
 
 - `/spaceship`
   - hidden route
-  - full-screen, no-header shell with vertical scrolling so wrapped panes stay reachable
+  - full-screen, no-header shell with a shared pan/zoom board frame
+  - page chrome and card-library overlay stay outside the board; scene content is board-positioned
+  - has `Show All`, `Focus Ally Ship`, and `Focus Enemy Ship` controls that fit the viewport to current board items
   - local seeded scene state only
 - `/rules/ship-combat`
   - Rules tab
@@ -77,11 +79,11 @@ is reachable through the Rules tab navigation.
 | [Weapon ][Missile]                   | [Spin   ][Engine][Reactor]                |
 |                                      | [Shield ][Weapon][Cockpit]                |
 | [Effect stacks above top row]        | [Effect stacks above top row]             |
-| [Effect stacks below bottom row]     | [Effect stacks below bottom row]          |
+| [Effect headers above Locations]     | [Effect headers above Locations]          |
 | [Actor tokens and energy tokens]     | [Actor tokens and energy tokens]          |
 |                                      |                                            |
 | Actor cards with Injury/Distress     | Actor cards with Injury/Distress          |
-| peeking effect stacks along bottom   | peeking effect stacks along bottom        |
+| peeking effect headers along top     | peeking effect headers along top          |
 +--------------------------------------+--------------------------------------------+
 ```
 
@@ -135,23 +137,31 @@ shared `LocationCard` component while rendering effects with the shared
   - labels custom Device cards with the `sci-fi` deck instead of the generic `custom` deck
   - renders Special Location reference panels with the shared `LocationCard` component and tracked `/api/adventure-artifacts/*` images
 - `SpaceshipBoard`
-  - shared board header and two-pane ship layout used by the hidden `/spaceship` visual lab
-- `ShipPane`
-  - renders one ship side
-  - owns row grouping and actor-strip placement
+  - wraps the seeded scene in `BoardProvider`, `BoardFrame`, and custom-rendered `Board` items
+  - builds flat board entries for ship headers, Devices, Location cards, individual effect cards, token rows, and actor cards
+  - applies pure spaceship board layout helpers on mount, then fits all items into the board frame
+  - keeps route-level controls outside the board transform while the board frame handles pan/zoom and fit actions
+- Spaceship board layout helpers
+  - compose existing `flexLayout` and `stackLayout` helpers into ship-level board placements
+  - place ship, crew, ship, and crew blocks in the scene-level flex column using each block's actual layout bounds, with locations in flex rows, Devices above Locations, effect headers peeking above Locations, and token rows centered over Location cards
+  - place actor effect cards and actor cards as separate board items inside each actor row, with each effect card tucked behind the card top using the shared header offset
+  - keep ship title items compact so focus bounds follow visible content instead of invisible pane width
 
 ### Card and token primitives
 
 - `ShipLocationCard`
-  - renders a single ship location around the shared `LocationCard`
-  - shows an adjustable `Tag`-based level pill, status, effect stacks, tokens, actor markers, and an attached custom `AssetCard` Device
+  - still offers the old composed local preview, but also exports split board surfaces for the shared board
+  - `ShipLocationCardSurface` renders the shared `LocationCard` and adjustable `Tag`-based level pill
+  - `ShipLocationDeviceCard` renders the attached custom `AssetCard` Device as an independent board item using the same generated sci-fi Device cards as `/rules/ship-combat`
+  - `ShipLocationTokenRow` renders energy and actor tokens as an independent board item centered over the Location card
   - consumes `moduleLocationSlug` so scene items stay aligned with imported module locations
 - `ShipEffectStack`
   - renders full-size stacked effect cards
   - always stacks upward, regardless of location row
 - `ActorToken`
-  - circular portrait token with label and optional subtitle
-  - reused in the scene and in `/styleguide/actor-token`
+  - spaceship wrapper around the shared `Token` primitive
+  - renders a circular portrait token with a centered label below the portrait
+  - reused in the scene and in `/styleguide/tokens`
 - `EnergyToken`
   - circular Power token for current energy assignment
   - supports `active` and `spent` visual states
@@ -160,7 +170,8 @@ shared `LocationCard` component while rendering effects with the shared
   - generated on solid chroma backgrounds, then processed into real alpha PNGs with transparent corners
   - source chroma-key generations are archived under `apps/server/output/adventure-artifacts/device-icon-sources/`
 - `SpaceshipActorStrip`
-  - renders actor cards anchored to the bottom of a pane
+  - renders actor cards in the legacy composed preview and exports split actor effect/card surfaces for board-positioned actor items
+  - renders the Exiles Corvette crew from the authored custom Exiles actor card metadata, reusing those profile portraits for the crew tokens while leaving enemy crew on generic actor layers
   - shows full-size Injury and Distress stacks using shared `EffectCard` piles
     and the same upward overlap logic as the session-table card stacks
   - centers the effect piles behind the actor column so the visible peeks stay
@@ -230,10 +241,10 @@ The current seeded data already includes `lastTouchedOrder` and `moduleLocationS
 - Cards and tokens are separate visual bands.
 - Tokens always render above cards.
 - Within a band, the most recently dragged item wins z-order.
-- Effect stacks stay attached to their owning location or actor card; they do not float independently in milestone 1.
-- Top-row locations show effect stacks above the card.
-- Bottom-row locations show effect stacks below the card.
-- Actor-card Injury and Distress stacks sit centered behind the actor card with only the top edge visible.
+- Effect stacks render as independent board items, but their positions are derived from their owning location.
+- Location effect cards sit behind the Location card and peek above it using a header offset.
+- Actor tokens render in Location token rows, and each actor-card Injury or Distress card sits as its own board item centered behind the actor card with the top header offset visible.
+- Current card positions are prototype layout behavior, not a public contract; tests should cover helper/API behavior instead of exact coordinates.
 
 This mirrors the intended combat board rules without implementing interaction yet.
 

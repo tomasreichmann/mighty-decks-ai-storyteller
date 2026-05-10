@@ -22,8 +22,8 @@ export const StyleguideActorTokenPage = (): JSX.Element => {
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
           Circular tactical portrait token for ship-board positioning. It keeps
-          the comic border language while leaving enough room for a label and
-          short room-status caption below the portrait.
+          the comic border language while keeping the character name readable
+          below the portrait.
         </Text>
       </div>
 
@@ -35,22 +35,16 @@ export const StyleguideActorTokenPage = (): JSX.Element => {
           <ActorToken
             label="Void-seer"
             imageUrl="/actors/base/manipulator.png"
-            title="Sensor Array"
-            subtitle="Surveying"
             tone="cloth"
           />
           <ActorToken
             label="Medic"
             imageUrl="/actors/base/healer.png"
-            title="Life Support"
-            subtitle="Repressurizing"
             tone="monster"
           />
           <ActorToken
             label="Raider"
             imageUrl="/actors/base/animal-red.png"
-            title="Weapons"
-            subtitle="Target lock"
             tone="blood"
           />
         </div>

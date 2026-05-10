@@ -71,7 +71,7 @@ const SvgHtmlText = ({
   children,
 }: SvgHtmlTextProps): JSX.Element => {
   return (
-    <foreignObject x={x} y={y} width={width} height={height}>
+    <foreignObject x={x} y={y} width={width} height={height} style={{ overflow: "visible" }}>
       <div
         className={cn(
           "flex h-full w-full items-center justify-center text-kac-iron-light",
@@ -131,7 +131,7 @@ const AutoFitSvgText = ({
   }, [children, fontSizePx, minFontSizePx]);
 
   return (
-    <foreignObject x={x} y={y} width={width} height={height}>
+    <foreignObject x={x} y={y} width={width} height={height} style={{ overflow: "visible" }}>
       <div
         ref={outerRef}
         className={cn(
@@ -408,7 +408,7 @@ export const LayeredCard = ({
           width={172}
           height={38}
           className={cn(
-            "px-2 text-[11px] leading-[1.2] text-kac-iron whitespace-pre-wrap",
+            "px-2 text-[11px] leading-[1.08] text-kac-iron whitespace-pre-wrap",
             adjectiveEffectClassName,
           )}
         >

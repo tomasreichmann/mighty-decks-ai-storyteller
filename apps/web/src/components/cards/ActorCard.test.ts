@@ -30,6 +30,17 @@ test("ActorCard supports custom actor card props and shared icon-token rendering
   assert.match(source, /adjectiveDescription/);
 });
 
+test("ActorCard keeps custom adjective descriptions compact enough for three lines", () => {
+  const source = readFileSync(new URL("./ActorCard.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /customActorAdjectiveLineHeightClassName/);
+  assert.match(source, /multilineLineClassName="min-h-3 justify-center leading-\[12px\]"/);
+  assert.match(
+    source,
+    /adjectiveEffectClassName:\s*[\s\S]*px-2 text-\[11px\] leading-\[12px\] text-kac-iron whitespace-pre-wrap/,
+  );
+});
+
 test("ActorCardTextWithIcons can center multiline card rows", () => {
   const source = readFileSync(
     new URL("./ActorCardTextWithIcons.tsx", import.meta.url),
@@ -37,7 +48,8 @@ test("ActorCardTextWithIcons can center multiline card rows", () => {
   );
 
   assert.match(source, /multilineLineClassName/);
-  assert.match(source, /"flex min-h-4 flex-wrap items-center"/);
+  assert.match(source, /minHeightClassName = "min-h-4"/);
+  assert.match(source, /"flex flex-wrap items-center"/);
 });
 
 test("ActorCardTextWithIcons keeps icon tokens in inline text flow", () => {

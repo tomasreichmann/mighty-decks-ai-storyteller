@@ -24,3 +24,27 @@ test("LayeredCard auto-fits title text inside fixed SVG title boxes", () => {
   assert.match(source, /minFontSizePx/);
   assert.match(source, /height={nounBoxHeight}/);
 });
+
+test("LayeredCard keeps adjective description line height compact for three-line text", () => {
+  const source = readFileSync(
+    new URL("./LayeredCard.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(
+    source,
+    /"px-2 text-\[11px\] leading-\[1\.08\] text-kac-iron whitespace-pre-wrap"/,
+  );
+});
+
+test("LayeredCard lets SVG HTML text overflow its foreignObject ancestor", () => {
+  const source = readFileSync(
+    new URL("./LayeredCard.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(
+    source,
+    /const SvgHtmlText = \(\{[\s\S]*?<foreignObject x=\{x\} y=\{y\} width=\{width\} height=\{height\} style=\{\{ overflow: "visible" \}\}>/,
+  );
+});

@@ -58,6 +58,14 @@ export interface ActorTokenModel {
   locationId?: string;
 }
 
+export interface ShipActorCustomCardModel {
+  imageUrl: string;
+  adjective: string;
+  noun: string;
+  nounDescription: string;
+  adjectiveDescription: string;
+}
+
 export interface EnergyTokenModel {
   tokenId: string;
   label: string;
@@ -111,6 +119,7 @@ export interface ShipActorInstance {
   callout: string;
   baseLayerSlug: ActorBaseLayerSlug;
   tacticalRoleSlug: ActorTacticalRoleSlug;
+  customCard?: ShipActorCustomCardModel;
   token: ActorTokenModel;
   injuryCount: number;
   distressCount: number;

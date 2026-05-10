@@ -4,6 +4,8 @@ import { cn } from "../../utils/cn";
 interface ActorCardTextWithIconsProps {
   text: string;
   iconClassName?: string;
+  lineHeightClassName?: string;
+  minHeightClassName?: string;
   multiline?: boolean;
   multilineLineClassName?: string;
 }
@@ -17,6 +19,8 @@ export const actorIconTextClassName = `inline min-h-4 align-middle ${actorBodyLi
 export const ActorCardTextWithIcons = ({
   text,
   iconClassName,
+  lineHeightClassName = actorBodyLineHeightClassName,
+  minHeightClassName = "min-h-4",
   multiline = false,
   multilineLineClassName,
 }: ActorCardTextWithIconsProps): JSX.Element => {
@@ -32,8 +36,9 @@ export const ActorCardTextWithIcons = ({
             <span
               key={`${lineIndex}-${fragmentIndex}`}
               className={cn(
-                "inline min-h-4 align-middle",
-                actorBodyLineHeightClassName,
+                "inline align-middle",
+                minHeightClassName,
+                lineHeightClassName,
               )}
             >
               {fragment}
@@ -48,8 +53,9 @@ export const ActorCardTextWithIcons = ({
             <span
               key={`${lineIndex}-${fragmentIndex}`}
               className={cn(
-                "inline min-h-4 align-middle",
-                actorBodyLineHeightClassName,
+                "inline align-middle",
+                minHeightClassName,
+                lineHeightClassName,
               )}
             >
               {fragment}
@@ -62,7 +68,7 @@ export const ActorCardTextWithIcons = ({
             key={`${lineIndex}-${fragmentIndex}`}
             className={cn(
               "inline-flex h-4 items-center align-middle whitespace-nowrap",
-              actorBodyLineHeightClassName,
+              lineHeightClassName,
             )}
           >
             {Array.from({ length: iconCount }).map((_, iconIndex) => (
@@ -91,13 +97,14 @@ export const ActorCardTextWithIcons = ({
           <span
             key={lineIndex}
             className={cn(
-              "flex min-h-4 flex-wrap items-center",
-              actorBodyLineHeightClassName,
+              "flex flex-wrap items-center",
+              minHeightClassName,
+              lineHeightClassName,
               multilineLineClassName,
             )}
           >
             {line.length > 0 ? (
-              <span className={cn(actorIconTextClassName)}>
+              <span className={cn("inline align-middle", minHeightClassName, lineHeightClassName)}>
                 {renderFragments(line, lineIndex)}
               </span>
             ) : (
