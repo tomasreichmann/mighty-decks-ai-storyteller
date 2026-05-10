@@ -42,6 +42,21 @@ test("SpaceshipBoard exposes fit controls for all, ally, and enemy board content
   assert.match(source, /controller\.fitItems/);
 });
 
+test("SpaceshipBoard keeps fit controls in the same header action row as the action slot", () => {
+  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /SpaceshipBoardHeader[\s\S]*<SpaceshipBoardControls scene=\{scene\} \/>[\s\S]*\{actionSlot/);
+  assert.match(source, /bg-\[linear-gradient\(180deg,rgba\(18,27,35,0\.72\)_0%,rgba\(18,27,35,0\)_100%\)\]/);
+  assert.doesNotMatch(source, /<SpaceshipBoardControls scene=\{scene\} \/>\s*<BoardFrame/);
+});
+
+test("SpaceshipBoard renders a square flush board frame", () => {
+  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /BoardFrame className="min-h-0 rounded-none border-0 bg-\[#121b23\] shadow-none absolute inset-0"/);
+  assert.doesNotMatch(source, /rounded-\[1\.25rem\]/);
+});
+
 test("SpaceshipBoard shows the live board zoom in the header", () => {
   const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
 

@@ -191,7 +191,7 @@ const SpaceshipBoardHeader = ({
   const zoomPercent = Math.round(viewport.zoom * 100);
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="spaceship-board-header pointer-events-none absolute left-0 right-0 top-0 z-20 flex flex-wrap items-start justify-between gap-4 bg-[linear-gradient(180deg,rgba(18,27,35,0.72)_0%,rgba(18,27,35,0)_100%)] p-4">
       <div className="stack gap-2">
         <Text variant="h2" color="steel-light" className="text-[2.2rem]">
           {scene.title}
@@ -201,7 +201,10 @@ const SpaceshipBoardHeader = ({
         </Text>
       </div>
 
-      {actionSlot ? <div className="flex items-center gap-3">{actionSlot}</div> : null}
+      <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+        <SpaceshipBoardControls scene={scene} />
+        {actionSlot}
+      </div>
     </div>
   );
 };
@@ -216,14 +219,13 @@ export const SpaceshipBoard = ({
   return (
     <div
       className={cn(
-        "spaceship-board flex h-[calc(100vh-3rem)] min-h-[48rem] w-full flex-col gap-5",
+        "spaceship-board relative h-screen w-full overflow-hidden",
         className,
       )}
     >
       <BoardProvider boardSize={spaceshipBoardSize} initialItems={initialItems}>
         <SpaceshipBoardHeader scene={scene} actionSlot={actionSlot} />
-        <SpaceshipBoardControls scene={scene} />
-        <BoardFrame className="min-h-0 rounded-[1.25rem] border-0 bg-[#121b23] shadow-none">
+        <BoardFrame className="min-h-0 rounded-none border-0 bg-[#121b23] shadow-none absolute inset-0">
           <SpaceshipBoardCanvas scene={scene} />
         </BoardFrame>
       </BoardProvider>

@@ -6,10 +6,10 @@ server persistence.
 
 The hidden `/spaceship` visual lab consumes the same board primitives for a real
 prototype surface: ship metadata, Devices, Location cards, effect cards, token
-rows, actor cards, and actor consequence cards are
-all direct board items placed by pure layout helpers. Its route adds `Show All`,
-`Focus Ally Ship`, and `Focus Enemy Ship` controls that call the board fit APIs
-with pane-specific item IDs.
+rows, actor cards, and actor consequence cards are all direct board items placed
+by pure layout helpers. Its route keeps `Show All`, `Focus Ally Ship`, `Focus
+Enemy Ship`, and the card-library `+` action in one overlay header row above a
+square board frame that fills the viewport.
 
 ## Purpose
 
@@ -110,6 +110,8 @@ Future layout helpers should use the same box/result/apply model.
 
 The spaceship board layout follows that model by composing nested `flexLayout`
 and `stackLayout` results, then flattening them into direct item placements.
+Location rows bottom-align their Location cards, while Location effect cards
+align behind the owning Location's bottom edge and stack upward from there.
 Those exact coordinates are not a stable contract; use behavior-level tests for
 item creation and focus helper APIs rather than locking card positions.
 

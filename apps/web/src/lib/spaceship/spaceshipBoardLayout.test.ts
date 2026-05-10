@@ -205,7 +205,7 @@ test("createSpaceshipBoardLayout puts actor effects behind the actor card with t
   assert.ok((distress.zIndex ?? 0) < (card.zIndex ?? 0));
 });
 
-test("createSpaceshipBoardLayout stacks location effects as individual board cards", () => {
+test("createSpaceshipBoardLayout stacks location effects from the Location bottom", () => {
   const scene = structuredClone(spaceshipScene);
   const reactor = scene.panes[0].locations.find(
     (location) => location.locationId === "player-reactor",
@@ -244,10 +244,32 @@ test("createSpaceshipBoardLayout stacks location effects as individual board car
   assert.ok(firstEffect.y >= device.y + device.height + 10);
   assert.equal(firstEffect.x + firstEffect.width / 2, location.x + location.width / 2);
   assert.equal(secondEffect.x, firstEffect.x);
-  assert.equal(firstEffect.y, location.y - 36);
+  assert.equal(firstEffect.y + firstEffect.height, location.y + location.height);
   assert.equal(secondEffect.y, firstEffect.y - 36);
-  assert.ok(firstEffect.y + firstEffect.height > location.y);
+  assert.ok(firstEffect.y < location.y);
   assert.ok((firstEffect.zIndex ?? 0) > (secondEffect.zIndex ?? 0));
   assert.ok((firstEffect.zIndex ?? 0) < (location.zIndex ?? 0));
   assert.ok((secondEffect.zIndex ?? 0) < (location.zIndex ?? 0));
+});
+
+test("createSpaceshipBoardLayout bottom-aligns Location cards within each location row", () => {
+  const layout = createSpaceshipBoardLayout(spaceshipScene);
+  const placementsById = new Map(
+    layout.placements.map((placement) => [placement.id, placement]),
+  );
+  const playerTopLocationIds = [
+    "player-docking-bay",
+    "player-reactor",
+    "player-engines",
+    "player-spin-drive",
+    "player-weapon-station",
+    "player-missile-bay",
+  ];
+  const bottoms = playerTopLocationIds.map((locationId) => {
+    const placement = placementsById.get(spaceshipBoardItemId.location(locationId));
+    assert.ok(placement, `${locationId} should be placed`);
+    return placement.y + placement.height;
+  });
+
+  assert.equal(new Set(bottoms).size, 1);
 });

@@ -46,7 +46,7 @@ const exilesActorCards = {
   },
 } satisfies Record<string, ShipActorCustomCardModel>;
 
-const deviceByLocationType: Record<
+const deviceByLocationType: Partial<Record<
   ShipLocationType,
   {
     title: string;
@@ -59,7 +59,7 @@ const deviceByLocationType: Record<
     used?: boolean;
     damage?: number;
   }
-> = {
+>> = {
   cockpit: {
     title: "Flight Controls",
     type: "flight-controls",
@@ -92,24 +92,6 @@ const deviceByLocationType: Record<
     nounDescription: "Ship power heart for routing Power, overrides, and risky cascade choices.",
     adjectiveDescription: "A custom ship Device Asset card for the ship-combat prototype.",
     iconUrl: "/assets/spaceship/devices/reactor-device.png",
-  },
-  "docking-bay": {
-    title: "Docking Clamps",
-    type: "support",
-    modifier: "",
-    nounDescription: "Hard-lock support system for shuttles, boarding craft, and cargo traffic.",
-    adjectiveDescription: "A custom ship Device Asset card for the ship-combat prototype.",
-    iconUrl: "/assets/spaceship/devices/flight-controls-device.png",
-    maxPower: 0,
-  },
-  "cargo-hold": {
-    title: "Cargo Rig",
-    type: "support",
-    modifier: "",
-    nounDescription: "Cargo support station for salvage cages, crates, and loose mass handling.",
-    adjectiveDescription: "A custom ship Device Asset card for the ship-combat prototype.",
-    iconUrl: "/assets/spaceship/devices/workbench-device.png",
-    maxPower: 0,
   },
   "medical-bay": {
     title: "Med Bay",
@@ -179,22 +161,13 @@ const deviceByLocationType: Record<
     used: true,
     damage: 1,
   },
-  "sealed-corridor": {
+  "crew-quarters": {
     title: "Workbench",
     type: "workbench",
     modifier: "",
     nounDescription: "Repair and fabrication station for specialized shipboard crafting.",
     adjectiveDescription: "A custom ship Device Asset card for the ship-combat prototype.",
     iconUrl: "/assets/spaceship/devices/workbench-device.png",
-    maxPower: 0,
-  },
-  "crew-quarters": {
-    title: "Crew Quarters",
-    type: "support",
-    modifier: "",
-    nounDescription: "Crew comfort support station for rest, morale, and fatigue pressure.",
-    adjectiveDescription: "A custom ship Device Asset card for the ship-combat prototype.",
-    iconUrl: "/assets/spaceship/devices/life-support-device.png",
     maxPower: 0,
   },
 };
@@ -204,8 +177,12 @@ const createDeviceForLocation = (
     ShipLocationInstance,
     "locationId" | "locationType" | "level" | "energyTokens"
   >,
-): ShipDeviceInstance => {
+): ShipDeviceInstance | undefined => {
   const template = deviceByLocationType[location.locationType];
+  if (!template) {
+    return undefined;
+  }
+
   const maxPower = template.maxPower ?? location.level;
   const powerTokens: EnergyTokenModel[] = location.energyTokens.map((token) => ({
     ...token,

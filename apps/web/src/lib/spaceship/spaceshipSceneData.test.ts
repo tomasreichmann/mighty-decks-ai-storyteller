@@ -70,3 +70,20 @@ test("spaceshipScene uses the generated rules device cards for ship Devices", ()
     "/assets/spaceship/devices/workbench-device.png",
   );
 });
+
+test("spaceshipScene keeps support-only rooms free of removed Devices", () => {
+  const locations = spaceshipScene.panes.flatMap((pane) => pane.locations);
+  const devices = locations.flatMap((location) => (location.device ? [location.device] : []));
+  const deviceTitles = devices.map((device) => device.title);
+  const locationById = new Map(locations.map((location) => [location.locationId, location]));
+
+  assert.equal(locationById.get("player-docking-bay")?.device, undefined);
+  assert.equal(locationById.get("pirate-docking-bay")?.device, undefined);
+  assert.equal(locationById.get("player-cargo-hold")?.device, undefined);
+  assert.equal(locationById.get("pirate-cargo-hold")?.device, undefined);
+  assert.equal(locationById.get("player-sealed-corridor")?.device, undefined);
+  assert.equal(locationById.get("player-crew-quarters")?.device?.title, "Workbench");
+  assert.ok(!deviceTitles.includes("Docking Clamps"));
+  assert.ok(!deviceTitles.includes("Cargo Rig"));
+  assert.ok(!deviceTitles.includes("Crew Quarters"));
+});

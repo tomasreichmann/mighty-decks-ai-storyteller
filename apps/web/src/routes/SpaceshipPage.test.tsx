@@ -13,7 +13,9 @@ test("SpaceshipPage composes the absolute-positioned board and card library over
   assert.match(source, /scene=\{spaceshipScene\}/);
   assert.match(source, /toggleCardLibraryOpen/);
   assert.match(source, /toggleCardLibraryEntrySelection/);
-  assert.match(source, /relative z-10 flex w-full flex-col gap-5/);
+  assert.match(source, /relative z-10 flex h-screen w-full flex-col/);
+  assert.doesNotMatch(source, /px-4 py-6/);
+  assert.doesNotMatch(source, /lg:px-6/);
 });
 
 test("SpaceshipPage starts from a closed overlay state helper", () => {

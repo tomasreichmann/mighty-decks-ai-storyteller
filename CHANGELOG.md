@@ -8,6 +8,12 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: remove extra horizontal padding from the shared `Tag` leading slot so embedded controls align tightly.
+- Web: move the `/spaceship` Location level control beside the top-right Location symbol and keep its +/- buttons interactive over the board.
+- Web: bottom-align `/spaceship` Location cards within each row so rooms without Devices line up with rooms that have Devices or Effects.
+- Web: align `/spaceship` Location effect cards to the bottom of their Location cards while preserving upward stack offsets.
+- Web: remove `/spaceship` Docking Clamps and Cargo Rig devices, and move the Workbench device to Crew Quarters.
+- Web: merge `/spaceship` fit controls into the header action row and make the board frame square and flush to the viewport.
 - Web: add selected and finite/infinite ping states to the shared `Token` primitive and surface them in `/styleguide/tokens`.
 - Web: rebuild `/spaceship` actor tokens on the shared image-backed `Token` primitive while preserving centered labels below each portrait.
 - Web: remove the `/spaceship` ship-pane wrapper/glare board items, keep ship content as flat absolute-positioned board items, and normalize Device/Location card footprints while making board-frame dots scale with zoom.

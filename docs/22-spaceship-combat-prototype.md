@@ -45,7 +45,8 @@ tokens, actor/minis tokens, and status/effect cards.
 - `/spaceship`
   - hidden route
   - full-screen, no-header shell with a shared pan/zoom board frame
-  - page chrome and card-library overlay stay outside the board; scene content is board-positioned
+  - page chrome overlays the board in one header action row; scene content is board-positioned
+  - the board frame is square, unrounded, and flush to the viewport edges
   - has `Show All`, `Focus Ally Ship`, and `Focus Enemy Ship` controls that fit the viewport to current board items
   - local seeded scene state only
 - `/rules/ship-combat`
@@ -78,8 +79,8 @@ is reachable through the Rules tab navigation.
 | [Docking][Reactor][Engines][Spin]    | [Docking][Cargo][Quarters]                |
 | [Weapon ][Missile]                   | [Spin   ][Engine][Reactor]                |
 |                                      | [Shield ][Weapon][Cockpit]                |
-| [Effect stacks above top row]        | [Effect stacks above top row]             |
-| [Effect headers above Locations]     | [Effect headers above Locations]          |
+| [Effect stacks bottom-aligned]       | [Effect stacks bottom-aligned]            |
+| [Effect cards behind Locations]      | [Effect cards behind Locations]           |
 | [Actor tokens and energy tokens]     | [Actor tokens and energy tokens]          |
 |                                      |                                            |
 | Actor cards with Injury/Distress     | Actor cards with Injury/Distress          |
@@ -143,7 +144,7 @@ shared `LocationCard` component while rendering effects with the shared
   - keeps route-level controls outside the board transform while the board frame handles pan/zoom and fit actions
 - Spaceship board layout helpers
   - compose existing `flexLayout` and `stackLayout` helpers into ship-level board placements
-  - place ship, crew, ship, and crew blocks in the scene-level flex column using each block's actual layout bounds, with locations in flex rows, Devices above Locations, effect headers peeking above Locations, and token rows centered over Location cards
+  - place ship, crew, ship, and crew blocks in the scene-level flex column using each block's actual layout bounds, with bottom-aligned locations in flex rows, Devices above Locations, Location effect cards bottom-aligned behind their Location cards, and token rows centered over Location cards
   - place actor effect cards and actor cards as separate board items inside each actor row, with each effect card tucked behind the card top using the shared header offset
   - keep ship title items compact so focus bounds follow visible content instead of invisible pane width
 
@@ -151,7 +152,7 @@ shared `LocationCard` component while rendering effects with the shared
 
 - `ShipLocationCard`
   - still offers the old composed local preview, but also exports split board surfaces for the shared board
-  - `ShipLocationCardSurface` renders the shared `LocationCard` and adjustable `Tag`-based level pill
+  - `ShipLocationCardSurface` renders the shared `LocationCard` and adjustable `Tag`-based level pill beside the top-right Location symbol
   - `ShipLocationDeviceCard` renders the attached custom `AssetCard` Device as an independent board item using the same generated sci-fi Device cards as `/rules/ship-combat`
   - `ShipLocationTokenRow` renders energy and actor tokens as an independent board item centered over the Location card
   - consumes `moduleLocationSlug` so scene items stay aligned with imported module locations
@@ -242,7 +243,7 @@ The current seeded data already includes `lastTouchedOrder` and `moduleLocationS
 - Tokens always render above cards.
 - Within a band, the most recently dragged item wins z-order.
 - Effect stacks render as independent board items, but their positions are derived from their owning location.
-- Location effect cards sit behind the Location card and peek above it using a header offset.
+- Location effect cards sit behind the Location card, align to the Location bottom edge, and keep each subsequent card offset upward by the shared header offset.
 - Actor tokens render in Location token rows, and each actor-card Injury or Distress card sits as its own board item centered behind the actor card with the top header offset visible.
 - Current card positions are prototype layout behavior, not a public contract; tests should cover helper/API behavior instead of exact coordinates.
 

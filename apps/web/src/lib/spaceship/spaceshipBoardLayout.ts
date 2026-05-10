@@ -160,9 +160,14 @@ const locationGroupLayout = (
       index,
     })),
   );
-  const effectTopOffset = effectCards.length * effectHeaderOffset;
+  const effectTopClearance =
+    effectCards.length > 0
+      ? effectCardHeight -
+        locationHeight +
+        (effectCards.length - 1) * effectHeaderOffset
+      : 0;
   const yOffset =
-    (location.device ? deviceHeight + deviceGap : 0) + effectTopOffset;
+    (location.device ? deviceHeight + deviceGap : 0) + effectTopClearance;
   const placements = [];
 
   if (location.device) {
@@ -180,7 +185,11 @@ const locationGroupLayout = (
     placements.push({
       id: spaceshipBoardItemId.effectCard(effect.effectId, index),
       x: (locationWidth - effectCardWidth) / 2,
-      y: yOffset - (stackIndex + 1) * effectHeaderOffset,
+      y:
+        yOffset +
+        locationHeight -
+        effectCardHeight -
+        stackIndex * effectHeaderOffset,
       width: effectCardWidth,
       height: effectCardHeight,
       zIndex: 10 + effectCards.length - stackIndex - 1,
@@ -221,14 +230,17 @@ const locationGroupLayout = (
   const boundsTop = Math.min(
     0,
     effectCards.length > 0
-      ? yOffset - effectCards.length * effectHeaderOffset
+      ? yOffset +
+        locationHeight -
+        effectCardHeight -
+        (effectCards.length - 1) * effectHeaderOffset
       : 0,
   );
   const boundsBottom = Math.max(
     yOffset + locationHeight,
     ...effectCards.map(
       (_, stackIndex) =>
-        yOffset - (stackIndex + 1) * effectHeaderOffset + effectCardHeight,
+        yOffset + locationHeight - stackIndex * effectHeaderOffset,
     ),
   );
 
@@ -245,17 +257,39 @@ const locationGroupLayout = (
 
 const locationRowLayout = (
   locations: readonly ShipLocationInstance[],
-): BoardLayoutResult =>
-  flexLayout(
-    locations.map((location) => ({
-      layout: locationGroupLayout(location),
-      width: locationWidth,
-    })),
-    {
-      direction: "row",
-      columnGap: locationColumnGap,
+): BoardLayoutResult => {
+  const layouts = locations.map(locationGroupLayout);
+  const rowHeight = Math.max(0, ...layouts.map((layout) => layout.bounds.height));
+  const placements: BoardLayoutResult["placements"] = [];
+  let xOffset = 0;
+
+  layouts.forEach((layout, index) => {
+    const yOffset = rowHeight - layout.bounds.height;
+
+    layout.placements.forEach((placement) => {
+      placements.push({
+        ...placement,
+        x: xOffset + placement.x - layout.bounds.x,
+        y: yOffset + placement.y - layout.bounds.y,
+      });
+    });
+
+    xOffset += locationWidth;
+    if (index < layouts.length - 1) {
+      xOffset += locationColumnGap;
+    }
+  });
+
+  return {
+    placements,
+    bounds: {
+      x: 0,
+      y: 0,
+      width: Math.max(0, xOffset),
+      height: rowHeight,
     },
-  );
+  };
+};
 
 const actorRowLayout = (actors: readonly ShipActorInstance[]): BoardLayoutResult =>
   flexLayout(

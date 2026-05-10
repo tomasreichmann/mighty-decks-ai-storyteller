@@ -128,3 +128,20 @@ test("ShipLocationCard level pill increments and clamps at 1", () => {
   const [decreaseAtMin] = levelButtons();
   assert.equal(decreaseAtMin.props.disabled, true);
 });
+
+test("ShipLocationCard positions level controls beside the location symbol and keeps them interactive", () => {
+  let renderer!: TestRenderer.ReactTestRenderer;
+
+  act(() => {
+    renderer = TestRenderer.create(<ShipLocationCard location={sampleLocation} />);
+  });
+
+  const levelControls = renderer.root.findByProps({
+    "data-location-level-controls": true,
+  });
+
+  assert.match(levelControls.props.className, /top-3/);
+  assert.match(levelControls.props.className, /right-10/);
+  assert.match(levelControls.props.className, /pointer-events-auto/);
+  assert.equal(typeof levelControls.props.onPointerDown, "function");
+});

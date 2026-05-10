@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type PointerEvent } from "react";
 import type { ShipLocationInstance } from "../../lib/spaceship/spaceshipTypes";
 import { ActorToken } from "./ActorToken";
 import { EnergyToken } from "./EnergyToken";
@@ -69,6 +69,9 @@ export const ShipLocationCardSurface = ({
   const incrementLevel = (): void => {
     setLevel((current) => current + 1);
   };
+  const stopBoardPan = (event: PointerEvent<HTMLDivElement>): void => {
+    event.stopPropagation();
+  };
 
   return (
     <article
@@ -84,7 +87,11 @@ export const ShipLocationCardSurface = ({
         />
       </div>
 
-      <div className="absolute bottom-2 right-2 z-20 flex justify-end">
+      <div
+        data-location-level-controls
+        className="pointer-events-auto absolute right-10 top-3 z-20 flex justify-end"
+        onPointerDown={stopBoardPan}
+      >
         <LevelPill
           level={level}
           onDecrease={decrementLevel}

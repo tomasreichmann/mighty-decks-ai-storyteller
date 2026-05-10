@@ -12,6 +12,12 @@ test("Tag is a reusable chip primitive", () => {
   assert.match(source, /contentClassName\?: string/);
 });
 
+test("Tag leading slot does not add extra horizontal padding", () => {
+  const source = readFileSync(new URL("./Tag.tsx", import.meta.url), "utf8");
+
+  assert.doesNotMatch(source, /tag__leading inline-flex items-center px-2/);
+});
+
 test("Tags composes the shared Tag shell", () => {
   const source = readFileSync(new URL("./Tags.tsx", import.meta.url), "utf8");
 

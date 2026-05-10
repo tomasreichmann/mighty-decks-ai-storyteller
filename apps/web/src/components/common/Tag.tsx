@@ -70,7 +70,7 @@ export const Tag = ({
       )}
     >
       {leading ? (
-        <span className="tag__leading inline-flex items-center px-2">
+        <span className="tag__leading inline-flex items-center">
           {leading}
         </span>
       ) : null}
