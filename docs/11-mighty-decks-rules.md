@@ -313,6 +313,136 @@ When tension drops, return to freeform play.
 
 ---
 
+## 10.1 Ship-To-Ship Combat Prototype
+
+Ship combat uses normal Mighty Decks combat pacing, but the table represents
+the ship with physical components:
+
+- **Location cards** are ship rooms.
+- **Device Asset cards** sit on rooms and represent turrets, Sensors, Shields,
+  Engines, Reactor, Life Support, Workbench, Missile Bay, and other systems.
+- **Circular Power tokens** sit on Device cards and show assigned Power.
+- **Minis or Actor tokens** stand in the Location the Actor is manning.
+- **Effect cards** mark Device damage, Location statuses, and crew pressure.
+
+Each round follows the usual player turn and assigned enemy turn structure. On
+their turn, an Actor may move to any Location on the same small ship and take
+one action. Most ship actions activate the Device Asset in the Actor's current
+Location.
+
+### Power And Device Use
+
+The Reactor or Generator level defines the ship's total Power pool. Players
+assign active circular Power tokens to Device cards. When a Device activates,
+it may spend up to the lower of:
+
+- active Power tokens assigned to the Device
+- the Device's effective level
+
+Effective level is `level - damage`. A Device with damage equal to its level is
+destroyed and cannot be used.
+
+The default prototype rule is to flip spent tokens to a used side and lock them
+on the Device until End of Round cleanup. End of Round clears Device Used
+markers and flips spent Power tokens back to active. This lets unused Power be
+reassigned without letting the same token power multiple actions in one round.
+
+Most Devices also receive a Device Used marker after activation. Exceptions can
+be written on the Device, such as sustained Engines or a Spin Drive charge.
+
+### Attacking Ships
+
+An Actor at a powered weapon Device may attack another ship. The Actor may use
+less Power than the Device maximum. If Sensors have Detection higher than the
+target ship's Cloaking, the attacker may target a specific Device or hull. If
+not, the target Device is chosen randomly by dice.
+
+The attacked ship's pilot may defend with an Outcome card. Damage is:
+
+`attacker Outcome Effect + weapon damage - defender Outcome Effect - Shields`
+
+Positive damage first applies to the targeted Device. Overflow damage after a
+Device is destroyed applies to hull and gives the hit Location a status such as
+Burning, Freezing, Complication, Toxic Air, or Hull Breach.
+
+When hull damage reaches hull points, the ship enters Rupture Cascade. Once a
+Rupture Cascade starts, it cannot be stopped; the ship breaks up and explodes
+at the end of the next turn.
+
+### Flight Controls
+
+Flight Controls do not require Power and cannot be targeted from outside, but
+they need powered Engines to change range or dodge effectively. A pilot's turn
+options include:
+
+- change range closer or farther
+- dodge incoming ship attacks with an Outcome card
+- line up a shot to grant Boost to a turret
+- use terrain for cover or a positional Boost
+- break target lock or cover a boarding approach
+- brace the ship to reduce the next Location status severity
+
+### Specific Devices
+
+- **Flight Controls**: Defend from ship attacks by dodging with an Outcome
+  card, change range if Engines are powered, line up turret shots, use terrain,
+  break target lock, cover boarding approaches, or brace against the next
+  Location status.
+- **Weapon Turret**: Requires Power. The Actor can attack another ship or
+  defend from missiles. Device Level sets maximum assignable Power, and the
+  Actor may spend less than the maximum.
+- **Laser Turret**: 1 Power = 1 energy damage.
+- **Scatter Turret**: 1 Power = 2 ballistic damage, then -1 damage per
+  distance.
+- **Rail Turret**: 1 Power = 1 ballistic damage; can charge up to 3 rounds with
+  an Outcome card each for +0, +1, or +2 extra damage.
+- **Minigun Turret**: 1 Power = 1 ballistic damage; double damage against
+  missiles and organic targets.
+- **Arc Turret**: 1 Power = 1 energy damage; damages all enemies in the target
+  Location.
+- **Plasma Turret**: 1 Power = 1 energy damage; heats up the target Location.
+- **Radiation Turret**: 1 Power = 1 energy damage; creates toxic particles in
+  the target Location.
+- **Cryo Turret**: 1 Power = 1 ballistic damage; freezes the target Location.
+- **Tractor Turret**: 1 Power = 1 energy damage; pushes or pulls targets.
+- **Acid Turret**: 1 Power = 1 chemical damage; does double damage to ship
+  hull.
+- **Sensors**: Search with scanners, reveal weakpoints, place Complication on a
+  target Device, or temporarily disable enemy Devices with electronic warfare.
+  Assign Power between Detection and Cloaking; specific targeting requires
+  Detection Power higher than enemy Cloaking Power.
+- **Shields**: Boost damage reduction or tune protection for a specific damage
+  type.
+- **Engines**: Set range pressure. Actors can give Engines extra Power over the
+  maximum as overdrive; relative Engine Power determines whether ships get
+  closer or farther.
+- **Spin Drive**: Required for star-system travel. Requires Power and several
+  rounds to spin up; higher Level and more Power shorten spin-up time.
+- **Life Support**: Maintains gravity and breathable atmosphere. Actors can
+  depressurize rooms to clear fires or toxic air, re-pressurize, control
+  temperature, and control doors or airlocks remotely.
+- **Workbench**: Supports specialized crafting, Device repair, missile
+  preparation, and tool-heavy field fabrication.
+
+### Special Locations
+
+- **Docking Bay**: Stores a shuttle or fighter and supports launch, recovery,
+  boarding, and small-craft defense.
+- **Cargo Bay**: Stores cargo; cargo can become cover, a mission objective, a
+  hazard, or a resource source.
+- **Crew Quarters**: Required for crew comfort; damage can create morale,
+  fatigue, or comfort-related complications.
+- **Med Bay**: Heals minor injuries or boosts a medic's healing abilities.
+- **Ritual Hall**: Required for conducting rituals and boosts spiritual
+  abilities that need a prepared sacred or occult space.
+- **Missile Bay**: Actors can craft, load, and target missiles. Higher Level
+  allows more missiles to fire at once. It does not require Power; missiles pass
+  through shields but cost resources.
+- **Reactor**: Provides ship Power. Actors here can boost Power output, cut
+  power to a system, or intentionally trigger a Rupture Cascade.
+
+---
+
 ## 11. Counters & Escalation
 
 Counters track:

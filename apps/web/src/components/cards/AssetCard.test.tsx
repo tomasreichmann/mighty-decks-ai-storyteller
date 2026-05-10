@@ -39,6 +39,23 @@ test("AssetCard renders custom assets with a custom heading and freeform fields"
   assert.match(markup, /Whispers when ward-lines start to fail/);
 });
 
+test("AssetCard renders custom assets with an override deck label", () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(AssetCard, {
+      kind: "custom",
+      deck: "sci-fi",
+      modifier: "",
+      noun: "Reactor",
+      nounDescription: "Routes power through the ship.",
+      adjectiveDescription: "A powered ship system.",
+      iconUrl: "https://example.com/assets/reactor.png",
+    }),
+  );
+
+  assert.match(markup, /sci-fi/i);
+  assert.doesNotMatch(markup, /custom/i);
+});
+
 test("AssetCard renders unsupported legacy layered assets as reauthor-required cards", () => {
   const markup = renderToStaticMarkup(
     React.createElement(AssetCard, {

@@ -1,4 +1,5 @@
 import { useEffect, type MouseEvent, type PropsWithChildren } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "../../utils/cn";
 import { Panel, type PanelProps } from "./Panel";
 
@@ -54,11 +55,11 @@ export const Overlay = ({
     "aria-label": ariaLabel,
   };
 
-  return (
+  const overlay = (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-kac-iron/70 bg-[radial-gradient(circle_at_top,rgba(255,210,59,0.18),transparent_45%),repeating-linear-gradient(45deg,rgba(0,0,0,0.12)_0px,rgba(0,0,0,0.12)_12px,transparent_12px,transparent_24px)] p-4 sm:items-center",
         backdropClassName,
+        "fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto bg-kac-iron/70 bg-[radial-gradient(circle_at_top,rgba(255,210,59,0.18),transparent_45%),repeating-linear-gradient(45deg,rgba(0,0,0,0.12)_0px,rgba(0,0,0,0.12)_12px,transparent_12px,transparent_24px)] p-4 sm:items-center",
       )}
       onClick={onClose}
       role="presentation"
@@ -83,4 +84,8 @@ export const Overlay = ({
       )}
     </div>
   );
+
+  return typeof document === "undefined"
+    ? overlay
+    : createPortal(overlay, document.body);
 };

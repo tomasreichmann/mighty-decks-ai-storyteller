@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   SMART_CONTEXT_TAG_OPTIONS,
   getDefaultSmartContextTags,
@@ -128,6 +129,140 @@ export const MarkdownImageInsertButton = ({
     setErrorMessage(null);
   };
 
+  const dialog = open ? (
+    <div
+      className="fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto bg-kac-iron/70 bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.1)_0px,rgba(0,0,0,0.1)_10px,transparent_10px,transparent_20px)] p-4 sm:items-center"
+      onClick={closeModal}
+      role="presentation"
+    >
+      <Panel
+        className="bg-white my-auto w-full max-w-4xl max-h-[calc(100vh-2rem)]"
+        contentClassName="flex max-h-[calc(100vh-5rem)] min-h-0 flex-col gap-0"
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={dialogTitle}
+      >
+        <div className="relative shrink-0 px-4 pb-3 pt-5">
+          <Label size="lg" className="absolute left-4 top-0 -translate-y-1/2">
+            {dialogTitle}
+          </Label>
+          <div className="absolute right-4 top-0 -translate-y-1/2">
+            <Button
+              variant="solid"
+              color="blood"
+              size="sm"
+              onClick={closeModal}
+              aria-label="Close image tools"
+            >
+              <span aria-hidden="true">×</span>
+            </Button>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-3">
+          <div className="stack gap-4">
+            <Text variant="body" color="iron-light" className="text-sm">
+              {dialogDescription}
+            </Text>
+
+            <AdventureModuleGeneratedImageField
+              label={imageLabel}
+              promptLabel={promptLabel}
+              promptDescription={promptDescription}
+              contextLabel={contextLabel}
+              contextDescription={contextDescription}
+              workflowContextIntro={workflowContextIntro}
+              value={selectedImageUrl}
+              disabled={disabled}
+              identityKey={identityKey}
+              contextTagOptions={contextTagOptions}
+              defaultContextTags={defaultContextTags}
+              resolveContextLines={resolvedContextLines}
+              emptyLabel="No image selected yet."
+              pendingLabel="Generating image..."
+              generateLabel={generateLabel}
+              valueFieldLabel="Selected Image URL"
+              valueFieldDescription="Paste an existing image URL, drop an external image, or pick one from the generated batch below."
+              onChange={(nextValue) => {
+                setSelectedImageUrl(nextValue);
+                setErrorMessage(null);
+              }}
+            />
+
+            {hideAltTextField ? null : (
+              <TextField
+                label="Alt Text"
+                description="Optional text stored in the markdown image tag."
+                value={altText}
+                onChange={(event) => {
+                  setAltText(event.target.value);
+                  setErrorMessage(null);
+                }}
+                disabled={disabled}
+                maxLength={160}
+                placeholder="Describe the image for readers."
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="shrink-0 border-t-2 border-kac-iron/15 px-4 pb-4 pt-3">
+          {errorMessage ? (
+            <Text variant="note" color="blood" className="text-sm !opacity-100">
+              {errorMessage}
+            </Text>
+          ) : null}
+
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button variant="ghost" color="cloth" onClick={closeModal}>
+              Cancel
+            </Button>
+            <Button
+              color="gold"
+              disabled={disabled || selectedImageUrl.trim().length === 0}
+              onClick={() => {
+                const normalizedImageUrl = selectedImageUrl.trim();
+                if (normalizedImageUrl.length === 0) {
+                  setErrorMessage("Select an image before inserting markdown.");
+                  return;
+                }
+
+                if (onInsertImageUrl) {
+                  if (
+                    !normalizeInsertResult(onInsertImageUrl(normalizedImageUrl))
+                  ) {
+                    setErrorMessage("Could not select the image for this field.");
+                    return;
+                  }
+                } else if (onInsertMarkdownSnippet) {
+                  const snippet = buildMarkdownImageSnippet(
+                    normalizedImageUrl,
+                    altText,
+                  );
+                  if (snippet.length === 0) {
+                    setErrorMessage("Select an image before inserting markdown.");
+                    return;
+                  }
+                  if (!normalizeInsertResult(onInsertMarkdownSnippet(snippet))) {
+                    setErrorMessage("Could not insert the image into this field.");
+                    return;
+                  }
+                } else {
+                  setErrorMessage("No image insertion handler was configured.");
+                  return;
+                }
+                closeModal();
+              }}
+            >
+              {resolvedInsertButtonLabel}
+            </Button>
+          </div>
+        </div>
+      </Panel>
+    </div>
+  ) : null;
+
   return (
     <>
       <Button
@@ -149,153 +284,11 @@ export const MarkdownImageInsertButton = ({
         <span aria-hidden="true">🖼️</span>
       </Button>
 
-      {open ? (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-kac-iron/70 bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.1)_0px,rgba(0,0,0,0.1)_10px,transparent_10px,transparent_20px)] p-4 sm:items-center"
-          onClick={closeModal}
-          role="presentation"
-        >
-          <Panel
-            className="bg-white my-auto w-full max-w-4xl max-h-[calc(100vh-2rem)]"
-            contentClassName="flex max-h-[calc(100vh-5rem)] min-h-0 flex-col gap-0"
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-label={dialogTitle}
-          >
-            <div className="relative shrink-0 px-4 pb-3 pt-5">
-              <Label size="lg" className="absolute left-4 top-0 -translate-y-1/2">
-                {dialogTitle}
-              </Label>
-              <div className="absolute right-4 top-0 -translate-y-1/2">
-                <Button
-                  variant="solid"
-                  color="blood"
-                  size="sm"
-                  onClick={closeModal}
-                  aria-label="Close image tools"
-                >
-                  <span aria-hidden="true">×</span>
-                </Button>
-              </div>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-3">
-              <div className="stack gap-4">
-                <Text variant="body" color="iron-light" className="text-sm">
-                  {dialogDescription}
-                </Text>
-
-                <AdventureModuleGeneratedImageField
-                  label={imageLabel}
-                  promptLabel={promptLabel}
-                  promptDescription={promptDescription}
-                  contextLabel={contextLabel}
-                  contextDescription={contextDescription}
-                  workflowContextIntro={workflowContextIntro}
-                  value={selectedImageUrl}
-                  disabled={disabled}
-                  identityKey={identityKey}
-                  contextTagOptions={contextTagOptions}
-                  defaultContextTags={defaultContextTags}
-                  resolveContextLines={resolvedContextLines}
-                  emptyLabel="No image selected yet."
-                  pendingLabel="Generating image..."
-                  generateLabel={generateLabel}
-                  valueFieldLabel="Selected Image URL"
-                  valueFieldDescription="Paste an existing image URL, drop an external image, or pick one from the generated batch below."
-                  onChange={(nextValue) => {
-                    setSelectedImageUrl(nextValue);
-                    setErrorMessage(null);
-                  }}
-                />
-
-                {hideAltTextField ? null : (
-                  <TextField
-                    label="Alt Text"
-                    description="Optional text stored in the markdown image tag."
-                    value={altText}
-                    onChange={(event) => {
-                      setAltText(event.target.value);
-                      setErrorMessage(null);
-                    }}
-                    disabled={disabled}
-                    maxLength={160}
-                    placeholder="Describe the image for readers."
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="shrink-0 border-t-2 border-kac-iron/15 px-4 pb-4 pt-3">
-              {errorMessage ? (
-                <Text variant="note" color="blood" className="text-sm !opacity-100">
-                  {errorMessage}
-                </Text>
-              ) : null}
-
-              <div className="flex flex-wrap items-center justify-end gap-2">
-                <Button variant="ghost" color="cloth" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <Button
-                  color="gold"
-                  disabled={disabled || selectedImageUrl.trim().length === 0}
-                  onClick={() => {
-                    const normalizedImageUrl = selectedImageUrl.trim();
-                    if (normalizedImageUrl.length === 0) {
-                      setErrorMessage(
-                        "Select an image before inserting markdown.",
-                      );
-                      return;
-                    }
-
-                    if (onInsertImageUrl) {
-                      if (
-                        !normalizeInsertResult(
-                          onInsertImageUrl(normalizedImageUrl),
-                        )
-                      ) {
-                        setErrorMessage(
-                          "Could not select the image for this field.",
-                        );
-                        return;
-                      }
-                    } else if (onInsertMarkdownSnippet) {
-                      const snippet = buildMarkdownImageSnippet(
-                        normalizedImageUrl,
-                        altText,
-                      );
-                      if (snippet.length === 0) {
-                        setErrorMessage(
-                          "Select an image before inserting markdown.",
-                        );
-                        return;
-                      }
-                      if (
-                        !normalizeInsertResult(onInsertMarkdownSnippet(snippet))
-                      ) {
-                        setErrorMessage(
-                          "Could not insert the image into this field.",
-                        );
-                        return;
-                      }
-                    } else {
-                      setErrorMessage(
-                        "No image insertion handler was configured.",
-                      );
-                      return;
-                    }
-                    closeModal();
-                  }}
-                >
-                  {resolvedInsertButtonLabel}
-                </Button>
-              </div>
-            </div>
-          </Panel>
-        </div>
-      ) : null}
+      {dialog
+        ? typeof document === "undefined"
+          ? dialog
+          : createPortal(dialog, document.body)
+        : null}
     </>
   );
 };

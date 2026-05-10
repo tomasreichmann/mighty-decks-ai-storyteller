@@ -27,10 +27,18 @@ import {
 } from "../../lib/board/boardController";
 import {
   boardRecordsToLayoutItems,
+  deckLayout,
+  fanLayout,
   flexLayout,
+  pileLayout,
+  stackLayout,
+  type BoardDeckLayoutOptions,
+  type BoardFanLayoutOptions,
   type BoardFlexLayoutOptions,
   type BoardLayoutItemBox,
   type BoardLayoutResult,
+  type BoardPileLayoutOptions,
+  type BoardStackLayoutOptions,
 } from "../../lib/board/boardLayout";
 
 type FocusState =
@@ -45,6 +53,22 @@ export interface BoardTransitionOptions {
 }
 
 export interface BoardFlexLayoutInput extends BoardFlexLayoutOptions {
+  ids?: string[];
+}
+
+export interface BoardStackLayoutInput extends BoardStackLayoutOptions {
+  ids?: string[];
+}
+
+export interface BoardDeckLayoutInput extends BoardDeckLayoutOptions {
+  ids?: string[];
+}
+
+export interface BoardPileLayoutInput extends BoardPileLayoutOptions {
+  ids?: string[];
+}
+
+export interface BoardFanLayoutInput extends BoardFanLayoutOptions {
   ids?: string[];
 }
 
@@ -81,6 +105,22 @@ export interface BoardController {
   ) => void;
   applyFlexLayout: (
     input?: BoardFlexLayoutInput,
+    options?: BoardTransitionOptions,
+  ) => BoardLayoutResult;
+  applyStackLayout: (
+    input?: BoardStackLayoutInput,
+    options?: BoardTransitionOptions,
+  ) => BoardLayoutResult;
+  applyDeckLayout: (
+    input?: BoardDeckLayoutInput,
+    options?: BoardTransitionOptions,
+  ) => BoardLayoutResult;
+  applyPileLayout: (
+    input?: BoardPileLayoutInput,
+    options?: BoardTransitionOptions,
+  ) => BoardLayoutResult;
+  applyFanLayout: (
+    input?: BoardFanLayoutInput,
     options?: BoardTransitionOptions,
   ) => BoardLayoutResult;
   getLayoutItems: (ids?: string[]) => BoardLayoutItemBox[];
@@ -323,6 +363,7 @@ const boardReducer = (state: BoardState, action: BoardAction): BoardState => {
         ...normalizeItemInput(action.input, action.fallbackId),
         id,
         zIndex: action.input.zIndex ?? existing?.zIndex ?? state.items.size,
+        rotation: action.input.rotation ?? existing?.rotation,
         measuredWidth: existing?.measuredWidth,
         measuredHeight: existing?.measuredHeight,
       });
@@ -425,12 +466,14 @@ const boardReducer = (state: BoardState, action: BoardAction): BoardState => {
           x: placement.x,
           y: placement.y,
           zIndex: placement.zIndex ?? existing.zIndex,
+          rotation: placement.rotation,
         };
         changed =
           changed ||
           nextItem.x !== existing.x ||
           nextItem.y !== existing.y ||
-          nextItem.zIndex !== existing.zIndex;
+          nextItem.zIndex !== existing.zIndex ||
+          nextItem.rotation !== existing.rotation;
         items.set(placement.id, nextItem);
       }
 
@@ -589,6 +632,42 @@ export const BoardProvider = ({
       applyFlexLayout: (input = {}, options) => {
         const { ids, ...layoutOptions } = input;
         const layout = flexLayout(
+          boardRecordsToLayoutItems(stateRef.current.items.values(), ids),
+          layoutOptions,
+        );
+        dispatchBoardAction({ type: "apply-layout", layout, options });
+        return layout;
+      },
+      applyStackLayout: (input = {}, options) => {
+        const { ids, ...layoutOptions } = input;
+        const layout = stackLayout(
+          boardRecordsToLayoutItems(stateRef.current.items.values(), ids),
+          layoutOptions,
+        );
+        dispatchBoardAction({ type: "apply-layout", layout, options });
+        return layout;
+      },
+      applyDeckLayout: (input = {}, options) => {
+        const { ids, ...layoutOptions } = input;
+        const layout = deckLayout(
+          boardRecordsToLayoutItems(stateRef.current.items.values(), ids),
+          layoutOptions,
+        );
+        dispatchBoardAction({ type: "apply-layout", layout, options });
+        return layout;
+      },
+      applyPileLayout: (input = {}, options) => {
+        const { ids, ...layoutOptions } = input;
+        const layout = pileLayout(
+          boardRecordsToLayoutItems(stateRef.current.items.values(), ids),
+          layoutOptions,
+        );
+        dispatchBoardAction({ type: "apply-layout", layout, options });
+        return layout;
+      },
+      applyFanLayout: (input = {}, options) => {
+        const { ids, ...layoutOptions } = input;
+        const layout = fanLayout(
           boardRecordsToLayoutItems(stateRef.current.items.values(), ids),
           layoutOptions,
         );

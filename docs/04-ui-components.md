@@ -482,6 +482,7 @@ Routes:
 - `/rules/effects`
 - `/rules/stunts`
 - `/rules/assets`
+- `/rules/ship-combat`
 
 Behavior:
 
@@ -489,6 +490,9 @@ Behavior:
 - the assets view is grouped into `Asset Base` and `Asset Medieval` sections
 - `/rules/assets` includes a `Modifier` checkbox that reveals modifier selector cards showing only the modifier and applies the selected modifier across every displayed asset preview
 - when a modifier is selected on `/rules/assets`, copy rows emit `@asset/<slug>/<modifier-slug>` so pasted shortcodes normalize into canonical asset embeds with `modifierSlug`
+- `/rules/ship-combat` presents a text-first ship combat prototype that explains Location cards for rooms, custom Asset cards for Devices, circular Power tokens, actor/minis tokens, and concise rules panels without embedding the visual spaceship board
+- `/rules/ship-combat` renders custom `AssetCard` previews for ship Devices using generated alpha PNG icons under `/assets/spaceship/devices/`
+- `/rules/ship-combat` is a rules reference and visual prototype only; it does not add sockets, persistence, or shared `spec` contracts
 
 ---
 

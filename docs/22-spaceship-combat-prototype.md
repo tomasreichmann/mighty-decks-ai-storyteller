@@ -1,22 +1,36 @@
-# 22 - Spaceship Combat Prototype
+# 22 - Ship Combat Rules Prototype
 
-Milestone 1 adds a hidden `/spaceship` route as a low-fidelity in-app mockup for Exiles of the Hungry Void ship combat.
+The ship combat prototype now has a text-first Rules-facing route at
+`/rules/ship-combat` and keeps the hidden `/spaceship` route as the fullscreen
+visual lab.
 
-It also expands the normalized Exiles adventure module so the ship cards exist as real location entries that later milestones can reuse in authoring and play surfaces.
+The prototype illustrates ship-to-ship combat with physical table components:
+Location cards for ship rooms, custom Asset cards for Devices, circular Power
+tokens, actor/minis tokens, and status/effect cards.
 
 ---
 
 ## 1. Scope
 
-### Milestone 1 goals
+### Current goals
 
-- Add a hidden, headerless `/spaceship` route for a two-pane ship combat mockup.
+- Add `/rules/ship-combat` as a visible Rules tab for the ship-combat prototype.
+- Explain the table layout in text instead of embedding the hidden spaceship board.
+- Describe ship rooms as `LocationCard` components and Devices as custom `AssetCard` components.
+- Describe circular Power tokens with active and spent states.
+- Render Special Location reference panels as `LocationCard` previews using tracked adventure-artifact images, including the Morgue.
+- Document the selected round-power model and alternatives.
+- Keep the implementation frontend-local with no new shared `spec/` contracts,
+  no sockets, and no persistence.
+
+### Existing hidden lab goals
+
+- Keep a hidden, headerless `/spaceship` route for a two-pane ship combat mockup.
 - Add a hidden `/styleguide/actor-token` route for the new circular portrait token with labeled states.
 - Seed the mockup with Exiles-inspired player and pirate ships, actors, effects, actor tokens, and energy tokens.
-- Keep the implementation frontend-local with no new shared `spec/` contracts, no sockets, and no persistence.
 - Expand the Exiles importer so ship locations are authored as normalized adventure-module locations instead of living only inside scene prose.
 
-### Milestone 1 non-goals
+### Non-goals
 
 - Real drag and drop.
 - Scene persistence or multiplayer synchronization.
@@ -32,12 +46,18 @@ It also expands the normalized Exiles adventure module so the ship cards exist a
   - hidden route
   - full-screen, no-header shell with vertical scrolling so wrapped panes stay reachable
   - local seeded scene state only
+- `/rules/ship-combat`
+  - Rules tab
+  - fit-content route inside the Rules layout
+  - text-only rules reference with no embedded ship diagram
+  - explains component layout, round flow, damage, power-token alternatives, detailed Device reference panels, and Special Location reference panels
 - `/styleguide/actor-token`
   - hidden route
   - fit-content shell
   - showcases token tones, labels, and subtitle states
 
-Both routes are intentionally unlinked from primary navigation.
+`/spaceship` and `/styleguide/actor-token` remain hidden. `/rules/ship-combat`
+is reachable through the Rules tab navigation.
 
 ---
 
@@ -107,8 +127,15 @@ shared `LocationCard` component while rendering effects with the shared
 
 - `SpaceshipPage`
   - owns local overlay state
-  - renders the seeded `SpaceshipScene`
+  - renders the seeded `SpaceshipScene` through `SpaceshipBoard`
   - places the visible `+` trigger
+- `RulesShipCombatPage`
+  - renders text rules sections for physical components, ship layout, round flow, damage, power token alternatives, detailed Device reference panels, and Special Location reference panels
+  - renders generated custom `AssetCard` previews for Flight Controls, Weapon Turret, Sensors, Shields, Engines, Spin Drive, Life Support, Workbench, Missile Bay, and Reactor
+  - labels custom Device cards with the `sci-fi` deck instead of the generic `custom` deck
+  - renders Special Location reference panels with the shared `LocationCard` component and tracked `/api/adventure-artifacts/*` images
+- `SpaceshipBoard`
+  - shared board header and two-pane ship layout used by the hidden `/spaceship` visual lab
 - `ShipPane`
   - renders one ship side
   - owns row grouping and actor-strip placement
@@ -117,7 +144,7 @@ shared `LocationCard` component while rendering effects with the shared
 
 - `ShipLocationCard`
   - renders a single ship location around the shared `LocationCard`
-  - shows an adjustable `Tag`-based level pill, status, effect stacks, tokens, and actor markers
+  - shows an adjustable `Tag`-based level pill, status, effect stacks, tokens, actor markers, and an attached custom `AssetCard` Device
   - consumes `moduleLocationSlug` so scene items stay aligned with imported module locations
 - `ShipEffectStack`
   - renders full-size stacked effect cards
@@ -126,7 +153,12 @@ shared `LocationCard` component while rendering effects with the shared
   - circular portrait token with label and optional subtitle
   - reused in the scene and in `/styleguide/actor-token`
 - `EnergyToken`
-  - compact token for current energy assignment
+  - circular Power token for current energy assignment
+  - supports `active` and `spent` visual states
+- Device icon PNGs
+  - stored under `apps/web/public/assets/spaceship/devices/`
+  - generated on solid chroma backgrounds, then processed into real alpha PNGs with transparent corners
+  - source chroma-key generations are archived under `apps/server/output/adventure-artifacts/device-icon-sources/`
 - `SpaceshipActorStrip`
   - renders actor cards anchored to the bottom of a pane
   - shows full-size Injury and Distress stacks using shared `EffectCard` piles

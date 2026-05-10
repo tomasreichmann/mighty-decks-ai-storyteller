@@ -69,6 +69,9 @@ const RulesLayoutPage = lazy(async () => ({
 const RulesOutcomesPage = lazy(async () => ({
   default: (await import("./routes/RulesOutcomesPage")).RulesOutcomesPage,
 }));
+const RulesShipCombatPage = lazy(async () => ({
+  default: (await import("./routes/RulesShipCombatPage")).RulesShipCombatPage,
+}));
 const RulesStuntsPage = lazy(async () => ({
   default: (await import("./routes/RulesStuntsPage")).RulesStuntsPage,
 }));
@@ -501,6 +504,7 @@ export const App = (): JSX.Element => {
             <Route path="effects" element={<RulesEffectsPage />} />
             <Route path="stunts" element={<RulesStuntsPage />} />
             <Route path="assets" element={<RulesAssetsPage />} />
+            <Route path="ship-combat" element={<RulesShipCombatPage />} />
           </Route>
         </Route>
 

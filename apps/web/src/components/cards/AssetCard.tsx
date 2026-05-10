@@ -21,6 +21,7 @@ interface GenericAssetCardProps {
 
 interface CustomAssetCardProps {
   kind: "custom";
+  deck?: string;
   modifier: string;
   noun: string;
   nounDescription: string;
@@ -88,6 +89,7 @@ export const AssetCard = (props: AssetCardProps): JSX.Element => {
   if (props.kind === "custom") {
     const {
       modifier,
+      deck,
       noun,
       nounDescription,
       adjectiveDescription,
@@ -101,7 +103,7 @@ export const AssetCard = (props: AssetCardProps): JSX.Element => {
         imageUri={iconUrl.trim() || undefined}
         imageOverlayUri={overlayUrl?.trim() || undefined}
         noun={noun.trim() || " "}
-        nounDeck="custom"
+        nounDeck={deck?.trim() || "custom"}
         nounCornerIcon="/types/asset.png"
         nounEffect={nounDescription.trim() || undefined}
         adjective={modifier.trim() || undefined}

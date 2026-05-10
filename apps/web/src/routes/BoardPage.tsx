@@ -77,6 +77,10 @@ const BoardPageContent = (): JSX.Element => {
       zoomAt: controller.zoomAt,
       applyLayout: controller.applyLayout,
       applyFlexLayout: controller.applyFlexLayout,
+      applyStackLayout: controller.applyStackLayout,
+      applyDeckLayout: controller.applyDeckLayout,
+      applyPileLayout: controller.applyPileLayout,
+      applyFanLayout: controller.applyFanLayout,
       getLayoutItems: controller.getLayoutItems,
       getSnapshot: controller.getSnapshot,
       subscribe: controller.subscribe,
@@ -139,6 +143,95 @@ const BoardPageContent = (): JSX.Element => {
       { smooth: true, durationMs: 260 },
     );
     controller.fitItems(undefined, { smooth: true, durationMs: 260 });
+  };
+
+  const getCurrentItemIds = (): string[] =>
+    controller.getSnapshot().items.map((item) => item.id);
+
+  const applyDemoPeekStack = (): void => {
+    controller.applyStackLayout(
+      {
+        ids: getCurrentItemIds(),
+        x: 180,
+        y: 160,
+        offset: { x: 0, y: 42 },
+        zIndexStart: 10,
+      },
+      { smooth: true, durationMs: 260 },
+    );
+    controller.fitItems(undefined, { smooth: true, durationMs: 260 });
+  };
+
+  const applyDemoDeck = (): void => {
+    controller.applyDeckLayout(
+      {
+        ids: getCurrentItemIds(),
+        x: 180,
+        y: 160,
+        zIndexStart: 20,
+      },
+      { smooth: true, durationMs: 260 },
+    );
+    controller.fitItems(undefined, { smooth: true, durationMs: 260 });
+  };
+
+  const applyDemoPile = (): void => {
+    controller.applyPileLayout(
+      {
+        ids: getCurrentItemIds(),
+        x: 380,
+        y: 260,
+        maxRotation: 15,
+        zIndexStart: 30,
+      },
+      { smooth: true, durationMs: 260 },
+    );
+    controller.fitItems(undefined, { smooth: true, durationMs: 260 });
+  };
+
+  const applyDemoFan = (): void => {
+    controller.applyFanLayout(
+      {
+        ids: getCurrentItemIds(),
+        x: 180,
+        y: 220,
+        overlap: 96,
+        arcAngle: 42,
+        zIndexStart: 40,
+      },
+      { smooth: true, durationMs: 260 },
+    );
+    controller.fitItems(undefined, { smooth: true, durationMs: 260 });
+  };
+
+  const applyDemoTokenOnCard = (): void => {
+    controller.upsertItem({
+      id: "token-marker",
+      kind: "card",
+      x: 0,
+      y: 0,
+      width: 92,
+      height: 52,
+      title: "Token",
+      body: "On card",
+      zIndex: 99,
+    });
+    controller.applyStackLayout(
+      {
+        ids: ["pressure-card", "token-marker"],
+        x: 1560,
+        y: 920,
+        itemOffsets: {
+          "token-marker": { x: 178, y: 62 },
+        },
+        zIndexStart: 40,
+      },
+      { smooth: true, durationMs: 260 },
+    );
+    controller.fitItems(["pressure-card", "token-marker"], {
+      smooth: true,
+      durationMs: 260,
+    });
   };
 
   return (
@@ -208,6 +301,41 @@ const BoardPageContent = (): JSX.Element => {
               onClick={() => applyDemoFlexLayout("column")}
             >
               Flex column
+            </Button>
+            <Button
+              size="sm"
+              color="cloth"
+              onClick={applyDemoPeekStack}
+            >
+              Header stack
+            </Button>
+            <Button
+              size="sm"
+              color="cloth"
+              onClick={applyDemoDeck}
+            >
+              Deck
+            </Button>
+            <Button
+              size="sm"
+              color="cloth"
+              onClick={applyDemoPile}
+            >
+              Pile
+            </Button>
+            <Button
+              size="sm"
+              color="cloth"
+              onClick={applyDemoFan}
+            >
+              Fan
+            </Button>
+            <Button
+              size="sm"
+              color="cloth"
+              onClick={applyDemoTokenOnCard}
+            >
+              Token stack
             </Button>
             <Button size="sm" color="fire" onClick={addSampleItem}>
               Add item

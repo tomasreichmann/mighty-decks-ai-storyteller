@@ -22,3 +22,14 @@ test("MarkdownImageInsertButton reopens with the current image URL in the genera
   assert.match(source, /onInsertImageUrl/);
   assert.match(source, /hideAltTextField/);
 });
+
+test("MarkdownImageInsertButton renders its dialog above editor stacking contexts", () => {
+  const source = readFileSync(
+    new URL("./MarkdownImageInsertButton.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /createPortal/);
+  assert.match(source, /document\.body/);
+  assert.match(source, /z-\[1000\]/);
+});

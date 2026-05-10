@@ -30,6 +30,7 @@ export interface BoardItemInput {
   body?: string;
   imageUrl?: string;
   zIndex?: number;
+  rotation?: number;
 }
 
 export interface BoardItemRecord extends Required<Pick<BoardItemInput, "id" | "kind" | "x" | "y">> {
@@ -39,6 +40,7 @@ export interface BoardItemRecord extends Required<Pick<BoardItemInput, "id" | "k
   body?: string;
   imageUrl?: string;
   zIndex: number;
+  rotation?: number;
   measuredWidth?: number;
   measuredHeight?: number;
 }
@@ -92,6 +94,7 @@ export const normalizeItemInput = (
   body: input.body,
   imageUrl: input.imageUrl,
   zIndex: input.zIndex ?? 0,
+  rotation: input.rotation,
 });
 
 export const getItemBounds = (item: BoardItemRecord): BoardBounds => ({

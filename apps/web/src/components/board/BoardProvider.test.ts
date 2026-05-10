@@ -46,9 +46,18 @@ test("BoardProvider exposes layout application through the reducer-backed contro
 
   assert.match(source, /applyLayout/);
   assert.match(source, /applyFlexLayout/);
+  assert.match(source, /applyStackLayout/);
+  assert.match(source, /applyDeckLayout/);
+  assert.match(source, /applyPileLayout/);
+  assert.match(source, /applyFanLayout/);
   assert.match(source, /getLayoutItems/);
   assert.match(source, /type: "apply-layout"/);
   assert.match(source, /boardRecordsToLayoutItems/);
   assert.match(source, /flexLayout/);
+  assert.match(source, /stackLayout/);
+  assert.match(source, /deckLayout/);
+  assert.match(source, /pileLayout/);
+  assert.match(source, /fanLayout/);
   assert.match(source, /if \(!existing\) \{\s*continue;/);
+  assert.match(source, /rotation: placement\.rotation/);
 });

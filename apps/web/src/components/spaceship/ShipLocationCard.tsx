@@ -3,6 +3,7 @@ import type { ShipLocationInstance } from "../../lib/spaceship/spaceshipTypes";
 import { ActorToken } from "./ActorToken";
 import { EnergyToken } from "./EnergyToken";
 import { ShipEffectStack } from "./ShipEffectStack";
+import { AssetCard } from "../cards/AssetCard";
 import { Tag } from "../common/Tag";
 import { Text } from "../common/Text";
 import { LocationCard } from "../styleguide/LocationCard";
@@ -61,6 +62,14 @@ export const ShipLocationCard = ({
   location,
 }: ShipLocationCardProps): JSX.Element => {
   const [level, setLevel] = useState(location.level);
+  const device = location.device;
+  const effectiveDeviceLevel = device
+    ? Math.max(0, device.level - device.damage)
+    : 0;
+  const powerTokens =
+    device && device.powerTokens.length > 0
+      ? device.powerTokens
+      : location.energyTokens;
 
   const decrementLevel = (): void => {
     setLevel((current) => Math.max(1, current - 1));
@@ -98,12 +107,48 @@ export const ShipLocationCard = ({
         />
       </div>
 
+      {device ? (
+        <div className="grid items-start gap-3 rounded-sm border-2 border-kac-iron/30 bg-kac-bone-light/70 p-2 shadow-[2px_2px_0_0_#121b23] sm:grid-cols-[auto_minmax(0,1fr)]">
+          <div className="origin-top-left scale-[0.72]">
+            <AssetCard
+              kind="custom"
+              deck={device.asset.deck}
+              modifier={device.asset.modifier}
+              noun={device.asset.noun}
+              nounDescription={device.asset.nounDescription}
+              adjectiveDescription={device.asset.adjectiveDescription}
+              iconUrl={device.asset.iconUrl}
+              className="mx-0"
+            />
+          </div>
+          <div className="stack gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Tag tone="cloth" size="sm">
+                Device
+              </Tag>
+              {device.used ? (
+                <Tag tone="blood" size="sm">
+                  Used
+                </Tag>
+              ) : null}
+            </div>
+            <Text variant="emphasised" color="iron" className="text-sm">
+              {device.title}
+            </Text>
+            <Text variant="note" color="iron-light" className="text-xs !opacity-100">
+              Effective lvl {effectiveDeviceLevel} / max Power {device.maxPower}
+            </Text>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-end gap-2">
-        {location.energyTokens.map((energyToken) => (
+        {powerTokens.map((energyToken) => (
           <EnergyToken
             key={energyToken.tokenId}
             label={energyToken.label}
             detail={energyToken.detail}
+            state={energyToken.state}
           />
         ))}
       </div>

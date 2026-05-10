@@ -1,5 +1,6 @@
 import type { ShipPaneModel, ShipLocationInstance } from "../../lib/spaceship/spaceshipTypes";
 import { Label } from "../common/Label";
+import { Tag } from "../common/Tag";
 import { Text } from "../common/Text";
 import { ShipLocationCard } from "./ShipLocationCard";
 import { SpaceshipActorStrip } from "./SpaceshipActorStrip";
@@ -41,13 +42,19 @@ export const ShipPane = ({ pane }: ShipPaneProps): JSX.Element => {
               {pane.subtitle}
             </Text>
           </div>
-          <div className="rounded-[1rem] border-2 border-kac-steel bg-kac-steel-light/90 px-3 py-2 shadow-[3px_3px_0_0_#121b23]">
-            <Text variant="note" color="iron-light" className="text-[0.68rem] !opacity-100">
-              Z bands
-            </Text>
-            <Text variant="emphasised" color="iron" className="text-sm">
-              Cards under Tokens
-            </Text>
+          <div className="flex max-w-sm flex-wrap justify-end gap-2">
+            <Tag tone="bone" size="sm">
+              Hull {pane.hullDamage}/{pane.hullPoints}
+            </Tag>
+            <Tag tone="gold" size="sm">
+              Generator {pane.generatorLevel}
+            </Tag>
+            <Tag tone="cloth" size="sm">
+              Range {pane.rangeBand}
+            </Tag>
+            <Tag tone="steel" size="sm">
+              Detect {pane.detectionPower} / Cloak {pane.cloakingPower}
+            </Tag>
           </div>
         </div>
 

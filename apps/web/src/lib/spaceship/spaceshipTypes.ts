@@ -25,6 +25,20 @@ export type ShipLocationType =
 export type ShipLocationRow = "top" | "bottom";
 export type ShipEffectType = "distress" | "freezing" | "injury";
 export type CardLibraryEntryType = "location" | "effect" | "token" | "actor";
+export type PowerTokenState = "active" | "spent";
+export type ShipRangeBand = "close" | "near" | "far";
+export type ShipDeviceType =
+  | "flight-controls"
+  | "weapon-turret"
+  | "sensors"
+  | "shields"
+  | "engines"
+  | "spin-drive"
+  | "life-support"
+  | "workbench"
+  | "missile-bay"
+  | "reactor"
+  | "support";
 
 export interface ShipEffectInstance {
   effectId: string;
@@ -49,6 +63,28 @@ export interface EnergyTokenModel {
   label: string;
   detail?: string;
   locationId: string;
+  state?: PowerTokenState;
+}
+
+export interface ShipDeviceAssetModel {
+  deck?: string;
+  modifier: string;
+  noun: string;
+  nounDescription: string;
+  adjectiveDescription: string;
+  iconUrl: string;
+}
+
+export interface ShipDeviceInstance {
+  deviceId: string;
+  title: string;
+  type: ShipDeviceType;
+  level: number;
+  damage: number;
+  used: boolean;
+  maxPower: number;
+  powerTokens: EnergyTokenModel[];
+  asset: ShipDeviceAssetModel;
 }
 
 export interface ShipLocationInstance {
@@ -65,6 +101,7 @@ export interface ShipLocationInstance {
   effects: ShipEffectInstance[];
   energyTokens: EnergyTokenModel[];
   actorTokens: ActorTokenModel[];
+  device?: ShipDeviceInstance;
   lastTouchedOrder: number;
 }
 
@@ -86,6 +123,12 @@ export interface ShipPaneModel {
   subtitle: string;
   faction: string;
   emphasis: "player" | "enemy";
+  hullPoints: number;
+  hullDamage: number;
+  generatorLevel: number;
+  rangeBand: ShipRangeBand;
+  detectionPower: number;
+  cloakingPower: number;
   locations: ShipLocationInstance[];
   actors: ShipActorInstance[];
 }

@@ -37,13 +37,17 @@ On `/board`, the route registers `window.mightyDecksBoard` with:
 - `zoomAt(framePoint, zoom)`
 - `applyLayout(layout, options?)`
 - `applyFlexLayout(input, options?)`
+- `applyStackLayout(input, options?)`
+- `applyDeckLayout(input, options?)`
+- `applyPileLayout(input, options?)`
+- `applyFanLayout(input, options?)`
 - `getLayoutItems(ids?)`
 - `getSnapshot()`
 - `subscribe(listener)`
 
 Supported v1 item kinds are `note`, `card`, and `image`. Each item requires
 `kind`, `x`, and `y`; it may also provide `id`, `width`, `height`, `title`,
-`body`, `imageUrl`, and `zIndex`.
+`body`, `imageUrl`, `zIndex`, and `rotation`.
 
 The board measures rendered item size with `ResizeObserver`. Provided
 `width`/`height` values are initial layout hints; measured dimensions are used
@@ -68,17 +72,32 @@ The first helper is `flexLayout`, a CSS-flex-inspired row/column layout:
 - `wrapLimit` wraps to a new line/column when the main-axis size would overflow.
 - Items can have different sizes; each line uses the largest cross-axis size.
 
+Stacked helpers use the same flat placement model:
+
+- `stackLayout` layers items at one origin, supports side/center alignment for
+  mixed sizes, can offset each next item, and can apply per-item offsets for
+  cases like a token placed on top of a card.
+- `deckLayout` is a compact stack preset for same-size cards, normally face
+  down, with a minimal upward offset and no horizontal drift to read as card
+  thickness.
+- `pileLayout` is a face-up discard pile preset with no positional offset and
+  deterministic bounded rotations, defaulting to +/-15 degrees.
+- `fanLayout` places items from left to right on a shallow arc, with
+  configurable `overlap` and total `arcAngle`; each item remains a direct
+  absolute-positioned board child with its own rotation.
+
 `getLayoutItems(ids?)` returns current board item boxes using measured dimensions
 where available. `applyLayout(layout, options?)` applies flat placement results
 to matching board items and ignores missing ids. `applyFlexLayout(input,
-options?)` is the browser-global convenience path for external scripts.
+options?)`, `applyStackLayout(input, options?)`, `applyDeckLayout(input,
+options?)`, `applyPileLayout(input, options?)`, and `applyFanLayout(input,
+options?)` are browser-global convenience paths for external scripts.
 
 Nested layouts are supported by treating a prior layout result as a parent box in
 another layout calculation. The final result is still a flat list of item
 placements, not a DOM hierarchy.
 
-Future `fan`, `deck`, and `stack` helpers should use the same box/result/apply
-model.
+Future layout helpers should use the same box/result/apply model.
 
 ## Smooth Transitions
 
@@ -103,6 +122,26 @@ window.mightyDecksBoard?.applyFlexLayout({
   gap: 32,
   wrapLimit: 1100,
 }, { smooth: true });
+window.mightyDecksBoard?.applyStackLayout({
+  x: 180,
+  y: 160,
+  offset: { x: 0, y: 42 },
+}, { smooth: true });
+window.mightyDecksBoard?.applyDeckLayout({
+  x: 180,
+  y: 160,
+}, { smooth: true });
+window.mightyDecksBoard?.applyPileLayout({
+  x: 380,
+  y: 260,
+  maxRotation: 15,
+}, { smooth: true });
+window.mightyDecksBoard?.applyFanLayout({
+  x: 180,
+  y: 220,
+  overlap: 96,
+  arcAngle: 42,
+}, { smooth: true });
 ```
 
 Transitions only apply when the caller opts in. Pointer drag and wheel zoom use
@@ -124,4 +163,4 @@ the current world-space center across resize.
 - No persistence.
 - No arbitrary HTML injection from external scripts.
 - No production session-table replacement yet.
-- No fan, deck, or stack helpers in the first layout slice.
+- No 3D deck perspective or z-axis thickness model yet.

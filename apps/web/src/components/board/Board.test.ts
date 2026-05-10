@@ -15,8 +15,9 @@ test("Board applies transition duration to viewport transforms and item position
   const source = readFileSync(new URL("./Board.tsx", import.meta.url), "utf8");
 
   assert.match(source, /transitionDurationMs/);
+  assert.match(source, /rotate\(\$\{item\.rotation \?\? 0\}deg\)/);
   assert.match(source, /transitionProperty: "transform"/);
-  assert.match(source, /transitionProperty: "left, top"/);
+  assert.match(source, /transitionProperty: "left, top, transform"/);
   assert.match(source, /transitionDuration: `\$\{transitionDurationMs\}ms`/);
 });
 

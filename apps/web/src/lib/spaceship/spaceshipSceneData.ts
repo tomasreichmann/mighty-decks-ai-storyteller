@@ -1,16 +1,208 @@
 import { getActorBaseImageUri } from "../../data/actorCards";
 import type {
   CardLibraryEntry,
+  EnergyTokenModel,
   ShipActorInstance,
+  ShipDeviceInstance,
   ShipLocationInstance,
+  ShipLocationType,
   SpaceshipScene,
 } from "./spaceshipTypes";
+
+const deviceByLocationType: Record<
+  ShipLocationType,
+  {
+    title: string;
+    type: ShipDeviceInstance["type"];
+    modifier: string;
+    nounDescription: string;
+    adjectiveDescription: string;
+    iconUrl: string;
+    maxPower?: number;
+    used?: boolean;
+    damage?: number;
+  }
+> = {
+  cockpit: {
+    title: "Flight Controls",
+    type: "flight-controls",
+    modifier: "Unpowered",
+    nounDescription: "Changes range, dodges attacks, lines up shots, and uses terrain.",
+    adjectiveDescription: "Needs powered Engines; cannot be targeted from outside.",
+    iconUrl: "/assets/base/vehicle.png",
+    maxPower: 0,
+  },
+  "engine-room": {
+    title: "Engines",
+    type: "engines",
+    modifier: "Powered",
+    nounDescription: "Engine power changes range and feeds evasive piloting.",
+    adjectiveDescription: "Can accept overdrive power beyond level with risk.",
+    iconUrl: "/assets/base/vehicle.png",
+  },
+  "life-support": {
+    title: "Life Support",
+    type: "life-support",
+    modifier: "Powered",
+    nounDescription: "Pressurizes rooms, clears fires or toxic air, and controls doors.",
+    adjectiveDescription: "Keeps gravity and atmosphere stable when powered.",
+    iconUrl: "/assets/base/comfort.png",
+  },
+  reactor: {
+    title: "Reactor",
+    type: "reactor",
+    modifier: "Generator",
+    nounDescription: "Provides the ship power pool and can be overdriven by crew.",
+    adjectiveDescription: "Crew can cut power, boost output, or trigger Rupture Cascade.",
+    iconUrl: "/assets/base/surge.png",
+  },
+  "docking-bay": {
+    title: "Docking Clamps",
+    type: "support",
+    modifier: "Bay",
+    nounDescription: "Stores a shuttle or fighter and anchors boarding traffic.",
+    adjectiveDescription: "Movement between ship and craft starts here.",
+    iconUrl: "/assets/base/vehicle.png",
+    maxPower: 0,
+  },
+  "cargo-hold": {
+    title: "Cargo Rig",
+    type: "support",
+    modifier: "Cargo",
+    nounDescription: "Stores cargo, scrap, missiles, and hull-patch consumables.",
+    adjectiveDescription: "Useful for repairs and scenario objectives.",
+    iconUrl: "/assets/base/package.png",
+    maxPower: 0,
+  },
+  "medical-bay": {
+    title: "Med Bay",
+    type: "support",
+    modifier: "Clinical",
+    nounDescription: "Heals minor injuries and boosts a medic's healing actions.",
+    adjectiveDescription: "A support Device, not a ship weapon.",
+    iconUrl: "/assets/base/healing.png",
+    maxPower: 0,
+  },
+  "missile-bay": {
+    title: "Missile Bay",
+    type: "missile-bay",
+    modifier: "Manual",
+    nounDescription: "Crafts, loads, and fires missiles that pass through shields.",
+    adjectiveDescription: "Does not require Power, but spends resources.",
+    iconUrl: "/assets/medieval/cannon.png",
+    maxPower: 0,
+  },
+  "sensor-array": {
+    title: "Sensors",
+    type: "sensors",
+    modifier: "Split Power",
+    nounDescription: "Assign Power between Detection and Cloaking.",
+    adjectiveDescription: "Detection must beat enemy Cloaking to target Devices.",
+    iconUrl: "/assets/base/document.png",
+  },
+  "shield-generator": {
+    title: "Shields",
+    type: "shields",
+    modifier: "Tuned",
+    nounDescription: "Reduces incoming damage and can be tuned to one damage type.",
+    adjectiveDescription: "Subtracts from ship-attack damage after defense.",
+    iconUrl: "/assets/base/shield.png",
+  },
+  "spin-drive": {
+    title: "Spin Drive",
+    type: "spin-drive",
+    modifier: "Charging",
+    nounDescription: "Spins up over several rounds for star-system travel.",
+    adjectiveDescription: "Higher level and more Power shorten the spin-up time.",
+    iconUrl: "/assets/base/vehicle.png",
+  },
+  "laser-turret": {
+    title: "Laser Turret",
+    type: "weapon-turret",
+    modifier: "Energy",
+    nounDescription: "1 Power = 1 energy damage.",
+    adjectiveDescription: "A turret Device usually exhausts after one activation.",
+    iconUrl: "/assets/base/artillery_weapon.png",
+  },
+  "scatter-turret": {
+    title: "Scatter Turret",
+    type: "weapon-turret",
+    modifier: "Ballistic",
+    nounDescription: "1 Power = 2 ballistic damage, -1 damage per distance.",
+    adjectiveDescription: "A turret Device usually exhausts after one activation.",
+    iconUrl: "/assets/base/artillery_weapon.png",
+  },
+  "weapons-station": {
+    title: "Weapon Turret",
+    type: "weapon-turret",
+    modifier: "Energy",
+    nounDescription: "Spend up to effective level in Power to fire at hull or Device.",
+    adjectiveDescription: "A turret Device usually exhausts after one activation.",
+    iconUrl: "/assets/base/artillery_weapon.png",
+    used: true,
+    damage: 1,
+  },
+  "sealed-corridor": {
+    title: "Workbench",
+    type: "workbench",
+    modifier: "Repair",
+    nounDescription: "Supports specialized repair and crafting actions.",
+    adjectiveDescription: "Used when crew patch Devices between attacks.",
+    iconUrl: "/assets/base/tools.png",
+    maxPower: 0,
+  },
+  "crew-quarters": {
+    title: "Crew Quarters",
+    type: "support",
+    modifier: "Comfort",
+    nounDescription: "Supports crew comfort, rest, and social pressure scenes.",
+    adjectiveDescription: "Usually not powered during combat.",
+    iconUrl: "/assets/base/comfort.png",
+    maxPower: 0,
+  },
+};
+
+const createDeviceForLocation = (
+  location: Pick<
+    ShipLocationInstance,
+    "locationId" | "locationType" | "level" | "energyTokens"
+  >,
+): ShipDeviceInstance => {
+  const template = deviceByLocationType[location.locationType];
+  const maxPower = template.maxPower ?? location.level;
+  const powerTokens: EnergyTokenModel[] = location.energyTokens.map((token) => ({
+    ...token,
+    detail:
+      token.detail ??
+      (token.state === "spent" ? "Spent power locked until cleanup" : "Active power"),
+  }));
+
+  return {
+    deviceId: `${location.locationId}-device`,
+    title: template.title,
+    type: template.type,
+    level: location.level,
+    damage: template.damage ?? 0,
+    used: template.used ?? false,
+    maxPower,
+    powerTokens,
+    asset: {
+      deck: "sci-fi",
+      modifier: template.modifier,
+      noun: template.title,
+      nounDescription: template.nounDescription,
+      adjectiveDescription: template.adjectiveDescription,
+      iconUrl: template.iconUrl,
+    },
+  };
+};
 
 const createPlayerLocation = (
   location: Omit<ShipLocationInstance, "lastTouchedOrder">,
   index: number,
 ): ShipLocationInstance => ({
   ...location,
+  device: location.device ?? createDeviceForLocation(location),
   lastTouchedOrder: index + 1,
 });
 
@@ -105,7 +297,15 @@ const playerShipLocations: ShipLocationInstance[] = [
       summary: "One surviving laser array and a half-burned capacitor.",
       status: "Single shot lane only.",
       effects: [{ effectId: "weapon-distress", type: "distress", label: "Distress", detail: "Capacitor arc scarred the mount.", count: 1 }],
-      energyTokens: [{ tokenId: "weapon-energy", label: "1", detail: "Laser feed", locationId: "player-weapon-station" }],
+      energyTokens: [
+        {
+          tokenId: "weapon-energy",
+          label: "1",
+          detail: "Spent laser feed locked until End of Round",
+          locationId: "player-weapon-station",
+          state: "spent",
+        },
+      ],
       actorTokens: [],
       imageUrl: "/api/adventure-artifacts/weapons-station-436da3cb55bbcb0d221c.png",
       energyCost: 1,
@@ -390,7 +590,15 @@ const pirateShipLocations: ShipLocationInstance[] = [
       summary: "Disruptor and laser array chained into one predatory fire lane.",
       status: "Alternating weapon feed.",
       effects: [],
-      energyTokens: [{ tokenId: "pirate-weapons-energy", label: "1", detail: "Laser lane", locationId: "pirate-weapons-station" }],
+      energyTokens: [
+        {
+          tokenId: "pirate-weapons-energy",
+          label: "1",
+          detail: "Spent weapon lane",
+          locationId: "pirate-weapons-station",
+          state: "spent",
+        },
+      ],
       actorTokens: [
         {
           tokenId: "raider-gunner-token",
@@ -629,6 +837,12 @@ export const spaceshipScene: SpaceshipScene = {
       subtitle: "Derelict corvette held together by ritual, frost, and stubborn crew.",
       faction: "Crew",
       emphasis: "player",
+      hullPoints: 8,
+      hullDamage: 3,
+      generatorLevel: 5,
+      rangeBand: "near",
+      detectionPower: 1,
+      cloakingPower: 0,
       locations: playerShipLocations,
       actors: playerActors,
     },
@@ -638,6 +852,12 @@ export const spaceshipScene: SpaceshipScene = {
       subtitle: "Stolen corvette pushing a transport through the rocks.",
       faction: "Pirates",
       emphasis: "enemy",
+      hullPoints: 6,
+      hullDamage: 2,
+      generatorLevel: 4,
+      rangeBand: "near",
+      detectionPower: 0,
+      cloakingPower: 1,
       locations: pirateShipLocations,
       actors: pirateActors,
     },

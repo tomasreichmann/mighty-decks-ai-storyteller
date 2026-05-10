@@ -34,7 +34,8 @@ const BoardItem = ({
     width: item.width,
     minHeight: item.height,
     zIndex: item.zIndex,
-    transitionProperty: "left, top",
+    transform: `rotate(${item.rotation ?? 0}deg)`,
+    transitionProperty: "left, top, transform",
     transitionDuration: `${transitionDurationMs}ms`,
     transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
   };

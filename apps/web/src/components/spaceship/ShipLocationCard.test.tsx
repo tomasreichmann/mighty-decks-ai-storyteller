@@ -37,6 +37,24 @@ const sampleLocation: ShipLocationInstance = {
   effects: [],
   energyTokens: [],
   actorTokens: [],
+  device: {
+    deviceId: "docking-clamps",
+    title: "Docking Clamps",
+    type: "support",
+    level: 1,
+    damage: 0,
+    used: false,
+    maxPower: 1,
+    powerTokens: [],
+    asset: {
+      deck: "sci-fi",
+      modifier: "Support",
+      noun: "Docking Clamps",
+      nounDescription: "Holds a shuttle or fighter against rough movement.",
+      adjectiveDescription: "Location Device Asset",
+      iconUrl: "/assets/base/tools.png",
+    },
+  },
   lastTouchedOrder: 0,
 };
 
@@ -55,6 +73,20 @@ test("ShipLocationCard keeps the shared location card and local level controls",
   assert.match(source, /leading=\{/);
   assert.match(source, /trailing=\{/);
   assert.doesNotMatch(source, /\bLabel\b/);
+});
+
+test("ShipLocationCard renders an attached Device Asset card", () => {
+  let renderer!: TestRenderer.ReactTestRenderer;
+
+  act(() => {
+    renderer = TestRenderer.create(<ShipLocationCard location={sampleLocation} />);
+  });
+
+  const text = collectText(renderer.toJSON());
+
+  assert.match(text, /Device/);
+  assert.match(text, /Docking Clamps/);
+  assert.match(text, /lvl 1/);
 });
 
 test("ShipLocationCard level pill increments and clamps at 1", () => {

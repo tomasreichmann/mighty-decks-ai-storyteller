@@ -464,7 +464,7 @@
       "noun": "Alien Container",
       "nounDescription": "A strange sealed container that nobody at the Bazaar wants to touch.",
       "adjectiveDescription": "It is stuck to the ground and smells like bad luck.",
-      "iconUrl": "/api/adventure-artifacts/alien-container-bc31b0793d9e49d3aff9.png",
+      "iconUrl": "/api/adventure-artifacts/alien-container-png-5e942f245be850d8595f.png",
       "overlayUrl": ""
     },
     {
@@ -474,7 +474,7 @@
       "noun": "Biskma",
       "nounDescription": "An ancient data-reading device stolen during the siege of Rock Bottom.",
       "adjectiveDescription": "Small, precious, and awkward to explain at customs.",
-      "iconUrl": "/assets/base/document.png",
+      "iconUrl": "/assets/spaceship/devices/reactor-device.png",
       "overlayUrl": ""
     },
     {
@@ -2830,6 +2830,6 @@
     }
   ],
   "notes": "Imported from legacy Exiles of the Hungry Void MDX. Legacy UI widgets were normalized to markdown.",
-  "updatedAtIso": "2026-05-02T22:17:39.978Z",
+  "updatedAtIso": "2026-05-06T12:57:18.070Z",
   "postMvpExtension": true
 }
