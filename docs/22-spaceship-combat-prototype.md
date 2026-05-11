@@ -28,11 +28,13 @@ tokens, actor/minis tokens, and status/effect cards.
 - Keep a hidden, headerless `/spaceship` route for a two-pane ship combat mockup.
 - Add a hidden `/styleguide/actor-token` route for the new circular portrait token with labeled states.
 - Seed the mockup with Exiles-inspired player and pirate ships, actors, effects, actor tokens, and energy tokens.
+- Support first-slice token drag/drop for energy and actor tokens on the local `/spaceship` board.
+- Add a 20-count energy token stack that creates tokens when dragged from it and reclaims energy tokens dropped back onto it.
 - Expand the Exiles importer so ship locations are authored as normalized adventure-module locations instead of living only inside scene prose.
 
 ### Non-goals
 
-- Real drag and drop.
+- Card drag/drop, snapping, and deck/fan/flex layout insertion.
 - Scene persistence or multiplayer synchronization.
 - Combat rules resolution, energy spending logic, or turn orchestration.
 - Mutation from the card library overlay into the scene.
@@ -139,7 +141,7 @@ shared `LocationCard` component while rendering effects with the shared
   - renders Special Location reference panels with the shared `LocationCard` component and tracked `/api/adventure-artifacts/*` images
 - `SpaceshipBoard`
   - wraps the seeded scene in `BoardProvider`, `BoardFrame`, and custom-rendered `Board` items
-  - builds flat board entries for ship headers, Devices, Location cards, individual effect cards, token rows, and actor cards
+  - builds flat board entries for ship headers, Devices, Location cards, individual effect cards, individual tokens, the energy token stack, and actor cards
   - applies pure spaceship board layout helpers on mount, then fits all items into the board frame
   - keeps route-level controls outside the board transform while the board frame handles pan/zoom and fit actions
 - Spaceship board layout helpers
@@ -166,6 +168,10 @@ shared `LocationCard` component while rendering effects with the shared
 - `EnergyToken`
   - circular Power token for current energy assignment
   - supports `active` and `spent` visual states
+- `EnergyTokenStack`
+  - flow-positioned source/sink stack with 20 available Power tokens, placed above the Exiles ship title
+  - dragging from the stack creates a new board token and decrements the count
+  - dropping an energy token back on the stack removes it and restores the count
 - Device icon PNGs
   - stored under `apps/web/public/assets/spaceship/devices/`
   - generated on solid chroma backgrounds, then processed into real alpha PNGs with transparent corners
@@ -209,6 +215,11 @@ Milestone 1 keeps all state local to the route and mirrors the later reducer sha
   - top-level title/subtitle
   - left and right `ShipPaneModel`
   - current card library entries
+- `dragState`
+  - individual energy and actor token placement
+  - board-level absolute coordinates or card-relative offsets
+  - energy stack availability count
+  - next token z-order and generated energy token id counter
 - `overlay`
   - whether the overlay is open
 - `selection`
@@ -227,13 +238,13 @@ Milestone 1 keeps all state local to the route and mirrors the later reducer sha
 - `EnergyTokenModel`
 - `CardLibraryEntry`
 
-### Why `zBands` exists before drag/drop
+### Why `zBands` still exists
 
-- future drag/drop needs stable ordering separate from visual content
+- later card drag/drop needs stable ordering separate from visual content
 - tokens must always render above cards
 - last-touched order still matters within the token layer and within the card layer
 
-The current seeded data already includes `lastTouchedOrder` and `moduleLocationSlug` so later reducer work can attach real interaction without changing the scene shape again.
+The current seeded data already includes `lastTouchedOrder` and `moduleLocationSlug`. Token z-order now lives in local `dragState`, while future card z-order can reuse the existing scene shape.
 
 ---
 
@@ -242,30 +253,35 @@ The current seeded data already includes `lastTouchedOrder` and `moduleLocationS
 - Cards and tokens are separate visual bands.
 - Tokens always render above cards.
 - Within a band, the most recently dragged item wins z-order.
+- Dragged tokens can be left at arbitrary board positions.
+- Tokens dropped over any card surface attach to that card with a card-relative offset, so future card dragging can move attached tokens with the card.
 - Effect stacks render as independent board items, but their positions are derived from their owning location.
 - Location effect cards sit behind the Location card, align to the Location bottom edge, and keep each subsequent card offset upward by the shared header offset.
-- Actor tokens render in Location token rows, and each actor-card Injury or Distress card sits as its own board item centered behind the actor card with the top header offset visible.
+- Actor and energy tokens render as independent board items, and each actor-card Injury or Distress card sits as its own board item centered behind the actor card with the top header offset visible.
 - Current card positions are prototype layout behavior, not a public contract; tests should cover helper/API behavior instead of exact coordinates.
 
-This mirrors the intended combat board rules without implementing interaction yet.
+This mirrors the intended combat board rules for the first token-focused interaction slice.
 
 ---
 
-## 7. Planned Drag/Drop Model
+## 7. Token Drag/Drop Model
 
-Milestone 2 should follow the pointer-event style already used by `apps/web/src/components/adventure-module/AdventureModuleLocationMapEditor.tsx`.
+The first interaction slice follows the pointer-event style already used by `apps/web/src/components/adventure-module/AdventureModuleLocationMapEditor.tsx`.
 
-### Planned approach
+### Implemented approach
 
-- pointer-down captures the dragged entity id and origin
+- pointer-down captures the dragged token id and origin
+- touching a token brings it to the top of the token layer
 - pointer-move updates local transient position
-- pointer-up commits the new position and updates the matching `zBands` order
-- cards and tokens use the same interaction model but write into different z-bands
-- row-aware effect stacks stay anchored to their parent card instead of becoming freely draggable
+- pointer-up commits either a board-level position or a card-relative attachment
+- dropping an energy token over the side stack removes it and restores the stack count
+- dragging from the side stack creates a new energy token and decrements the stack count
 
 ### Explicitly deferred
 
 - snapping
+- ghost/silhouette previews
+- card drag/drop and card layout docking
 - collision rules
 - combat validation
 - persistence

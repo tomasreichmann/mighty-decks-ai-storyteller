@@ -18,10 +18,35 @@ test("SpaceshipBoard renders independent board surfaces for locations, devices, 
 
   assert.match(source, /ShipLocationCardSurface/);
   assert.match(source, /ShipLocationDeviceCard/);
-  assert.match(source, /ShipLocationTokenRow/);
+  assert.match(source, /SpaceshipTokenSurface/);
+  assert.match(source, /EnergyTokenStack/);
   assert.match(source, /ShipEffectCardSurface/);
   assert.match(source, /SpaceshipActorCardSurface/);
   assert.match(source, /SpaceshipActorEffectSurface/);
+});
+
+test("SpaceshipBoard wires pointer drag handlers for tokens and the energy stack", () => {
+  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /onTokenPointerDown/);
+  assert.match(source, /onEnergyStackPointerDown/);
+  assert.match(source, /beginSpaceshipTokenDrag/);
+  assert.match(source, /beginEnergyStackTokenDrag/);
+  assert.match(source, /window\.addEventListener\("pointermove"/);
+  assert.match(source, /window\.addEventListener\("pointerup"/);
+});
+
+test("SpaceshipBoard disables board wheel zoom while a token drag is active", () => {
+  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /isTokenDragActive/);
+  assert.match(source, /onTokenDragActiveChange\(true\)/);
+  assert.match(source, /onTokenDragActiveChange\(false\)/);
+  assert.match(source, /onTokenDragActiveChange=\{setIsTokenDragActive\}/);
+  assert.match(source, /disableWheelZoom=\{isTokenDragActive\}/);
+  assert.match(source, /window\.addEventListener\("wheel", handleWheelWhileDragging, \{\s*capture: true,\s*passive: false,\s*\}\)/);
+  assert.match(source, /if \(!activeDragRef\.current\) \{/);
+  assert.match(source, /event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);/);
 });
 
 test("SpaceshipBoard renders custom actor cards when spaceship actors provide them", () => {
@@ -45,7 +70,7 @@ test("SpaceshipBoard exposes fit controls for all, ally, and enemy board content
 test("SpaceshipBoard keeps fit controls in the same header action row as the action slot", () => {
   const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
 
-  assert.match(source, /SpaceshipBoardHeader[\s\S]*<SpaceshipBoardControls scene=\{scene\} \/>[\s\S]*\{actionSlot/);
+  assert.match(source, /SpaceshipBoardHeader[\s\S]*<SpaceshipBoardControls scene=\{scene\} dragState=\{dragState\} \/>[\s\S]*\{actionSlot/);
   assert.match(source, /bg-\[linear-gradient\(180deg,rgba\(18,27,35,0\.72\)_0%,rgba\(18,27,35,0\)_100%\)\]/);
   assert.doesNotMatch(source, /<SpaceshipBoardControls scene=\{scene\} \/>\s*<BoardFrame/);
 });
@@ -53,7 +78,10 @@ test("SpaceshipBoard keeps fit controls in the same header action row as the act
 test("SpaceshipBoard renders a square flush board frame", () => {
   const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
 
-  assert.match(source, /BoardFrame className="min-h-0 rounded-none border-0 bg-\[#121b23\] shadow-none absolute inset-0"/);
+  assert.match(
+    source,
+    /<BoardFrame[\s\S]*className="min-h-0 rounded-none border-0 bg-\[#121b23\] shadow-none absolute inset-0"[\s\S]*disableWheelZoom=\{isTokenDragActive\}/,
+  );
   assert.doesNotMatch(source, /rounded-\[1\.25rem\]/);
 });
 

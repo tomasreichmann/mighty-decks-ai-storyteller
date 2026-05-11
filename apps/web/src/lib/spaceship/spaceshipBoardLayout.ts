@@ -10,6 +10,8 @@ import type {
   ShipEffectType,
   ShipLocationInstance,
   ShipPaneModel,
+  SpaceshipDragState,
+  SpaceshipDraggableToken,
   SpaceshipScene,
 } from "./spaceshipTypes";
 
@@ -31,8 +33,6 @@ const locationRowGap = 34;
 const effectCardWidth = 204;
 const effectCardHeight = 332;
 const effectHeaderOffset = 36;
-const tokenRowWidth = 210;
-const tokenRowHeight = 92;
 const actorGroupWidth = 246;
 const actorCardWidth = 204;
 const actorCardHeight = 332;
@@ -44,6 +44,22 @@ export const spaceshipBoardSize = {
   height: 4100,
 };
 
+export const spaceshipTokenSize = {
+  energy: {
+    width: 48,
+    height: 48,
+  },
+  actor: {
+    width: 96,
+    height: 112,
+  },
+} as const;
+
+export const spaceshipEnergyStackSize = {
+  width: 118,
+  height: 152,
+} as const;
+
 export const spaceshipBoardItemId = {
   shipHeader: (paneId: string) => `spaceship:ship-header:${paneId}`,
   location: (locationId: string) => `spaceship:location:${locationId}`,
@@ -51,6 +67,8 @@ export const spaceshipBoardItemId = {
   effectCard: (effectId: string, index: number) =>
     `spaceship:effect-card:${effectId}:${index}`,
   tokens: (locationId: string) => `spaceship:tokens:${locationId}`,
+  token: (tokenId: string) => `spaceship:token:${tokenId}`,
+  energyStack: () => "spaceship:energy-stack",
   actorEffectCard: (
     actorId: string,
     effectType: ActorConsequenceEffectType,
@@ -64,7 +82,8 @@ export type SpaceshipBoardItemRole =
   | "location"
   | "device"
   | "effect-card"
-  | "tokens"
+  | "token"
+  | "energy-stack"
   | "actor-effect-card"
   | "actor-card";
 
@@ -73,6 +92,7 @@ export interface SpaceshipBoardItemMeta {
   pane?: ShipPaneModel;
   location?: ShipLocationInstance;
   actor?: ShipActorInstance;
+  token?: SpaceshipDraggableToken;
   effectType?: ShipEffectType;
 }
 
@@ -95,6 +115,24 @@ const item = ({
   height,
   zIndex,
 });
+
+const tokenItem = (token: SpaceshipDraggableToken): BoardItemInput => ({
+  id: spaceshipBoardItemId.token(token.tokenId),
+  kind: "card",
+  x: token.x,
+  y: token.y,
+  width: token.width,
+  height: token.height,
+  zIndex: token.zIndex,
+});
+
+const energyStackItem = (): BoardItemInput =>
+  item({
+    id: spaceshipBoardItemId.energyStack(),
+    width: spaceshipEnergyStackSize.width,
+    height: spaceshipEnergyStackSize.height,
+    zIndex: 900,
+  });
 
 const box = ({
   id,
@@ -205,22 +243,10 @@ const locationGroupLayout = (
           height: locationHeight,
           zIndex: 30,
         }),
-        box({
-          id: spaceshipBoardItemId.tokens(location.locationId),
-          width: tokenRowWidth,
-          height: tokenRowHeight,
-          zIndex: 40,
-        }),
       ],
       {
         x: 0,
         y: yOffset,
-        itemOffsets: {
-          [spaceshipBoardItemId.tokens(location.locationId)]: {
-            x: (locationWidth - tokenRowWidth) / 2,
-            y: (locationHeight - tokenRowHeight) / 2,
-          },
-        },
         zIndexStart: 30,
         zIndexStep: 10,
       },
@@ -362,12 +388,25 @@ const actorBandLayout = (actors: readonly ShipActorInstance[]): BoardLayoutResul
   };
 };
 
-const shipLayout = (pane: ShipPaneModel): BoardLayoutResult => {
+const shipLayout = (
+  pane: ShipPaneModel,
+  options: { includeEnergyStack?: boolean } = {},
+): BoardLayoutResult => {
   const topRow = locationRowLayout(sortLocations(pane.locations, "top"));
   const bottomRow = locationRowLayout(sortLocations(pane.locations, "bottom"));
   const contentWidth = shipWidth - shipPadding * 2;
   const contentLayout = flexLayout(
     [
+      ...(options.includeEnergyStack
+        ? [
+            box({
+              id: spaceshipBoardItemId.energyStack(),
+              width: spaceshipEnergyStackSize.width,
+              height: spaceshipEnergyStackSize.height,
+              zIndex: 900,
+            }),
+          ]
+        : []),
       box({
         id: spaceshipBoardItemId.shipHeader(pane.paneId),
         width: shipHeaderWidth,
@@ -396,13 +435,51 @@ const shipLayout = (pane: ShipPaneModel): BoardLayoutResult => {
   };
 };
 
+const createTokenLayoutPlacements = (
+  dragState: SpaceshipDragState | undefined,
+  baseLayout: BoardLayoutResult,
+): BoardLayoutResult["placements"] => {
+  if (!dragState) {
+    return [];
+  }
+
+  const placementsById = new Map(
+    baseLayout.placements.map((placement) => [placement.id, placement]),
+  );
+
+  return dragState.tokens.map((token) => {
+    const cardPlacement =
+      token.placement.type === "card"
+        ? placementsById.get(token.placement.cardItemId)
+        : undefined;
+    const x =
+      token.placement.type === "card" && cardPlacement
+        ? cardPlacement.x + token.placement.offsetX
+        : token.x;
+    const y =
+      token.placement.type === "card" && cardPlacement
+        ? cardPlacement.y + token.placement.offsetY
+        : token.y;
+
+    return {
+      id: spaceshipBoardItemId.token(token.tokenId),
+      x,
+      y,
+      width: token.width,
+      height: token.height,
+      zIndex: token.zIndex,
+    };
+  });
+};
+
 export const createSpaceshipBoardLayout = (
   scene: SpaceshipScene,
-): BoardLayoutResult =>
-  flexLayout(
-    scene.panes.flatMap((pane) => [
+  dragState?: SpaceshipDragState,
+): BoardLayoutResult => {
+  const baseLayout = flexLayout(
+    scene.panes.flatMap((pane, paneIndex) => [
       {
-        layout: shipLayout(pane),
+        layout: shipLayout(pane, { includeEnergyStack: paneIndex === 0 }),
         width: shipWidth,
       },
       {
@@ -417,9 +494,18 @@ export const createSpaceshipBoardLayout = (
       rowGap: shipGap,
     },
   );
+  return {
+    ...baseLayout,
+    placements: [
+      ...baseLayout.placements,
+      ...createTokenLayoutPlacements(dragState, baseLayout),
+    ],
+  };
+};
 
 export const createSpaceshipBoardItems = (
   scene: SpaceshipScene,
+  dragState?: SpaceshipDragState,
 ): BoardItemInput[] => {
   const items: BoardItemInput[] = [];
 
@@ -465,12 +551,6 @@ export const createSpaceshipBoardItems = (
           height: locationHeight,
           zIndex: 30,
         }),
-        item({
-          id: spaceshipBoardItemId.tokens(location.locationId),
-          width: tokenRowWidth,
-          height: tokenRowHeight,
-          zIndex: 40,
-        }),
       );
     });
 
@@ -503,12 +583,18 @@ export const createSpaceshipBoardItems = (
     });
   });
 
+  items.push(energyStackItem());
+  if (dragState) {
+    items.push(...dragState.tokens.map(tokenItem));
+  }
+
   return items;
 };
 
 export const getSpaceshipBoardPaneItemIds = (
   scene: SpaceshipScene,
   paneId: string,
+  dragState?: SpaceshipDragState,
 ): string[] => {
   const pane = scene.panes.find((candidate) => candidate.paneId === paneId);
 
@@ -529,10 +615,7 @@ export const getSpaceshipBoardPaneItemIds = (
       });
     });
 
-    ids.push(
-      spaceshipBoardItemId.location(location.locationId),
-      spaceshipBoardItemId.tokens(location.locationId),
-    );
+    ids.push(spaceshipBoardItemId.location(location.locationId));
   });
 
   pane.actors.forEach((actor) => {
@@ -543,11 +626,18 @@ export const getSpaceshipBoardPaneItemIds = (
     ids.push(spaceshipBoardItemId.actorCard(actor.actorId));
   });
 
+  if (dragState) {
+    dragState.tokens
+      .filter((token) => token.paneId === paneId)
+      .forEach((token) => ids.push(spaceshipBoardItemId.token(token.tokenId)));
+  }
+
   return ids;
 };
 
 export const createSpaceshipBoardItemMeta = (
   scene: SpaceshipScene,
+  dragState?: SpaceshipDragState,
 ): Map<string, SpaceshipBoardItemMeta> => {
   const meta = new Map<string, SpaceshipBoardItemMeta>();
 
@@ -559,11 +649,6 @@ export const createSpaceshipBoardItemMeta = (
     pane.locations.forEach((location) => {
       meta.set(spaceshipBoardItemId.location(location.locationId), {
         role: "location",
-        pane,
-        location,
-      });
-      meta.set(spaceshipBoardItemId.tokens(location.locationId), {
-        role: "tokens",
         pane,
         location,
       });
@@ -606,5 +691,22 @@ export const createSpaceshipBoardItemMeta = (
     });
   });
 
+  meta.set(spaceshipBoardItemId.energyStack(), {
+    role: "energy-stack",
+  });
+  dragState?.tokens.forEach((token) => {
+    meta.set(spaceshipBoardItemId.token(token.tokenId), {
+      role: "token",
+      token,
+    });
+  });
+
   return meta;
 };
+
+export const isSpaceshipCardDropTargetItemId = (itemId: string): boolean =>
+  itemId.startsWith("spaceship:location:") ||
+  itemId.startsWith("spaceship:device:") ||
+  itemId.startsWith("spaceship:effect-card:") ||
+  itemId.startsWith("spaceship:actor-card:") ||
+  itemId.startsWith("spaceship:actor-effect-card:");

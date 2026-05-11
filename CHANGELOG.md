@@ -9,6 +9,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Changed
 
 - Web: remove extra horizontal padding from the shared `Tag` leading slot so embedded controls align tightly.
+- Web: move the `/spaceship` energy token stack into the board flow above the Exiles ship title.
 - Web: move the `/spaceship` Location level control beside the top-right Location symbol and keep its +/- buttons interactive over the board.
 - Web: bottom-align `/spaceship` Location cards within each row so rooms without Devices line up with rooms that have Devices or Effects.
 - Web: align `/spaceship` Location effect cards to the bottom of their Location cards while preserving upward stack offsets.
@@ -57,6 +58,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add frontend-local `/spaceship` token drag/drop, including individual draggable energy and actor tokens plus a 20-count energy stack source/sink.
 - Web: add a `/styleguide/tokens` lab for circular image tokens with the ten standard colors and 0.5in/1in/2in/3in sizes.
 - Web: add a `/board` fan layout helper and demo control for arc-based hand layouts with configurable overlap and arc angle.
 - Web: add `/board` stack, deck, and pile layout helpers plus demo controls for header-peek stacks, compact decks, rotated piles, and token-on-card placement.
@@ -109,6 +111,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: disable `/spaceship` board wheel zoom while a token drag is active so token placement does not shift mid-drag.
+- Web: keep `/spaceship` token dragging anchored to the original pointer grab so long drags no longer drift away from the cursor.
 - Web: clear stale `/board` pile rotations when applying non-rotating layouts, and make deck layouts use a subtle upward no-x-offset stack.
 - Web: move `/board` wheel zoom to a non-passive frame listener so pointer wheel zoom remains immediate without browser console errors.
 - Web: stabilize the hidden `/board` controller with a reducer-backed state flow so reset-then-zoom works immediately and repeated item insertion no longer triggers nested update loops.

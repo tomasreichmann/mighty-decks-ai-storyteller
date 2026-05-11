@@ -1,12 +1,38 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type Dispatch,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+  type SetStateAction,
+  useState,
+} from "react";
 import type { BoardItemRecord } from "../../lib/board/boardController";
-import type { SpaceshipScene } from "../../lib/spaceship/spaceshipTypes";
+import type {
+  SpaceshipDragState,
+  SpaceshipDraggableToken,
+  SpaceshipScene,
+} from "../../lib/spaceship/spaceshipTypes";
+import {
+  beginEnergyStackTokenDrag,
+  beginSpaceshipTokenDrag,
+  dropSpaceshipTokenOnBoard,
+  dropSpaceshipTokenOnCard,
+  dropSpaceshipTokenOnEnergyStack,
+  findTopmostItemAtPoint,
+  isPointOverEnergyStack,
+  moveSpaceshipTokenFromDragOrigin,
+  syncSpaceshipTokenPositions,
+} from "../../lib/spaceship/spaceshipDragState";
 import {
   createSpaceshipBoardItemMeta,
   createSpaceshipBoardItems,
   createSpaceshipBoardLayout,
   getSpaceshipBoardPaneItemIds,
+  isSpaceshipCardDropTargetItemId,
   spaceshipBoardSize,
+  spaceshipBoardItemId,
 } from "../../lib/spaceship/spaceshipBoardLayout";
 import { cn } from "../../utils/cn";
 import { Board } from "../board/Board";
@@ -17,16 +43,20 @@ import { Text } from "../common/Text";
 import {
   ShipLocationCardSurface,
   ShipLocationDeviceCard,
-  ShipLocationTokenRow,
 } from "./ShipLocationCard";
 import { ShipEffectCardSurface } from "./ShipEffectStack";
 import {
   SpaceshipActorCardSurface,
   SpaceshipActorEffectSurface,
 } from "./SpaceshipActorStrip";
+import { ActorToken } from "./ActorToken";
+import { EnergyToken } from "./EnergyToken";
+import { EnergyTokenStack } from "./EnergyTokenStack";
 
 interface SpaceshipBoardProps {
   scene: SpaceshipScene;
+  dragState: SpaceshipDragState;
+  onDragStateChange: Dispatch<SetStateAction<SpaceshipDragState>>;
   actionSlot?: ReactNode;
   className?: string;
 }
@@ -45,12 +75,53 @@ const SpaceshipShipHeader = ({
   </div>
 );
 
+const SpaceshipTokenSurface = ({
+  token,
+  onTokenPointerDown,
+}: {
+  token: SpaceshipDraggableToken;
+  onTokenPointerDown: (
+    tokenId: string,
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => void;
+}): JSX.Element => (
+  <div
+    data-spaceship-token
+    data-token-kind={token.kind}
+    className="spaceship-token-surface pointer-events-auto cursor-grab touch-none select-none active:cursor-grabbing"
+    onPointerDown={(event) => onTokenPointerDown(token.tokenId, event)}
+  >
+    {token.kind === "energy" ? (
+      <EnergyToken
+        label={token.label}
+        detail={token.detail}
+        state={token.state}
+      />
+    ) : (
+      <ActorToken
+        label={token.label}
+        imageUrl={token.imageUrl ?? "/actors/base/cog.png"}
+        tone={token.tone}
+      />
+    )}
+  </div>
+);
+
 const SpaceshipBoardItem = ({
   item,
   metaMap,
+  dragState,
+  onTokenPointerDown,
+  onEnergyStackPointerDown,
 }: {
   item: BoardItemRecord;
   metaMap: ReturnType<typeof createSpaceshipBoardItemMeta>;
+  dragState: SpaceshipDragState;
+  onTokenPointerDown: (
+    tokenId: string,
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => void;
+  onEnergyStackPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
 }): ReactNode => {
   const meta = metaMap.get(item.id);
 
@@ -73,10 +144,21 @@ const SpaceshipBoardItem = ({
       return meta.effectType ? (
         <ShipEffectCardSurface effectType={meta.effectType} />
       ) : null;
-    case "tokens":
-      return meta.location ? (
-        <ShipLocationTokenRow location={meta.location} />
+    case "token":
+      return meta.token ? (
+        <SpaceshipTokenSurface
+          token={meta.token}
+          onTokenPointerDown={onTokenPointerDown}
+        />
       ) : null;
+    case "energy-stack":
+      return (
+        <EnergyTokenStack
+          availableCount={dragState.energyStack.availableCount}
+          totalCount={dragState.energyStack.totalCount}
+          onPointerDown={onEnergyStackPointerDown}
+        />
+      );
     case "actor-effect-card":
       return meta.actor && meta.effectType ? (
         <SpaceshipActorEffectSurface effectType={meta.effectType} />
@@ -90,14 +172,40 @@ const SpaceshipBoardItem = ({
 
 const SpaceshipBoardCanvas = ({
   scene,
+  dragState,
+  onDragStateChange,
+  onTokenDragActiveChange,
 }: {
   scene: SpaceshipScene;
+  dragState: SpaceshipDragState;
+  onDragStateChange: Dispatch<SetStateAction<SpaceshipDragState>>;
+  onTokenDragActiveChange: (active: boolean) => void;
 }): JSX.Element => {
   const controller = useBoard();
   const didInitialLayout = useRef(false);
   const didMeasuredLayout = useRef(false);
-  const layout = useMemo(() => createSpaceshipBoardLayout(scene), [scene]);
-  const metaMap = useMemo(() => createSpaceshipBoardItemMeta(scene), [scene]);
+  const dragStateRef = useRef(dragState);
+  const activeDragRef = useRef<{
+    tokenId: string;
+    pointerId: number;
+    startClientX: number;
+    startClientY: number;
+    startX: number;
+    startY: number;
+    zoom: number;
+  } | null>(null);
+  const layout = useMemo(
+    () => createSpaceshipBoardLayout(scene, dragState),
+    [dragState, scene],
+  );
+  const metaMap = useMemo(
+    () => createSpaceshipBoardItemMeta(scene, dragState),
+    [dragState, scene],
+  );
+
+  useEffect(() => {
+    dragStateRef.current = dragState;
+  }, [dragState]);
 
   useEffect(() => {
     if (didInitialLayout.current) {
@@ -126,17 +234,218 @@ const SpaceshipBoardCanvas = ({
     controller.fitItems(undefined, { smooth: true, durationMs: 220 });
   }, [controller, controller.items, layout]);
 
+  useEffect(() => {
+    const synced = syncSpaceshipTokenPositions(
+      dragState,
+      controller.getSnapshot().items,
+    );
+    synced.tokens.forEach((token) => {
+      controller.upsertItem({
+        id: spaceshipBoardItemId.token(token.tokenId),
+        kind: "card",
+        x: token.x,
+        y: token.y,
+        width: token.width,
+        height: token.height,
+        zIndex: token.zIndex,
+      });
+    });
+  }, [controller, dragState]);
+
+  const onTokenPointerDown = (
+    tokenId: string,
+    event: ReactPointerEvent<HTMLDivElement>,
+  ): void => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const snapshot = controller.getSnapshot();
+    const synced = syncSpaceshipTokenPositions(dragStateRef.current, snapshot.items);
+    const result = beginSpaceshipTokenDrag(synced, tokenId);
+    const token = result.state.tokens.find(
+      (candidate) => candidate.tokenId === tokenId,
+    );
+    if (!token) {
+      return;
+    }
+    dragStateRef.current = result.state;
+    onDragStateChange(result.state);
+    activeDragRef.current = {
+      tokenId,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startX: token.x,
+      startY: token.y,
+      zoom: snapshot.viewport.zoom,
+    };
+    onTokenDragActiveChange(true);
+  };
+
+  const onEnergyStackPointerDown = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ): void => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const snapshot = controller.getSnapshot();
+    const stack = snapshot.items.find(
+      (item) => item.id === spaceshipBoardItemId.energyStack(),
+    );
+    const result = beginEnergyStackTokenDrag(dragStateRef.current, {
+      x: stack ? stack.x + 35 : 0,
+      y: stack ? stack.y + 35 : 0,
+    });
+    dragStateRef.current = result.state;
+    onDragStateChange(result.state);
+
+    if (!result.dragTokenId) {
+      return;
+    }
+
+    activeDragRef.current = {
+      tokenId: result.dragTokenId,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startX: stack ? stack.x + 35 : 0,
+      startY: stack ? stack.y + 35 : 0,
+      zoom: snapshot.viewport.zoom,
+    };
+    onTokenDragActiveChange(true);
+  };
+
+  useEffect(() => {
+    const handleWheelWhileDragging = (event: WheelEvent): void => {
+      if (!activeDragRef.current) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    const handlePointerMove = (event: PointerEvent): void => {
+      const activeDrag = activeDragRef.current;
+      if (!activeDrag || activeDrag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const moved = moveSpaceshipTokenFromDragOrigin(
+        dragStateRef.current,
+        activeDrag.tokenId,
+        {
+          startX: activeDrag.startX,
+          startY: activeDrag.startY,
+          startClientX: activeDrag.startClientX,
+          startClientY: activeDrag.startClientY,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          zoom: activeDrag.zoom,
+        },
+      );
+      dragStateRef.current = moved;
+      onDragStateChange(moved);
+    };
+
+    const handlePointerUp = (event: PointerEvent): void => {
+      const activeDrag = activeDragRef.current;
+      if (!activeDrag || activeDrag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      activeDragRef.current = null;
+      onTokenDragActiveChange(false);
+      const snapshot = controller.getSnapshot();
+      const synced = syncSpaceshipTokenPositions(
+        dragStateRef.current,
+        snapshot.items,
+      );
+      const token = synced.tokens.find(
+        (candidate) => candidate.tokenId === activeDrag.tokenId,
+      );
+
+      if (!token) {
+        return;
+      }
+
+      const tokenCenter = {
+        x: token.x + token.width / 2,
+        y: token.y + token.height / 2,
+      };
+      const isEnergyStackDrop =
+        token.kind === "energy" &&
+        isPointOverEnergyStack(snapshot.items, tokenCenter);
+
+      let nextState: SpaceshipDragState;
+      if (isEnergyStackDrop) {
+        nextState = dropSpaceshipTokenOnEnergyStack(synced, token.tokenId);
+        controller.removeItem(spaceshipBoardItemId.token(token.tokenId));
+      } else {
+        const cardTarget = findTopmostItemAtPoint(
+          snapshot.items,
+          tokenCenter,
+          (item) => isSpaceshipCardDropTargetItemId(item.id),
+        );
+        nextState = cardTarget
+          ? dropSpaceshipTokenOnCard(synced, token.tokenId, cardTarget.id, {
+              x: cardTarget.x,
+              y: cardTarget.y,
+            })
+          : dropSpaceshipTokenOnBoard(synced, token.tokenId);
+      }
+
+      dragStateRef.current = nextState;
+      onDragStateChange(nextState);
+    };
+
+    window.addEventListener("wheel", handleWheelWhileDragging, {
+      capture: true,
+      passive: false,
+    });
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+    return () => {
+      if (activeDragRef.current) {
+        onTokenDragActiveChange(false);
+      }
+      window.removeEventListener("wheel", handleWheelWhileDragging, {
+        capture: true,
+      });
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, [controller, onDragStateChange, onTokenDragActiveChange]);
+
   return (
     <Board
-      renderItem={(item) => <SpaceshipBoardItem item={item} metaMap={metaMap} />}
+      renderItem={(item) => (
+        <SpaceshipBoardItem
+          item={item}
+          metaMap={metaMap}
+          dragState={dragState}
+          onTokenPointerDown={onTokenPointerDown}
+          onEnergyStackPointerDown={onEnergyStackPointerDown}
+        />
+      )}
     />
   );
 };
 
 const SpaceshipBoardControls = ({
   scene,
+  dragState,
 }: {
   scene: SpaceshipScene;
+  dragState: SpaceshipDragState;
 }): JSX.Element => {
   const controller = useBoard();
   const allyPaneId = scene.panes[0].paneId;
@@ -157,7 +466,7 @@ const SpaceshipBoardControls = ({
         color="gold"
         onClick={() =>
           controller.fitItems(
-            getSpaceshipBoardPaneItemIds(scene, allyPaneId),
+            getSpaceshipBoardPaneItemIds(scene, allyPaneId, dragState),
             focusOptions,
           )
         }
@@ -169,7 +478,7 @@ const SpaceshipBoardControls = ({
         color="blood"
         onClick={() =>
           controller.fitItems(
-            getSpaceshipBoardPaneItemIds(scene, enemyPaneId),
+            getSpaceshipBoardPaneItemIds(scene, enemyPaneId, dragState),
             focusOptions,
           )
         }
@@ -182,9 +491,11 @@ const SpaceshipBoardControls = ({
 
 const SpaceshipBoardHeader = ({
   scene,
+  dragState,
   actionSlot,
 }: {
   scene: SpaceshipScene;
+  dragState: SpaceshipDragState;
   actionSlot?: ReactNode;
 }): JSX.Element => {
   const { viewport } = useBoard();
@@ -202,7 +513,7 @@ const SpaceshipBoardHeader = ({
       </div>
 
       <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
-        <SpaceshipBoardControls scene={scene} />
+        <SpaceshipBoardControls scene={scene} dragState={dragState} />
         {actionSlot}
       </div>
     </div>
@@ -211,10 +522,16 @@ const SpaceshipBoardHeader = ({
 
 export const SpaceshipBoard = ({
   scene,
+  dragState,
+  onDragStateChange,
   actionSlot,
   className,
 }: SpaceshipBoardProps): JSX.Element => {
-  const initialItems = useMemo(() => createSpaceshipBoardItems(scene), [scene]);
+  const [isTokenDragActive, setIsTokenDragActive] = useState(false);
+  const initialItems = useMemo(
+    () => createSpaceshipBoardItems(scene, dragState),
+    [dragState, scene],
+  );
 
   return (
     <div
@@ -224,9 +541,21 @@ export const SpaceshipBoard = ({
       )}
     >
       <BoardProvider boardSize={spaceshipBoardSize} initialItems={initialItems}>
-        <SpaceshipBoardHeader scene={scene} actionSlot={actionSlot} />
-        <BoardFrame className="min-h-0 rounded-none border-0 bg-[#121b23] shadow-none absolute inset-0">
-          <SpaceshipBoardCanvas scene={scene} />
+        <SpaceshipBoardHeader
+          scene={scene}
+          dragState={dragState}
+          actionSlot={actionSlot}
+        />
+        <BoardFrame
+          className="min-h-0 rounded-none border-0 bg-[#121b23] shadow-none absolute inset-0"
+          disableWheelZoom={isTokenDragActive}
+        >
+          <SpaceshipBoardCanvas
+            scene={scene}
+            dragState={dragState}
+            onDragStateChange={onDragStateChange}
+            onTokenDragActiveChange={setIsTokenDragActive}
+          />
         </BoardFrame>
       </BoardProvider>
     </div>

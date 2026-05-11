@@ -5,16 +5,21 @@ import {
   createSpaceshipBoardLayout,
   createSpaceshipBoardItems,
   getSpaceshipBoardPaneItemIds,
+  isSpaceshipCardDropTargetItemId,
   spaceshipBoardItemId,
 } from "./spaceshipBoardLayout";
+import { createSpaceshipDragState } from "./spaceshipDragState";
 
-test("createSpaceshipBoardItems creates board entries for locations, devices, tokens, effects, and actor parts", () => {
-  const items = createSpaceshipBoardItems(spaceshipScene);
+test("createSpaceshipBoardItems creates board entries for locations, devices, individual tokens, effects, and actor parts", () => {
+  const dragState = createSpaceshipDragState(spaceshipScene);
+  const items = createSpaceshipBoardItems(spaceshipScene, dragState);
   const ids = new Set(items.map((item) => item.id));
 
   assert.ok(ids.has(spaceshipBoardItemId.location("player-reactor")));
   assert.ok(ids.has(spaceshipBoardItemId.device("player-reactor-device")));
-  assert.ok(ids.has(spaceshipBoardItemId.tokens("player-reactor")));
+  assert.ok(ids.has(spaceshipBoardItemId.token("reactor-energy")));
+  assert.ok(ids.has(spaceshipBoardItemId.token("actor-machinist-token")));
+  assert.ok(ids.has(spaceshipBoardItemId.energyStack()));
   assert.ok(
     ids.has(spaceshipBoardItemId.effectCard("reactor-distress", 0)),
   );
@@ -87,15 +92,35 @@ test("createSpaceshipBoardItems keeps ship title items compact for focus bounds"
 });
 
 test("getSpaceshipBoardPaneItemIds returns focusable board IDs for one ship pane", () => {
-  const ids = getSpaceshipBoardPaneItemIds(spaceshipScene, "pane-player");
+  const dragState = createSpaceshipDragState(spaceshipScene);
+  const ids = getSpaceshipBoardPaneItemIds(spaceshipScene, "pane-player", dragState);
 
   assert.ok(ids.includes(spaceshipBoardItemId.location("player-reactor")));
   assert.ok(ids.includes(spaceshipBoardItemId.device("player-reactor-device")));
+  assert.ok(ids.includes(spaceshipBoardItemId.token("reactor-energy")));
+  assert.ok(ids.includes(spaceshipBoardItemId.token("actor-machinist-token")));
   assert.ok(ids.includes(spaceshipBoardItemId.actorCard("actor-machinist")));
   assert.equal(
     ids.includes(spaceshipBoardItemId.location("pirate-reactor")),
     false,
   );
+});
+
+test("createSpaceshipBoardLayout places the energy stack above the Exiles ship title in the flow column", () => {
+  const layout = createSpaceshipBoardLayout(spaceshipScene);
+  const placementsById = new Map(
+    layout.placements.map((placement) => [placement.id, placement]),
+  );
+  const energyStack = placementsById.get(spaceshipBoardItemId.energyStack());
+  const playerHeader = placementsById.get(
+    spaceshipBoardItemId.shipHeader("pane-player"),
+  );
+
+  assert.ok(energyStack);
+  assert.ok(playerHeader);
+  assert.equal(energyStack.x, playerHeader.x);
+  assert.ok(energyStack.y < playerHeader.y);
+  assert.equal(playerHeader.y - (energyStack.y + energyStack.height), 34);
 });
 
 test("createSpaceshipBoardLayout places each actor row after its ship content before the next ship", () => {
@@ -117,7 +142,6 @@ test("createSpaceshipBoardLayout places each actor row after its ship content be
           spaceshipBoardItemId.effectCard(effect.effectId, index),
         ),
       ),
-      spaceshipBoardItemId.tokens(location.locationId),
     ]),
     ];
     const actorIds = pane.actors.flatMap((actor) => [
@@ -171,6 +195,39 @@ test("createSpaceshipBoardLayout places each actor row after its ship content be
       }
     });
   });
+});
+
+test("isSpaceshipCardDropTargetItemId accepts all card surfaces but not tokens or the stack", () => {
+  assert.equal(
+    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.location("player-reactor")),
+    true,
+  );
+  assert.equal(
+    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.device("player-reactor-device")),
+    true,
+  );
+  assert.equal(
+    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.effectCard("reactor-distress", 0)),
+    true,
+  );
+  assert.equal(
+    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.actorCard("actor-veteran")),
+    true,
+  );
+  assert.equal(
+    isSpaceshipCardDropTargetItemId(
+      spaceshipBoardItemId.actorEffectCard("actor-veteran", "injury", 0),
+    ),
+    true,
+  );
+  assert.equal(
+    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.token("reactor-energy")),
+    false,
+  );
+  assert.equal(
+    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.energyStack()),
+    false,
+  );
 });
 
 test("createSpaceshipBoardLayout puts actor effects behind the actor card with top header offset", () => {

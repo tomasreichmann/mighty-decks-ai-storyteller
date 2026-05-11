@@ -11,6 +11,7 @@ import { useBoard } from "./BoardProvider";
 interface BoardFrameProps {
   children: ReactNode;
   className?: string;
+  disableWheelZoom?: boolean;
 }
 
 export const getBoardFrameGridZoom = (zoom: number): number => {
@@ -29,6 +30,7 @@ export const getBoardFrameGridZoom = (zoom: number): number => {
 export const BoardFrame = ({
   children,
   className,
+  disableWheelZoom = false,
 }: BoardFrameProps): JSX.Element => {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<{
@@ -68,6 +70,9 @@ export const BoardFrame = ({
 
     const handleWheel = (event: WheelEvent): void => {
       event.preventDefault();
+      if (disableWheelZoom) {
+        return;
+      }
       const rect = frame.getBoundingClientRect();
       const zoomMultiplier = event.deltaY < 0 ? 1.12 : 1 / 1.12;
       zoomAt(
@@ -84,7 +89,7 @@ export const BoardFrame = ({
     return () => {
       frame.removeEventListener("wheel", handleWheel);
     };
-  }, [viewport.zoom, zoomAt]);
+  }, [disableWheelZoom, viewport.zoom, zoomAt]);
 
   const handlePointerDown = (
     event: ReactPointerEvent<HTMLDivElement>,

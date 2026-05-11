@@ -24,6 +24,14 @@ test("BoardFrame keeps pointer and wheel interaction immediate", () => {
   assert.match(source, /zoomAt\(\s*\{\s*x: event\.clientX - rect\.left,\s*y: event\.clientY - rect\.top,\s*\},\s*viewport\.zoom \* zoomMultiplier,\s*\)/);
 });
 
+test("BoardFrame can disable wheel zoom while another drag interaction owns the pointer", () => {
+  const source = readFileSync(new URL("./BoardFrame.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /disableWheelZoom\?: boolean/);
+  assert.match(source, /if \(disableWheelZoom\) \{/);
+  assert.match(source, /event\.preventDefault\(\);[\s\S]*return;/);
+});
+
 test("BoardFrame keeps the dot-grid texture aligned with pan and zoom", () => {
   const source = readFileSync(new URL("./BoardFrame.tsx", import.meta.url), "utf8");
 

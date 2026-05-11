@@ -168,6 +168,47 @@ export interface SpaceshipZBands {
   tokens: string[];
 }
 
+export type SpaceshipDraggableTokenKind = "energy" | "actor";
+
+export type SpaceshipTokenPlacement =
+  | { type: "board" }
+  | {
+      type: "card";
+      cardItemId: string;
+      offsetX: number;
+      offsetY: number;
+    };
+
+export interface SpaceshipDraggableToken {
+  tokenId: string;
+  kind: SpaceshipDraggableTokenKind;
+  label: string;
+  detail?: string;
+  state?: PowerTokenState;
+  imageUrl?: string;
+  tone?: ButtonColors;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zIndex: number;
+  paneId?: string;
+  sourceLocationId?: string;
+  placement: SpaceshipTokenPlacement;
+}
+
+export interface SpaceshipEnergyStackState {
+  totalCount: number;
+  availableCount: number;
+}
+
+export interface SpaceshipDragState {
+  tokens: SpaceshipDraggableToken[];
+  energyStack: SpaceshipEnergyStackState;
+  nextZIndex: number;
+  nextEnergyTokenIndex: number;
+}
+
 export interface SpaceshipScene {
   sceneId: string;
   title: string;

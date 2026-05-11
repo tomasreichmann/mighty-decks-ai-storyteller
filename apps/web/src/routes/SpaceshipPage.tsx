@@ -8,9 +8,13 @@ import {
   toggleCardLibraryOpen,
 } from "../lib/spaceship/spaceshipSceneState";
 import { spaceshipScene } from "../lib/spaceship/spaceshipSceneData";
+import { createSpaceshipDragState } from "../lib/spaceship/spaceshipDragState";
 
 export const SpaceshipPage = (): JSX.Element => {
   const [cardLibrary, setCardLibrary] = useState(createCardLibraryOverlayState());
+  const [dragState, setDragState] = useState(() =>
+    createSpaceshipDragState(spaceshipScene),
+  );
 
   return (
     <div className="spaceship-page relative min-h-full overflow-x-hidden overflow-y-auto bg-[linear-gradient(180deg,#121b23_0%,#23303d_38%,#121b23_100%)]">
@@ -20,6 +24,8 @@ export const SpaceshipPage = (): JSX.Element => {
       <div className="relative z-10 flex h-screen w-full flex-col">
         <SpaceshipBoard
           scene={spaceshipScene}
+          dragState={dragState}
+          onDragStateChange={setDragState}
           actionSlot={
             <Button
               aria-label="Open card library"
