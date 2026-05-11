@@ -2,8 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
+const readBoardSource = (): string =>
+  readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+
+const readBoardItemSource = (): string =>
+  readFileSync(new URL("./SpaceshipBoardItem.tsx", import.meta.url), "utf8");
+
+const readBoardInteractionSource = (): string =>
+  `${readBoardSource()}\n${readBoardItemSource()}`;
+
 test("SpaceshipBoard renders the scene through the shared board primitives", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardSource();
 
   assert.match(source, /BoardProvider/);
   assert.match(source, /BoardFrame/);
@@ -14,7 +23,7 @@ test("SpaceshipBoard renders the scene through the shared board primitives", () 
 });
 
 test("SpaceshipBoard renders independent board surfaces for locations, devices, effects, tokens, and actors", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardItemSource();
 
   assert.match(source, /ShipLocationCardSurface/);
   assert.match(source, /ShipLocationDeviceCard/);
@@ -26,7 +35,7 @@ test("SpaceshipBoard renders independent board surfaces for locations, devices, 
 });
 
 test("SpaceshipBoard wires pointer drag handlers for tokens and the energy stack", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardInteractionSource();
 
   assert.match(source, /onTokenPointerDown/);
   assert.match(source, /onEnergyStackPointerDown/);
@@ -37,7 +46,7 @@ test("SpaceshipBoard wires pointer drag handlers for tokens and the energy stack
 });
 
 test("SpaceshipBoard wires pointer drag handlers for all draggable card surfaces", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardInteractionSource();
 
   assert.match(source, /onCardPointerDown/);
   assert.match(source, /beginSpaceshipCardDrag/);
@@ -62,7 +71,7 @@ test("SpaceshipBoard wires pointer drag handlers for all draggable card surfaces
 });
 
 test("SpaceshipBoard disables board wheel zoom while any item drag is active", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardSource();
 
   assert.match(source, /isItemDragActive/);
   assert.match(source, /onItemDragActiveChange\(true\)/);
@@ -83,7 +92,7 @@ test("SpaceshipBoard renders custom actor cards when spaceship actors provide th
 });
 
 test("SpaceshipBoard exposes fit controls for all, ally, and enemy board content", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardSource();
 
   assert.match(source, /Show All/);
   assert.match(source, /Focus Ally Ship/);
@@ -93,7 +102,7 @@ test("SpaceshipBoard exposes fit controls for all, ally, and enemy board content
 });
 
 test("SpaceshipBoard keeps fit controls in the same header action row as the action slot", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardSource();
 
   assert.match(source, /SpaceshipBoardHeader[\s\S]*<SpaceshipBoardControls scene=\{scene\} dragState=\{dragState\} \/>[\s\S]*\{actionSlot/);
   assert.match(source, /bg-\[linear-gradient\(180deg,rgba\(18,27,35,0\.72\)_0%,rgba\(18,27,35,0\)_100%\)\]/);
@@ -101,7 +110,7 @@ test("SpaceshipBoard keeps fit controls in the same header action row as the act
 });
 
 test("SpaceshipBoard renders a square flush board frame", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardSource();
 
   assert.match(
     source,
@@ -111,7 +120,7 @@ test("SpaceshipBoard renders a square flush board frame", () => {
 });
 
 test("SpaceshipBoard shows the live board zoom in the header", () => {
-  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+  const source = readBoardSource();
 
   assert.match(source, /SpaceshipBoardHeader/);
   assert.match(source, /viewport\.zoom \* 100/);

@@ -1,0 +1,56 @@
+import type { CardLibraryEntry } from "./spaceshipTypes";
+
+export const cardLibrary: CardLibraryEntry[] = [
+  {
+    entryId: "card-player-cockpit",
+    type: "location",
+    title: "Cockpit",
+    category: "Player Ship",
+    summary: "Movement, evasive maneuvers, and the best window into the chaos.",
+    badge: "Location",
+    imageUrl: "/api/adventure-artifacts/cockpit-435a2f81c0be0c184b58.png",
+  },
+  {
+    entryId: "card-player-reactor",
+    type: "location",
+    title: "Reactor",
+    category: "Player Ship",
+    summary: "Power routing, overdrive, and the whole ship's pacing lever.",
+    badge: "Location",
+    imageUrl: "/api/adventure-artifacts/reactor-99836c3e8add9c720018.png",
+  },
+  {
+    entryId: "card-player-distress",
+    type: "effect",
+    title: "Distress",
+    category: "Effect",
+    summary: "Damage that knocks a room one level lower per card.",
+    badge: "Effect",
+    effectSlug: "distress",
+  },
+  {
+    entryId: "card-player-freezing",
+    type: "effect",
+    title: "Freezing",
+    category: "Effect",
+    summary: "Decompression marker for hull breaches and cold-soaked rooms.",
+    badge: "Effect",
+    effectSlug: "freezing",
+  },
+  {
+    entryId: "card-energy-token",
+    type: "token",
+    title: "Energy Token",
+    category: "Token",
+    summary: "Shows which system is currently being fed.",
+    badge: "Token",
+  },
+  {
+    entryId: "card-raider-gunner",
+    type: "actor",
+    title: "Raider Gunner",
+    category: "Enemy Crew",
+    summary: "Placeholder crew card for the pirate weapons lane.",
+    badge: "Actor",
+  },
+];
