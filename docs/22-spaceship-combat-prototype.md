@@ -29,12 +29,14 @@ tokens, actor/minis tokens, and status/effect cards.
 - Add a hidden `/styleguide/actor-token` route for the new circular portrait token with labeled states.
 - Seed the mockup with Exiles-inspired player and pirate ships, actors, effects, actor tokens, and energy tokens.
 - Support first-slice token drag/drop for energy and actor tokens on the local `/spaceship` board.
+- Support first-slice free card drag/drop for Location, Device, effect, Actor, and Actor effect cards on the local `/spaceship` board.
+- Support live local snapping and layout reflow while dragging cards across compatible ship rows, Device columns, actor rows, and effect stacks.
 - Add a 20-count energy token stack that creates tokens when dragged from it and reclaims energy tokens dropped back onto it.
 - Expand the Exiles importer so ship locations are authored as normalized adventure-module locations instead of living only inside scene prose.
 
 ### Non-goals
 
-- Card drag/drop, snapping, and deck/fan/flex layout insertion.
+- Ghost/silhouette insertion previews and fine-grained effect-stack insertion positions.
 - Scene persistence or multiplayer synchronization.
 - Combat rules resolution, energy spending logic, or turn orchestration.
 - Mutation from the card library overlay into the scene.
@@ -147,6 +149,8 @@ shared `LocationCard` component while rendering effects with the shared
 - Spaceship board layout helpers
   - compose existing `flexLayout` and `stackLayout` helpers into ship-level board placements
   - place ship, crew, ship, and crew blocks in the scene-level flex column using each block's actual layout bounds, with bottom-aligned locations in flex rows, Devices above Locations, Location effect cards bottom-aligned behind their Location cards, and token rows centered over Location cards
+  - rebuild board positions from local layout membership so card drag/drop can remove, insert, and reflow rows and columns without mutating seeded scene content
+  - render room groups as Device columns above Location cards, with tucked effect stacks behind Locations, Devices, and Actor cards
   - place actor effect cards and actor cards as separate board items inside each actor row, with each effect card tucked behind the card top using the shared header offset
   - keep ship title items compact so focus bounds follow visible content instead of invisible pane width
 
@@ -218,6 +222,8 @@ Milestone 1 keeps all state local to the route and mirrors the later reducer sha
 - `dragState`
   - individual energy and actor token placement
   - board-level absolute coordinates or card-relative offsets
+  - local card layout membership for Location rows, room Device columns, actor rows, and owner effect stacks
+  - manual card placement fallback when a card is dragged away from compatible layouts
   - energy stack availability count
   - next token z-order and generated energy token id counter
 - `overlay`
@@ -237,6 +243,9 @@ Milestone 1 keeps all state local to the route and mirrors the later reducer sha
 - `ActorTokenModel`
 - `EnergyTokenModel`
 - `CardLibraryEntry`
+- `SpaceshipLayoutMembershipState`
+- `SpaceshipCardSnapTarget`
+- `SpaceshipCardPlacement`
 
 ### Why `zBands` still exists
 
@@ -253,18 +262,21 @@ The current seeded data already includes `lastTouchedOrder` and `moduleLocationS
 - Cards and tokens are separate visual bands.
 - Tokens always render above cards.
 - Within a band, the most recently dragged item wins z-order.
+- Dragged cards can snap into compatible local layouts, which reflow live while dragging.
+- Dragged cards can still be left at arbitrary board positions when no compatible snap target is active.
+- Location drags move the visual room bundle; Device drags move the Device plus its tucked effects; Actor drags move the Actor plus its tucked effects; effect drags move only that effect card.
 - Dragged tokens can be left at arbitrary board positions.
 - Tokens dropped over any card surface attach to that card with a card-relative offset, so future card dragging can move attached tokens with the card.
-- Effect stacks render as independent board items, but their positions are derived from their owning location.
-- Location effect cards sit behind the Location card, align to the Location bottom edge, and keep each subsequent card offset upward by the shared header offset.
+- Effect stacks render as independent board items, but their positions are derived from their current local owner.
+- Location, Device, and Actor effect cards sit behind their owning card and keep each subsequent card offset upward by the shared header offset.
 - Actor and energy tokens render as independent board items, and each actor-card Injury or Distress card sits as its own board item centered behind the actor card with the top header offset visible.
 - Current card positions are prototype layout behavior, not a public contract; tests should cover helper/API behavior instead of exact coordinates.
 
-This mirrors the intended combat board rules for the first token-focused interaction slice.
+This mirrors the intended combat board rules for the first local interaction slices.
 
 ---
 
-## 7. Token Drag/Drop Model
+## 7. Local Drag/Drop Model
 
 The first interaction slice follows the pointer-event style already used by `apps/web/src/components/adventure-module/AdventureModuleLocationMapEditor.tsx`.
 
@@ -272,16 +284,23 @@ The first interaction slice follows the pointer-event style already used by `app
 
 - pointer-down captures the dragged token id and origin
 - touching a token brings it to the top of the token layer
-- pointer-move updates local transient position
+- touching a card brings it to the top of the card layer while keeping it below tokens
+- pointer-move updates local transient position and resolves compatible card snap targets
+- compatible card snap targets mutate local layout membership immediately so source and target layouts reflow live
+- snapped layout reflows use a fast position transition so neighboring cards settle instead of jumping
+- layout-owned cards require a 10px pointer tear-off before they move freely, newly snapped cards stay docked for 400ms, and torn-off cards wait 400ms before they can snap into a new layout again
 - pointer-up commits either a board-level position or a card-relative attachment
+- pointer-up on a card keeps the latest snapped layout membership or commits a board-level manual position when no target is active
+- dragging a card also moves any tokens attached to that card by recomputing their saved card-relative offsets
+- Location cards snap into Location rows, Device cards snap into room Device columns, Actor cards snap into actor rows, and effect cards snap behind Location, Device, or Actor cards
 - dropping an energy token over the side stack removes it and restores the stack count
 - dragging from the side stack creates a new energy token and decrements the stack count
+- ship titles, the energy token stack, and Location `lvl` controls are not draggable
 
 ### Explicitly deferred
 
-- snapping
 - ghost/silhouette previews
-- card drag/drop and card layout docking
+- finer per-index insertion for effect stacks
 - collision rules
 - combat validation
 - persistence

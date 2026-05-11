@@ -8,7 +8,11 @@ import {
   isSpaceshipCardDropTargetItemId,
   spaceshipBoardItemId,
 } from "./spaceshipBoardLayout";
-import { createSpaceshipDragState } from "./spaceshipDragState";
+import {
+  createSpaceshipDragState,
+  insertSpaceshipCardIntoLayout,
+  removeSpaceshipCardFromLayouts,
+} from "./spaceshipDragState";
 
 test("createSpaceshipBoardItems creates board entries for locations, devices, individual tokens, effects, and actor parts", () => {
   const dragState = createSpaceshipDragState(spaceshipScene);
@@ -27,6 +31,135 @@ test("createSpaceshipBoardItems creates board entries for locations, devices, in
   assert.ok(
     ids.has(spaceshipBoardItemId.actorEffectCard("actor-machinist", "injury", 0)),
   );
+});
+
+test("createSpaceshipBoardLayout renders multiple Devices in a flow column above a Location", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const deviceId = spaceshipBoardItemId.device("player-reactor-device");
+  const targetLocationId = spaceshipBoardItemId.location("player-life-support");
+  const moved = insertSpaceshipCardIntoLayout(
+    removeSpaceshipCardFromLayouts(state, deviceId),
+    deviceId,
+    {
+      type: "device-column",
+      layoutId: `spaceship:device-column:${targetLocationId}`,
+      index: 1,
+    },
+  );
+  const layout = createSpaceshipBoardLayout(spaceshipScene, moved);
+  const placements = new Map(layout.placements.map((placement) => [placement.id, placement]));
+  const lifeSupport = placements.get(targetLocationId);
+  const firstDevice = placements.get(
+    spaceshipBoardItemId.device("player-life-support-device"),
+  );
+  const secondDevice = placements.get(deviceId);
+
+  assert.ok(lifeSupport);
+  assert.ok(firstDevice);
+  assert.ok(secondDevice);
+  assert.ok(firstDevice.y < secondDevice.y);
+  assert.ok(secondDevice.y + secondDevice.height <= lifeSupport.y - 10);
+  assert.equal(firstDevice.x + firstDevice.width / 2, lifeSupport.x + lifeSupport.width / 2);
+  assert.equal(secondDevice.x, firstDevice.x);
+});
+
+test("createSpaceshipBoardLayout tucks effects behind Location, Device, and Actor owners from membership", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const effectId = spaceshipBoardItemId.effectCard("reactor-distress", 0);
+  const deviceId = spaceshipBoardItemId.device("player-life-support-device");
+  const moved = insertSpaceshipCardIntoLayout(
+    removeSpaceshipCardFromLayouts(state, effectId),
+    effectId,
+    {
+      type: "effect-stack",
+      layoutId: `spaceship:effect-stack:${deviceId}`,
+      ownerItemId: deviceId,
+      index: 999,
+    },
+  );
+  const layout = createSpaceshipBoardLayout(spaceshipScene, moved);
+  const placements = new Map(layout.placements.map((placement) => [placement.id, placement]));
+  const effect = placements.get(effectId);
+  const device = placements.get(deviceId);
+  const actor = placements.get(spaceshipBoardItemId.actorCard("actor-veteran"));
+  const actorEffect = placements.get(
+    spaceshipBoardItemId.actorEffectCard("actor-veteran", "injury", 0),
+  );
+
+  assert.ok(effect);
+  assert.ok(device);
+  assert.ok(actor);
+  assert.ok(actorEffect);
+  assert.equal(effect.x + effect.width / 2, device.x + device.width / 2);
+  assert.ok(effect.y < device.y);
+  assert.ok(effect.y + effect.height > device.y);
+  assert.equal(actorEffect.x + actorEffect.width / 2, actor.x + actor.width / 2);
+  assert.ok(actorEffect.y < actor.y);
+});
+
+test("createSpaceshipBoardLayout recalculates source and target rows when a Location moves", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const itemId = spaceshipBoardItemId.location("player-reactor");
+  const moved = insertSpaceshipCardIntoLayout(
+    removeSpaceshipCardFromLayouts(state, itemId),
+    itemId,
+    {
+      type: "location-row",
+      layoutId: "spaceship:location-row:pane-pirate:bottom",
+      index: 1,
+    },
+  );
+  const layout = createSpaceshipBoardLayout(spaceshipScene, moved);
+  const placements = new Map(layout.placements.map((placement) => [placement.id, placement]));
+  const sourceNeighbor = placements.get(
+    spaceshipBoardItemId.location("player-sealed-corridor"),
+  );
+  const movedLocation = placements.get(itemId);
+  const pirateNeighbor = placements.get(
+    spaceshipBoardItemId.location("pirate-engine-room"),
+  );
+
+  assert.ok(sourceNeighbor);
+  assert.ok(movedLocation);
+  assert.ok(pirateNeighbor);
+  assert.ok(movedLocation.y >= pirateNeighbor.y - 180);
+  assert.ok(Math.abs(sourceNeighbor.y - movedLocation.y) > 500);
+});
+
+test("createSpaceshipBoardLayout keeps the actively dragged snapped card under the pointer", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const itemId = spaceshipBoardItemId.location("player-reactor");
+  const dragged = state.cards.find((card) => card.itemId === itemId);
+  assert.ok(dragged);
+  const movedState = {
+    ...state,
+    cards: state.cards.map((card) =>
+      card.itemId === itemId ? { ...card, x: 2400, y: 900 } : card,
+    ),
+  };
+  const snapped = insertSpaceshipCardIntoLayout(
+    removeSpaceshipCardFromLayouts(movedState, itemId),
+    itemId,
+    {
+      type: "location-row",
+      layoutId: "spaceship:location-row:pane-pirate:bottom",
+      index: 1,
+    },
+  );
+  const layout = createSpaceshipBoardLayout(spaceshipScene, snapped, {
+    activeCardItemId: itemId,
+  });
+  const placements = new Map(layout.placements.map((placement) => [placement.id, placement]));
+  const movedLocation = placements.get(itemId);
+  const pirateNeighbor = placements.get(
+    spaceshipBoardItemId.location("pirate-engine-room"),
+  );
+
+  assert.ok(movedLocation);
+  assert.ok(pirateNeighbor);
+  assert.equal(movedLocation.x, 2400);
+  assert.equal(movedLocation.y, 900);
+  assert.ok(Math.abs(pirateNeighbor.x - movedLocation.x) > 500);
 });
 
 test("spaceshipScene uses custom Exiles actor cards for the Corvette crew", () => {

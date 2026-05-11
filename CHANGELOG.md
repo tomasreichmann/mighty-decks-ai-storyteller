@@ -58,6 +58,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add live local snapping and layout reflow for `/spaceship` card dragging across ship rows, Device columns, actor rows, and effect stacks.
+- Web: add frontend-local free dragging for `/spaceship` Location, Device, effect, Actor, and Actor effect cards.
 - Web: add frontend-local `/spaceship` token drag/drop, including individual draggable energy and actor tokens plus a 20-count energy stack source/sink.
 - Web: add a `/styleguide/tokens` lab for circular image tokens with the ten standard colors and 0.5in/1in/2in/3in sizes.
 - Web: add a `/board` fan layout helper and demo control for arc-based hand layouts with configurable overlap and arc angle.
@@ -78,6 +80,11 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: add hidden `/spaceship` and `/styleguide/actor-token` labs for the first Exiles ship-combat prototype, including low-fi ship panes, actor strips, energy tokens, effect stacks, and a visual-only card-library overlay shell.
 - Web: add a dedicated `/styleguide/loading` lab that showcases the shared `LoadingIndicator` progress ring and `PendingIndicator` dot state, and surface it from the styleguide overview and section nav.
 - Web: add dedicated `/styleguide/labels` and `/styleguide/messages` styleguide labs, and surface both from the shared secondary nav and router so contributors can validate sticker labels and semantic callouts in isolation.
+
+### Fixed
+
+- Web: add a 10px tear-off threshold plus 400ms tear-off/reinsert cooldowns for `/spaceship` layout card dragging so live snap reflow does not repeatedly add and remove the same card.
+- Web: add a fast transition to `/spaceship` card positions when live snap layout reflow settles a dragged card into a layout.
 
 ### Changed
 
@@ -111,7 +118,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
-- Web: disable `/spaceship` board wheel zoom while a token drag is active so token placement does not shift mid-drag.
+- Web: disable `/spaceship` board wheel zoom while a token or card drag is active so placement does not shift mid-drag.
 - Web: keep `/spaceship` token dragging anchored to the original pointer grab so long drags no longer drift away from the cursor.
 - Web: clear stale `/board` pile rotations when applying non-rotating layouts, and make deck layouts use a subtle upward no-x-offset stack.
 - Web: move `/board` wheel zoom to a non-passive frame listener so pointer wheel zoom remains immediate without browser console errors.

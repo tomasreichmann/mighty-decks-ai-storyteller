@@ -36,14 +36,39 @@ test("SpaceshipBoard wires pointer drag handlers for tokens and the energy stack
   assert.match(source, /window\.addEventListener\("pointerup"/);
 });
 
-test("SpaceshipBoard disables board wheel zoom while a token drag is active", () => {
+test("SpaceshipBoard wires pointer drag handlers for all draggable card surfaces", () => {
   const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
 
-  assert.match(source, /isTokenDragActive/);
-  assert.match(source, /onTokenDragActiveChange\(true\)/);
-  assert.match(source, /onTokenDragActiveChange\(false\)/);
-  assert.match(source, /onTokenDragActiveChange=\{setIsTokenDragActive\}/);
-  assert.match(source, /disableWheelZoom=\{isTokenDragActive\}/);
+  assert.match(source, /onCardPointerDown/);
+  assert.match(source, /beginSpaceshipCardDrag/);
+  assert.match(source, /moveSpaceshipCardFromDragOrigin/);
+  assert.match(source, /applySpaceshipCardLiveSnap/);
+  assert.match(source, /didSpaceshipCardLayoutDragExceedTearOffDistance/);
+  assert.match(source, /isSpaceshipCardLayoutTearOffBlocked/);
+  assert.match(source, /isSpaceshipCardSnapInsertBlocked/);
+  assert.match(source, /tearOffBlockedUntilMs/);
+  assert.match(source, /snapBlockedUntilMs/);
+  assert.match(source, /mode: "layout"/);
+  assert.match(source, /activeCardItemId/);
+  assert.match(source, /createSpaceshipBoardLayout\(scene, dragState, \{\s*activeCardItemId,\s*\}\)/);
+  assert.match(source, /dropSpaceshipCardOnBoard/);
+  assert.match(source, /case "location":[\s\S]*onCardPointerDown/);
+  assert.match(source, /case "device":[\s\S]*onCardPointerDown/);
+  assert.match(source, /case "effect-card":[\s\S]*onCardPointerDown/);
+  assert.match(source, /case "actor-effect-card":[\s\S]*onCardPointerDown/);
+  assert.match(source, /case "actor-card":[\s\S]*onCardPointerDown/);
+  assert.match(source, /case "ship-header":\n\s+return meta\.pane \? <SpaceshipShipHeader/);
+  assert.match(source, /case "energy-stack":[\s\S]*<EnergyTokenStack/);
+});
+
+test("SpaceshipBoard disables board wheel zoom while any item drag is active", () => {
+  const source = readFileSync(new URL("./SpaceshipBoard.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /isItemDragActive/);
+  assert.match(source, /onItemDragActiveChange\(true\)/);
+  assert.match(source, /onItemDragActiveChange\(false\)/);
+  assert.match(source, /onItemDragActiveChange=\{setIsItemDragActive\}/);
+  assert.match(source, /disableWheelZoom=\{isItemDragActive\}/);
   assert.match(source, /window\.addEventListener\("wheel", handleWheelWhileDragging, \{\s*capture: true,\s*passive: false,\s*\}\)/);
   assert.match(source, /if \(!activeDragRef\.current\) \{/);
   assert.match(source, /event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);/);
@@ -80,7 +105,7 @@ test("SpaceshipBoard renders a square flush board frame", () => {
 
   assert.match(
     source,
-    /<BoardFrame[\s\S]*className="min-h-0 rounded-none border-0 bg-\[#121b23\] shadow-none absolute inset-0"[\s\S]*disableWheelZoom=\{isTokenDragActive\}/,
+    /<BoardFrame[\s\S]*className="min-h-0 rounded-none border-0 bg-\[#121b23\] shadow-none absolute inset-0"[\s\S]*disableWheelZoom=\{isItemDragActive\}/,
   );
   assert.doesNotMatch(source, /rounded-\[1\.25rem\]/);
 });

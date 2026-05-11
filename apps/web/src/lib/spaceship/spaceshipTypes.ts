@@ -197,14 +197,108 @@ export interface SpaceshipDraggableToken {
   placement: SpaceshipTokenPlacement;
 }
 
+export type SpaceshipDraggableCardRole =
+  | "location"
+  | "device"
+  | "effect-card"
+  | "actor-card"
+  | "actor-effect-card";
+
+export type SpaceshipLayoutId = string;
+
+export type SpaceshipLayoutKind =
+  | "location-row"
+  | "device-column"
+  | "effect-stack"
+  | "actor-row";
+
+export interface SpaceshipLocationRowLayout {
+  layoutId: SpaceshipLayoutId;
+  type: "location-row";
+  paneId: string;
+  row: ShipLocationRow;
+  itemIds: string[];
+}
+
+export interface SpaceshipDeviceColumnLayout {
+  layoutId: SpaceshipLayoutId;
+  type: "device-column";
+  locationItemId: string;
+  itemIds: string[];
+}
+
+export interface SpaceshipEffectStackLayout {
+  layoutId: SpaceshipLayoutId;
+  type: "effect-stack";
+  ownerItemId: string;
+  itemIds: string[];
+}
+
+export interface SpaceshipActorRowLayout {
+  layoutId: SpaceshipLayoutId;
+  type: "actor-row";
+  paneId: string;
+  itemIds: string[];
+}
+
+export interface SpaceshipLayoutMembershipState {
+  locationRows: SpaceshipLocationRowLayout[];
+  deviceColumns: SpaceshipDeviceColumnLayout[];
+  effectStacks: SpaceshipEffectStackLayout[];
+  actorRows: SpaceshipActorRowLayout[];
+}
+
+export type SpaceshipCardPlacement =
+  | { type: "layout"; layoutId: SpaceshipLayoutId }
+  | { type: "board" };
+
+export type SpaceshipCardSnapTarget =
+  | {
+      type: "location-row";
+      layoutId: SpaceshipLayoutId;
+      index: number;
+    }
+  | {
+      type: "device-column";
+      layoutId: SpaceshipLayoutId;
+      index: number;
+    }
+  | {
+      type: "effect-stack";
+      layoutId: SpaceshipLayoutId;
+      ownerItemId: string;
+      index: number;
+    }
+  | {
+      type: "actor-row";
+      layoutId: SpaceshipLayoutId;
+      index: number;
+    };
+
+export interface SpaceshipDraggableCard {
+  itemId: string;
+  role: SpaceshipDraggableCardRole;
+  paneId?: string;
+  ownerId?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zIndex: number;
+  placement: SpaceshipCardPlacement;
+}
+
 export interface SpaceshipEnergyStackState {
   totalCount: number;
   availableCount: number;
 }
 
 export interface SpaceshipDragState {
+  layouts: SpaceshipLayoutMembershipState;
+  cards: SpaceshipDraggableCard[];
   tokens: SpaceshipDraggableToken[];
   energyStack: SpaceshipEnergyStackState;
+  nextCardZIndex: number;
   nextZIndex: number;
   nextEnergyTokenIndex: number;
 }
