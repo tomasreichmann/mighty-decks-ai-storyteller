@@ -137,6 +137,12 @@ prompt: "This is the introductory chapter of the campaign. The players are intro
 <List><StuntCard {...exilesStuntMap.machine_speaker} /><StuntCard {...exilesStuntMap.servo_arms} /></List>
 
 ### Crimson Witch/Warlock
+_A hemomancer, using their own blood to fuel their mystic arts for divination, alteration or combat._
+
+-   Detects living organic creatures. When at least a dog-sized one dies in the same zone, you can collect one unit of blood.
+-   Conjures and moves solid objects made of crystallized blood from own (+1 Injury) or collected blood.
+-   Performs rituals to influence creatures at a distance with +1 Effect.
+
 <List><StuntCard {...exilesStuntMap.blood_sense} /><StuntCard {...exilesStuntMap.hemomancy} /></List>
 
 ### Augmented Veteran
@@ -506,6 +512,7 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
       fragmentId: string;
       actorSlug: string;
       title: string;
+      summary?: string;
       isPlayerCharacter: boolean;
       content: string;
       mode: string;
@@ -842,6 +849,25 @@ test("translates legacy Exiles MDX into a normalized adventure module", async ()
   assert.ok(machinistActor);
   assert.equal(machinistActor?.mode, "custom");
   assert.deepEqual(machinistActor?.custom, firstActorCard?.custom);
+
+  const crimsonActor = translated.actors.find(
+    (actor) => actor.actorSlug === "crimson-witch-warlock",
+  );
+  assert.ok(crimsonActor);
+  assert.equal(
+    crimsonActor?.summary,
+    "A hemomancer who uses their own blood to fuel mystic arts of divination, alteration, or combat.",
+  );
+  assert.match(
+    crimsonActor?.custom.adjectiveDescription ?? "",
+    /harvest blood from the freshly dead/i,
+  );
+  assert.match(
+    crimsonActor?.content ?? "",
+    /dog-sized one dies in the same zone/i,
+  );
+  assert.match(crimsonActor?.content ?? "", /\+1 Injury/);
+  assert.match(crimsonActor?.content ?? "", /\+1 Effect/);
 
   const alienContainerAsset = translated.assets.find(
     (asset) => asset.assetSlug === "alien-container",

@@ -160,6 +160,7 @@ interface CuratedActorDefinition {
   isPlayerCharacter: boolean;
   summary: string;
   noteLines: string[];
+  cardNoteLines?: string[];
   portraitPaths?: string[];
 }
 
@@ -408,17 +409,20 @@ const getActorBaseImageUri = (slug: ActorBaseLayerSlug): string =>
 const buildCustomActorCard = (
   definition: CuratedActorDefinition,
   imageUrls: string[],
-): ExilesCustomActorCard => ({
-  imageUrl: imageUrls[0] ?? getActorBaseImageUri(definition.baseLayerSlug),
-  adjective: definition.isPlayerCharacter
-    ? ""
-    : definition.tacticalSpecialSlug
-      ? titleCase(definition.tacticalSpecialSlug)
-      : "Recurring Actor",
-  noun: definition.title,
-  nounDescription: definition.summary,
-  adjectiveDescription: definition.noteLines.join("\n"),
-});
+): ExilesCustomActorCard => {
+  const cardNoteLines = definition.cardNoteLines ?? definition.noteLines;
+  return {
+    imageUrl: imageUrls[0] ?? getActorBaseImageUri(definition.baseLayerSlug),
+    adjective: definition.isPlayerCharacter
+      ? ""
+      : definition.tacticalSpecialSlug
+        ? titleCase(definition.tacticalSpecialSlug)
+        : "Recurring Actor",
+    noun: definition.title,
+    nounDescription: definition.summary,
+    adjectiveDescription: cardNoteLines.join("\n"),
+  };
+};
 
 const trimMarkdownBlock = (lines: readonly string[]): string => {
   let start = 0;
@@ -532,8 +536,18 @@ const curatedActorDefinitions: readonly CuratedActorDefinition[] = [
     baseLayerSlug: "zealot",
     tacticalRoleSlug: "stalker",
     isPlayerCharacter: true,
-    summary: "A hemomancer who fuels divination, alteration, and combat through blood magic.",
-    noteLines: ["Blood Sense", "Hemomancy", "Ritualist"],
+    summary:
+      "A hemomancer who uses their own blood to fuel mystic arts of divination, alteration, or combat.",
+    noteLines: [
+      "Detects living organic creatures. When at least a dog-sized one dies in the same zone, you can collect one unit of blood.",
+      "Conjures and moves solid objects made of crystallized blood from your own blood (+1 Injury) or collected blood.",
+      "Performs rituals to influence creatures at a distance with +1 Effect.",
+    ],
+    cardNoteLines: [
+      "Sense living creatures and harvest blood from the freshly dead.",
+      "Conjure crystallized blood from your own veins (+1 Injury) or stored blood.",
+      "Perform rituals to influence creatures at a distance with +1 Effect.",
+    ],
     portraitPaths: ["characters/crimson_witch.png"],
   },
   {

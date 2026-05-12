@@ -34,6 +34,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: show the live `/spaceship` board zoom under the Exiles title and remove the Secret Route label plus prototype note panel.
 - Web: move the hidden `/spaceship` visual lab onto the shared board primitives so ships, devices, locations, effects, energy tokens, actor tokens, and actor cards are positioned as flat board items with reusable layout helpers.
 - Web: simplify the hidden `/spaceship` board chrome, add Show All / ally / enemy fit controls, and move the pan/zoom dot-grid texture onto the shared board frame.
+- Server content: expand the Exiles `Crimson Witch/Warlock` actor summary, card text, and markdown notes to match the richer Chapter 0 source description instead of the earlier placeholder stunt labels.
 - Server content: switch Exiles actor cards and actor detail images to the cropped profile portraits where available, and align persisted module ownership with the editable test module author.
 - Server: reimport Exiles actors as custom actor cards using their curated portraits, names, summaries, and notes while preserving generic layer settings for editing; player options leave the adjective slot blank.
 - Web: move the actor card generic/custom mode switch into the card settings flow as a shared RockerSwitch and collapse custom actor icon insertion into steel ghost icon-name buttons.
@@ -70,6 +71,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: expand `/rules/ship-combat` with item-level reference panels for each ship Device, weapon turret pattern, and Special Location.
 - Web: add generated alpha PNG ship-device icons and render them as custom Asset cards on `/rules/ship-combat`.
 - Web: render ship-combat Special Location panels as Location cards, add Morgue art/details, and label custom Device cards as the sci-fi deck.
+- Server content: add the Exiles `The False Belt` encounter, where the crew jumps into a fake asteroid field made of missile turret drones, with typed stunt, counter, and reward asset cards plus title art.
 - Web/Spec/Server: add Fal background-removal jobs and expose Bria Background Remove plus BiRefNet v2 Matting in the shared image dialog.
 - Web/Spec/Server: add dual-mode actor cards so authored actors can switch between generic base/role/special cards and custom image/title/body cards while preserving both sets of settings.
 - Server: add Groq as an `AI_TEXT_PROVIDER` option (text-only; image generation continues via OpenRouter/Fal/Leonardo). New env vars: `GROQ_API_KEY`, `GROQ_TEXT_NARRATIVE_MODEL`, `GROQ_TEXT_SCENE_MODEL`, `GROQ_TEXT_OUTCOME_MODEL`, `GROQ_TEXT_CONTINUITY_MODEL`, `GROQ_TEXT_PITCH_MODEL`.

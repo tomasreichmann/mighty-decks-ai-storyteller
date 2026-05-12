@@ -25,7 +25,7 @@
     "mini_campaign"
   ],
   "storytellerSummaryFragmentId": "frag-storyteller-summary",
-  "storytellerSummaryMarkdown": "# Storyteller Summary\n\n![](/api/adventure-artifacts/void-horror-4669a2c690bf1b093878.png)\n## Premise\n\nThe Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\n\n## Campaign Intent\n\nThis is the introductory chapter of the campaign. The players are introduced to their characters and the ship they have been exiled on. They need to work together to get the ship operational and escape the <GameCard type=\"ActorCard\" slug=\"void-horror\" /> that appears as they are about to leave.\n\n## Imported Encounter Spine\n- Dumped in the Void\n- An Abandoned Research Station\n- Dead in space\n- Mining Colony Has a Pest Problem\n- Transport in Distress\n- Graveyard Bazaar\n- Cursed Prison Transport\n- Missile Stockpile Raid\n- Siege of Rock Bottom\n- Trip into the Unknown",
+  "storytellerSummaryMarkdown": "# Storyteller Summary\n\n![](/api/adventure-artifacts/void-horror-4669a2c690bf1b093878.png)\n## Premise\n\nThe Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\n\n## Campaign Intent\n\nThis is the introductory chapter of the campaign. The players are introduced to their characters and the ship they have been exiled on. They need to work together to get the ship operational and escape the <GameCard type=\"ActorCard\" slug=\"void-horror\" /> that appears as they are about to leave.\n\n## Imported Encounter Spine\n- Dumped in the Void\n- An Abandoned Research Station\n- Dead in space\n- Mining Colony Has a Pest Problem\n- Transport in Distress\n- Graveyard Bazaar\n- Cursed Prison Transport\n- Missile Stockpile Raid\n- Siege of Rock Bottom\n- Trip into the Unknown\n- The False Belt",
   "playerSummaryFragmentId": "frag-player-summary",
   "playerSummaryMarkdown": "# Player Summary\n![](/api/adventure-artifacts/exiles-of-the-hungry-void-title-36059ffa4f9afb3dc1d4.jpg)\nThe Empire has exiled you to the edge of the Hungry Void, dumping you on a derelict corvette with a warning never to return to Empire space.\nYou are exiles flying a broken corvette at the edge of the Hungry Void. Survive long enough to repair your ship, pick your battles, and decide what kind of crew you will become.\n## Playable Archetypes\n- <GameCard type=\"ActorCard\" slug=\"machinist-priest-heretic\" />\n- <GameCard type=\"ActorCard\" slug=\"crimson-witch-warlock\" />\n- <GameCard type=\"ActorCard\" slug=\"augmented-veteran\" />\n- <GameCard type=\"ActorCard\" slug=\"noble-empath\" />\n- <GameCard type=\"ActorCard\" slug=\"void-seer\" />\n- <GameCard type=\"ActorCard\" slug=\"synthetic-medic\" />",
   "paletteFragmentId": "frag-palette",
@@ -225,7 +225,8 @@
     "frag-actor-smugglers",
     "frag-actor-void-seers",
     "frag-actor-death-cultists",
-    "frag-actor-hadeans"
+    "frag-actor-hadeans",
+    "frag-actor-mosy46h4shh2mv"
   ],
   "actorCards": [
     {
@@ -251,8 +252,8 @@
         "imageUrl": "/api/adventure-artifacts/crimson-witch-profile-6a80ff34e75573f61ca3.png",
         "adjective": "",
         "noun": "Crimson Witch/Warlock",
-        "nounDescription": "A hemomancer who fuels divination, alteration, and combat through blood magic.",
-        "adjectiveDescription": "Blood Sense\nHemomancy\nRitualist"
+        "nounDescription": "A hemomancer who uses their own blood to fuel mystic arts of divination, alteration, or combat.",
+        "adjectiveDescription": "Sense living creatures and harvest blood from the freshly dead.\nConjure crystallized blood from your own veins (+1 Injury) or stored blood.\nPerform rituals to influence creatures at a distance with +1 Effect."
       },
       "isPlayerCharacter": true
     },
@@ -446,15 +447,47 @@
         "adjectiveDescription": "The crew in Dead in space"
       },
       "isPlayerCharacter": false
+    },
+    {
+      "fragmentId": "frag-actor-mosy46h4shh2mv",
+      "mode": "custom",
+      "baseLayerSlug": "civilian",
+      "tacticalRoleSlug": "pawn",
+      "custom": {
+        "imageUrl": "/api/image/files/remove-background-with-bria-rmbg-2-0-2a73b9cfcde9-8bf9ac3e4bb1-b0-i0.png",
+        "adjective": "Badass",
+        "noun": "Asteroid",
+        "nounDescription": "[toughness6]\n[ranged][injury2][splash][range]2",
+        "adjectiveDescription": "Missiles: Toxic / Freezing / Burning / Electric"
+      },
+      "isPlayerCharacter": false
     }
   ],
-  "counters": [],
+  "counters": [
+    {
+      "slug": "clear-the-false-belt",
+      "iconSlug": "escape",
+      "title": "Clear the False Belt",
+      "currentValue": 0,
+      "description": "Escape the fake asteroid kill box before missile waves and collision vectors overwhelm the ship."
+    },
+    {
+      "slug": "break-the-ambush",
+      "iconSlug": "destruction",
+      "title": "Break the Ambush",
+      "currentValue": 6,
+      "description": "Destroy enough camouflaged missile asteroids to stop the chase and claim the best salvage."
+    }
+  ],
   "assetFragmentIds": [
     "frag-asset-alien-container",
     "frag-asset-biskma",
     "frag-asset-ritual-of-raising-dead",
     "frag-asset-obsidian-idol",
-    "frag-asset-disruptor-mk-i"
+    "frag-asset-disruptor-mk-i",
+    "frag-asset-missile-parts",
+    "frag-asset-decoy-beacon",
+    "frag-asset-stealth-plating-scraps"
   ],
   "assetCards": [
     {
@@ -506,6 +539,36 @@
       "adjectiveDescription": "A salvaged ship weapon that likes to eat power.",
       "iconUrl": "/assets/base/artillery_weapon.png",
       "overlayUrl": ""
+    },
+    {
+      "fragmentId": "frag-asset-missile-parts",
+      "kind": "custom",
+      "modifier": "Salvaged",
+      "noun": "Missile Parts",
+      "nounDescription": "Launch rails, guidance boards, and warhead casings worth 2 missile reloads.",
+      "adjectiveDescription": "Enough to build or reload 2 missiles in the ship missile bay.",
+      "iconUrl": "/assets/base/artillery_weapon.png",
+      "overlayUrl": ""
+    },
+    {
+      "fragmentId": "frag-asset-decoy-beacon",
+      "kind": "custom",
+      "modifier": "Hidden Annoying",
+      "noun": "Decoy Beacon",
+      "nounDescription": "A compact spoofing beacon recovered intact from a camouflaged missile asteroid.",
+      "adjectiveDescription": "Make a missile, drone, or automated turret prefer the beacon for one exchange.",
+      "iconUrl": "/assets/base/tools.png",
+      "overlayUrl": ""
+    },
+    {
+      "fragmentId": "frag-asset-stealth-plating-scraps",
+      "kind": "custom",
+      "modifier": "Hidden",
+      "noun": "Stealth Plating Scraps",
+      "nounDescription": "Composite false-rock plating and sensor-dulling mesh from disabled missile asteroids.",
+      "adjectiveDescription": "Use for one ship repair, one sensor-masking project, or one valuable trade.",
+      "iconUrl": "/assets/base/resources.png",
+      "overlayUrl": ""
     }
   ],
   "itemFragmentIds": [],
@@ -519,7 +582,9 @@
     "frag-encounter-cursed-prison-transport",
     "frag-encounter-missile-stockpile-raid",
     "frag-encounter-siege-of-rock-bottom",
-    "frag-encounter-trip-into-the-unknown"
+    "frag-encounter-trip-into-the-unknown",
+    "frag-encounter-mosxwk9ihk68pn",
+    "frag-encounter-the-false-belt"
   ],
   "encounterDetails": [
     {
@@ -571,6 +636,15 @@
       "fragmentId": "frag-encounter-trip-into-the-unknown",
       "prerequisites": "",
       "titleImageUrl": "/api/adventure-artifacts/trip-into-the-unknown-6a8323bf2cb83062a3c0.png"
+    },
+    {
+      "fragmentId": "frag-encounter-mosxwk9ihk68pn",
+      "prerequisites": ""
+    },
+    {
+      "fragmentId": "frag-encounter-the-false-belt",
+      "prerequisites": "",
+      "titleImageUrl": "/api/adventure-artifacts/the-false-belt-fa687fd1ee5fe3d76c8f.png"
     }
   ],
   "questFragmentIds": [
@@ -1079,7 +1153,7 @@
       "kind": "actor",
       "title": "Crimson Witch/Warlock",
       "path": "actors/crimson-witch-warlock.mdx",
-      "summary": "A hemomancer who fuels divination, alteration, and combat through blood magic.",
+      "summary": "A hemomancer who uses their own blood to fuel mystic arts of divination, alteration, or combat.",
       "tags": [
         "exiles",
         "imported",
@@ -1562,6 +1636,88 @@
       ],
       "containsSpoilers": true,
       "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-encounter-mosxwk9ihk68pn",
+      "kind": "encounter",
+      "title": "New Encounter",
+      "path": "encounters/new-encounter.mdx",
+      "summary": "Describe the player goal, pressure, and likely complications.",
+      "tags": [
+        "encounter",
+        "scene"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-actor-mosy46h4shh2mv",
+      "kind": "actor",
+      "title": "New Actor",
+      "path": "actors/new-actor.mdx",
+      "summary": "Describe this actor's pressure, leverage, and public face.",
+      "tags": [
+        "actor",
+        "layered_actor"
+      ],
+      "containsSpoilers": false,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-encounter-the-false-belt",
+      "kind": "encounter",
+      "title": "The False Belt",
+      "path": "encounters/the-false-belt.mdx",
+      "summary": "The crew jumps into an asteroid field and discovers the rocks are camouflaged missile turrets waiting in ambush.",
+      "tags": [
+        "exiles",
+        "sci-fi",
+        "ship-combat"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "storyteller"
+    },
+    {
+      "fragmentId": "frag-asset-missile-parts",
+      "kind": "asset",
+      "title": "Missile Parts",
+      "path": "assets/missile-parts.mdx",
+      "summary": "Salvaged launcher parts from the false belt's turret asteroids.",
+      "tags": [
+        "exiles",
+        "asset",
+        "ship-combat"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-decoy-beacon",
+      "kind": "asset",
+      "title": "Decoy Beacon",
+      "path": "assets/decoy-beacon.mdx",
+      "summary": "A spoofing beacon that can draw automated weapons away from the ship.",
+      "tags": [
+        "exiles",
+        "asset",
+        "ship-combat"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
+    },
+    {
+      "fragmentId": "frag-asset-stealth-plating-scraps",
+      "kind": "asset",
+      "title": "Stealth Plating Scraps",
+      "path": "assets/stealth-plating-scraps.mdx",
+      "summary": "Sensor-dulling false-rock plating useful for repairs, masking, or trade.",
+      "tags": [
+        "exiles",
+        "asset",
+        "ship-combat"
+      ],
+      "containsSpoilers": true,
+      "intendedAudience": "shared"
     }
   ],
   "questGraphs": [
@@ -2827,9 +2983,69 @@
       "contentType": "text/markdown",
       "generatedBy": "pipeline",
       "createdAtIso": "2026-04-18T18:00:29.007Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-mosxwk9ihk68pn",
+      "kind": "mdx",
+      "path": "encounters/new-encounter.mdx",
+      "title": "New Encounter",
+      "sourceFragmentId": "frag-encounter-mosxwk9ihk68pn",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-05-05T18:06:25.686Z"
+    },
+    {
+      "artifactId": "artifact-frag-actor-mosy46h4shh2mv",
+      "kind": "mdx",
+      "path": "actors/new-actor.mdx",
+      "title": "New Actor",
+      "sourceFragmentId": "frag-actor-mosy46h4shh2mv",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-05-05T18:12:21.064Z"
+    },
+    {
+      "artifactId": "artifact-frag-encounter-the-false-belt",
+      "kind": "mdx",
+      "path": "encounters/the-false-belt.mdx",
+      "title": "The False Belt",
+      "sourceFragmentId": "frag-encounter-the-false-belt",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-05-05T18:25:57.862Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-missile-parts",
+      "kind": "mdx",
+      "path": "assets/missile-parts.mdx",
+      "title": "Missile Parts",
+      "sourceFragmentId": "frag-asset-missile-parts",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-05-05T18:39:54.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-decoy-beacon",
+      "kind": "mdx",
+      "path": "assets/decoy-beacon.mdx",
+      "title": "Decoy Beacon",
+      "sourceFragmentId": "frag-asset-decoy-beacon",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-05-05T18:39:54.444Z"
+    },
+    {
+      "artifactId": "artifact-frag-asset-stealth-plating-scraps",
+      "kind": "mdx",
+      "path": "assets/stealth-plating-scraps.mdx",
+      "title": "Stealth Plating Scraps",
+      "sourceFragmentId": "frag-asset-stealth-plating-scraps",
+      "contentType": "text/markdown",
+      "generatedBy": "author",
+      "createdAtIso": "2026-05-05T18:39:54.444Z"
     }
   ],
   "notes": "Imported from legacy Exiles of the Hungry Void MDX. Legacy UI widgets were normalized to markdown.",
-  "updatedAtIso": "2026-05-06T12:57:18.070Z",
+  "updatedAtIso": "2026-05-11T00:00:00.000Z",
   "postMvpExtension": true
 }
