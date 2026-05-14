@@ -9,6 +9,7 @@ test("App registers the campaign list, detail, and session routes", () => {
   assert.match(source, /CampaignAuthoringPage/);
   assert.match(source, /CampaignSessionLobbyPage/);
   assert.match(source, /CampaignSessionPlayerPage/);
+  assert.match(source, /CampaignWorldbuildingResultPage/);
   assert.match(source, /RouteShellBoundary/);
   assert.match(source, /CampaignPlayerSessionLayout/);
   assert.match(source, /CampaignStorytellerSessionLayout/);
@@ -31,6 +32,10 @@ test("App registers the campaign list, detail, and session routes", () => {
   assert.match(
     source,
     /path="\/campaign\/:slug\/:tab\/:entityId"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignAuthoringPage \/>[\s\S]*<\/RouteShellBoundary>/,
+  );
+  assert.match(
+    source,
+    /path="\/campaign\/:campaignSlug\/worldbuilding\/:sessionId"[\s\S]*<RouteShellBoundary>[\s\S]*<CampaignWorldbuildingResultPage \/>[\s\S]*<\/RouteShellBoundary>/,
   );
   assert.match(
     source,

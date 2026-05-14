@@ -14,6 +14,9 @@ const slugSchema = z
 export const campaignSessionStatusSchema = z.enum(["setup", "active", "closed"]);
 export type CampaignSessionStatus = z.infer<typeof campaignSessionStatusSchema>;
 
+export const campaignSessionModeSchema = z.enum(["play", "worldbuilding"]);
+export type CampaignSessionMode = z.infer<typeof campaignSessionModeSchema>;
+
 export const campaignSessionParticipantRoleSchema = z.enum([
   "player",
   "storyteller",
@@ -198,8 +201,81 @@ export type CampaignSessionTableEntry = z.infer<
   typeof campaignSessionTableEntrySchema
 >;
 
+export const worldbuildingPhaseSchema = z.enum([
+  "theme_discussion",
+  "motifs",
+  "turn_building",
+  "review",
+  "closed",
+]);
+export type WorldbuildingPhase = z.infer<typeof worldbuildingPhaseSchema>;
+
+export const worldbuildingProposalKindSchema = z.enum([
+  "theme",
+  "motif",
+  "location",
+  "actor",
+  "asset",
+  "encounter",
+  "quest",
+  "relationship",
+]);
+export type WorldbuildingProposalKind = z.infer<
+  typeof worldbuildingProposalKindSchema
+>;
+
+export const worldbuildingProposalStatusSchema = z.enum([
+  "proposed",
+  "accepted",
+  "rejected",
+  "imported",
+]);
+export type WorldbuildingProposalStatus = z.infer<
+  typeof worldbuildingProposalStatusSchema
+>;
+
+export const worldbuildingMotifStanceSchema = z.enum([
+  "must_have",
+  "avoid",
+]);
+export type WorldbuildingMotifStance = z.infer<
+  typeof worldbuildingMotifStanceSchema
+>;
+
+export const worldbuildingProposalSchema = z.object({
+  proposalId: identifierSchema,
+  kind: worldbuildingProposalKindSchema,
+  title: shortTextSchema,
+  summary: z.string().min(1).max(1000),
+  status: worldbuildingProposalStatusSchema.default("proposed"),
+  stance: worldbuildingMotifStanceSchema.optional(),
+  contradictionNotes: z.string().max(1000).optional(),
+  importedEntityType: campaignSessionTableCardTypeSchema.optional(),
+  importedEntitySlug: identifierSchema.optional(),
+  imageUrl: z.string().min(1).max(500).optional(),
+  createdByParticipantId: identifierSchema.optional(),
+  createdAtIso: z.string().datetime(),
+  updatedAtIso: z.string().datetime().optional(),
+});
+export type WorldbuildingProposal = z.infer<
+  typeof worldbuildingProposalSchema
+>;
+
+export const worldbuildingResultSchema = z.object({
+  resultId: identifierSchema,
+  phase: worldbuildingPhaseSchema.default("theme_discussion"),
+  theme: z.string().max(1000).default(""),
+  activeParticipantId: identifierSchema.optional(),
+  proposals: z.array(worldbuildingProposalSchema).max(500).default([]),
+  importedProposalIds: z.array(identifierSchema).max(500).default([]),
+  createdAtIso: z.string().datetime(),
+  updatedAtIso: z.string().datetime(),
+});
+export type WorldbuildingResult = z.infer<typeof worldbuildingResultSchema>;
+
 export const campaignSessionSummarySchema = z.object({
   sessionId: identifierSchema,
+  mode: campaignSessionModeSchema.default("play"),
   status: campaignSessionStatusSchema,
   createdAtIso: z.string().datetime(),
   updatedAtIso: z.string().datetime(),
@@ -219,6 +295,7 @@ export const campaignSessionDetailSchema = campaignSessionSummarySchema
       campaignSessionOutcomePilesByParticipantIdSchema.default({}),
     transcript: z.array(campaignSessionTranscriptEntrySchema).max(5000).default([]),
     table: z.array(campaignSessionTableEntrySchema).max(2000).default([]),
+    worldbuilding: worldbuildingResultSchema.optional(),
   })
   .superRefine((session, ctx) => {
     if (session.status === "closed" && !session.closedAtIso) {
@@ -305,6 +382,14 @@ export const campaignSessionDetailSchema = campaignSessionSummarySchema
         });
       }
     }
+
+    if (session.mode === "worldbuilding" && !session.worldbuilding) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "worldbuilding is required when mode=worldbuilding",
+        path: ["worldbuilding"],
+      });
+    }
   });
 export type CampaignSessionDetail = z.infer<typeof campaignSessionDetailSchema>;
 
@@ -346,7 +431,9 @@ export const campaignBySlugParamsSchema = z.object({
 });
 export type CampaignBySlugParams = z.infer<typeof campaignBySlugParamsSchema>;
 
-export const campaignCreateSessionRequestSchema = z.object({});
+export const campaignCreateSessionRequestSchema = z.object({
+  mode: campaignSessionModeSchema.default("play"),
+});
 export type CampaignCreateSessionRequest = z.infer<
   typeof campaignCreateSessionRequestSchema
 >;

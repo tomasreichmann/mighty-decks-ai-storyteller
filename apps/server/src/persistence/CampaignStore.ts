@@ -10,11 +10,16 @@ import {
   type CampaignSessionOutcomePile,
   type CampaignSessionTableCardReference,
   type CampaignSessionTableTarget,
+  type CampaignSessionMode,
   campaignSessionSummarySchema,
   type CampaignDetail,
   type CampaignListItem,
   type CampaignSessionDetail,
   type CampaignSessionParticipantRole,
+  type WorldbuildingMotifStance,
+  type WorldbuildingPhase,
+  type WorldbuildingProposal,
+  type WorldbuildingProposalKind,
 } from "@mighty-decks/spec/campaign";
 import {
   campaignOutcomeDeckCardSlugs,
@@ -45,6 +50,14 @@ const makeId = (prefix: string): string => {
   const noise = Math.random().toString(36).slice(2, 8);
   return `${prefix}-${stamp}${noise}`;
 };
+
+const worldbuildingImportableKinds = new Set<WorldbuildingProposalKind>([
+  "location",
+  "actor",
+  "asset",
+  "encounter",
+  "quest",
+]);
 
 const isMissingFileError = (error: unknown): boolean => {
   const nodeError = error as NodeJS.ErrnoException;
@@ -221,11 +234,14 @@ export class CampaignStore {
 
   public async createSession(options: {
     campaignSlug: string;
+    mode?: CampaignSessionMode;
   }): Promise<CampaignSessionDetail> {
     const campaign = await this.requireCampaignBySlug(options.campaignSlug);
     const nowIso = new Date().toISOString();
+    const mode = options.mode ?? "play";
     const session = this.hydrateSession({
       sessionId: makeId("session"),
+      mode,
       status: "setup",
       createdAtIso: nowIso,
       updatedAtIso: nowIso,
@@ -240,10 +256,25 @@ export class CampaignStore {
         {
           entryId: makeId("session-entry"),
           kind: "system",
-          text: "Session created.",
+          text:
+            mode === "worldbuilding"
+              ? "Worldbuilding session created."
+              : "Session created.",
           createdAtIso: nowIso,
         },
       ],
+      worldbuilding:
+        mode === "worldbuilding"
+          ? {
+              resultId: makeId("worldbuilding-result"),
+              phase: "theme_discussion",
+              theme: "",
+              proposals: [],
+              importedProposalIds: [],
+              createdAtIso: nowIso,
+              updatedAtIso: nowIso,
+            }
+          : undefined,
     });
 
     await this.withSessionWriteLock(campaign.campaignId, async () => {
@@ -634,6 +665,235 @@ export class CampaignStore {
     });
   }
 
+  public async commitWorldbuildingTheme(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    theme: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const worldbuilding = this.requireWorldbuilding(session);
+      const participant = this.requireSessionParticipant(session, options.participantId);
+      const theme = options.theme.trim();
+      worldbuilding.theme = theme;
+      worldbuilding.phase = "motifs";
+      const existingTheme = worldbuilding.proposals.find(
+        (proposal) => proposal.kind === "theme",
+      );
+      if (existingTheme) {
+        existingTheme.title = theme;
+        existingTheme.summary = theme;
+        existingTheme.status = "accepted";
+        existingTheme.updatedAtIso = nowIso;
+      } else {
+        worldbuilding.proposals.unshift(
+          this.createWorldbuildingProposal({
+            kind: "theme",
+            title: theme,
+            summary: theme,
+            status: "accepted",
+            participantId: participant.participantId,
+            nowIso,
+          }),
+        );
+      }
+      worldbuilding.updatedAtIso = nowIso;
+      session.transcript.push({
+        entryId: makeId("session-entry"),
+        kind: "system",
+        text: `${participant.displayName} committed the worldbuilding theme: ${theme}`,
+        createdAtIso: nowIso,
+      });
+    });
+  }
+
+  public async submitWorldbuildingMotif(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    stance: WorldbuildingMotifStance;
+    title: string;
+    summary?: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const worldbuilding = this.requireWorldbuilding(session);
+      const participant = this.requireSessionParticipant(session, options.participantId);
+      const title = options.title.trim();
+      const label = options.stance === "must_have" ? "Must have" : "Avoid";
+      worldbuilding.proposals.push(
+        this.createWorldbuildingProposal({
+          kind: "motif",
+          title,
+          summary: options.summary?.trim() || `${label}: ${title}`,
+          status: "accepted",
+          stance: options.stance,
+          participantId: participant.participantId,
+          nowIso,
+        }),
+      );
+      worldbuilding.updatedAtIso = nowIso;
+      session.transcript.push({
+        entryId: makeId("session-entry"),
+        kind: "system",
+        text: `${participant.displayName} added a worldbuilding motif (${label}): ${title}`,
+        createdAtIso: nowIso,
+      });
+    });
+  }
+
+  public async addWorldbuildingProposal(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    kind: Exclude<WorldbuildingProposalKind, "theme" | "motif">;
+    title: string;
+    summary: string;
+    imageUrl?: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const worldbuilding = this.requireWorldbuilding(session);
+      const participant = this.requireSessionParticipant(session, options.participantId);
+      worldbuilding.phase =
+        worldbuilding.phase === "theme_discussion" || worldbuilding.phase === "motifs"
+          ? "turn_building"
+          : worldbuilding.phase;
+      worldbuilding.proposals.push(
+        this.createWorldbuildingProposal({
+          kind: options.kind,
+          title: options.title.trim(),
+          summary: options.summary.trim(),
+          status: "accepted",
+          participantId: participant.participantId,
+          imageUrl: options.imageUrl,
+          nowIso,
+        }),
+      );
+      worldbuilding.updatedAtIso = nowIso;
+      session.transcript.push({
+        entryId: makeId("session-entry"),
+        kind: "system",
+        text: `${participant.displayName} added a ${options.kind} worldbuilding proposal: ${options.title.trim()}`,
+        createdAtIso: nowIso,
+      });
+    });
+  }
+
+  public async advanceWorldbuildingPhase(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    phase: WorldbuildingPhase;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const worldbuilding = this.requireWorldbuilding(session);
+      const participant = this.requireSessionParticipant(session, options.participantId);
+      worldbuilding.phase = options.phase;
+      worldbuilding.updatedAtIso = nowIso;
+      session.transcript.push({
+        entryId: makeId("session-entry"),
+        kind: "system",
+        text: `${participant.displayName} moved worldbuilding to ${options.phase}.`,
+        createdAtIso: nowIso,
+      });
+    });
+  }
+
+  public async acceptWorldbuildingProposal(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    proposalId: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.setWorldbuildingProposalStatus({
+      ...options,
+      status: "accepted",
+    });
+  }
+
+  public async rejectWorldbuildingProposal(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    proposalId: string;
+  }): Promise<CampaignSessionDetail> {
+    return this.setWorldbuildingProposalStatus({
+      ...options,
+      status: "rejected",
+    });
+  }
+
+  public async importWorldbuildingResult(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    proposalIds: readonly string[];
+  }): Promise<CampaignSessionDetail> {
+    const campaign = await this.requireCampaignBySlug(options.campaignSlug);
+    const session = await this.getSession({
+      campaignSlug: options.campaignSlug,
+      sessionId: options.sessionId,
+    });
+    if (!session) {
+      throw new CampaignSessionNotFoundError("Campaign session not found.");
+    }
+    const participant = this.requireSessionParticipant(session, options.participantId);
+    if (!isStoryteller(participant)) {
+      throw new CampaignValidationError("Only storytellers can import worldbuilding results.");
+    }
+    const worldbuilding = this.requireWorldbuilding(session);
+    const proposalIds = new Set(options.proposalIds);
+    const proposals = worldbuilding.proposals.filter((proposal) =>
+      proposalIds.has(proposal.proposalId),
+    );
+    if (proposals.length !== proposalIds.size) {
+      throw new CampaignValidationError("One or more worldbuilding proposals were not found.");
+    }
+
+    const nowIso = new Date().toISOString();
+    for (const proposal of proposals) {
+      if (
+        proposal.status === "rejected" ||
+        proposal.status === "imported" ||
+        !worldbuildingImportableKinds.has(proposal.kind)
+      ) {
+        continue;
+      }
+      await this.importWorldbuildingProposal(campaign.campaignId, proposal);
+    }
+    await this.touchCampaignMetadata(campaign.campaignId, nowIso);
+
+    return this.updateSession(options.campaignSlug, options.sessionId, (nextSession, updateIso) => {
+      const nextWorldbuilding = this.requireWorldbuilding(nextSession);
+      const importedIds = new Set(nextWorldbuilding.importedProposalIds);
+      nextWorldbuilding.proposals = nextWorldbuilding.proposals.map((proposal) => {
+        if (!proposalIds.has(proposal.proposalId)) {
+          return proposal;
+        }
+        if (!worldbuildingImportableKinds.has(proposal.kind) || proposal.status === "rejected") {
+          return proposal;
+        }
+        importedIds.add(proposal.proposalId);
+        return {
+          ...proposal,
+          status: "imported",
+          updatedAtIso: updateIso,
+        };
+      });
+      nextWorldbuilding.importedProposalIds = Array.from(importedIds);
+      nextWorldbuilding.updatedAtIso = updateIso;
+      nextSession.transcript.push({
+        entryId: makeId("session-entry"),
+        kind: "system",
+        text: `${participant.displayName} imported ${proposals.length} worldbuilding proposal${proposals.length === 1 ? "" : "s"} into the campaign.`,
+        createdAtIso: updateIso,
+      });
+    });
+  }
+
   public async removeSessionTableCard(options: {
     campaignSlug: string;
     sessionId: string;
@@ -690,6 +950,10 @@ export class CampaignStore {
         }
       }
       session.status = "closed";
+      if (session.worldbuilding) {
+        session.worldbuilding.phase = "closed";
+        session.worldbuilding.updatedAtIso = nowIso;
+      }
       session.closedAtIso = nowIso;
       session.claims = [];
       session.transcript.push({
@@ -1093,6 +1357,134 @@ export class CampaignStore {
       transcriptEntryCount: hydrated.transcript.length,
       transcriptPreview: summarizeTranscriptText(hydrated.transcript.at(-1)?.text),
     });
+  }
+
+  private requireSessionParticipant(
+    session: CampaignSessionDetail,
+    participantId: string,
+  ): CampaignSessionParticipant {
+    const participant = session.participants.find(
+      (candidate) => candidate.participantId === participantId,
+    );
+    if (!participant) {
+      throw new CampaignValidationError("Session participant not found.");
+    }
+    return participant;
+  }
+
+  private requireWorldbuilding(
+    session: CampaignSessionDetail,
+  ): NonNullable<CampaignSessionDetail["worldbuilding"]> {
+    if (session.mode !== "worldbuilding" || !session.worldbuilding) {
+      throw new CampaignValidationError("Session is not a worldbuilding session.");
+    }
+    return session.worldbuilding;
+  }
+
+  private createWorldbuildingProposal(options: {
+    kind: WorldbuildingProposalKind;
+    title: string;
+    summary: string;
+    status: WorldbuildingProposal["status"];
+    participantId?: string;
+    stance?: WorldbuildingMotifStance;
+    imageUrl?: string;
+    nowIso: string;
+  }): WorldbuildingProposal {
+    return {
+      proposalId: makeId("worldbuilding-proposal"),
+      kind: options.kind,
+      title: options.title,
+      summary: options.summary,
+      status: options.status,
+      stance: options.stance,
+      imageUrl: options.imageUrl,
+      createdByParticipantId: options.participantId,
+      createdAtIso: options.nowIso,
+      updatedAtIso: options.nowIso,
+    };
+  }
+
+  private async setWorldbuildingProposalStatus(options: {
+    campaignSlug: string;
+    sessionId: string;
+    participantId: string;
+    proposalId: string;
+    status: Extract<WorldbuildingProposal["status"], "accepted" | "rejected">;
+  }): Promise<CampaignSessionDetail> {
+    return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
+      this.assertSessionWritable(session);
+      const worldbuilding = this.requireWorldbuilding(session);
+      const participant = this.requireSessionParticipant(session, options.participantId);
+      let found = false;
+      worldbuilding.proposals = worldbuilding.proposals.map((proposal) => {
+        if (proposal.proposalId !== options.proposalId) {
+          return proposal;
+        }
+        found = true;
+        return {
+          ...proposal,
+          status: options.status,
+          updatedAtIso: nowIso,
+        };
+      });
+      if (!found) {
+        throw new CampaignValidationError("Worldbuilding proposal not found.");
+      }
+      worldbuilding.updatedAtIso = nowIso;
+      session.transcript.push({
+        entryId: makeId("session-entry"),
+        kind: "system",
+        text: `${participant.displayName} ${options.status} worldbuilding proposal ${options.proposalId}.`,
+        createdAtIso: nowIso,
+      });
+    });
+  }
+
+  private async importWorldbuildingProposal(
+    campaignId: string,
+    proposal: WorldbuildingProposal,
+  ): Promise<void> {
+    if (proposal.kind === "location") {
+      await this.contentStore.createLocation({
+        moduleId: campaignId,
+        creatorToken: sharedCreatorToken,
+        title: proposal.title,
+      });
+      return;
+    }
+    if (proposal.kind === "actor") {
+      await this.contentStore.createActor({
+        moduleId: campaignId,
+        creatorToken: sharedCreatorToken,
+        title: proposal.title,
+        isPlayerCharacter: false,
+      });
+      return;
+    }
+    if (proposal.kind === "asset") {
+      await this.contentStore.createAsset({
+        moduleId: campaignId,
+        creatorToken: sharedCreatorToken,
+        title: proposal.title,
+      });
+      return;
+    }
+    if (proposal.kind === "encounter") {
+      await this.contentStore.createEncounter({
+        moduleId: campaignId,
+        creatorToken: sharedCreatorToken,
+        title: proposal.title,
+      });
+      return;
+    }
+    if (proposal.kind === "quest") {
+      await this.contentStore.createQuest({
+        moduleId: campaignId,
+        creatorToken: sharedCreatorToken,
+        title: proposal.title,
+      });
+    }
   }
 
   private normalizeSessionOutcomePiles(

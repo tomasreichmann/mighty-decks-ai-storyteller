@@ -80,10 +80,30 @@ export const CampaignAuthoringScreen = (): JSX.Element => {
     try {
       const created = await createCampaignSession(
         state.detail.campaignId,
+        "play",
         creatorToken,
       );
       navigateTo(
         `/campaign/${encodeURIComponent(state.detail.index.slug)}/session/${encodeURIComponent(created.sessionId)}`,
+      );
+    } finally {
+      setCreatingSession(false);
+    }
+  }, [creatingSession, creatorToken, navigateTo, state.detail]);
+
+  const handleCreateWorldbuildingSession = useCallback(async (): Promise<void> => {
+    if (!state.detail || creatingSession) {
+      return;
+    }
+    setCreatingSession(true);
+    try {
+      const created = await createCampaignSession(
+        state.detail.campaignId,
+        "worldbuilding",
+        creatorToken,
+      );
+      navigateTo(
+        `/campaign/${encodeURIComponent(state.detail.index.slug)}/worldbuilding/${encodeURIComponent(created.sessionId)}`,
       );
     } finally {
       setCreatingSession(false);
@@ -183,6 +203,9 @@ export const CampaignAuthoringScreen = (): JSX.Element => {
                 creatingSession={creatingSession}
                 onCreateSession={() => {
                   void handleCreateSession();
+                }}
+                onCreateWorldbuildingSession={() => {
+                  void handleCreateWorldbuildingSession();
                 }}
               />
             ) : (

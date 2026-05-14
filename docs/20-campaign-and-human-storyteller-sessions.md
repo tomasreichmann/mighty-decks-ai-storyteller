@@ -34,6 +34,7 @@ Campaign routes:
 - `/campaign/:campaignSlug/session/:sessionId/player/chat`
 - `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab`
 - `/campaign/:campaignSlug/session/:sessionId/storyteller/:tab/:entityId`
+- `/campaign/:campaignSlug/worldbuilding/:sessionId`
 
 Campaign detail tabs:
 
@@ -142,6 +143,11 @@ Session statuses:
 - `active`
 - `closed`
 
+Session modes:
+
+- `play` for the existing human-storyteller campaign session flow
+- `worldbuilding` for Campaign-attached worldbuilding sessions with a reviewable result board
+
 Activation rule:
 
 - a session becomes `active` when it has at least one storyteller participant and one player participant
@@ -152,6 +158,15 @@ Closing behavior:
 - transcript is frozen
 - status changes to `closed`
 - active character claims for that session are released
+- worldbuilding sessions keep their result board available for later review/import
+
+Worldbuilding behavior:
+
+- worldbuilding sessions store a `worldbuilding` result on the session record
+- result phases are `theme_discussion`, `motifs`, `turn_building`, `review`, and `closed`
+- proposal cards can represent theme, motifs, locations, actors, assets, encounters, quests, and relationships
+- importing selected proposals from `/campaign/:campaignSlug/worldbuilding/:sessionId` creates normal campaign content for locations, actors, assets, encounters, and quests
+- theme, motif, and relationship proposals remain review context and are not imported as campaign entities in this slice
 
 ---
 
@@ -295,6 +310,10 @@ Socket.IO handles:
 - add cards to the shared session table or a specific player lane
 - remove a card entry from the session table (storyteller any lane; player own lane only)
 - broadcast session state updates
+- commit worldbuilding theme
+- submit worldbuilding motifs
+- add, accept, reject, and import worldbuilding proposals
+- advance worldbuilding phase
 
 Cleanup endpoints:
 

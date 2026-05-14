@@ -703,3 +703,102 @@ test("closed sessions reject table mutations", async () => {
     CampaignValidationError,
   );
 });
+
+test("persists worldbuilding proposals and imports accepted campaign components", async () => {
+  const { sourceStore, store } = await createStores();
+  const source = await sourceStore.createModule({
+    creatorToken: "source-owner",
+    title: "Blank Campaign Seed",
+  });
+  const campaign = await store.createCampaign({
+    sourceModuleId: source.index.moduleId,
+    title: "Shadow Albion Campaign",
+  });
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+    mode: "worldbuilding",
+  });
+
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+  await store.upsertSessionParticipant({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    displayName: "Jun",
+    role: "player",
+  });
+
+  const themed = await store.commitWorldbuildingTheme({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    theme: "Arthurian gothic horror about conquering a shadow realm.",
+  });
+  assert.equal(themed.mode, "worldbuilding");
+  assert.equal(themed.worldbuilding?.phase, "motifs");
+  assert.equal(themed.worldbuilding?.proposals[0]?.kind, "theme");
+
+  const withMotif = await store.submitWorldbuildingMotif({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-player",
+    stance: "avoid",
+    title: "Time travel",
+  });
+  assert.equal(withMotif.worldbuilding?.proposals.at(-1)?.kind, "motif");
+
+  const quest = await store.addWorldbuildingProposal({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    kind: "quest",
+    title: "Shadow realm monsters appear in Albion",
+    summary: "A long pressure arc for the future campaign.",
+  });
+  const location = await store.addWorldbuildingProposal({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    kind: "location",
+    title: "Albion capital",
+    summary: "The capital where the first tear appears.",
+  });
+  const proposalIds =
+    location.worldbuilding?.proposals
+      .filter((proposal) => proposal.kind === "quest" || proposal.kind === "location")
+      .map((proposal) => proposal.proposalId) ?? [];
+  assert.equal(quest.worldbuilding?.proposals.some((proposal) => proposal.kind === "quest"), true);
+
+  const reviewed = await store.advanceWorldbuildingPhase({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    phase: "review",
+  });
+  assert.equal(reviewed.worldbuilding?.phase, "review");
+
+  const imported = await store.importWorldbuildingResult({
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "participant-storyteller",
+    proposalIds,
+  });
+  assert.equal(imported.worldbuilding?.importedProposalIds.length, 2);
+
+  const reloadedCampaign = await store.getCampaignBySlug(campaign.index.slug);
+  assert.ok(reloadedCampaign);
+  assert.equal(
+    reloadedCampaign.locations.some((item) => item.title === "Albion capital"),
+    true,
+  );
+  assert.equal(
+    reloadedCampaign.quests.some((item) => item.title === "Shadow realm monsters appear in Albion"),
+    true,
+  );
+});

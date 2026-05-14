@@ -509,3 +509,67 @@ test("registerCampaignSocketHandlers does not overwrite a joined role with a sta
     true,
   );
 });
+
+test("registerCampaignSocketHandlers broadcasts worldbuilding result updates and imports", async () => {
+  const { store, campaign } = await createFixture();
+  const session = await store.createSession({
+    campaignSlug: campaign.index.slug,
+    mode: "worldbuilding",
+  });
+  const io = new FakeIo();
+  registerCampaignSocketHandlers(io as never, store);
+
+  const storytellerSocket = new FakeSocket("socket-worldbuilding-storyteller");
+  io.connect(storytellerSocket);
+  await storytellerSocket.trigger("join_campaign_session_role", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    displayName: "Morgan",
+    role: "storyteller",
+  });
+
+  await storytellerSocket.trigger("commit_worldbuilding_theme", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    theme: "Arthurian gothic horror about conquering a shadow realm.",
+  });
+
+  const room = `campaign-session:${campaign.index.slug}:${session.sessionId}`;
+  const themedState = lastRoomEvent(io, room, "campaign_session_state");
+  assert.equal(
+    (themedState?.payload as { worldbuilding?: { phase: string } }).worldbuilding?.phase,
+    "motifs",
+  );
+
+  await storytellerSocket.trigger("add_worldbuilding_proposal", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    kind: "actor",
+    title: "Lady of the Lake",
+    summary: "A mysterious patron of lake magic.",
+  });
+  const proposalState = lastRoomEvent(io, room, "campaign_session_state");
+  const actorProposalId = (
+    proposalState?.payload as {
+      worldbuilding?: { proposals: Array<{ proposalId: string; kind: string }> };
+    }
+  ).worldbuilding?.proposals.find((proposal) => proposal.kind === "actor")?.proposalId;
+  assert.ok(actorProposalId);
+
+  await storytellerSocket.trigger("import_worldbuilding_result", {
+    campaignSlug: campaign.index.slug,
+    sessionId: session.sessionId,
+    participantId: "storyteller-1",
+    proposalIds: [actorProposalId],
+  });
+
+  const importedState = lastRoomEvent(io, room, "campaign_session_state");
+  assert.deepEqual(
+    (importedState?.payload as { worldbuilding?: { importedProposalIds: string[] } }).worldbuilding?.importedProposalIds,
+    [actorProposalId],
+  );
+  assert.ok(lastRoomEvent(io, `campaign:${campaign.index.slug}`, "campaign_updated"));
+});

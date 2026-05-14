@@ -535,7 +535,7 @@ test("campaignSessionDetailSchema accepts setup and transcript state", () => {
       },
     ],
     outcomePilesByParticipantId: {
-      participant-player: {
+      "participant-player": {
         deck: [
           {
             cardId: "outcome-card-1",
@@ -640,4 +640,70 @@ test("campaignSession table schemas accept shared and participant targets with t
   assert.equal(participantTarget.participantId, "participant-player-a");
   assert.equal(stuntCard.type, "StuntCard");
   assert.equal(questCard.type, "QuestCard");
+});
+
+test("campaignSessionDetailSchema accepts worldbuilding mode with reviewable proposals", () => {
+  const parsed = campaignSessionDetailSchema.parse({
+    sessionId: "session-worldbuilding",
+    mode: "worldbuilding",
+    status: "active",
+    createdAtIso: "2026-05-14T10:00:00.000Z",
+    updatedAtIso: "2026-05-14T10:04:00.000Z",
+    storytellerCount: 1,
+    playerCount: 2,
+    transcriptEntryCount: 1,
+    participants: [],
+    claims: [],
+    outcomePilesByParticipantId: {},
+    transcript: [
+      {
+        entryId: "event-created",
+        kind: "system",
+        text: "Worldbuilding session created.",
+        createdAtIso: "2026-05-14T10:00:00.000Z",
+      },
+    ],
+    table: [],
+    worldbuilding: {
+      phase: "review",
+      resultId: "worldbuilding-result-1",
+      theme: "Arthurian gothic horror about conquering a shadow realm.",
+      activeParticipantId: "participant-a",
+      proposals: [
+        {
+          proposalId: "proposal-theme",
+          kind: "theme",
+          title: "Shadow Albion",
+          summary: "Arthurian gothic horror about conquering a shadow realm.",
+          status: "accepted",
+          createdAtIso: "2026-05-14T10:01:00.000Z",
+        },
+        {
+          proposalId: "proposal-motif",
+          kind: "motif",
+          stance: "avoid",
+          title: "Time travel",
+          summary: "Do not include time travel.",
+          status: "accepted",
+          createdAtIso: "2026-05-14T10:02:00.000Z",
+        },
+        {
+          proposalId: "proposal-quest",
+          kind: "quest",
+          title: "Shadow realm monsters appear in Albion",
+          summary: "A quest pressure created during worldbuilding.",
+          status: "accepted",
+          createdAtIso: "2026-05-14T10:03:00.000Z",
+        },
+      ],
+      importedProposalIds: ["proposal-quest"],
+      createdAtIso: "2026-05-14T10:00:00.000Z",
+      updatedAtIso: "2026-05-14T10:04:00.000Z",
+    },
+  });
+
+  assert.equal(parsed.mode, "worldbuilding");
+  assert.equal(parsed.worldbuilding?.phase, "review");
+  assert.equal(parsed.worldbuilding?.proposals[1]?.kind, "motif");
+  assert.equal(parsed.worldbuilding?.importedProposalIds[0], "proposal-quest");
 });

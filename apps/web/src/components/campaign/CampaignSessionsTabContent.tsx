@@ -14,6 +14,7 @@ interface CampaignSessionsTabContentProps {
   sessions: CampaignDetail["sessions"];
   creatingSession: boolean;
   onCreateSession: () => void;
+  onCreateWorldbuildingSession: () => void;
 }
 
 export const CampaignSessionsTabContent = ({
@@ -21,6 +22,7 @@ export const CampaignSessionsTabContent = ({
   sessions,
   creatingSession,
   onCreateSession,
+  onCreateWorldbuildingSession,
 }: CampaignSessionsTabContentProps): JSX.Element => {
   return (
     <Section className="stack gap-4">
@@ -30,13 +32,22 @@ export const CampaignSessionsTabContent = ({
             Each session is a live or archived play instance of this campaign.
           </Text>
         </div>
-        <Button
-          color="gold"
-          disabled={creatingSession}
-          onClick={onCreateSession}
-        >
-          {creatingSession ? "Creating Session..." : "Create Session"}
-        </Button>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            color="cloth"
+            disabled={creatingSession}
+            onClick={onCreateWorldbuildingSession}
+          >
+            {creatingSession ? "Creating..." : "Create Worldbuilding"}
+          </Button>
+          <Button
+            color="gold"
+            disabled={creatingSession}
+            onClick={onCreateSession}
+          >
+            {creatingSession ? "Creating Session..." : "Create Session"}
+          </Button>
+        </div>
       </div>
       {sessions.length > 0 ? (
         <div className="grid gap-3">
@@ -66,6 +77,14 @@ export const CampaignSessionsTabContent = ({
               </Text>
               <div className="flex flex-wrap gap-2">
                 <div className="flex-1" />
+                {session.mode === "worldbuilding" ? (
+                  <Button
+                    color="cloth"
+                    href={`/campaign/${encodeURIComponent(campaignSlug)}/worldbuilding/${encodeURIComponent(session.sessionId)}`}
+                  >
+                    Result
+                  </Button>
+                ) : null}
                 <Button
                   color="gold"
                   href={`/campaign/${encodeURIComponent(campaignSlug)}/session/${encodeURIComponent(session.sessionId)}`}

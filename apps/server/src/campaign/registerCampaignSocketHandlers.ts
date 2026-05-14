@@ -2,18 +2,25 @@ import type { Socket, Server as SocketServer } from "socket.io";
 import {
   addCampaignSessionMockPayloadSchema,
   addCampaignSessionTableCardsPayloadSchema,
+  addWorldbuildingProposalPayloadSchema,
+  advanceWorldbuildingPhasePayloadSchema,
+  acceptWorldbuildingProposalPayloadSchema,
   drawCampaignSessionOutcomeCardPayloadSchema,
   campaignSessionErrorPayloadSchema,
   closeCampaignSessionPayloadSchema,
   claimCampaignSessionCharacterPayloadSchema,
+  commitWorldbuildingThemePayloadSchema,
   createCampaignSessionCharacterPayloadSchema,
+  importWorldbuildingResultPayloadSchema,
   joinCampaignSessionPayloadSchema,
   joinCampaignSessionRolePayloadSchema,
   leaveCampaignSessionPayloadSchema,
   playCampaignSessionOutcomeCardsPayloadSchema,
+  rejectWorldbuildingProposalPayloadSchema,
   removeCampaignSessionTableCardPayloadSchema,
   shuffleCampaignSessionOutcomeDeckPayloadSchema,
   sendCampaignSessionMessagePayloadSchema,
+  submitWorldbuildingMotifPayloadSchema,
   watchCampaignPayloadSchema,
   type CampaignClientToServerEvents,
   type CampaignServerToClientEvents,
@@ -327,6 +334,122 @@ export const registerCampaignSocketHandlers = (
         emitSessionError(
           socket,
           error instanceof Error ? error.message : "Could not remove session table card.",
+        );
+      }
+    });
+
+    socket.on("commit_worldbuilding_theme", async (rawPayload) => {
+      const payload = withValidation(socket, commitWorldbuildingThemePayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.commitWorldbuildingTheme(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not commit worldbuilding theme.",
+        );
+      }
+    });
+
+    socket.on("submit_worldbuilding_motif", async (rawPayload) => {
+      const payload = withValidation(socket, submitWorldbuildingMotifPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.submitWorldbuildingMotif(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not submit worldbuilding motif.",
+        );
+      }
+    });
+
+    socket.on("add_worldbuilding_proposal", async (rawPayload) => {
+      const payload = withValidation(socket, addWorldbuildingProposalPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.addWorldbuildingProposal(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not add worldbuilding proposal.",
+        );
+      }
+    });
+
+    socket.on("advance_worldbuilding_phase", async (rawPayload) => {
+      const payload = withValidation(socket, advanceWorldbuildingPhasePayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.advanceWorldbuildingPhase(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not advance worldbuilding phase.",
+        );
+      }
+    });
+
+    socket.on("accept_worldbuilding_proposal", async (rawPayload) => {
+      const payload = withValidation(socket, acceptWorldbuildingProposalPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.acceptWorldbuildingProposal(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not accept worldbuilding proposal.",
+        );
+      }
+    });
+
+    socket.on("reject_worldbuilding_proposal", async (rawPayload) => {
+      const payload = withValidation(socket, rejectWorldbuildingProposalPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        await store.rejectWorldbuildingProposal(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not reject worldbuilding proposal.",
+        );
+      }
+    });
+
+    socket.on("import_worldbuilding_result", async (rawPayload) => {
+      const payload = withValidation(socket, importWorldbuildingResultPayloadSchema, rawPayload);
+      if (!payload) {
+        return;
+      }
+      try {
+        const session = await store.importWorldbuildingResult(payload);
+        await emitSessionState(payload.campaignSlug, payload.sessionId);
+        emitCampaignUpdated(payload.campaignSlug);
+        if (session.status === "closed") {
+          emitCampaignUpdated(payload.campaignSlug);
+        }
+      } catch (error) {
+        emitSessionError(
+          socket,
+          error instanceof Error ? error.message : "Could not import worldbuilding result.",
         );
       }
     });

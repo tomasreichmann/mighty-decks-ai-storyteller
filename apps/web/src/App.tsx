@@ -29,6 +29,10 @@ const CampaignSessionPlayerPage = lazy(async () => ({
   default: (await import("./routes/CampaignSessionPlayerPage"))
     .CampaignSessionPlayerPage,
 }));
+const CampaignWorldbuildingResultPage = lazy(async () => ({
+  default: (await import("./routes/CampaignWorldbuildingResultPage"))
+    .CampaignWorldbuildingResultPage,
+}));
 const AdventureModuleListPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleListPage"))
     .AdventureModuleListPage,
@@ -306,6 +310,14 @@ export const App = (): JSX.Element => {
             element={
               <RouteShellBoundary>
                 <CampaignAuthoringPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/campaign/:campaignSlug/worldbuilding/:sessionId"
+            element={
+              <RouteShellBoundary>
+                <CampaignWorldbuildingResultPage />
               </RouteShellBoundary>
             }
           />

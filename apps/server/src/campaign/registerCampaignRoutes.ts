@@ -519,13 +519,14 @@ export const registerCampaignRoutes = (
   app.post("/api/campaigns/:campaignId/sessions", async (request, reply) => {
     try {
       const params = campaignIdParamsSchema.parse(request.params ?? {});
-      campaignCreateSessionRequestSchema.parse(request.body ?? {});
+      const payload = campaignCreateSessionRequestSchema.parse(request.body ?? {});
       const campaign = await options.store.getCampaign(params.campaignId);
       if (!campaign) {
         return sendError(reply, 404, "Campaign not found.");
       }
       const created = await options.store.createSession({
         campaignSlug: campaign.index.slug,
+        mode: payload.mode,
       });
       notifyCampaignUpdated(options, campaign.index.slug, created.updatedAtIso);
       return reply.code(201).send(campaignSessionResponseSchema.parse(created));

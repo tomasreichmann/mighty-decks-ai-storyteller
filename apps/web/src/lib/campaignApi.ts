@@ -1,5 +1,6 @@
 import {
   campaignCreateRequestSchema,
+  campaignCreateSessionRequestSchema,
   campaignCreateResponseSchema,
   campaignDeleteResponseSchema,
   campaignGetResponseSchema,
@@ -7,6 +8,7 @@ import {
   campaignListSessionsResponseSchema,
   campaignSessionResponseSchema,
   type CampaignCreateRequest,
+  type CampaignCreateSessionRequest,
   type CampaignDeleteResponse,
   type CampaignDetail,
   type CampaignListItem,
@@ -523,6 +525,7 @@ export const updateCampaignCoverImage = async (
 
 export const createCampaignSession = async (
   campaignId: string,
+  mode: CampaignCreateSessionRequest["mode"] = "play",
   creatorToken?: string,
 ): Promise<CampaignSessionDetail> => {
   const payload = await fetchJson(
@@ -530,7 +533,7 @@ export const createCampaignSession = async (
     {
       method: "POST",
       headers: buildHeaders(creatorToken, { jsonContentType: true }),
-      body: JSON.stringify({}),
+      body: JSON.stringify(campaignCreateSessionRequestSchema.parse({ mode })),
     },
   );
   return campaignSessionResponseSchema.parse(payload);

@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { CampaignSessionDetail } from "@mighty-decks/spec/campaign";
+import type {
+  CampaignSessionDetail,
+  WorldbuildingMotifStance,
+  WorldbuildingPhase,
+  WorldbuildingProposalKind,
+} from "@mighty-decks/spec/campaign";
 import { createSocketClient } from "../lib/socket";
 
 interface UseCampaignSessionOptions {
@@ -277,6 +282,92 @@ export const useCampaignSession = ({
     [basePayload],
   );
 
+  const commitWorldbuildingTheme = useCallback(
+    (participantId: string, theme: string): void => {
+      socketRef.current.emit("commit_worldbuilding_theme", {
+        ...basePayload,
+        participantId,
+        theme,
+      });
+    },
+    [basePayload],
+  );
+
+  const submitWorldbuildingMotif = useCallback(
+    (options: {
+      participantId: string;
+      stance: WorldbuildingMotifStance;
+      title: string;
+      summary?: string;
+    }): void => {
+      socketRef.current.emit("submit_worldbuilding_motif", {
+        ...basePayload,
+        ...options,
+      });
+    },
+    [basePayload],
+  );
+
+  const addWorldbuildingProposal = useCallback(
+    (options: {
+      participantId: string;
+      kind: Exclude<WorldbuildingProposalKind, "theme" | "motif">;
+      title: string;
+      summary: string;
+      imageUrl?: string;
+    }): void => {
+      socketRef.current.emit("add_worldbuilding_proposal", {
+        ...basePayload,
+        ...options,
+      });
+    },
+    [basePayload],
+  );
+
+  const advanceWorldbuildingPhase = useCallback(
+    (participantId: string, phase: WorldbuildingPhase): void => {
+      socketRef.current.emit("advance_worldbuilding_phase", {
+        ...basePayload,
+        participantId,
+        phase,
+      });
+    },
+    [basePayload],
+  );
+
+  const acceptWorldbuildingProposal = useCallback(
+    (participantId: string, proposalId: string): void => {
+      socketRef.current.emit("accept_worldbuilding_proposal", {
+        ...basePayload,
+        participantId,
+        proposalId,
+      });
+    },
+    [basePayload],
+  );
+
+  const rejectWorldbuildingProposal = useCallback(
+    (participantId: string, proposalId: string): void => {
+      socketRef.current.emit("reject_worldbuilding_proposal", {
+        ...basePayload,
+        participantId,
+        proposalId,
+      });
+    },
+    [basePayload],
+  );
+
+  const importWorldbuildingResult = useCallback(
+    (participantId: string, proposalIds: string[]): void => {
+      socketRef.current.emit("import_worldbuilding_result", {
+        ...basePayload,
+        participantId,
+        proposalIds,
+      });
+    },
+    [basePayload],
+  );
+
   return {
     session,
     error,
@@ -297,5 +388,12 @@ export const useCampaignSession = ({
     closeSession,
     addTableCards,
     removeTableCard,
+    commitWorldbuildingTheme,
+    submitWorldbuildingMotif,
+    addWorldbuildingProposal,
+    advanceWorldbuildingPhase,
+    acceptWorldbuildingProposal,
+    rejectWorldbuildingProposal,
+    importWorldbuildingResult,
   };
 };

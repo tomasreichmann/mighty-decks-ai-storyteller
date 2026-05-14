@@ -4,6 +4,9 @@ import {
   campaignSessionDetailSchema,
   campaignSessionParticipantRoleSchema,
   campaignSessionTableTargetSchema,
+  worldbuildingMotifStanceSchema,
+  worldbuildingPhaseSchema,
+  worldbuildingProposalKindSchema,
 } from "./campaign";
 
 const identifierSchema = z.string().min(1).max(120);
@@ -129,6 +132,67 @@ export type PlayCampaignSessionOutcomeCardsPayload = z.infer<
   typeof playCampaignSessionOutcomeCardsPayloadSchema
 >;
 
+export const commitWorldbuildingThemePayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  theme: z.string().min(1).max(1000),
+});
+export type CommitWorldbuildingThemePayload = z.infer<
+  typeof commitWorldbuildingThemePayloadSchema
+>;
+
+export const submitWorldbuildingMotifPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  stance: worldbuildingMotifStanceSchema,
+  title: shortTextSchema,
+  summary: z.string().max(1000).optional(),
+});
+export type SubmitWorldbuildingMotifPayload = z.infer<
+  typeof submitWorldbuildingMotifPayloadSchema
+>;
+
+export const addWorldbuildingProposalPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  kind: worldbuildingProposalKindSchema.exclude(["theme", "motif"]),
+  title: shortTextSchema,
+  summary: z.string().min(1).max(1000),
+  imageUrl: z.string().min(1).max(500).optional(),
+});
+export type AddWorldbuildingProposalPayload = z.infer<
+  typeof addWorldbuildingProposalPayloadSchema
+>;
+
+export const advanceWorldbuildingPhasePayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  phase: worldbuildingPhaseSchema,
+});
+export type AdvanceWorldbuildingPhasePayload = z.infer<
+  typeof advanceWorldbuildingPhasePayloadSchema
+>;
+
+export const acceptWorldbuildingProposalPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  proposalId: identifierSchema,
+});
+export type AcceptWorldbuildingProposalPayload = z.infer<
+  typeof acceptWorldbuildingProposalPayloadSchema
+>;
+
+export const rejectWorldbuildingProposalPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  proposalId: identifierSchema,
+});
+export type RejectWorldbuildingProposalPayload = z.infer<
+  typeof rejectWorldbuildingProposalPayloadSchema
+>;
+
+export const importWorldbuildingResultPayloadSchema = sessionLocatorSchema.extend({
+  participantId: identifierSchema,
+  proposalIds: z.array(identifierSchema).min(1).max(100),
+});
+export type ImportWorldbuildingResultPayload = z.infer<
+  typeof importWorldbuildingResultPayloadSchema
+>;
+
 export const campaignUpdatedPayloadSchema = z.object({
   campaignSlug: slugSchema,
   updatedAtIso: z.string().datetime(),
@@ -177,6 +241,17 @@ export interface CampaignClientToServerEvents {
   play_campaign_session_outcome_cards: (
     payload: PlayCampaignSessionOutcomeCardsPayload,
   ) => void;
+  commit_worldbuilding_theme: (payload: CommitWorldbuildingThemePayload) => void;
+  submit_worldbuilding_motif: (payload: SubmitWorldbuildingMotifPayload) => void;
+  add_worldbuilding_proposal: (payload: AddWorldbuildingProposalPayload) => void;
+  advance_worldbuilding_phase: (payload: AdvanceWorldbuildingPhasePayload) => void;
+  accept_worldbuilding_proposal: (
+    payload: AcceptWorldbuildingProposalPayload,
+  ) => void;
+  reject_worldbuilding_proposal: (
+    payload: RejectWorldbuildingProposalPayload,
+  ) => void;
+  import_worldbuilding_result: (payload: ImportWorldbuildingResultPayload) => void;
 }
 
 export interface CampaignServerToClientEvents {
