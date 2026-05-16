@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mighty Decks Rules"
+  short_description: "Apply Mighty Decks gameplay rules and examples."
+  default_prompt: "Use mighty-decks-rules to make gameplay, adventure, encounter, card, effect, counter, or ship-combat design decisions."

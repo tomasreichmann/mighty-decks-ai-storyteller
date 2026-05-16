@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mighty Decks UI Patterns"
+  short_description: "Reuse the project UI and board patterns."
+  default_prompt: "Use mighty-decks-ui-patterns to design or modify Mighty Decks web UI using existing primitives, styleguide routes, and board layouts."

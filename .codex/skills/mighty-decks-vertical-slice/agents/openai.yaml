@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mighty Decks Vertical Slice"
+  short_description: "Follow the repo vertical-slice workflow."
+  default_prompt: "Use mighty-decks-vertical-slice to plan and implement this repo change across contracts, server, web, docs, and changelog."

@@ -54,7 +54,16 @@ Use it alongside `AGENTS.md` and `README.md`. If instructions conflict, `AGENTS.
 
 ---
 
-## 6. Default verification commands
+## 6. Repo-local skills
+
+- Use `adventure-authoring-cli` when inspecting or editing Adventure Modules or Campaigns from the terminal.
+- Use `mighty-decks-vertical-slice` for behavior that crosses `spec`, server, web, docs, or changelog.
+- Use `mighty-decks-ui-patterns` for web UI, styleguide, shared components, board/table, `/board`, and `/spaceship` work.
+- Use `mighty-decks-rules` for gameplay, adventure, encounter, card, effect, counter, scene pacing, and ship-combat decisions.
+
+---
+
+## 7. Default verification commands
 
 - `pnpm typecheck`
 - `pnpm -C apps/server test`

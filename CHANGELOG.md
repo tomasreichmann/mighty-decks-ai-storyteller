@@ -301,6 +301,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Docs
 
+- Add repo-local Codex skills for vertical-slice workflow, UI pattern reuse, and Mighty Decks rules guidance.
+- Extend the repo-local vertical-slice skill with an adventure-artifact image index reminder.
 - Document the new panel lab, cards gallery shape, expanded typography/tag palette, and input/button alignment guidance in the UI component and style-system docs.
 - Update the UI component docs to describe the thin authoring-route shells, shared `AuthoringProvider` store, and extracted storyteller session shell used by module and campaign authoring.
 - Tighten the CLI authoring docs and repo-local authoring skill guidance to prefer `--input-file` or stdin for non-trivial payloads, explain creator-token recovery from browser localStorage, and clarify how to parse the JSON envelope when shell wrappers add extra text.
