@@ -487,6 +487,7 @@ export const registerCampaignSocketHandlers = (
           campaignSlug: link.campaignSlug,
           sessionId: link.sessionId,
           participantId: link.participantId,
+          releaseClaim: false,
         })
         .then(() => emitSessionState(link.campaignSlug, link.sessionId))
         .catch(() => undefined);

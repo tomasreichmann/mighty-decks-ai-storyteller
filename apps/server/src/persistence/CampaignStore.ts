@@ -417,6 +417,7 @@ export class CampaignStore {
     campaignSlug: string;
     sessionId: string;
     participantId: string;
+    releaseClaim?: boolean;
   }): Promise<CampaignSessionDetail> {
     return this.updateSession(options.campaignSlug, options.sessionId, (session, nowIso) => {
       const participant = session.participants.find(
@@ -426,9 +427,11 @@ export class CampaignStore {
         return;
       }
       participant.connected = false;
-      session.claims = session.claims.filter(
-        (claim) => claim.participantId !== participant.participantId,
-      );
+      if (options.releaseClaim !== false) {
+        session.claims = session.claims.filter(
+          (claim) => claim.participantId !== participant.participantId,
+        );
+      }
       session.transcript.push({
         entryId: makeId("session-entry"),
         kind: "system",

@@ -345,3 +345,306 @@ test("campaign flow smoke covers authored module to active session and cleanup",
     }
   }
 });
+
+test("campaign session smoke preserves existing and newly created character claims across route remount disconnects", async (t) => {
+  const target = await createSmokeTarget();
+  t.after(async () => {
+    await target.close();
+  });
+
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const creatorToken = `claim-smoke-${stamp}`;
+  const headers = {
+    "content-type": "application/json",
+    [CREATOR_HEADER]: creatorToken,
+  };
+
+  let moduleId: string | undefined;
+  let campaignId: string | undefined;
+  let campaignSlug: string | undefined;
+  let sessionId: string | undefined;
+  let storytellerSocket: Socket | undefined;
+  let existingClaimSocket: Socket | undefined;
+  let createClaimSocket: Socket | undefined;
+
+  try {
+    const createdModule = await apiJson<{
+      index: { moduleId: string };
+    }>(target.baseUrl, "/api/adventure-modules", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        source: "blank",
+        title: `Claim Smoke Module ${stamp}`,
+      }),
+    });
+    moduleId = createdModule.index.moduleId;
+
+    await apiJson(target.baseUrl, `/api/adventure-modules/${moduleId}/actors`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        title: `Claimable Pilot ${stamp}`,
+        isPlayerCharacter: true,
+      }),
+    });
+
+    const createdCampaign = await apiJson<{
+      campaignId: string;
+      index: { slug: string };
+      actors: Array<{
+        fragmentId: string;
+        isPlayerCharacter: boolean;
+        title: string;
+      }>;
+    }>(target.baseUrl, "/api/campaigns", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        sourceModuleId: moduleId,
+        title: `Claim Smoke Campaign ${stamp}`,
+      }),
+    });
+    campaignId = createdCampaign.campaignId;
+    campaignSlug = createdCampaign.index.slug;
+    const claimableActor = createdCampaign.actors.find(
+      (actor) => actor.isPlayerCharacter,
+    );
+    assert.ok(claimableActor);
+
+    const createdSession = await apiJson<{
+      sessionId: string;
+      status: string;
+    }>(target.baseUrl, `/api/campaigns/${campaignId}/sessions`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    sessionId = createdSession.sessionId;
+
+    storytellerSocket = await connectSocket(target.baseUrl);
+    existingClaimSocket = await connectSocket(target.baseUrl);
+
+    const activeStatePromise = waitForSessionState(
+      [storytellerSocket, existingClaimSocket],
+      (state) => state.status === "active",
+      "an active campaign session state",
+    );
+    storytellerSocket.emit("join_campaign_session_role", {
+      campaignSlug,
+      sessionId,
+      participantId: `storyteller-${stamp}`,
+      displayName: "Claim Smoke Storyteller",
+      role: "storyteller",
+    });
+    existingClaimSocket.emit("join_campaign_session_role", {
+      campaignSlug,
+      sessionId,
+      participantId: `player-existing-${stamp}`,
+      displayName: "Claim Existing Player",
+      role: "player",
+    });
+    await activeStatePromise;
+
+    const existingClaimStatePromise = waitForSessionState(
+      [storytellerSocket, existingClaimSocket],
+      (state) =>
+        Array.isArray(state.claims) &&
+        state.claims.some(
+          (claim) =>
+            claim &&
+            typeof claim === "object" &&
+            "participantId" in claim &&
+            claim.participantId === `player-existing-${stamp}` &&
+            "actorFragmentId" in claim &&
+            claim.actorFragmentId === claimableActor.fragmentId,
+        ),
+      "an existing character claim",
+    );
+    existingClaimSocket.emit("claim_campaign_session_character", {
+      campaignSlug,
+      sessionId,
+      participantId: `player-existing-${stamp}`,
+      actorFragmentId: claimableActor.fragmentId,
+    });
+    await existingClaimStatePromise;
+
+    const existingDisconnectStatePromise = waitForSessionState(
+      [storytellerSocket],
+      (state) =>
+        Array.isArray(state.claims) &&
+        Array.isArray(state.participants) &&
+        state.participants.some(
+          (participant) =>
+            participant &&
+            typeof participant === "object" &&
+            "participantId" in participant &&
+            participant.participantId === `player-existing-${stamp}` &&
+            "connected" in participant &&
+            participant.connected === false,
+        ) &&
+        state.claims.some(
+          (claim) =>
+            claim &&
+            typeof claim === "object" &&
+            "participantId" in claim &&
+            claim.participantId === `player-existing-${stamp}`,
+        ),
+      "the existing character claim after a route remount disconnect",
+    );
+    existingClaimSocket.disconnect();
+    existingClaimSocket = undefined;
+    await existingDisconnectStatePromise;
+
+    const sessionAfterExistingDisconnect = await apiJson<{
+      claims: Array<{ participantId: string; actorFragmentId: string }>;
+    }>(
+      target.baseUrl,
+      `/api/campaigns/by-slug/${encodeURIComponent(campaignSlug)}/sessions/${encodeURIComponent(sessionId)}`,
+    );
+    assert.equal(
+      sessionAfterExistingDisconnect.claims.some(
+        (claim) =>
+          claim.participantId === `player-existing-${stamp}` &&
+          claim.actorFragmentId === claimableActor.fragmentId,
+      ),
+      true,
+    );
+
+    createClaimSocket = await connectSocket(target.baseUrl);
+    const createPlayerJoinPromise = waitForSessionState(
+      [storytellerSocket, createClaimSocket],
+      (state) =>
+        Array.isArray(state.participants) &&
+        state.participants.some(
+          (participant) =>
+            participant &&
+            typeof participant === "object" &&
+            "participantId" in participant &&
+            participant.participantId === `player-created-${stamp}`,
+        ),
+      "the new character player joining",
+    );
+    createClaimSocket.emit("join_campaign_session_role", {
+      campaignSlug,
+      sessionId,
+      participantId: `player-created-${stamp}`,
+      displayName: "Create Claim Player",
+      role: "player",
+    });
+    await createPlayerJoinPromise;
+
+    const createClaimStatePromise = waitForSessionState(
+      [storytellerSocket, createClaimSocket],
+      (state) =>
+        Array.isArray(state.claims) &&
+        state.claims.some(
+          (claim) =>
+            claim &&
+            typeof claim === "object" &&
+            "participantId" in claim &&
+            claim.participantId === `player-created-${stamp}`,
+        ),
+      "a newly created character claim",
+    );
+    createClaimSocket.emit("create_campaign_session_character", {
+      campaignSlug,
+      sessionId,
+      participantId: `player-created-${stamp}`,
+      title: `Created Claimant ${stamp}`,
+    });
+    await createClaimStatePromise;
+
+    const createDisconnectStatePromise = waitForSessionState(
+      [storytellerSocket],
+      (state) =>
+        Array.isArray(state.claims) &&
+        Array.isArray(state.participants) &&
+        state.participants.some(
+          (participant) =>
+            participant &&
+            typeof participant === "object" &&
+            "participantId" in participant &&
+            participant.participantId === `player-created-${stamp}` &&
+            "connected" in participant &&
+            participant.connected === false,
+        ) &&
+        state.claims.some(
+          (claim) =>
+            claim &&
+            typeof claim === "object" &&
+            "participantId" in claim &&
+            claim.participantId === `player-created-${stamp}`,
+        ),
+      "the newly created character claim after a route remount disconnect",
+    );
+    createClaimSocket.disconnect();
+    createClaimSocket = undefined;
+    await createDisconnectStatePromise;
+
+    const finalSession = await apiJson<{
+      claims: Array<{ participantId: string; actorFragmentId: string }>;
+    }>(
+      target.baseUrl,
+      `/api/campaigns/by-slug/${encodeURIComponent(campaignSlug)}/sessions/${encodeURIComponent(sessionId)}`,
+    );
+    const createdClaim = finalSession.claims.find(
+      (claim) => claim.participantId === `player-created-${stamp}`,
+    );
+    assert.ok(createdClaim);
+
+    const finalCampaign = await apiJson<{
+      actors: Array<{ fragmentId: string; isPlayerCharacter: boolean; title: string }>;
+    }>(
+      target.baseUrl,
+      `/api/campaigns/by-slug/${encodeURIComponent(campaignSlug)}`,
+    );
+    assert.equal(
+      finalCampaign.actors.some(
+        (actor) =>
+          actor.fragmentId === createdClaim.actorFragmentId &&
+          actor.isPlayerCharacter &&
+          actor.title === `Created Claimant ${stamp}`,
+      ),
+      true,
+    );
+
+    await deleteExpectOk(
+      target.baseUrl,
+      `/api/campaigns/${campaignId}/sessions/${sessionId}`,
+    );
+    sessionId = undefined;
+
+    await deleteExpectOk(target.baseUrl, `/api/campaigns/${campaignId}`);
+    campaignId = undefined;
+    campaignSlug = undefined;
+
+    await deleteExpectOk(target.baseUrl, `/api/adventure-modules/${moduleId}`, {
+      [CREATOR_HEADER]: creatorToken,
+    });
+    moduleId = undefined;
+  } finally {
+    storytellerSocket?.disconnect();
+    existingClaimSocket?.disconnect();
+    createClaimSocket?.disconnect();
+
+    if (sessionId && campaignId) {
+      await deleteIfPresent(
+        target.baseUrl,
+        `/api/campaigns/${campaignId}/sessions/${sessionId}`,
+      );
+    }
+    if (campaignId) {
+      await deleteIfPresent(target.baseUrl, `/api/campaigns/${campaignId}`);
+    }
+    if (moduleId) {
+      await deleteIfPresent(target.baseUrl, `/api/adventure-modules/${moduleId}`, {
+        [CREATOR_HEADER]: creatorToken,
+      });
+    }
+  }
+});

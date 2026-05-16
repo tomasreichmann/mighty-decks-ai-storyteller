@@ -411,6 +411,8 @@ Campaign session state payloads are full `CampaignSessionDetail` objects. In pra
 
 Clients never invent outcome pile state locally. They only send intent events for drawing, shuffling, and playing outcome cards.
 
+Character claims survive incidental Socket.IO disconnects, including route remounts and page reloads, so a claimed player character remains reserved for that participant until an explicit leave, role change away from `player`, or session close releases it.
+
 ### Additional client -> server campaign events
 
 - `watch_campaign`

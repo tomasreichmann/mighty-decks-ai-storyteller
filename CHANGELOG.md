@@ -86,6 +86,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Server: preserve campaign-session character claims across incidental socket disconnects so the player claim route can redirect to live chat without immediately unclaiming the character.
+
 - Web: add a 10px tear-off threshold plus 400ms tear-off/reinsert cooldowns for `/spaceship` layout card dragging so live snap reflow does not repeatedly add and remove the same card.
 - Web: add a fast transition to `/spaceship` card positions when live snap layout reflow settles a dragged card into a layout.
 
