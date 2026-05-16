@@ -11,6 +11,7 @@ import {
 import {
   createSpaceshipDragState,
   insertSpaceshipCardIntoLayout,
+  moveSpaceshipCardFromDragOrigin,
   removeSpaceshipCardFromLayouts,
 } from "./spaceshipDragState";
 
@@ -129,6 +130,47 @@ test("ship backgrounds use the same bounds as each pane focus target", () => {
     assert.equal(background.width, right - left);
     assert.equal(background.height, bottom - top);
   });
+});
+
+test("ship backgrounds ignore manually dragged cards outside the ship layout", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const itemId = spaceshipBoardItemId.location("player-reactor");
+  const baseLayout = createSpaceshipBoardLayout(spaceshipScene, state);
+  const basePlacements = new Map(
+    baseLayout.placements.map((placement) => [placement.id, placement]),
+  );
+  const baseCard = basePlacements.get(itemId);
+  const baseBackground = basePlacements.get(
+    spaceshipBoardItemId.shipBackground("pane-player"),
+  );
+
+  assert.ok(baseCard);
+  assert.ok(baseBackground);
+
+  const movedState = moveSpaceshipCardFromDragOrigin(state, itemId, {
+    startX: baseCard.x,
+    startY: baseCard.y,
+    startClientX: 0,
+    startClientY: 0,
+    clientX: 2600,
+    clientY: 2600,
+    zoom: 1,
+  });
+  const movedLayout = createSpaceshipBoardLayout(spaceshipScene, movedState, {
+    activeCardItemId: itemId,
+  });
+  const movedPlacements = new Map(
+    movedLayout.placements.map((placement) => [placement.id, placement]),
+  );
+  const movedCard = movedPlacements.get(itemId);
+  const movedBackground = movedPlacements.get(
+    spaceshipBoardItemId.shipBackground("pane-player"),
+  );
+
+  assert.ok(movedCard);
+  assert.ok(movedBackground);
+  assert.ok(movedCard.x > movedBackground.x + movedBackground.width);
+  assert.ok(movedCard.y > movedBackground.y + movedBackground.height);
 });
 
 test("createSpaceshipBoardLayout renders multiple Devices in a flow column above a Location", () => {

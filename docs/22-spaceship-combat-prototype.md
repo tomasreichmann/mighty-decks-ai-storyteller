@@ -177,6 +177,10 @@ shared `LocationCard` component while rendering effects with the shared
   - flow-positioned source/sink stack with 20 available Power tokens, placed above the Exiles ship title
   - dragging from the stack creates a new board token and decrements the count
   - dropping an energy token back on the stack removes it and restores the count
+- `SpaceshipTrashFrameTarget`
+  - semi-transparent frame overlay in the lower-left corner with a compact trash icon and radial red fade
+  - highlights when a draggable card or token enters the corner drop area
+  - dropping a draggable card or token in the highlighted corner removes that local board item; card removal also removes visually attached bundle pieces
 - Device icon PNGs
   - stored under `apps/web/public/assets/spaceship/devices/`
   - generated on solid chroma backgrounds, then processed into real alpha PNGs with transparent corners
@@ -296,6 +300,9 @@ The first interaction slice follows the pointer-event style already used by `app
 - Location cards snap into Location rows, Device cards snap into room Device columns, Actor cards snap into actor rows, and effect cards snap behind Location, Device, or Actor cards
 - dropping an energy token over the side stack removes it and restores the stack count
 - dragging from the side stack creates a new energy token and decrements the stack count
+- dragging a card or token into the lower-left frame trash area highlights the corner
+- dropping a draggable token in the lower-left frame trash area removes it; energy tokens restore stack availability up to the stack total
+- dropping a draggable card in the lower-left frame trash area removes that card and bundled local pieces: Location bundles remove Devices, effects, and attached tokens; Device and Actor cards remove their owned effects; Actor cards also remove their matching actor token
 - ship titles, the energy token stack, and Location `lvl` controls are not draggable
 
 ### Explicitly deferred

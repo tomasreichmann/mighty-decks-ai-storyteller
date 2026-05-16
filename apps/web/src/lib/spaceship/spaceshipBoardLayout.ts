@@ -347,6 +347,23 @@ const createShipBackgroundPlacements = (
   const placementsById = new Map(
     placements.map((placement) => [placement.id, placement]),
   );
+  const boardPlacedCardIds = new Set(
+    dragState?.cards
+      .filter((card) => card.placement.type === "board")
+      .map((card) => card.itemId) ?? [],
+  );
+  const backgroundExcludedIds = new Set(boardPlacedCardIds);
+
+  dragState?.layouts.deviceColumns
+    .filter((column) => boardPlacedCardIds.has(column.locationItemId))
+    .forEach((column) => {
+      column.itemIds.forEach((itemId) => backgroundExcludedIds.add(itemId));
+    });
+  dragState?.layouts.effectStacks
+    .filter((stack) => backgroundExcludedIds.has(stack.ownerItemId))
+    .forEach((stack) => {
+      stack.itemIds.forEach((itemId) => backgroundExcludedIds.add(itemId));
+    });
 
   return scene.panes.flatMap((pane) => {
     const panePlacements = getSpaceshipBoardPaneItemIds(
@@ -354,6 +371,10 @@ const createShipBackgroundPlacements = (
       pane.paneId,
       dragState,
     )
+      .filter(
+        (id) =>
+          !id.startsWith("spaceship:token:") && !backgroundExcludedIds.has(id),
+      )
       .map((id) => placementsById.get(id))
       .filter(
         (placement): placement is BoardLayoutResult["placements"][number] =>

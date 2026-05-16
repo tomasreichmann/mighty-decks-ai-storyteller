@@ -35,6 +35,21 @@ test("SpaceshipBoard renders independent board surfaces for ship backgrounds, lo
   assert.match(source, /SpaceshipActorEffectSurface/);
 });
 
+test("SpaceshipBoard renders the trash target as a frame overlay", () => {
+  const source = readBoardSource();
+
+  assert.match(source, /SpaceshipTrashFrameTarget/);
+  assert.match(source, /aria-label="Trash drop area"/);
+  assert.match(source, /isTrashTargetActive/);
+  assert.match(source, /dragging=\{isItemDragActive\}/);
+  assert.match(source, /bg-\[radial-gradient\(circle_at_26px_calc\(100%-26px\)/);
+  assert.match(source, /h-20 w-20/);
+  assert.match(source, /h-7 w-7/);
+  assert.match(source, /opacity-0/);
+  assert.match(source, /pointer-events-auto opacity-40/);
+  assert.match(source, /hover:opacity-90/);
+});
+
 test("SpaceshipBoard wires pointer drag handlers for tokens and the energy stack", () => {
   const source = readBoardInteractionSource();
 
@@ -72,6 +87,44 @@ test("SpaceshipBoard wires pointer drag handlers for all draggable card surfaces
   assert.match(source, /case "energy-stack":[\s\S]*<EnergyTokenStack/);
 });
 
+test("SpaceshipBoard wires the trash target before regular card and token drop handling", () => {
+  const source = readBoardInteractionSource();
+
+  assert.match(source, /isFramePointOverTrashTarget/);
+  assert.match(source, /isFrameBoundsOverTrashTarget/);
+  assert.match(source, /getFrameTrashTargetBounds/);
+  assert.match(source, /getFrameBounds/);
+  assert.match(source, /getFramePoint/);
+  assert.match(source, /spaceshipTrashDebug = false/);
+  assert.match(source, /console\.debug\("\[spaceship-trash\]"/);
+  assert.match(source, /clientX: event\.clientX/);
+  assert.match(source, /clientY: event\.clientY/);
+  assert.match(source, /dropSpaceshipCardOnTrashTarget/);
+  assert.match(source, /dropSpaceshipTokenOnTrashTarget/);
+  assert.match(
+    source,
+    /if \(card && trashHit\.active\)[\s\S]*dropSpaceshipCardOnTrashTarget[\s\S]*dropSpaceshipCardOnBoard/,
+  );
+  assert.match(
+    source,
+    /if \(trashHit\.active\)[\s\S]*dropSpaceshipTokenOnTrashTarget[\s\S]*isEnergyStackDrop/,
+  );
+});
+
+test("SpaceshipBoard does not treat the trash target as a card drop target", () => {
+  const boardItemsSource = readFileSync(
+    new URL("../../lib/spaceship/spaceshipBoardItems.ts", import.meta.url),
+    "utf8",
+  );
+  const boardGeometrySource = readFileSync(
+    new URL("../../lib/spaceship/spaceshipBoardGeometry.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.doesNotMatch(boardItemsSource, /trash-target/);
+  assert.doesNotMatch(boardGeometrySource, /trashTarget/);
+});
+
 test("SpaceshipBoard disables board wheel zoom while any item drag is active", () => {
   const source = readBoardSource();
 
@@ -83,6 +136,14 @@ test("SpaceshipBoard disables board wheel zoom while any item drag is active", (
   assert.match(source, /window\.addEventListener\("wheel", handleWheelWhileDragging, \{\s*capture: true,\s*passive: false,\s*\}\)/);
   assert.match(source, /if \(!activeDragRef\.current\) \{/);
   assert.match(source, /event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);/);
+});
+
+test("SpaceshipBoard keeps the trash indicator drag-visible through listener reattachment", () => {
+  const source = readBoardSource();
+  const cleanupSource = source.slice(source.indexOf("return () => {"));
+
+  assert.doesNotMatch(cleanupSource, /onItemDragActiveChange\(false\)/);
+  assert.doesNotMatch(cleanupSource, /onTrashTargetActiveChange\(false\)/);
 });
 
 test("SpaceshipBoard renders custom actor cards when spaceship actors provide them", () => {

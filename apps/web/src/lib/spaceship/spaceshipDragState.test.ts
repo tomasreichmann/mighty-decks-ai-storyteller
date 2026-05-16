@@ -12,7 +12,12 @@ import {
   dropSpaceshipTokenOnBoard,
   dropSpaceshipTokenOnCard,
   dropSpaceshipTokenOnEnergyStack,
+  dropSpaceshipCardOnTrashTarget,
+  dropSpaceshipTokenOnTrashTarget,
+  getFrameTrashTargetBounds,
   insertSpaceshipCardIntoLayout,
+  isFrameBoundsOverTrashTarget,
+  isFramePointOverTrashTarget,
   isSpaceshipCardSnapInsertBlocked,
   isSpaceshipCardLayoutTearOffBlocked,
   moveSpaceshipCardFromDragOrigin,
@@ -22,6 +27,7 @@ import {
   resolveSpaceshipCardSnapTarget,
   spaceshipCardLayoutTearOffDistancePx,
   spaceshipCardSnapInsertCooldownMs,
+  spaceshipTrashFrameTargetSize,
 } from "./spaceshipDragState";
 import {
   createSpaceshipBoardLayout,
@@ -63,6 +69,82 @@ test("isSpaceshipCardLayoutTearOffBlocked keeps a newly snapped card docked for 
   assert.equal(isSpaceshipCardLayoutTearOffBlocked(1400, 1400), false);
   assert.equal(isSpaceshipCardLayoutTearOffBlocked(1401, 1400), false);
   assert.equal(isSpaceshipCardLayoutTearOffBlocked(1401, null), false);
+});
+
+test("isFramePointOverTrashTarget resolves the lower-left frame corner", () => {
+  const frameSize = { width: 1280, height: 720 };
+
+  assert.equal(spaceshipTrashFrameTargetSize, 80);
+  assert.deepEqual(getFrameTrashTargetBounds(frameSize), {
+    x: 0,
+    y: 640,
+    width: 80,
+    height: 80,
+  });
+  assert.equal(isFramePointOverTrashTarget(frameSize, { x: 70, y: 650 }), true);
+  assert.equal(isFramePointOverTrashTarget(frameSize, { x: 90, y: 650 }), false);
+  assert.equal(isFramePointOverTrashTarget(frameSize, { x: 70, y: 630 }), false);
+});
+
+test("isFrameBoundsOverTrashTarget resolves dragged item overlap with the lower-left frame corner", () => {
+  const frameSize = { width: 1280, height: 720 };
+
+  assert.equal(
+    isFrameBoundsOverTrashTarget(frameSize, {
+      x: 70,
+      y: 560,
+      width: 40,
+      height: 130,
+    }),
+    true,
+  );
+  assert.equal(
+    isFrameBoundsOverTrashTarget(frameSize, {
+      x: 90,
+      y: 560,
+      width: 40,
+      height: 130,
+    }),
+    false,
+  );
+  assert.equal(
+    isFrameBoundsOverTrashTarget(frameSize, {
+      x: 12,
+      y: 520,
+      width: 40,
+      height: 90,
+    }),
+    false,
+  );
+});
+
+test("isFrameBoundsOverTrashTarget handles frames smaller than the trash target size", () => {
+  const frameSize = { width: 48, height: 52 };
+
+  assert.deepEqual(getFrameTrashTargetBounds(frameSize), {
+    x: 0,
+    y: 0,
+    width: 48,
+    height: 52,
+  });
+  assert.equal(
+    isFrameBoundsOverTrashTarget(frameSize, {
+      x: 44,
+      y: 40,
+      width: 12,
+      height: 12,
+    }),
+    true,
+  );
+  assert.equal(
+    isFrameBoundsOverTrashTarget(frameSize, {
+      x: 50,
+      y: 10,
+      width: 12,
+      height: 12,
+    }),
+    false,
+  );
 });
 
 test("createSpaceshipDragState creates layout membership for rows, device columns, actor rows, and effect stacks", () => {
@@ -562,6 +644,125 @@ test("dropSpaceshipTokenOnEnergyStack removes an energy token and restores the s
   assert.equal(dropped.energyStack.availableCount, 20);
   assert.equal(
     dropped.tokens.some((token) => token.tokenId === result.dragTokenId),
+    false,
+  );
+});
+
+test("dropSpaceshipTokenOnTrashTarget removes actor tokens", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const dropped = dropSpaceshipTokenOnTrashTarget(
+    state,
+    "actor-machinist-token",
+  );
+
+  assert.equal(
+    dropped.state.tokens.some((token) => token.tokenId === "actor-machinist-token"),
+    false,
+  );
+  assert.deepEqual(dropped.removedItemIds, [
+    spaceshipBoardItemId.token("actor-machinist-token"),
+  ]);
+  assert.equal(dropped.state.energyStack.availableCount, 20);
+});
+
+test("dropSpaceshipTokenOnTrashTarget restores generated energy tokens to the stack", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const result = beginEnergyStackTokenDrag(state, { x: 1000, y: 1200 });
+  const dropped = dropSpaceshipTokenOnTrashTarget(
+    result.state,
+    result.dragTokenId,
+  );
+
+  assert.equal(dropped.state.energyStack.availableCount, 20);
+  assert.equal(
+    dropped.state.tokens.some((token) => token.tokenId === result.dragTokenId),
+    false,
+  );
+  assert.deepEqual(dropped.removedItemIds, [
+    spaceshipBoardItemId.token(result.dragTokenId),
+  ]);
+});
+
+test("dropSpaceshipCardOnTrashTarget removes a Location bundle and layout membership", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const itemId = spaceshipBoardItemId.location("player-reactor");
+  const dropped = dropSpaceshipCardOnTrashTarget(state, itemId);
+  const removedIds = new Set(dropped.removedItemIds);
+  const playerTopRow = dropped.state.layouts.locationRows.find(
+    (row) => row.paneId === "pane-player" && row.row === "top",
+  );
+  const deviceColumn = dropped.state.layouts.deviceColumns.find(
+    (column) => column.locationItemId === itemId,
+  );
+
+  assert.equal(dropped.state.cards.some((card) => card.itemId === itemId), false);
+  assert.equal(playerTopRow?.itemIds.includes(itemId), false);
+  assert.equal(deviceColumn?.itemIds.length, 0);
+  assert.ok(removedIds.has(itemId));
+  assert.ok(removedIds.has(spaceshipBoardItemId.device("player-reactor-device")));
+  assert.ok(removedIds.has(spaceshipBoardItemId.effectCard("reactor-distress", 0)));
+  assert.ok(removedIds.has(spaceshipBoardItemId.token("reactor-energy")));
+  assert.equal(
+    dropped.state.tokens.some((token) => token.tokenId === "reactor-energy"),
+    false,
+  );
+});
+
+test("dropSpaceshipCardOnTrashTarget removes an Actor bundle and matching actor token", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const itemId = spaceshipBoardItemId.actorCard("actor-machinist");
+  const dropped = dropSpaceshipCardOnTrashTarget(state, itemId);
+  const removedIds = new Set(dropped.removedItemIds);
+  const playerActorRow = dropped.state.layouts.actorRows.find(
+    (row) => row.paneId === "pane-player",
+  );
+
+  assert.equal(dropped.state.cards.some((card) => card.itemId === itemId), false);
+  assert.equal(playerActorRow?.itemIds.includes(itemId), false);
+  assert.ok(removedIds.has(itemId));
+  assert.ok(removedIds.has(spaceshipBoardItemId.token("actor-machinist-token")));
+  assert.equal(
+    dropped.state.tokens.some(
+      (token) => token.tokenId === "actor-machinist-token",
+    ),
+    false,
+  );
+});
+
+test("dropSpaceshipCardOnTrashTarget removes only the targeted effect card and attached tokens", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const effectId = spaceshipBoardItemId.actorEffectCard(
+    "actor-veteran",
+    "injury",
+    0,
+  );
+  const withAttachedToken = dropSpaceshipTokenOnCard(
+    state,
+    "reactor-energy",
+    effectId,
+    { x: 500, y: 500 },
+  );
+  const dropped = dropSpaceshipCardOnTrashTarget(withAttachedToken, effectId);
+  const removedIds = new Set(dropped.removedItemIds);
+  const veteranStack = dropped.state.layouts.effectStacks.find(
+    (stack) =>
+      stack.ownerItemId === spaceshipBoardItemId.actorCard("actor-veteran"),
+  );
+
+  assert.equal(dropped.state.cards.some((card) => card.itemId === effectId), false);
+  assert.equal(
+    dropped.state.cards.some(
+      (card) =>
+        card.itemId ===
+        spaceshipBoardItemId.actorEffectCard("actor-veteran", "injury", 1),
+    ),
+    true,
+  );
+  assert.equal(veteranStack?.itemIds.includes(effectId), false);
+  assert.ok(removedIds.has(effectId));
+  assert.ok(removedIds.has(spaceshipBoardItemId.token("reactor-energy")));
+  assert.equal(
+    dropped.state.tokens.some((token) => token.tokenId === "reactor-energy"),
     false,
   );
 });

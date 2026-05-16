@@ -9,7 +9,10 @@ prototype surface: ship metadata, Devices, Location cards, effect cards, token
 rows, actor cards, and actor consequence cards are all direct board items placed
 by pure layout helpers. Its route keeps `Show All`, `Focus Ally Ship`, `Focus
 Enemy Ship`, and the card-library `+` action in one overlay header row above a
-square board frame that fills the viewport.
+square board frame that fills the viewport. The route also renders a
+semi-transparent trash drop area in the visible lower-left frame corner; it is
+outside the board transform, highlights during draggable item hover, and
+removes dropped draggable cards or tokens without affecting pan/zoom bounds.
 
 ## Purpose
 

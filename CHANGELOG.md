@@ -61,6 +61,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Added
 
 - Web/Spec/Server: add Campaign-attached worldbuilding sessions with shared result contracts, Socket.IO actions, a board-based result page, and import into campaign Locations, Actors, Assets, Encounters, and Quests.
+- Web: add a frame-corner trash drop area to `/spaceship` so draggable cards and tokens can be removed from the local board, including bundled child pieces.
 - Web: add live local snapping and layout reflow for `/spaceship` card dragging across ship rows, Device columns, actor rows, and effect stacks.
 - Web: add frontend-local free dragging for `/spaceship` Location, Device, effect, Actor, and Actor effect cards.
 - Web: add frontend-local `/spaceship` token drag/drop, including individual draggable energy and actor tokens plus a 20-count energy stack source/sink.

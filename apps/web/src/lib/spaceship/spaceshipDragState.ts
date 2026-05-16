@@ -23,7 +23,11 @@ import type {
 export {
   findTopmostItemAtPoint,
   getEnergyStackInitialItem,
+  getFrameTrashTargetBounds,
+  isFrameBoundsOverTrashTarget,
+  isFramePointOverTrashTarget,
   isPointOverEnergyStack,
+  spaceshipTrashFrameTargetSize,
 } from "./spaceshipDragHitTesting";
 export {
   applySpaceshipCardLiveSnap,
@@ -257,6 +261,34 @@ const mapTokens = (
   ),
 });
 
+const removeIds = (ids: readonly string[], removedIds: Set<string>): string[] =>
+  ids.filter((id) => !removedIds.has(id));
+
+const removeCardsFromLayouts = (
+  state: SpaceshipDragState,
+  removedCardIds: Set<string>,
+): SpaceshipDragState => ({
+  ...state,
+  layouts: {
+    locationRows: state.layouts.locationRows.map((layout) => ({
+      ...layout,
+      itemIds: removeIds(layout.itemIds, removedCardIds),
+    })),
+    deviceColumns: state.layouts.deviceColumns.map((layout) => ({
+      ...layout,
+      itemIds: removeIds(layout.itemIds, removedCardIds),
+    })),
+    effectStacks: state.layouts.effectStacks.map((layout) => ({
+      ...layout,
+      itemIds: removeIds(layout.itemIds, removedCardIds),
+    })),
+    actorRows: state.layouts.actorRows.map((layout) => ({
+      ...layout,
+      itemIds: removeIds(layout.itemIds, removedCardIds),
+    })),
+  },
+});
+
 export const beginSpaceshipCardDrag = (
   state: SpaceshipDragState,
   itemId: string,
@@ -439,6 +471,137 @@ export const dropSpaceshipTokenOnEnergyStack = (
         state.energyStack.availableCount + 1,
       ),
     },
+  };
+};
+
+export interface SpaceshipTrashDropResult {
+  state: SpaceshipDragState;
+  removedItemIds: string[];
+}
+
+const removeTokensFromTrashDrop = (
+  state: SpaceshipDragState,
+  tokenIds: Set<string>,
+): SpaceshipTrashDropResult => {
+  if (tokenIds.size === 0) {
+    return { state, removedItemIds: [] };
+  }
+
+  const removedTokens = state.tokens.filter((token) =>
+    tokenIds.has(token.tokenId),
+  );
+  const restoredEnergyCount = removedTokens.filter(
+    (token) => token.kind === "energy",
+  ).length;
+
+  return {
+    removedItemIds: removedTokens.map((token) =>
+      spaceshipBoardItemId.token(token.tokenId),
+    ),
+    state: {
+      ...state,
+      tokens: state.tokens.filter((token) => !tokenIds.has(token.tokenId)),
+      energyStack: {
+        ...state.energyStack,
+        availableCount: Math.min(
+          state.energyStack.totalCount,
+          state.energyStack.availableCount + restoredEnergyCount,
+        ),
+      },
+    },
+  };
+};
+
+export const dropSpaceshipTokenOnTrashTarget = (
+  state: SpaceshipDragState,
+  tokenId: string,
+): SpaceshipTrashDropResult => removeTokensFromTrashDrop(state, new Set([tokenId]));
+
+const addEffectStackItemIds = (
+  state: SpaceshipDragState,
+  ownerItemId: string,
+  removedCardIds: Set<string>,
+): void => {
+  state.layouts.effectStacks
+    .filter((stack) => stack.ownerItemId === ownerItemId)
+    .forEach((stack) => {
+      stack.itemIds.forEach((itemId) => removedCardIds.add(itemId));
+    });
+};
+
+const getActorIdFromActorCardItemId = (itemId: string): string => {
+  const prefix = "spaceship:actor-card:";
+  return itemId.startsWith(prefix) ? itemId.slice(prefix.length) : "";
+};
+
+const collectTrashCardBundleIds = (
+  state: SpaceshipDragState,
+  itemId: string,
+): Set<string> => {
+  const card = state.cards.find((candidate) => candidate.itemId === itemId);
+  const removedCardIds = new Set<string>();
+  if (!card) {
+    return removedCardIds;
+  }
+
+  removedCardIds.add(itemId);
+
+  if (card.role === "location") {
+    const deviceItemIds = state.layouts.deviceColumns
+      .filter((column) => column.locationItemId === itemId)
+      .flatMap((column) => column.itemIds);
+    deviceItemIds.forEach((deviceItemId) => removedCardIds.add(deviceItemId));
+    addEffectStackItemIds(state, itemId, removedCardIds);
+    deviceItemIds.forEach((deviceItemId) =>
+      addEffectStackItemIds(state, deviceItemId, removedCardIds),
+    );
+  }
+
+  if (card.role === "device" || card.role === "actor-card") {
+    addEffectStackItemIds(state, itemId, removedCardIds);
+  }
+
+  return removedCardIds;
+};
+
+export const dropSpaceshipCardOnTrashTarget = (
+  state: SpaceshipDragState,
+  itemId: string,
+): SpaceshipTrashDropResult => {
+  const removedCardIds = collectTrashCardBundleIds(state, itemId);
+  if (removedCardIds.size === 0) {
+    return { state, removedItemIds: [] };
+  }
+
+  const actorTokenIds = new Set<string>();
+  const card = state.cards.find((candidate) => candidate.itemId === itemId);
+  if (card?.role === "actor-card") {
+    const actorId = getActorIdFromActorCardItemId(itemId);
+    if (actorId) {
+      actorTokenIds.add(`${actorId}-token`);
+    }
+  }
+
+  const attachedTokenIds = state.tokens
+    .filter(
+      (token) =>
+        token.placement.type === "card" &&
+        removedCardIds.has(token.placement.cardItemId),
+    )
+    .map((token) => token.tokenId);
+  const removedTokenIds = new Set([...actorTokenIds, ...attachedTokenIds]);
+  const withoutCards = removeCardsFromLayouts(
+    {
+      ...state,
+      cards: state.cards.filter((candidate) => !removedCardIds.has(candidate.itemId)),
+    },
+    removedCardIds,
+  );
+  const tokenResult = removeTokensFromTrashDrop(withoutCards, removedTokenIds);
+
+  return {
+    state: tokenResult.state,
+    removedItemIds: [...removedCardIds, ...tokenResult.removedItemIds],
   };
 };
 

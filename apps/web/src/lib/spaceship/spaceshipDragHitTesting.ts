@@ -1,9 +1,16 @@
-import type { BoardItemRecord, BoardPoint } from "../board/boardController";
+import type {
+  BoardBounds,
+  BoardItemRecord,
+  BoardPoint,
+  BoardSize,
+} from "../board/boardController";
 import { getItemBounds } from "../board/boardController";
 import {
   spaceshipBoardItemId,
   spaceshipEnergyStackSize,
 } from "./spaceshipBoardLayout";
+
+export const spaceshipTrashFrameTargetSize = 80;
 
 export const findTopmostItemAtPoint = (
   items: readonly BoardItemRecord[],
@@ -38,6 +45,41 @@ export const isPointOverEnergyStack = (
       (item) => item.id === spaceshipBoardItemId.energyStack(),
     ),
   );
+
+export const isFramePointOverTrashTarget = (
+  frameSize: BoardSize,
+  point: BoardPoint,
+): boolean => {
+  const targetBounds = getFrameTrashTargetBounds(frameSize);
+  return (
+    point.x >= targetBounds.x &&
+    point.x <= targetBounds.x + targetBounds.width &&
+    point.y >= targetBounds.y &&
+    point.y <= targetBounds.y + targetBounds.height
+  );
+};
+
+export const getFrameTrashTargetBounds = (
+  frameSize: BoardSize,
+): BoardBounds => ({
+  x: 0,
+  y: Math.max(0, frameSize.height - spaceshipTrashFrameTargetSize),
+  width: Math.min(frameSize.width, spaceshipTrashFrameTargetSize),
+  height: Math.min(frameSize.height, spaceshipTrashFrameTargetSize),
+});
+
+export const isFrameBoundsOverTrashTarget = (
+  frameSize: BoardSize,
+  bounds: BoardBounds,
+): boolean => {
+  const targetBounds = getFrameTrashTargetBounds(frameSize);
+  return (
+    bounds.x <= targetBounds.x + targetBounds.width &&
+    bounds.x + bounds.width >= targetBounds.x &&
+    bounds.y <= targetBounds.y + targetBounds.height &&
+    bounds.y + bounds.height >= targetBounds.y
+  );
+};
 
 export const getEnergyStackInitialItem = (): {
   id: string;

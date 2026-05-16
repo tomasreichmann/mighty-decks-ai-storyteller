@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -12,6 +13,8 @@ import type {
   SpaceshipDragState,
   SpaceshipScene,
 } from "../../lib/spaceship/spaceshipTypes";
+import type { BoardBounds, BoardPoint } from "../../lib/board/boardController";
+import { worldToFrame } from "../../lib/board/boardController";
 import {
   applySpaceshipCardLiveSnap,
   beginSpaceshipCardDrag,
@@ -19,10 +22,15 @@ import {
   beginSpaceshipTokenDrag,
   didSpaceshipCardLayoutDragExceedTearOffDistance,
   dropSpaceshipCardOnBoard,
+  dropSpaceshipCardOnTrashTarget,
   dropSpaceshipTokenOnBoard,
   dropSpaceshipTokenOnCard,
   dropSpaceshipTokenOnEnergyStack,
+  dropSpaceshipTokenOnTrashTarget,
   findTopmostItemAtPoint,
+  getFrameTrashTargetBounds,
+  isFrameBoundsOverTrashTarget,
+  isFramePointOverTrashTarget,
   isSpaceshipCardLayoutTearOffBlocked,
   isSpaceshipCardSnapInsertBlocked,
   isPointOverEnergyStack,
@@ -58,17 +66,139 @@ interface SpaceshipBoardProps {
 }
 
 const spaceshipLayoutReflowTransitionDurationMs = 90;
+const spaceshipTrashDebug = false;
+
+const removeBoardItems = (
+  controller: ReturnType<typeof useBoard>,
+  itemIds: readonly string[],
+): void => {
+  itemIds.forEach((itemId) => controller.removeItem(itemId));
+};
+
+const getFrameBounds = (
+  item: { x: number; y: number; width: number; height: number },
+  viewport: ReturnType<typeof useBoard>["viewport"],
+): BoardBounds => {
+  const topLeft = worldToFrame({ x: item.x, y: item.y }, viewport);
+  return {
+    x: topLeft.x,
+    y: topLeft.y,
+    width: item.width * viewport.zoom,
+    height: item.height * viewport.zoom,
+  };
+};
+
+const getTrashHitState = ({
+  frameSize,
+  pointerFramePoint,
+  itemFrameBounds,
+}: {
+  frameSize: { width: number; height: number };
+  pointerFramePoint: BoardPoint;
+  itemFrameBounds: BoardBounds | null;
+}): {
+  active: boolean;
+  pointHit: boolean;
+  boundsHit: boolean;
+  targetBounds: BoardBounds;
+} => {
+  const targetBounds = getFrameTrashTargetBounds(frameSize);
+  const pointHit = isFramePointOverTrashTarget(frameSize, pointerFramePoint);
+  const boundsHit = itemFrameBounds
+    ? isFrameBoundsOverTrashTarget(frameSize, itemFrameBounds)
+    : false;
+  return {
+    active: pointHit || boundsHit,
+    pointHit,
+    boundsHit,
+    targetBounds,
+  };
+};
+
+const debugSpaceshipTrashHit = (
+  phase: "hover" | "drop",
+  details: {
+    kind: "card" | "token";
+    id: string;
+    frameSize: { width: number; height: number };
+    pointerFramePoint: BoardPoint;
+    itemFrameBounds: BoardBounds | null;
+    targetBounds: BoardBounds;
+    pointHit: boolean;
+    boundsHit: boolean;
+    active: boolean;
+  },
+): void => {
+  if (!spaceshipTrashDebug) {
+    return;
+  }
+
+  console.debug("[spaceship-trash]", {
+    phase,
+    ...details,
+  });
+};
+
+const TrashIcon = (): JSX.Element => (
+  <svg
+    viewBox="0 0 24 24"
+    className="h-7 w-7 fill-none stroke-current"
+    strokeWidth={1.8}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M6 6l1 14h10l1-14" />
+    <path d="M10 10v7" />
+    <path d="M14 10v7" />
+  </svg>
+);
+
+const SpaceshipTrashFrameTarget = ({
+  active,
+  dragging,
+}: {
+  active: boolean;
+  dragging: boolean;
+}): JSX.Element => (
+  <div
+    role="img"
+    aria-label="Trash drop area"
+    className={cn(
+      "spaceship-trash-frame-target absolute bottom-0 left-0 z-30 flex h-20 w-20 items-end justify-start bg-[radial-gradient(circle_at_26px_calc(100%-26px),rgba(148,28,43,0.46)_0_17px,rgba(148,28,43,0.22)_26px,rgba(148,28,43,0)_36px)] p-3 text-kac-curse-lightest opacity-0 transition duration-100 hover:bg-[radial-gradient(circle_at_26px_calc(100%-26px),rgba(202,38,58,0.72)_0_17px,rgba(148,28,43,0.42)_26px,rgba(148,28,43,0)_36px)] hover:opacity-90",
+      dragging ? "pointer-events-auto opacity-40" : "pointer-events-none",
+      active
+        ? "bg-[radial-gradient(circle_at_26px_calc(100%-26px),rgba(202,38,58,0.76)_0_17px,rgba(148,28,43,0.46)_26px,rgba(148,28,43,0)_36px)] opacity-100"
+        : null,
+    )}
+  >
+    <div
+      className={cn(
+        "transition duration-100",
+        active ? "scale-110 opacity-90" : "opacity-45",
+      )}
+    >
+      <TrashIcon />
+    </div>
+  </div>
+);
 
 const SpaceshipBoardCanvas = ({
   scene,
   dragState,
   onDragStateChange,
   onItemDragActiveChange,
+  onTrashTargetActiveChange,
+  getFramePoint,
 }: {
   scene: SpaceshipScene;
   dragState: SpaceshipDragState;
   onDragStateChange: Dispatch<SetStateAction<SpaceshipDragState>>;
   onItemDragActiveChange: (active: boolean) => void;
+  onTrashTargetActiveChange: (active: boolean) => void;
+  getFramePoint: (point: { clientX: number; clientY: number }) => BoardPoint;
 }): JSX.Element => {
   const controller = useBoard();
   const didInitialLayout = useRef(false);
@@ -114,6 +244,10 @@ const SpaceshipBoardCanvas = ({
     () => createSpaceshipBoardItemMeta(scene, dragState),
     [dragState, scene],
   );
+  const layoutItemIds = useMemo(
+    () => layout.placements.map((placement) => placement.id),
+    [layout],
+  );
 
   useEffect(() => {
     dragStateRef.current = dragState;
@@ -127,9 +261,9 @@ const SpaceshipBoardCanvas = ({
     didInitialLayout.current = true;
     controller.applyLayout(layout);
     window.requestAnimationFrame(() => {
-      controller.fitItems(undefined, { smooth: true, durationMs: 260 });
+      controller.fitItems(layoutItemIds, { smooth: true, durationMs: 260 });
     });
-  }, [controller, layout]);
+  }, [controller, layout, layoutItemIds]);
 
   useEffect(() => {
     if (
@@ -143,8 +277,8 @@ const SpaceshipBoardCanvas = ({
 
     didMeasuredLayout.current = true;
     controller.applyLayout(layout, { smooth: true, durationMs: 220 });
-    controller.fitItems(undefined, { smooth: true, durationMs: 220 });
-  }, [controller, controller.items, layout]);
+    controller.fitItems(layoutItemIds, { smooth: true, durationMs: 220 });
+  }, [controller, controller.items, layout, layoutItemIds]);
 
   useEffect(() => {
     const shouldAnimateLayoutReflow =
@@ -218,6 +352,7 @@ const SpaceshipBoardCanvas = ({
       snapBlockedUntilMs: null,
       tearOffBlockedUntilMs: null,
     };
+    onTrashTargetActiveChange(false);
     onItemDragActiveChange(true);
   };
 
@@ -253,6 +388,7 @@ const SpaceshipBoardCanvas = ({
       zoom: snapshot.viewport.zoom,
     };
     setActiveCardItemId(null);
+    onTrashTargetActiveChange(false);
     onItemDragActiveChange(true);
   };
 
@@ -291,6 +427,7 @@ const SpaceshipBoardCanvas = ({
       zoom: snapshot.viewport.zoom,
     };
     setActiveCardItemId(null);
+    onTrashTargetActiveChange(false);
     onItemDragActiveChange(true);
   };
 
@@ -311,6 +448,10 @@ const SpaceshipBoardCanvas = ({
       }
 
       if (activeDrag.kind === "card") {
+        const pointerFramePoint = getFramePoint({
+          clientX: event.clientX,
+          clientY: event.clientY,
+        });
         if (activeDrag.mode === "layout") {
           if (
             isSpaceshipCardLayoutTearOffBlocked(
@@ -324,6 +465,21 @@ const SpaceshipBoardCanvas = ({
               clientY: event.clientY,
             })
           ) {
+            const snapshot = controller.getSnapshot();
+            const trashHit = getTrashHitState({
+              frameSize: snapshot.frameSize,
+              pointerFramePoint,
+              itemFrameBounds: null,
+            });
+            debugSpaceshipTrashHit("hover", {
+              kind: "card",
+              id: activeDrag.itemId,
+              frameSize: snapshot.frameSize,
+              pointerFramePoint,
+              itemFrameBounds: null,
+              ...trashHit,
+            });
+            onTrashTargetActiveChange(trashHit.active);
             setActiveCardItemId(null);
             return;
           }
@@ -349,6 +505,7 @@ const SpaceshipBoardCanvas = ({
           activeDrag.itemId,
           dragOrigin,
         );
+        const snapshot = controller.getSnapshot();
         const card = moved.cards.find(
           (candidate) => candidate.itemId === activeDrag.itemId,
         );
@@ -361,7 +518,7 @@ const SpaceshipBoardCanvas = ({
             ? applySpaceshipCardLiveSnap(
                 moved,
                 activeDrag.itemId,
-                controller.getSnapshot().items,
+                snapshot.items,
                 {
                   x: card.x + card.width / 2,
                   y: card.y + card.height / 2,
@@ -382,6 +539,23 @@ const SpaceshipBoardCanvas = ({
         } else {
           setActiveCardItemId(activeDrag.itemId);
         }
+        const itemFrameBounds = nextCard
+          ? getFrameBounds(nextCard, snapshot.viewport)
+          : null;
+        const trashHit = getTrashHitState({
+          frameSize: snapshot.frameSize,
+          pointerFramePoint,
+          itemFrameBounds,
+        });
+        debugSpaceshipTrashHit("hover", {
+          kind: "card",
+          id: activeDrag.itemId,
+          frameSize: snapshot.frameSize,
+          pointerFramePoint,
+          itemFrameBounds,
+          ...trashHit,
+        });
+        onTrashTargetActiveChange(trashHit.active);
         dragStateRef.current = nextState;
         onDragStateChange(nextState);
         return;
@@ -400,6 +574,31 @@ const SpaceshipBoardCanvas = ({
           zoom: activeDrag.zoom,
         },
       );
+      const snapshot = controller.getSnapshot();
+      const token = moved.tokens.find(
+        (candidate) => candidate.tokenId === activeDrag.tokenId,
+      );
+      const tokenFramePoint = getFramePoint({
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
+      const itemFrameBounds = token
+        ? getFrameBounds(token, snapshot.viewport)
+        : null;
+      const trashHit = getTrashHitState({
+        frameSize: snapshot.frameSize,
+        pointerFramePoint: tokenFramePoint,
+        itemFrameBounds,
+      });
+      debugSpaceshipTrashHit("hover", {
+        kind: "token",
+        id: activeDrag.tokenId,
+        frameSize: snapshot.frameSize,
+        pointerFramePoint: tokenFramePoint,
+        itemFrameBounds,
+        ...trashHit,
+      });
+      onTrashTargetActiveChange(trashHit.active);
       dragStateRef.current = moved;
       onDragStateChange(moved);
     };
@@ -412,8 +611,13 @@ const SpaceshipBoardCanvas = ({
 
       activeDragRef.current = null;
       onItemDragActiveChange(false);
+      onTrashTargetActiveChange(false);
       setActiveCardItemId(null);
       const snapshot = controller.getSnapshot();
+      const dropFramePoint = getFramePoint({
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
       const syncedCards = syncSpaceshipCardPositions(
         dragStateRef.current,
         snapshot.items,
@@ -424,6 +628,32 @@ const SpaceshipBoardCanvas = ({
         const card = synced.cards.find(
           (candidate) => candidate.itemId === activeDrag.itemId,
         );
+        const itemFrameBounds = card
+          ? getFrameBounds(card, snapshot.viewport)
+          : null;
+        const trashHit = getTrashHitState({
+          frameSize: snapshot.frameSize,
+          pointerFramePoint: dropFramePoint,
+          itemFrameBounds,
+        });
+        debugSpaceshipTrashHit("drop", {
+          kind: "card",
+          id: activeDrag.itemId,
+          frameSize: snapshot.frameSize,
+          pointerFramePoint: dropFramePoint,
+          itemFrameBounds,
+          ...trashHit,
+        });
+        if (card && trashHit.active) {
+          const result = dropSpaceshipCardOnTrashTarget(
+            synced,
+            activeDrag.itemId,
+          );
+          removeBoardItems(controller, result.removedItemIds);
+          dragStateRef.current = result.state;
+          onDragStateChange(result.state);
+          return;
+        }
         const nextState =
           card?.placement.type === "layout"
             ? synced
@@ -445,6 +675,30 @@ const SpaceshipBoardCanvas = ({
         x: token.x + token.width / 2,
         y: token.y + token.height / 2,
       };
+      const itemFrameBounds = getFrameBounds(token, snapshot.viewport);
+      const trashHit = getTrashHitState({
+        frameSize: snapshot.frameSize,
+        pointerFramePoint: dropFramePoint,
+        itemFrameBounds,
+      });
+      debugSpaceshipTrashHit("drop", {
+        kind: "token",
+        id: activeDrag.tokenId,
+        frameSize: snapshot.frameSize,
+        pointerFramePoint: dropFramePoint,
+        itemFrameBounds,
+        ...trashHit,
+      });
+      if (trashHit.active) {
+        const result = dropSpaceshipTokenOnTrashTarget(
+          synced,
+          activeDrag.tokenId,
+        );
+        removeBoardItems(controller, result.removedItemIds);
+        dragStateRef.current = result.state;
+        onDragStateChange(result.state);
+        return;
+      }
       const isEnergyStackDrop =
         token.kind === "energy" &&
         isPointOverEnergyStack(snapshot.items, tokenCenter);
@@ -479,10 +733,6 @@ const SpaceshipBoardCanvas = ({
     window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("pointercancel", handlePointerUp);
     return () => {
-      if (activeDragRef.current) {
-        onItemDragActiveChange(false);
-        setActiveCardItemId(null);
-      }
       window.removeEventListener("wheel", handleWheelWhileDragging, {
         capture: true,
       });
@@ -490,7 +740,13 @@ const SpaceshipBoardCanvas = ({
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
     };
-  }, [controller, onDragStateChange, onItemDragActiveChange]);
+  }, [
+    controller,
+    getFramePoint,
+    onDragStateChange,
+    onItemDragActiveChange,
+    onTrashTargetActiveChange,
+  ]);
 
   return (
     <Board
@@ -519,13 +775,19 @@ const SpaceshipBoardControls = ({
   const allyPaneId = scene.panes[0].paneId;
   const enemyPaneId = scene.panes[1].paneId;
   const focusOptions = { smooth: true, durationMs: 240 };
+  const allBoardItemIds = [
+    spaceshipBoardItemId.energyStack(),
+    ...scene.panes.flatMap((pane) =>
+      getSpaceshipBoardPaneItemIds(scene, pane.paneId, dragState),
+    ),
+  ];
 
   return (
     <div className="spaceship-board-controls flex flex-wrap items-center justify-end gap-2">
       <Button
         size="sm"
         color="bone"
-        onClick={() => controller.fitItems(undefined, focusOptions)}
+        onClick={() => controller.fitItems(allBoardItemIds, focusOptions)}
       >
         Show All
       </Button>
@@ -596,6 +858,17 @@ export const SpaceshipBoard = ({
   className,
 }: SpaceshipBoardProps): JSX.Element => {
   const [isItemDragActive, setIsItemDragActive] = useState(false);
+  const [isTrashTargetActive, setIsTrashTargetActive] = useState(false);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const getFramePoint = useCallback(
+    ({ clientX, clientY }: { clientX: number; clientY: number }): BoardPoint => {
+      const rect = frameRef.current?.getBoundingClientRect();
+      return rect
+        ? { x: clientX - rect.left, y: clientY - rect.top }
+        : { x: clientX, y: clientY };
+    },
+    [],
+  );
   const initialItems = useMemo(
     () => createSpaceshipBoardItems(scene, dragState),
     [dragState, scene],
@@ -603,6 +876,7 @@ export const SpaceshipBoard = ({
 
   return (
     <div
+      ref={frameRef}
       className={cn(
         "spaceship-board relative h-screen w-full overflow-hidden",
         className,
@@ -623,6 +897,12 @@ export const SpaceshipBoard = ({
             dragState={dragState}
             onDragStateChange={onDragStateChange}
             onItemDragActiveChange={setIsItemDragActive}
+            onTrashTargetActiveChange={setIsTrashTargetActive}
+            getFramePoint={getFramePoint}
+          />
+          <SpaceshipTrashFrameTarget
+            active={isTrashTargetActive}
+            dragging={isItemDragActive}
           />
         </BoardFrame>
       </BoardProvider>
