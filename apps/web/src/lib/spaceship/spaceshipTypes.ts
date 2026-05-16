@@ -130,6 +130,7 @@ export interface ShipPaneModel {
   paneId: string;
   title: string;
   subtitle: string;
+  backgroundImageUrl?: string;
   faction: string;
   emphasis: "player" | "enemy";
   hullPoints: number;

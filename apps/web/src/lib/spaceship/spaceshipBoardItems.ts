@@ -14,6 +14,7 @@ import {
   locationWidth,
   shipHeaderHeight,
   shipHeaderWidth,
+  shipWidth,
   spaceshipBoardItemId,
   tokenItem,
   type SpaceshipBoardItemMeta,
@@ -27,6 +28,12 @@ export const createSpaceshipBoardItems = (
 
   scene.panes.forEach((pane) => {
     items.push(
+      item({
+        id: spaceshipBoardItemId.shipBackground(pane.paneId),
+        width: shipWidth,
+        height: shipHeaderHeight,
+        zIndex: 0,
+      }),
       item({
         id: spaceshipBoardItemId.shipHeader(pane.paneId),
         width: shipHeaderWidth,
@@ -158,6 +165,10 @@ export const createSpaceshipBoardItemMeta = (
   const meta = new Map<string, SpaceshipBoardItemMeta>();
 
   scene.panes.forEach((pane) => {
+    meta.set(spaceshipBoardItemId.shipBackground(pane.paneId), {
+      role: "ship-background",
+      pane,
+    });
     meta.set(spaceshipBoardItemId.shipHeader(pane.paneId), {
       role: "ship-header",
       pane,

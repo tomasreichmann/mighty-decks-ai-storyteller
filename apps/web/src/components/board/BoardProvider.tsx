@@ -465,6 +465,8 @@ const boardReducer = (state: BoardState, action: BoardAction): BoardState => {
           ...existing,
           x: placement.x,
           y: placement.y,
+          width: placement.width,
+          height: placement.height,
           zIndex: placement.zIndex ?? existing.zIndex,
           rotation: placement.rotation,
         };
@@ -472,6 +474,8 @@ const boardReducer = (state: BoardState, action: BoardAction): BoardState => {
           changed ||
           nextItem.x !== existing.x ||
           nextItem.y !== existing.y ||
+          nextItem.width !== existing.width ||
+          nextItem.height !== existing.height ||
           nextItem.zIndex !== existing.zIndex ||
           nextItem.rotation !== existing.rotation;
         items.set(placement.id, nextItem);

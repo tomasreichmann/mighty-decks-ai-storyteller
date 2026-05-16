@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: add the Exiles Corvette and Xithrax Raider artifact images as `/spaceship` board backgrounds behind their ship areas.
 - Web: remove extra horizontal padding from the shared `Tag` leading slot so embedded controls align tightly.
 - Web: move the `/spaceship` energy token stack into the board flow above the Exiles ship title.
 - Web: move the `/spaceship` Location level control beside the top-right Location symbol and keep its +/- buttons interactive over the board.
@@ -87,7 +88,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Fixed
 
 - Server: preserve campaign-session character claims across incidental socket disconnects so the player claim route can redirect to live chat without immediately unclaiming the character.
-
+- Web: make board layout application update item dimensions so `/spaceship` ship backgrounds match the focusable ship-card area.
 - Web: add a 10px tear-off threshold plus 400ms tear-off/reinsert cooldowns for `/spaceship` layout card dragging so live snap reflow does not repeatedly add and remove the same card.
 - Web: add a fast transition to `/spaceship` card positions when live snap layout reflow settles a dragged card into a layout.
 

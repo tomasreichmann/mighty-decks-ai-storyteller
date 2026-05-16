@@ -440,6 +440,16 @@
       "fileName": "the-false-belt-fa687fd1ee5fe3d76c8f.png",
       "contentType": "image/png",
       "createdAtIso": "2026-05-05T18:31:18.316Z"
+    },
+    "835270ea9b1c4ddc350719c04f9145e70e8e259c2495b30466bec7f7135e3f56": {
+      "fileName": "exiles-corvette.png",
+      "contentType": "image/png",
+      "createdAtIso": "2026-05-13T20:50:00.000Z"
+    },
+    "9ce78459a749394a91a4b1863758b7a19560b81b2283c6a732bbd1d3ae721050": {
+      "fileName": "pirate-corvette.png",
+      "contentType": "image/png",
+      "createdAtIso": "2026-05-13T20:50:00.000Z"
     }
   }
 }

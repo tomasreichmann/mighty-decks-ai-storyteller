@@ -54,6 +54,7 @@ export const spaceshipEnergyStackSize = {
 } as const;
 
 export const spaceshipBoardItemId = {
+  shipBackground: (paneId: string) => `spaceship:ship-background:${paneId}`,
   shipHeader: (paneId: string) => `spaceship:ship-header:${paneId}`,
   location: (locationId: string) => `spaceship:location:${locationId}`,
   device: (deviceId: string) => `spaceship:device:${deviceId}`,
@@ -71,6 +72,7 @@ export const spaceshipBoardItemId = {
 };
 
 export type SpaceshipBoardItemRole =
+  | "ship-background"
   | "ship-header"
   | "location"
   | "device"

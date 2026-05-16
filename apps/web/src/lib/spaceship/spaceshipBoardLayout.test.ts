@@ -14,11 +14,13 @@ import {
   removeSpaceshipCardFromLayouts,
 } from "./spaceshipDragState";
 
-test("createSpaceshipBoardItems creates board entries for locations, devices, individual tokens, effects, and actor parts", () => {
+test("createSpaceshipBoardItems creates board entries for ship backgrounds, locations, devices, individual tokens, effects, and actor parts", () => {
   const dragState = createSpaceshipDragState(spaceshipScene);
   const items = createSpaceshipBoardItems(spaceshipScene, dragState);
   const ids = new Set(items.map((item) => item.id));
 
+  assert.ok(ids.has(spaceshipBoardItemId.shipBackground("pane-player")));
+  assert.ok(ids.has(spaceshipBoardItemId.shipBackground("pane-pirate")));
   assert.ok(ids.has(spaceshipBoardItemId.location("player-reactor")));
   assert.ok(ids.has(spaceshipBoardItemId.device("player-reactor-device")));
   assert.ok(ids.has(spaceshipBoardItemId.token("reactor-energy")));
@@ -31,6 +33,102 @@ test("createSpaceshipBoardItems creates board entries for locations, devices, in
   assert.ok(
     ids.has(spaceshipBoardItemId.actorEffectCard("actor-machinist", "injury", 0)),
   );
+});
+
+test("createSpaceshipBoardLayout places each ship background behind its ship content", () => {
+  const dragState = createSpaceshipDragState(spaceshipScene);
+  const layout = createSpaceshipBoardLayout(spaceshipScene, dragState);
+  const placementsById = new Map(
+    layout.placements.map((placement) => [placement.id, placement]),
+  );
+  const playerBackground = placementsById.get(
+    spaceshipBoardItemId.shipBackground("pane-player"),
+  );
+  const pirateBackground = placementsById.get(
+    spaceshipBoardItemId.shipBackground("pane-pirate"),
+  );
+  const playerHeader = placementsById.get(
+    spaceshipBoardItemId.shipHeader("pane-player"),
+  );
+  const pirateHeader = placementsById.get(
+    spaceshipBoardItemId.shipHeader("pane-pirate"),
+  );
+  const playerReactor = placementsById.get(
+    spaceshipBoardItemId.location("player-reactor"),
+  );
+  const pirateReactor = placementsById.get(
+    spaceshipBoardItemId.location("pirate-reactor"),
+  );
+
+  assert.ok(playerBackground);
+  assert.ok(pirateBackground);
+  assert.ok(playerHeader);
+  assert.ok(pirateHeader);
+  assert.ok(playerReactor);
+  assert.ok(pirateReactor);
+  assert.equal(playerBackground.zIndex, 0);
+  assert.equal(pirateBackground.zIndex, 0);
+  assert.ok((playerBackground.zIndex ?? 0) < (playerHeader.zIndex ?? 0));
+  assert.ok((pirateBackground.zIndex ?? 0) < (pirateHeader.zIndex ?? 0));
+  assert.ok(playerHeader.x >= playerBackground.x);
+  assert.ok(playerHeader.y >= playerBackground.y);
+  assert.ok(
+    playerReactor.x + playerReactor.width <=
+      playerBackground.x + playerBackground.width,
+  );
+  assert.ok(
+    playerReactor.y + playerReactor.height <=
+      playerBackground.y + playerBackground.height,
+  );
+  assert.ok(pirateHeader.x >= pirateBackground.x);
+  assert.ok(pirateHeader.y >= pirateBackground.y);
+  assert.ok(
+    pirateReactor.x + pirateReactor.width <=
+      pirateBackground.x + pirateBackground.width,
+  );
+  assert.ok(
+    pirateReactor.y + pirateReactor.height <=
+      pirateBackground.y + pirateBackground.height,
+  );
+});
+
+test("ship backgrounds use the same bounds as each pane focus target", () => {
+  const dragState = createSpaceshipDragState(spaceshipScene);
+  const layout = createSpaceshipBoardLayout(spaceshipScene, dragState);
+  const placementsById = new Map(
+    layout.placements.map((placement) => [placement.id, placement]),
+  );
+
+  spaceshipScene.panes.forEach((pane) => {
+    const backgroundId = spaceshipBoardItemId.shipBackground(pane.paneId);
+    const focusIds = getSpaceshipBoardPaneItemIds(
+      spaceshipScene,
+      pane.paneId,
+      dragState,
+    );
+    const focusPlacements = focusIds.map((id) => {
+      const placement = placementsById.get(id);
+      assert.ok(placement, `${id} should be placed`);
+      return placement;
+    });
+    const background = placementsById.get(backgroundId);
+    assert.ok(background);
+    assert.equal(focusIds.includes(backgroundId), false);
+
+    const left = Math.min(...focusPlacements.map((placement) => placement.x));
+    const top = Math.min(...focusPlacements.map((placement) => placement.y));
+    const right = Math.max(
+      ...focusPlacements.map((placement) => placement.x + placement.width),
+    );
+    const bottom = Math.max(
+      ...focusPlacements.map((placement) => placement.y + placement.height),
+    );
+
+    assert.equal(background.x, left);
+    assert.equal(background.y, top);
+    assert.equal(background.width, right - left);
+    assert.equal(background.height, bottom - top);
+  });
 });
 
 test("createSpaceshipBoardLayout renders multiple Devices in a flow column above a Location", () => {

@@ -31,6 +31,7 @@ tokens, actor/minis tokens, and status/effect cards.
 - Support first-slice token drag/drop for energy and actor tokens on the local `/spaceship` board.
 - Support first-slice free card drag/drop for Location, Device, effect, Actor, and Actor effect cards on the local `/spaceship` board.
 - Support live local snapping and layout reflow while dragging cards across compatible ship rows, Device columns, actor rows, and effect stacks.
+- Render the Exiles Corvette and Xithrax Raider artifact images as low-z board backgrounds behind their ship areas.
 - Add a 20-count energy token stack that creates tokens when dragged from it and reclaims energy tokens dropped back onto it.
 - Expand the Exiles importer so ship locations are authored as normalized adventure-module locations instead of living only inside scene prose.
 

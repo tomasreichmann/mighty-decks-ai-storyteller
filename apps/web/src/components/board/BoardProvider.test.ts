@@ -61,3 +61,12 @@ test("BoardProvider exposes layout application through the reducer-backed contro
   assert.match(source, /if \(!existing\) \{\s*continue;/);
   assert.match(source, /rotation: placement\.rotation/);
 });
+
+test("BoardProvider applyLayout updates item dimensions from placements", () => {
+  const source = readFileSync(new URL("./BoardProvider.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /width: placement\.width/);
+  assert.match(source, /height: placement\.height/);
+  assert.match(source, /nextItem\.width !== existing\.width/);
+  assert.match(source, /nextItem\.height !== existing\.height/);
+});

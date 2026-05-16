@@ -22,9 +22,10 @@ test("SpaceshipBoard renders the scene through the shared board primitives", () 
   assert.match(source, /createSpaceshipBoardLayout/);
 });
 
-test("SpaceshipBoard renders independent board surfaces for locations, devices, effects, tokens, and actors", () => {
+test("SpaceshipBoard renders independent board surfaces for ship backgrounds, locations, devices, effects, tokens, and actors", () => {
   const source = readBoardItemSource();
 
+  assert.match(source, /SpaceshipShipBackground/);
   assert.match(source, /ShipLocationCardSurface/);
   assert.match(source, /ShipLocationDeviceCard/);
   assert.match(source, /SpaceshipTokenSurface/);
@@ -66,7 +67,8 @@ test("SpaceshipBoard wires pointer drag handlers for all draggable card surfaces
   assert.match(source, /case "effect-card":[\s\S]*onCardPointerDown/);
   assert.match(source, /case "actor-effect-card":[\s\S]*onCardPointerDown/);
   assert.match(source, /case "actor-card":[\s\S]*onCardPointerDown/);
-  assert.match(source, /case "ship-header":\n\s+return meta\.pane \? <SpaceshipShipHeader/);
+  assert.match(source, /case "ship-background":[\s\S]*<SpaceshipShipBackground/);
+  assert.match(source, /case "ship-header":\r?\n\s+return meta\.pane \? <SpaceshipShipHeader/);
   assert.match(source, /case "energy-stack":[\s\S]*<EnergyTokenStack/);
 });
 

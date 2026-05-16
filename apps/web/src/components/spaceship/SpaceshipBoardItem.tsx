@@ -25,6 +25,35 @@ import {
   SpaceshipActorEffectSurface,
 } from "./SpaceshipActorStrip";
 
+const SpaceshipShipBackground = ({
+  pane,
+  width,
+  height,
+}: {
+  pane: SpaceshipScene["panes"][number];
+  width: number;
+  height: number;
+}): JSX.Element | null => {
+  if (!pane.backgroundImageUrl) {
+    return null;
+  }
+
+  return (
+    <div
+      aria-hidden="true"
+      className="spaceship-ship-background pointer-events-none overflow-hidden"
+      style={{ width, height }}
+    >
+      <img
+        src={pane.backgroundImageUrl}
+        alt=""
+        draggable={false}
+        className="h-full w-full object-contain opacity-55 saturate-[0.88] drop-shadow-[0_28px_42px_rgba(0,0,0,0.38)]"
+      />
+    </div>
+  );
+};
+
 const SpaceshipShipHeader = ({
   pane,
 }: {
@@ -120,6 +149,14 @@ export const SpaceshipBoardItem = ({
   }
 
   switch (meta.role) {
+    case "ship-background":
+      return meta.pane ? (
+        <SpaceshipShipBackground
+          pane={meta.pane}
+          width={item.width}
+          height={item.height}
+        />
+      ) : null;
     case "ship-header":
       return meta.pane ? <SpaceshipShipHeader pane={meta.pane} /> : null;
     case "location":

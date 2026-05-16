@@ -139,7 +139,7 @@ export const BoardFrame = ({
   const dotRadius = Math.max(0.7, 1.2 * gridZoom);
   const dotFadeRadius = Math.max(dotRadius + 0.2, 1.4 * gridZoom);
   const frameStyle: CSSProperties = {
-    backgroundImage: `radial-gradient(circle at center, rgba(255,249,227,0.42) 0 ${dotRadius}px, transparent ${dotFadeRadius}px)`,
+    backgroundImage: `radial-gradient(circle at center, rgba(255,249,227,0.21) 0 ${dotRadius}px, transparent ${dotFadeRadius}px)`,
     backgroundPosition: `${-viewport.x * gridZoom}px ${-viewport.y * gridZoom}px`,
     backgroundSize: `${textureSize}px ${textureSize}px`,
   };

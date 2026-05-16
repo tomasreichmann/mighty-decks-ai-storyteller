@@ -40,6 +40,7 @@ import {
   spaceshipEnergyStackSize,
 } from "./spaceshipBoardGeometry";
 import { createMembershipBaseLayout } from "./spaceshipBoardMembershipLayout";
+import { getSpaceshipBoardPaneItemIds } from "./spaceshipBoardItems";
 export {
   spaceshipBoardItemId,
   spaceshipBoardSize,
@@ -338,6 +339,53 @@ const createTokenLayoutPlacements = (
   });
 };
 
+const createShipBackgroundPlacements = (
+  scene: SpaceshipScene,
+  dragState: SpaceshipDragState | undefined,
+  placements: readonly BoardLayoutResult["placements"][number][],
+): BoardLayoutResult["placements"] => {
+  const placementsById = new Map(
+    placements.map((placement) => [placement.id, placement]),
+  );
+
+  return scene.panes.flatMap((pane) => {
+    const panePlacements = getSpaceshipBoardPaneItemIds(
+      scene,
+      pane.paneId,
+      dragState,
+    )
+      .map((id) => placementsById.get(id))
+      .filter(
+        (placement): placement is BoardLayoutResult["placements"][number] =>
+          Boolean(placement),
+      );
+
+    if (panePlacements.length === 0) {
+      return [];
+    }
+
+    const left = Math.min(...panePlacements.map((placement) => placement.x));
+    const top = Math.min(...panePlacements.map((placement) => placement.y));
+    const right = Math.max(
+      ...panePlacements.map((placement) => placement.x + placement.width),
+    );
+    const bottom = Math.max(
+      ...panePlacements.map((placement) => placement.y + placement.height),
+    );
+
+    return [
+      {
+        id: spaceshipBoardItemId.shipBackground(pane.paneId),
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+        zIndex: 0,
+      },
+    ];
+  });
+};
+
 const applyCardLayoutOverrides = (
   dragState: SpaceshipDragState | undefined,
   baseLayout: BoardLayoutResult,
@@ -398,11 +446,13 @@ export const createSpaceshipBoardLayout = (
   const cardLayout = dragState?.layouts
     ? baseLayout
     : applyCardLayoutOverrides(dragState, baseLayout);
+  const tokenPlacements = createTokenLayoutPlacements(dragState, cardLayout);
+  const contentPlacements = [...cardLayout.placements, ...tokenPlacements];
   return {
     ...cardLayout,
     placements: [
-      ...cardLayout.placements,
-      ...createTokenLayoutPlacements(dragState, cardLayout),
+      ...createShipBackgroundPlacements(scene, dragState, contentPlacements),
+      ...contentPlacements,
     ],
   };
 };
