@@ -7,7 +7,7 @@ import type {
 import { getItemBounds } from "../board/boardController";
 import {
   spaceshipBoardItemId,
-  spaceshipEnergyStackSize,
+  spaceshipDispenserPanelSize,
 } from "./spaceshipBoardLayout";
 
 export const spaceshipTrashFrameTargetSize = 80;
@@ -42,7 +42,7 @@ export const isPointOverEnergyStack = (
     findTopmostItemAtPoint(
       items,
       point,
-      (item) => item.id === spaceshipBoardItemId.energyStack(),
+      (item) => item.id === spaceshipBoardItemId.dispenserPanel(),
     ),
   );
 
@@ -90,11 +90,11 @@ export const getEnergyStackInitialItem = (): {
   height: number;
   zIndex: number;
 } => ({
-  id: spaceshipBoardItemId.energyStack(),
+  id: spaceshipBoardItemId.dispenserPanel(),
   kind: "card",
-  x: 4425,
-  y: 180,
-  width: spaceshipEnergyStackSize.width,
-  height: spaceshipEnergyStackSize.height,
+  x: 124,
+  y: 124,
+  width: spaceshipDispenserPanelSize.width,
+  height: spaceshipDispenserPanelSize.height,
   zIndex: 900,
 });

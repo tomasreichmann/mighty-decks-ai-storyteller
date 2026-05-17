@@ -2,8 +2,12 @@ import type { BoardItemRecord, BoardPoint } from "../board/boardController";
 import {
   createSpaceshipBoardItemMeta,
   createSpaceshipBoardLayout,
+  boardOrigin,
+  effectCardHeight,
+  effectCardWidth,
   isSpaceshipCardDropTargetItemId,
   spaceshipBoardItemId,
+  spaceshipDispenserPanelSize,
   spaceshipTokenSize,
 } from "./spaceshipBoardLayout";
 import {
@@ -13,6 +17,7 @@ import {
 import type {
   ActorTokenModel,
   EnergyTokenModel,
+  ShipEffectType,
   SpaceshipDragState,
   SpaceshipDraggableCard,
   SpaceshipDraggableCardRole,
@@ -39,10 +44,10 @@ export {
   spaceshipLayoutId,
 } from "./spaceshipDragLayoutState";
 
-const initialEnergyStackCount = 20;
 const tokenGap = 10;
 const cardZIndexBase = 1000;
 const tokenZIndexBase = 100000;
+const dispenserPanelZIndexBase = 900;
 export const spaceshipCardLayoutTearOffDistancePx = 10;
 export const spaceshipCardSnapInsertCooldownMs = 400;
 const draggableCardRoles = new Set<SpaceshipDraggableCardRole>([
@@ -165,6 +170,7 @@ export const createSpaceshipDragState = (
       return {
         itemId: placement.id,
         role: meta.role as SpaceshipDraggableCardRole,
+        effectType: meta.effectType,
         paneId: meta.pane?.paneId,
         ownerId:
           meta.location?.locationId ??
@@ -229,13 +235,17 @@ export const createSpaceshipDragState = (
     layouts,
     cards,
     tokens,
-    energyStack: {
-      totalCount: initialEnergyStackCount,
-      availableCount: initialEnergyStackCount,
+    dispenserPanel: {
+      x: boardOrigin.x - spaceshipDispenserPanelSize.width - 24,
+      y: boardOrigin.y + 28,
+      width: spaceshipDispenserPanelSize.width,
+      height: spaceshipDispenserPanelSize.height,
+      zIndex: dispenserPanelZIndexBase,
     },
     nextCardZIndex: cardZIndexBase,
     nextZIndex: tokenZIndexBase + tokens.length,
     nextEnergyTokenIndex: 1,
+    nextEffectCardIndex: 1,
   };
 };
 
@@ -323,15 +333,27 @@ export const beginSpaceshipTokenDrag = (
   };
 };
 
+export const beginDispenserPanelDrag = (
+  state: SpaceshipDragState,
+): { state: SpaceshipDragState } => {
+  const zIndex = Math.max(state.nextCardZIndex, state.dispenserPanel.zIndex + 1);
+  return {
+    state: {
+      ...state,
+      dispenserPanel: {
+        ...state.dispenserPanel,
+        zIndex,
+      },
+      nextCardZIndex: zIndex + 1,
+    },
+  };
+};
+
 export const beginEnergyStackTokenDrag = (
   state: SpaceshipDragState,
   position: BoardPoint,
 ): { state: SpaceshipDragState; dragTokenId: string } => {
-  if (state.energyStack.availableCount <= 0) {
-    return { state, dragTokenId: "" };
-  }
-
-  const tokenId = `energy-stack-token-${state.nextEnergyTokenIndex}`;
+  const tokenId = `energy-dispenser-token-${state.nextEnergyTokenIndex}`;
   const token: SpaceshipDraggableToken = {
     tokenId,
     kind: "energy",
@@ -350,12 +372,40 @@ export const beginEnergyStackTokenDrag = (
     state: {
       ...state,
       tokens: [...state.tokens, token],
-      energyStack: {
-        ...state.energyStack,
-        availableCount: state.energyStack.availableCount - 1,
-      },
       nextZIndex: state.nextZIndex + 1,
       nextEnergyTokenIndex: state.nextEnergyTokenIndex + 1,
+    },
+  };
+};
+
+export const beginSpaceshipEffectDispenserCardDrag = (
+  state: SpaceshipDragState,
+  effectType: ShipEffectType,
+  position: BoardPoint,
+): { state: SpaceshipDragState; dragItemId: string } => {
+  const itemId = spaceshipBoardItemId.spawnedEffectCard(
+    effectType,
+    state.nextEffectCardIndex,
+  );
+  const card: SpaceshipDraggableCard = {
+    itemId,
+    role: "effect-card",
+    effectType,
+    x: position.x,
+    y: position.y,
+    width: effectCardWidth,
+    height: effectCardHeight,
+    zIndex: state.nextCardZIndex,
+    placement: { type: "board" },
+  };
+
+  return {
+    dragItemId: itemId,
+    state: {
+      ...state,
+      cards: [...state.cards, card],
+      nextCardZIndex: state.nextCardZIndex + 1,
+      nextEffectCardIndex: state.nextEffectCardIndex + 1,
     },
   };
 };
@@ -380,6 +430,29 @@ export const moveSpaceshipCardFromDragOrigin = (
     y: drag.startY + (drag.clientY - drag.startClientY) / zoom,
     placement: { type: "board" },
   }));
+};
+
+export const moveDispenserPanelFromDragOrigin = (
+  state: SpaceshipDragState,
+  drag: {
+    startX: number;
+    startY: number;
+    startClientX: number;
+    startClientY: number;
+    clientX: number;
+    clientY: number;
+    zoom: number;
+  },
+): SpaceshipDragState => {
+  const zoom = Number.isFinite(drag.zoom) && drag.zoom > 0 ? drag.zoom : 1;
+  return {
+    ...state,
+    dispenserPanel: {
+      ...state.dispenserPanel,
+      x: drag.startX + (drag.clientX - drag.startClientX) / zoom,
+      y: drag.startY + (drag.clientY - drag.startClientY) / zoom,
+    },
+  };
 };
 
 export const moveSpaceshipToken = (
@@ -464,13 +537,6 @@ export const dropSpaceshipTokenOnEnergyStack = (
   return {
     ...state,
     tokens: state.tokens.filter((candidate) => candidate.tokenId !== tokenId),
-    energyStack: {
-      ...state.energyStack,
-      availableCount: Math.min(
-        state.energyStack.totalCount,
-        state.energyStack.availableCount + 1,
-      ),
-    },
   };
 };
 
@@ -490,10 +556,6 @@ const removeTokensFromTrashDrop = (
   const removedTokens = state.tokens.filter((token) =>
     tokenIds.has(token.tokenId),
   );
-  const restoredEnergyCount = removedTokens.filter(
-    (token) => token.kind === "energy",
-  ).length;
-
   return {
     removedItemIds: removedTokens.map((token) =>
       spaceshipBoardItemId.token(token.tokenId),
@@ -501,13 +563,6 @@ const removeTokensFromTrashDrop = (
     state: {
       ...state,
       tokens: state.tokens.filter((token) => !tokenIds.has(token.tokenId)),
-      energyStack: {
-        ...state.energyStack,
-        availableCount: Math.min(
-          state.energyStack.totalCount,
-          state.energyStack.availableCount + restoredEnergyCount,
-        ),
-      },
     },
   };
 };

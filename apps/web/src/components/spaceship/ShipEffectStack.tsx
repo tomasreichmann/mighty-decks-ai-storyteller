@@ -12,9 +12,11 @@ interface ShipEffectStackProps {
 }
 
 const effectCardSlugByType: Record<ShipEffectType, string> = {
-  distress: "distress",
-  freezing: "freezing",
   injury: "injury",
+  distress: "distress",
+  complication: "complication",
+  freezing: "freezing",
+  burning: "burning",
 };
 
 interface ShipEffectCardSurfaceProps {

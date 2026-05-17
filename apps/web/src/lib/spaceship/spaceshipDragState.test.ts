@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { spaceshipScene } from "./spaceshipSceneData";
 import {
   applySpaceshipCardLiveSnap,
+  beginDispenserPanelDrag,
   beginSpaceshipCardDrag,
+  beginSpaceshipEffectDispenserCardDrag,
   beginEnergyStackTokenDrag,
   beginSpaceshipTokenDrag,
   createSpaceshipDragState,
@@ -21,6 +23,7 @@ import {
   isSpaceshipCardSnapInsertBlocked,
   isSpaceshipCardLayoutTearOffBlocked,
   moveSpaceshipCardFromDragOrigin,
+  moveDispenserPanelFromDragOrigin,
   moveSpaceshipTokenFromDragOrigin,
   moveSpaceshipToken,
   removeSpaceshipCardFromLayouts,
@@ -310,13 +313,13 @@ test("applySpaceshipCardLiveSnap leaves incompatible targets as manual board pla
       zIndex: placement.zIndex ?? 0,
     }),
   );
-  const stack = boardItems.find(
-    (item) => item.id === spaceshipBoardItemId.energyStack(),
+  const panel = boardItems.find(
+    (item) => item.id === spaceshipBoardItemId.dispenserPanel(),
   );
-  assert.ok(stack);
+  assert.ok(panel);
   const moved = applySpaceshipCardLiveSnap(state, itemId, boardItems, {
-    x: stack.x + stack.width / 2,
-    y: stack.y + stack.height / 2,
+    x: panel.x + panel.width / 2,
+    y: panel.y + panel.height / 2,
   });
   const card = moved.cards.find((candidate) => candidate.itemId === itemId);
 
@@ -373,7 +376,7 @@ test("createSpaceshipDragState creates draggable cards for eligible board card r
   assert.ok(cardIds.has(spaceshipBoardItemId.effectCard("reactor-distress", 0)));
   assert.ok(cardIds.has(spaceshipBoardItemId.actorCard("actor-veteran")));
   assert.ok(cardIds.has(spaceshipBoardItemId.actorEffectCard("actor-veteran", "injury", 0)));
-  assert.equal(cardIds.has(spaceshipBoardItemId.energyStack()), false);
+  assert.equal(cardIds.has(spaceshipBoardItemId.dispenserPanel()), false);
   assert.equal(cardIds.has(spaceshipBoardItemId.shipHeader("pane-player")), false);
   assert.equal(
     state.cards.find(
@@ -502,7 +505,8 @@ test("createSpaceshipDragState creates draggable energy and actor tokens from th
   const state = createSpaceshipDragState(spaceshipScene);
   const tokenIds = new Set(state.tokens.map((token) => token.tokenId));
 
-  assert.equal(state.energyStack.availableCount, 20);
+  assert.equal("energyStack" in state, false);
+  assert.equal(state.dispenserPanel.width > 0, true);
   assert.ok(tokenIds.has("reactor-energy"));
   assert.ok(tokenIds.has("actor-machinist-token"));
   assert.equal(
@@ -617,14 +621,13 @@ test("moveSpaceshipTokenFromDragOrigin keeps movement anchored to the original p
   assert.deepEqual(token.placement, { type: "board" });
 });
 
-test("beginEnergyStackTokenDrag creates a new energy token and decrements the stack", () => {
+test("beginEnergyStackTokenDrag creates a new unlimited energy token", () => {
   const state = createSpaceshipDragState(spaceshipScene);
   const result = beginEnergyStackTokenDrag(state, { x: 1000, y: 1200 });
   const token = result.state.tokens.find(
     (candidate) => candidate.tokenId === result.dragTokenId,
   );
 
-  assert.equal(result.state.energyStack.availableCount, 19);
   assert.ok(token);
   assert.equal(token.kind, "energy");
   assert.equal(token.label, "1");
@@ -633,7 +636,7 @@ test("beginEnergyStackTokenDrag creates a new energy token and decrements the st
   assert.deepEqual(token.placement, { type: "board" });
 });
 
-test("dropSpaceshipTokenOnEnergyStack removes an energy token and restores the stack count", () => {
+test("dropSpaceshipTokenOnEnergyStack removes an energy token without restoring a finite count", () => {
   const state = createSpaceshipDragState(spaceshipScene);
   const result = beginEnergyStackTokenDrag(state, { x: 1000, y: 1200 });
   const dropped = dropSpaceshipTokenOnEnergyStack(
@@ -641,7 +644,7 @@ test("dropSpaceshipTokenOnEnergyStack removes an energy token and restores the s
     result.dragTokenId,
   );
 
-  assert.equal(dropped.energyStack.availableCount, 20);
+  assert.equal("energyStack" in dropped, false);
   assert.equal(
     dropped.tokens.some((token) => token.tokenId === result.dragTokenId),
     false,
@@ -662,10 +665,10 @@ test("dropSpaceshipTokenOnTrashTarget removes actor tokens", () => {
   assert.deepEqual(dropped.removedItemIds, [
     spaceshipBoardItemId.token("actor-machinist-token"),
   ]);
-  assert.equal(dropped.state.energyStack.availableCount, 20);
+  assert.equal("energyStack" in dropped.state, false);
 });
 
-test("dropSpaceshipTokenOnTrashTarget restores generated energy tokens to the stack", () => {
+test("dropSpaceshipTokenOnTrashTarget removes generated energy tokens without restoring a finite count", () => {
   const state = createSpaceshipDragState(spaceshipScene);
   const result = beginEnergyStackTokenDrag(state, { x: 1000, y: 1200 });
   const dropped = dropSpaceshipTokenOnTrashTarget(
@@ -673,7 +676,7 @@ test("dropSpaceshipTokenOnTrashTarget restores generated energy tokens to the st
     result.dragTokenId,
   );
 
-  assert.equal(dropped.state.energyStack.availableCount, 20);
+  assert.equal("energyStack" in dropped.state, false);
   assert.equal(
     dropped.state.tokens.some((token) => token.tokenId === result.dragTokenId),
     false,
@@ -681,6 +684,122 @@ test("dropSpaceshipTokenOnTrashTarget restores generated energy tokens to the st
   assert.deepEqual(dropped.removedItemIds, [
     spaceshipBoardItemId.token(result.dragTokenId),
   ]);
+});
+
+test("beginEnergyStackTokenDrag treats the energy dispenser as unlimited", () => {
+  let state = createSpaceshipDragState(spaceshipScene);
+  const createdTokenIds = new Set<string>();
+
+  for (let index = 0; index < 25; index += 1) {
+    const result = beginEnergyStackTokenDrag(state, {
+      x: 1000 + index,
+      y: 1200 + index,
+    });
+    state = result.state;
+    createdTokenIds.add(result.dragTokenId);
+  }
+
+  assert.equal(createdTokenIds.size, 25);
+  assert.equal("energyStack" in state, false);
+  assert.equal(
+    state.tokens.filter((token) =>
+      token.tokenId.startsWith("energy-dispenser-token-"),
+    )
+      .length,
+    25,
+  );
+});
+
+test("beginSpaceshipEffectDispenserCardDrag creates unlimited draggable effect cards for every dispenser type", () => {
+  const effectTypes = [
+    "injury",
+    "distress",
+    "complication",
+    "freezing",
+    "burning",
+  ] as const;
+  let state = createSpaceshipDragState(spaceshipScene);
+
+  effectTypes.forEach((effectType, index) => {
+    const result = beginSpaceshipEffectDispenserCardDrag(state, effectType, {
+      x: 400 + index,
+      y: 500 + index,
+    });
+    state = result.state;
+    const card = state.cards.find(
+      (candidate) => candidate.itemId === result.dragItemId,
+    );
+
+    assert.ok(card);
+    assert.equal(card.role, "effect-card");
+    assert.equal(card.effectType, effectType);
+    assert.equal(card.x, 400 + index);
+    assert.equal(card.y, 500 + index);
+    assert.deepEqual(card.placement, { type: "board" });
+  });
+});
+
+test("spawned effect dispenser cards can be inserted into an effect stack", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const result = beginSpaceshipEffectDispenserCardDrag(
+    state,
+    "burning",
+    { x: 900, y: 500 },
+  );
+  const actorStackId = `spaceship:effect-stack:${spaceshipBoardItemId.actorCard("actor-veteran")}`;
+  const moved = insertSpaceshipCardIntoLayout(
+    removeSpaceshipCardFromLayouts(result.state, result.dragItemId),
+    result.dragItemId,
+    {
+      type: "effect-stack",
+      layoutId: actorStackId,
+      ownerItemId: spaceshipBoardItemId.actorCard("actor-veteran"),
+      index: 999,
+    },
+  );
+  const actorStack = moved.layouts.effectStacks.find(
+    (stack) => stack.layoutId === actorStackId,
+  );
+  const card = moved.cards.find(
+    (candidate) => candidate.itemId === result.dragItemId,
+  );
+
+  assert.ok(actorStack);
+  assert.equal(actorStack.itemIds.at(-1), result.dragItemId);
+  assert.ok(card);
+  assert.deepEqual(card.placement, {
+    type: "layout",
+    layoutId: actorStackId,
+  });
+});
+
+test("moveDispenserPanelFromDragOrigin keeps panel movement anchored to the original pointer grab", () => {
+  const state = createSpaceshipDragState(spaceshipScene);
+  const result = beginDispenserPanelDrag(state);
+  const moved = moveDispenserPanelFromDragOrigin(result.state, {
+    startX: 120,
+    startY: 80,
+    startClientX: 400,
+    startClientY: 300,
+    clientX: 700,
+    clientY: 450,
+    zoom: 2,
+  });
+  const movedAgainFromStaleState = moveDispenserPanelFromDragOrigin(moved, {
+    startX: 120,
+    startY: 80,
+    startClientX: 400,
+    startClientY: 300,
+    clientX: 700,
+    clientY: 450,
+    zoom: 2,
+  });
+
+  assert.ok(result.state.dispenserPanel.zIndex > state.dispenserPanel.zIndex);
+  assert.equal(moved.dispenserPanel.x, 270);
+  assert.equal(moved.dispenserPanel.y, 155);
+  assert.equal(movedAgainFromStaleState.dispenserPanel.x, moved.dispenserPanel.x);
+  assert.equal(movedAgainFromStaleState.dispenserPanel.y, moved.dispenserPanel.y);
 });
 
 test("dropSpaceshipCardOnTrashTarget removes a Location bundle and layout membership", () => {

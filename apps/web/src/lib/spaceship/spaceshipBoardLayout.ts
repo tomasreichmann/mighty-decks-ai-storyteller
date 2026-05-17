@@ -37,14 +37,17 @@ import {
   sortActors,
   sortLocations,
   spaceshipBoardItemId,
-  spaceshipEnergyStackSize,
 } from "./spaceshipBoardGeometry";
 import { createMembershipBaseLayout } from "./spaceshipBoardMembershipLayout";
 import { getSpaceshipBoardPaneItemIds } from "./spaceshipBoardItems";
 export {
   spaceshipBoardItemId,
+  spaceshipDispenserPanelSize,
   spaceshipBoardSize,
-  spaceshipEnergyStackSize,
+  boardOrigin,
+  effectCardHeight,
+  effectCardWidth,
+  shipWidth,
   spaceshipTokenSize,
   type SpaceshipBoardItemMeta,
   type SpaceshipBoardItemRole,
@@ -255,25 +258,12 @@ const actorBandLayout = (actors: readonly ShipActorInstance[]): BoardLayoutResul
   };
 };
 
-const shipLayout = (
-  pane: ShipPaneModel,
-  options: { includeEnergyStack?: boolean } = {},
-): BoardLayoutResult => {
+const shipLayout = (pane: ShipPaneModel): BoardLayoutResult => {
   const topRow = locationRowLayout(sortLocations(pane.locations, "top"));
   const bottomRow = locationRowLayout(sortLocations(pane.locations, "bottom"));
   const contentWidth = shipWidth - shipPadding * 2;
   const contentLayout = flexLayout(
     [
-      ...(options.includeEnergyStack
-        ? [
-            box({
-              id: spaceshipBoardItemId.energyStack(),
-              width: spaceshipEnergyStackSize.width,
-              height: spaceshipEnergyStackSize.height,
-              zIndex: 900,
-            }),
-          ]
-        : []),
       box({
         id: spaceshipBoardItemId.shipHeader(pane.paneId),
         width: shipHeaderWidth,
@@ -300,6 +290,25 @@ const shipLayout = (
       height: contentLayout.bounds.y + contentLayout.bounds.height,
     },
   };
+};
+
+const createDispenserPanelPlacements = (
+  dragState: SpaceshipDragState | undefined,
+): BoardLayoutResult["placements"] => {
+  if (!dragState) {
+    return [];
+  }
+
+  return [
+    {
+      id: spaceshipBoardItemId.dispenserPanel(),
+      x: dragState.dispenserPanel.x,
+      y: dragState.dispenserPanel.y,
+      width: dragState.dispenserPanel.width,
+      height: dragState.dispenserPanel.height,
+      zIndex: dragState.dispenserPanel.zIndex,
+    },
+  ];
 };
 
 const createTokenLayoutPlacements = (
@@ -447,9 +456,9 @@ export const createSpaceshipBoardLayout = (
   const baseLayout = dragState?.layouts
     ? createMembershipBaseLayout(scene, dragState, options)
     : flexLayout(
-        scene.panes.flatMap((pane, paneIndex) => [
+        scene.panes.flatMap((pane) => [
           {
-            layout: shipLayout(pane, { includeEnergyStack: paneIndex === 0 }),
+            layout: shipLayout(pane),
             width: shipWidth,
           },
           {
@@ -474,6 +483,7 @@ export const createSpaceshipBoardLayout = (
     placements: [
       ...createShipBackgroundPlacements(scene, dragState, contentPlacements),
       ...contentPlacements,
+      ...createDispenserPanelPlacements(dragState),
     ],
   };
 };

@@ -48,9 +48,9 @@ export const spaceshipTokenSize = {
   },
 } as const;
 
-export const spaceshipEnergyStackSize = {
-  width: 118,
-  height: 152,
+export const spaceshipDispenserPanelSize = {
+  width: 184,
+  height: 1000,
 } as const;
 
 export const spaceshipBoardItemId = {
@@ -60,9 +60,11 @@ export const spaceshipBoardItemId = {
   device: (deviceId: string) => `spaceship:device:${deviceId}`,
   effectCard: (effectId: string, index: number) =>
     `spaceship:effect-card:${effectId}:${index}`,
+  spawnedEffectCard: (effectType: ShipEffectType, index: number) =>
+    `spaceship:spawned-effect-card:${effectType}:${index}`,
   tokens: (locationId: string) => `spaceship:tokens:${locationId}`,
   token: (tokenId: string) => `spaceship:token:${tokenId}`,
-  energyStack: () => "spaceship:energy-stack",
+  dispenserPanel: () => "spaceship:dispenser-panel",
   actorEffectCard: (
     actorId: string,
     effectType: ActorConsequenceEffectType,
@@ -78,7 +80,7 @@ export type SpaceshipBoardItemRole =
   | "device"
   | "effect-card"
   | "token"
-  | "energy-stack"
+  | "dispenser-panel"
   | "actor-effect-card"
   | "actor-card";
 
@@ -121,11 +123,11 @@ export const tokenItem = (token: SpaceshipDraggableToken): BoardItemInput => ({
   zIndex: token.zIndex,
 });
 
-export const energyStackItem = (): BoardItemInput =>
+export const dispenserPanelItem = (): BoardItemInput =>
   item({
-    id: spaceshipBoardItemId.energyStack(),
-    width: spaceshipEnergyStackSize.width,
-    height: spaceshipEnergyStackSize.height,
+    id: spaceshipBoardItemId.dispenserPanel(),
+    width: spaceshipDispenserPanelSize.width,
+    height: spaceshipDispenserPanelSize.height,
     zIndex: 900,
   });
 

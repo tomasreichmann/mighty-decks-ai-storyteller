@@ -7,14 +7,14 @@ import {
   createSpaceshipBoardItemMeta,
 } from "../../lib/spaceship/spaceshipBoardLayout";
 import type {
-  SpaceshipDragState,
+  ShipEffectType,
   SpaceshipDraggableToken,
   SpaceshipScene,
 } from "../../lib/spaceship/spaceshipTypes";
 import { Text } from "../common/Text";
 import { ActorToken } from "./ActorToken";
 import { EnergyToken } from "./EnergyToken";
-import { EnergyTokenStack } from "./EnergyTokenStack";
+import { SpaceshipDispenserPanel } from "./SpaceshipDispenserPanel";
 import {
   ShipLocationCardSurface,
   ShipLocationDeviceCard,
@@ -124,14 +124,14 @@ const SpaceshipCardDragSurface = ({
 export const SpaceshipBoardItem = ({
   item,
   metaMap,
-  dragState,
   onCardPointerDown,
   onTokenPointerDown,
-  onEnergyStackPointerDown,
+  onEnergyDispenserPointerDown,
+  onEffectDispenserPointerDown,
+  onDispenserPanelHandlePointerDown,
 }: {
   item: BoardItemRecord;
   metaMap: ReturnType<typeof createSpaceshipBoardItemMeta>;
-  dragState: SpaceshipDragState;
   onCardPointerDown: (
     itemId: string,
     event: ReactPointerEvent<HTMLDivElement>,
@@ -140,7 +140,16 @@ export const SpaceshipBoardItem = ({
     tokenId: string,
     event: ReactPointerEvent<HTMLDivElement>,
   ) => void;
-  onEnergyStackPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onEnergyDispenserPointerDown: (
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => void;
+  onEffectDispenserPointerDown: (
+    effectType: ShipEffectType,
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => void;
+  onDispenserPanelHandlePointerDown: (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => void;
 }): ReactNode => {
   const meta = metaMap.get(item.id);
 
@@ -193,12 +202,12 @@ export const SpaceshipBoardItem = ({
           onTokenPointerDown={onTokenPointerDown}
         />
       ) : null;
-    case "energy-stack":
+    case "dispenser-panel":
       return (
-        <EnergyTokenStack
-          availableCount={dragState.energyStack.availableCount}
-          totalCount={dragState.energyStack.totalCount}
-          onPointerDown={onEnergyStackPointerDown}
+        <SpaceshipDispenserPanel
+          onHandlePointerDown={onDispenserPanelHandlePointerDown}
+          onEnergyPointerDown={onEnergyDispenserPointerDown}
+          onEffectPointerDown={onEffectDispenserPointerDown}
         />
       );
     case "actor-effect-card":

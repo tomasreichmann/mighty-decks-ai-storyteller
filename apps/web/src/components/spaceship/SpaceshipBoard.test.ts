@@ -8,8 +8,17 @@ const readBoardSource = (): string =>
 const readBoardItemSource = (): string =>
   readFileSync(new URL("./SpaceshipBoardItem.tsx", import.meta.url), "utf8");
 
+const readDispenserPanelSource = (): string =>
+  readFileSync(new URL("./SpaceshipDispenserPanel.tsx", import.meta.url), "utf8");
+
+const readBoardGeometrySource = (): string =>
+  readFileSync(
+    new URL("../../lib/spaceship/spaceshipBoardGeometry.ts", import.meta.url),
+    "utf8",
+  );
+
 const readBoardInteractionSource = (): string =>
-  `${readBoardSource()}\n${readBoardItemSource()}`;
+  `${readBoardSource()}\n${readBoardItemSource()}\n${readDispenserPanelSource()}`;
 
 test("SpaceshipBoard renders the scene through the shared board primitives", () => {
   const source = readBoardSource();
@@ -22,14 +31,14 @@ test("SpaceshipBoard renders the scene through the shared board primitives", () 
   assert.match(source, /createSpaceshipBoardLayout/);
 });
 
-test("SpaceshipBoard renders independent board surfaces for ship backgrounds, locations, devices, effects, tokens, and actors", () => {
+test("SpaceshipBoard renders independent board surfaces for ship backgrounds, locations, devices, effects, tokens, actors, and the dispenser panel", () => {
   const source = readBoardItemSource();
 
   assert.match(source, /SpaceshipShipBackground/);
   assert.match(source, /ShipLocationCardSurface/);
   assert.match(source, /ShipLocationDeviceCard/);
   assert.match(source, /SpaceshipTokenSurface/);
-  assert.match(source, /EnergyTokenStack/);
+  assert.match(source, /SpaceshipDispenserPanel/);
   assert.match(source, /ShipEffectCardSurface/);
   assert.match(source, /SpaceshipActorCardSurface/);
   assert.match(source, /SpaceshipActorEffectSurface/);
@@ -50,13 +59,18 @@ test("SpaceshipBoard renders the trash target as a frame overlay", () => {
   assert.match(source, /hover:opacity-90/);
 });
 
-test("SpaceshipBoard wires pointer drag handlers for tokens and the energy stack", () => {
+test("SpaceshipBoard wires pointer drag handlers for tokens and the dispenser panel sources", () => {
   const source = readBoardInteractionSource();
 
   assert.match(source, /onTokenPointerDown/);
-  assert.match(source, /onEnergyStackPointerDown/);
+  assert.match(source, /onEnergyDispenserPointerDown/);
+  assert.match(source, /onEffectDispenserPointerDown/);
+  assert.match(source, /onDispenserPanelHandlePointerDown/);
   assert.match(source, /beginSpaceshipTokenDrag/);
   assert.match(source, /beginEnergyStackTokenDrag/);
+  assert.match(source, /beginSpaceshipEffectDispenserCardDrag/);
+  assert.match(source, /beginDispenserPanelDrag/);
+  assert.match(source, /moveDispenserPanelFromDragOrigin/);
   assert.match(source, /window\.addEventListener\("pointermove"/);
   assert.match(source, /window\.addEventListener\("pointerup"/);
 });
@@ -84,7 +98,77 @@ test("SpaceshipBoard wires pointer drag handlers for all draggable card surfaces
   assert.match(source, /case "actor-card":[\s\S]*onCardPointerDown/);
   assert.match(source, /case "ship-background":[\s\S]*<SpaceshipShipBackground/);
   assert.match(source, /case "ship-header":\r?\n\s+return meta\.pane \? <SpaceshipShipHeader/);
-  assert.match(source, /case "energy-stack":[\s\S]*<EnergyTokenStack/);
+  assert.match(source, /case "dispenser-panel":[\s\S]*<SpaceshipDispenserPanel/);
+});
+
+test("SpaceshipBoard wires all unlimited effect dispenser slugs", () => {
+  const source = readBoardInteractionSource();
+
+  assert.match(source, /rulesEffectCards/);
+  assert.match(source, /iconUri/);
+  assert.match(source, /"injury"/);
+  assert.match(source, /"distress"/);
+  assert.match(source, /"complication"/);
+  assert.match(source, /"freezing"/);
+  assert.match(source, /"burning"/);
+  assert.doesNotMatch(source, /icon: "\+"/);
+  assert.doesNotMatch(source, /icon: "!"/);
+  assert.doesNotMatch(source, /icon: "\?"/);
+});
+
+test("SpaceshipBoard registers spawned effect cards with the board controller immediately", () => {
+  const source = readBoardSource();
+
+  assert.match(source, /beginSpaceshipEffectDispenserCardDrag/);
+  assert.match(source, /controller\.upsertItem\(\{[\s\S]*id: result\.dragItemId[\s\S]*width: card\.width[\s\S]*height: card\.height[\s\S]*zIndex: card\.zIndex/);
+});
+
+test("SpaceshipBoard spawns dispenser items from the board-space pointer position", () => {
+  const source = readBoardSource();
+
+  assert.match(source, /const framePoint = getFramePoint\(\{\s*clientX: event\.clientX,\s*clientY: event\.clientY,\s*\}\)/);
+  assert.match(source, /const spawnPoint = controller\.frameToWorld\(framePoint\)/);
+  assert.match(source, /beginEnergyStackTokenDrag\(dragStateRef\.current, spawnPoint\)/);
+  assert.match(source, /beginSpaceshipEffectDispenserCardDrag\(\s*dragStateRef\.current,\s*effectType,\s*spawnPoint,\s*\)/);
+  assert.doesNotMatch(source, /panel \? panel\.x \+ 22 : 0/);
+  assert.doesNotMatch(source, /panel \? panel\.x \+ panel\.width \+ 16 : 0/);
+});
+
+test("SpaceshipDispenserPanel renders as a vertical source rail", () => {
+  const source = readDispenserPanelSource();
+
+  assert.match(source, /flex-col/);
+  assert.match(source, /grid-cols-1/);
+  assert.doesNotMatch(source, /grid-cols-5/);
+});
+
+test("SpaceshipDispenserPanel keeps dispenser controls bare with card-ratio icon panels", () => {
+  const source = readDispenserPanelSource();
+
+  assert.match(source, /aspect-\[204\/332\] w-\[4\.125rem\]/);
+  assert.match(source, /text-\[1\.16rem\]/);
+  assert.match(source, /text-\[1\.1rem\]/);
+  assert.doesNotMatch(source, /<DispenserIconPanel>\s*<EnergyToken/);
+  assert.doesNotMatch(
+    source,
+    /className="flex h-8 cursor-grab[^"]*border-2 border-kac-iron bg-kac-steel-dark/,
+  );
+  assert.doesNotMatch(
+    source,
+    /className="flex h-\[80px\][^"]*border-2 border-kac-iron bg-\[linear-gradient/,
+  );
+  assert.doesNotMatch(
+    source,
+    /className="flex cursor-grab[^"]*border-2 border-kac-iron bg-kac-bone-light p-1\.5 shadow/,
+  );
+});
+
+test("SpaceshipDispenserPanel gives enlarged labels room to wrap", () => {
+  const source = readDispenserPanelSource();
+  const geometrySource = readBoardGeometrySource();
+
+  assert.match(geometrySource, /spaceshipDispenserPanelSize = \{\s*width: 184,\s*height: 1000,/);
+  assert.match(source, /w-full max-w-full whitespace-normal break-words text-center/);
 });
 
 test("SpaceshipBoard wires the trash target before regular card and token drop handling", () => {

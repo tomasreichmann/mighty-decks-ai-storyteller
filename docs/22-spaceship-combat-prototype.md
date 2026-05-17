@@ -32,7 +32,7 @@ tokens, actor/minis tokens, and status/effect cards.
 - Support first-slice free card drag/drop for Location, Device, effect, Actor, and Actor effect cards on the local `/spaceship` board.
 - Support live local snapping and layout reflow while dragging cards across compatible ship rows, Device columns, actor rows, and effect stacks.
 - Render the Exiles Corvette and Xithrax Raider artifact images as low-z board backgrounds behind their ship areas.
-- Add a 20-count energy token stack that creates tokens when dragged from it and reclaims energy tokens dropped back onto it.
+- Add an unlimited draggable dispenser panel that creates Energy tokens and Injury, Distress, Complication, Freezing, and Burning effect cards when dragged from their sources.
 - Expand the Exiles importer so ship locations are authored as normalized adventure-module locations instead of living only inside scene prose.
 
 ### Non-goals
@@ -144,7 +144,7 @@ shared `LocationCard` component while rendering effects with the shared
   - renders Special Location reference panels with the shared `LocationCard` component and tracked `/api/adventure-artifacts/*` images
 - `SpaceshipBoard`
   - wraps the seeded scene in `BoardProvider`, `BoardFrame`, and custom-rendered `Board` items
-  - builds flat board entries for ship headers, Devices, Location cards, individual effect cards, individual tokens, the energy token stack, and actor cards
+  - builds flat board entries for ship headers, Devices, Location cards, individual effect cards, individual tokens, the dispenser panel, and actor cards
   - applies pure spaceship board layout helpers on mount, then fits all items into the board frame
   - keeps route-level controls outside the board transform while the board frame handles pan/zoom and fit actions
 - Spaceship board layout helpers
@@ -173,10 +173,11 @@ shared `LocationCard` component while rendering effects with the shared
 - `EnergyToken`
   - circular Power token for current energy assignment
   - supports `active` and `spent` visual states
-- `EnergyTokenStack`
-  - flow-positioned source/sink stack with 20 available Power tokens, placed above the Exiles ship title
-  - dragging from the stack creates a new board token and decrements the count
-  - dropping an energy token back on the stack removes it and restores the count
+- `SpaceshipDispenserPanel`
+  - draggable vertical source panel with a handle, placed to the left of the main ship-content column
+  - dragging from Energy creates a new board Power token without reducing a count
+  - dragging from Injury, Distress, Complication, Freezing, or Burning creates a full-size shared `EffectCard`
+  - dropping an energy token back on the panel removes it without tracking finite availability
 - `SpaceshipTrashFrameTarget`
   - semi-transparent frame overlay in the lower-left corner with a compact trash icon and radial red fade
   - highlights when a draggable card or token enters the corner drop area
@@ -229,8 +230,8 @@ Milestone 1 keeps all state local to the route and mirrors the later reducer sha
   - board-level absolute coordinates or card-relative offsets
   - local card layout membership for Location rows, room Device columns, actor rows, and owner effect stacks
   - manual card placement fallback when a card is dragged away from compatible layouts
-  - energy stack availability count
-  - next token z-order and generated energy token id counter
+  - dispenser panel board position
+  - next card/token z-order plus generated energy token and effect card counters
 - `overlay`
   - whether the overlay is open
 - `selection`
@@ -298,12 +299,12 @@ The first interaction slice follows the pointer-event style already used by `app
 - pointer-up on a card keeps the latest snapped layout membership or commits a board-level manual position when no target is active
 - dragging a card also moves any tokens attached to that card by recomputing their saved card-relative offsets
 - Location cards snap into Location rows, Device cards snap into room Device columns, Actor cards snap into actor rows, and effect cards snap behind Location, Device, or Actor cards
-- dropping an energy token over the side stack removes it and restores the stack count
-- dragging from the side stack creates a new energy token and decrements the stack count
+- dropping an energy token over the dispenser panel removes it without restoring a count
+- dragging from the dispenser panel creates unlimited Energy tokens or effect cards
 - dragging a card or token into the lower-left frame trash area highlights the corner
-- dropping a draggable token in the lower-left frame trash area removes it; energy tokens restore stack availability up to the stack total
+- dropping a draggable token in the lower-left frame trash area removes it; energy tokens do not track finite stack availability
 - dropping a draggable card in the lower-left frame trash area removes that card and bundled local pieces: Location bundles remove Devices, effects, and attached tokens; Device and Actor cards remove their owned effects; Actor cards also remove their matching actor token
-- ship titles, the energy token stack, and Location `lvl` controls are not draggable
+- ship titles and Location `lvl` controls are not draggable; the dispenser panel moves only from its handle
 
 ### Explicitly deferred
 

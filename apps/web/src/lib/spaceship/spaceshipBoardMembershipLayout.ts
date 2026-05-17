@@ -29,7 +29,6 @@ import {
   shipPadding,
   shipWidth,
   spaceshipBoardItemId,
-  spaceshipEnergyStackSize,
 } from "./spaceshipBoardGeometry";
 
 const getCardFromState = (
@@ -270,7 +269,6 @@ const actorBandLayoutFromMembership = (
 const shipLayoutFromMembership = (
   pane: ShipPaneModel,
   dragState: SpaceshipDragState,
-  options: { includeEnergyStack?: boolean } = {},
 ): BoardLayoutResult => {
   const topRow = dragState.layouts.locationRows.find(
     (row) => row.paneId === pane.paneId && row.row === "top",
@@ -281,16 +279,6 @@ const shipLayoutFromMembership = (
   const contentWidth = shipWidth - shipPadding * 2;
   const contentLayout = flexLayout(
     [
-      ...(options.includeEnergyStack
-        ? [
-            box({
-              id: spaceshipBoardItemId.energyStack(),
-              width: spaceshipEnergyStackSize.width,
-              height: spaceshipEnergyStackSize.height,
-              zIndex: 900,
-            }),
-          ]
-        : []),
       box({
         id: spaceshipBoardItemId.shipHeader(pane.paneId),
         width: shipHeaderWidth,
@@ -419,15 +407,13 @@ export const createMembershipBaseLayout = (
   options: CreateMembershipBaseLayoutOptions = {},
 ): BoardLayoutResult => {
   const baseLayout = flexLayout(
-    scene.panes.flatMap((pane, paneIndex) => {
+    scene.panes.flatMap((pane) => {
       const actorRow = dragState.layouts.actorRows.find(
         (row) => row.paneId === pane.paneId,
       );
       return [
         {
-          layout: shipLayoutFromMembership(pane, dragState, {
-            includeEnergyStack: paneIndex === 0,
-          }),
+          layout: shipLayoutFromMembership(pane, dragState),
           width: shipWidth,
         },
         {

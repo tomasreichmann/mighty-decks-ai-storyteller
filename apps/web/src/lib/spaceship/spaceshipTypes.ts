@@ -23,7 +23,12 @@ export type ShipLocationType =
   | "crew-quarters";
 
 export type ShipLocationRow = "top" | "bottom";
-export type ShipEffectType = "distress" | "freezing" | "injury";
+export type ShipEffectType =
+  | "injury"
+  | "distress"
+  | "complication"
+  | "freezing"
+  | "burning";
 export type CardLibraryEntryType = "location" | "effect" | "token" | "actor";
 export type PowerTokenState = "active" | "spent";
 export type ShipRangeBand = "close" | "near" | "far";
@@ -279,6 +284,7 @@ export type SpaceshipCardSnapTarget =
 export interface SpaceshipDraggableCard {
   itemId: string;
   role: SpaceshipDraggableCardRole;
+  effectType?: ShipEffectType;
   paneId?: string;
   ownerId?: string;
   x: number;
@@ -289,19 +295,23 @@ export interface SpaceshipDraggableCard {
   placement: SpaceshipCardPlacement;
 }
 
-export interface SpaceshipEnergyStackState {
-  totalCount: number;
-  availableCount: number;
+export interface SpaceshipDispenserPanelState {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zIndex: number;
 }
 
 export interface SpaceshipDragState {
   layouts: SpaceshipLayoutMembershipState;
   cards: SpaceshipDraggableCard[];
   tokens: SpaceshipDraggableToken[];
-  energyStack: SpaceshipEnergyStackState;
+  dispenserPanel: SpaceshipDispenserPanelState;
   nextCardZIndex: number;
   nextZIndex: number;
   nextEnergyTokenIndex: number;
+  nextEffectCardIndex: number;
 }
 
 export interface SpaceshipScene {

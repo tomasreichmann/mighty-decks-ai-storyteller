@@ -15,7 +15,7 @@ import {
   removeSpaceshipCardFromLayouts,
 } from "./spaceshipDragState";
 
-test("createSpaceshipBoardItems creates board entries for ship backgrounds, locations, devices, individual tokens, effects, and actor parts", () => {
+test("createSpaceshipBoardItems creates board entries for ship backgrounds, locations, devices, individual tokens, effects, actors, and the dispenser panel", () => {
   const dragState = createSpaceshipDragState(spaceshipScene);
   const items = createSpaceshipBoardItems(spaceshipScene, dragState);
   const ids = new Set(items.map((item) => item.id));
@@ -26,7 +26,7 @@ test("createSpaceshipBoardItems creates board entries for ship backgrounds, loca
   assert.ok(ids.has(spaceshipBoardItemId.device("player-reactor-device")));
   assert.ok(ids.has(spaceshipBoardItemId.token("reactor-energy")));
   assert.ok(ids.has(spaceshipBoardItemId.token("actor-machinist-token")));
-  assert.ok(ids.has(spaceshipBoardItemId.energyStack()));
+  assert.ok(ids.has(spaceshipBoardItemId.dispenserPanel()));
   assert.ok(
     ids.has(spaceshipBoardItemId.effectCard("reactor-distress", 0)),
   );
@@ -379,21 +379,22 @@ test("getSpaceshipBoardPaneItemIds returns focusable board IDs for one ship pane
   );
 });
 
-test("createSpaceshipBoardLayout places the energy stack above the Exiles ship title in the flow column", () => {
-  const layout = createSpaceshipBoardLayout(spaceshipScene);
+test("createSpaceshipBoardLayout places the dispenser panel at its local board position", () => {
+  const dragState = createSpaceshipDragState(spaceshipScene);
+  const layout = createSpaceshipBoardLayout(spaceshipScene, dragState);
   const placementsById = new Map(
     layout.placements.map((placement) => [placement.id, placement]),
   );
-  const energyStack = placementsById.get(spaceshipBoardItemId.energyStack());
+  const dispenserPanel = placementsById.get(spaceshipBoardItemId.dispenserPanel());
   const playerHeader = placementsById.get(
     spaceshipBoardItemId.shipHeader("pane-player"),
   );
 
-  assert.ok(energyStack);
+  assert.ok(dispenserPanel);
   assert.ok(playerHeader);
-  assert.equal(energyStack.x, playerHeader.x);
-  assert.ok(energyStack.y < playerHeader.y);
-  assert.equal(playerHeader.y - (energyStack.y + energyStack.height), 34);
+  assert.equal(dispenserPanel.x, dragState.dispenserPanel.x);
+  assert.equal(dispenserPanel.y, dragState.dispenserPanel.y);
+  assert.ok(dispenserPanel.x + dispenserPanel.width < playerHeader.x);
 });
 
 test("createSpaceshipBoardLayout places each actor row after its ship content before the next ship", () => {
@@ -470,7 +471,7 @@ test("createSpaceshipBoardLayout places each actor row after its ship content be
   });
 });
 
-test("isSpaceshipCardDropTargetItemId accepts all card surfaces but not tokens or the stack", () => {
+test("isSpaceshipCardDropTargetItemId accepts all card surfaces but not tokens or the dispenser panel", () => {
   assert.equal(
     isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.location("player-reactor")),
     true,
@@ -498,7 +499,7 @@ test("isSpaceshipCardDropTargetItemId accepts all card surfaces but not tokens o
     false,
   );
   assert.equal(
-    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.energyStack()),
+    isSpaceshipCardDropTargetItemId(spaceshipBoardItemId.dispenserPanel()),
     false,
   );
 });

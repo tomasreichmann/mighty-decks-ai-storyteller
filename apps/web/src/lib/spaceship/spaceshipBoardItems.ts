@@ -4,11 +4,11 @@ import {
   actorCardHeight,
   actorCardWidth,
   actorEffectCards,
+  dispenserPanelItem,
   deviceHeight,
   deviceWidth,
   effectCardHeight,
   effectCardWidth,
-  energyStackItem,
   item,
   locationHeight,
   locationWidth,
@@ -106,9 +106,25 @@ export const createSpaceshipBoardItems = (
     });
   });
 
-  items.push(energyStackItem());
   if (dragState) {
+    items.push(dispenserPanelItem());
     items.push(...dragState.tokens.map(tokenItem));
+    dragState.cards
+      .filter((card) =>
+        card.itemId.startsWith("spaceship:spawned-effect-card:"),
+      )
+      .forEach((card) => {
+        items.push(
+          item({
+            id: card.itemId,
+            width: effectCardWidth,
+            height: effectCardHeight,
+            zIndex: card.zIndex,
+          }),
+        );
+      });
+  } else {
+    items.push(dispenserPanelItem());
   }
 
   return items;
@@ -218,9 +234,19 @@ export const createSpaceshipBoardItemMeta = (
     });
   });
 
-  meta.set(spaceshipBoardItemId.energyStack(), {
-    role: "energy-stack",
+  meta.set(spaceshipBoardItemId.dispenserPanel(), {
+    role: "dispenser-panel",
   });
+  dragState?.cards
+    .filter((card) =>
+      card.itemId.startsWith("spaceship:spawned-effect-card:"),
+    )
+    .forEach((card) => {
+      meta.set(card.itemId, {
+        role: "effect-card",
+        effectType: card.effectType,
+      });
+    });
   dragState?.tokens.forEach((token) => {
     meta.set(spaceshipBoardItemId.token(token.tokenId), {
       role: "token",
@@ -235,5 +261,6 @@ export const isSpaceshipCardDropTargetItemId = (itemId: string): boolean =>
   itemId.startsWith("spaceship:location:") ||
   itemId.startsWith("spaceship:device:") ||
   itemId.startsWith("spaceship:effect-card:") ||
+  itemId.startsWith("spaceship:spawned-effect-card:") ||
   itemId.startsWith("spaceship:actor-card:") ||
   itemId.startsWith("spaceship:actor-effect-card:");

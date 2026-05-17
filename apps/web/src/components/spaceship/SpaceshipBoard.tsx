@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import type {
+  ShipEffectType,
   SpaceshipDragState,
   SpaceshipScene,
 } from "../../lib/spaceship/spaceshipTypes";
@@ -17,7 +18,9 @@ import type { BoardBounds, BoardPoint } from "../../lib/board/boardController";
 import { worldToFrame } from "../../lib/board/boardController";
 import {
   applySpaceshipCardLiveSnap,
+  beginDispenserPanelDrag,
   beginSpaceshipCardDrag,
+  beginSpaceshipEffectDispenserCardDrag,
   beginEnergyStackTokenDrag,
   beginSpaceshipTokenDrag,
   didSpaceshipCardLayoutDragExceedTearOffDistance,
@@ -35,6 +38,7 @@ import {
   isSpaceshipCardSnapInsertBlocked,
   isPointOverEnergyStack,
   moveSpaceshipCardFromDragOrigin,
+  moveDispenserPanelFromDragOrigin,
   moveSpaceshipTokenFromDragOrigin,
   spaceshipCardSnapInsertCooldownMs,
   syncSpaceshipCardPositions,
@@ -206,6 +210,15 @@ const SpaceshipBoardCanvas = ({
   const dragStateRef = useRef(dragState);
   const [activeCardItemId, setActiveCardItemId] = useState<string | null>(null);
   const activeDragRef = useRef<
+    | {
+        kind: "dispenser-panel";
+        pointerId: number;
+        startClientX: number;
+        startClientY: number;
+        startX: number;
+        startY: number;
+        zoom: number;
+      }
     | {
         kind: "token";
         tokenId: string;
@@ -392,7 +405,7 @@ const SpaceshipBoardCanvas = ({
     onItemDragActiveChange(true);
   };
 
-  const onEnergyStackPointerDown = (
+  const onDispenserPanelHandlePointerDown = (
     event: ReactPointerEvent<HTMLDivElement>,
   ): void => {
     if (event.button !== 0) {
@@ -402,13 +415,39 @@ const SpaceshipBoardCanvas = ({
     event.preventDefault();
     event.stopPropagation();
     const snapshot = controller.getSnapshot();
-    const stack = snapshot.items.find(
-      (item) => item.id === spaceshipBoardItemId.energyStack(),
-    );
-    const result = beginEnergyStackTokenDrag(dragStateRef.current, {
-      x: stack ? stack.x + 35 : 0,
-      y: stack ? stack.y + 35 : 0,
+    const result = beginDispenserPanelDrag(dragStateRef.current);
+    dragStateRef.current = result.state;
+    onDragStateChange(result.state);
+    activeDragRef.current = {
+      kind: "dispenser-panel",
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startX: result.state.dispenserPanel.x,
+      startY: result.state.dispenserPanel.y,
+      zoom: snapshot.viewport.zoom,
+    };
+    setActiveCardItemId(null);
+    onTrashTargetActiveChange(false);
+    onItemDragActiveChange(true);
+  };
+
+  const onEnergyDispenserPointerDown = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ): void => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const snapshot = controller.getSnapshot();
+    const framePoint = getFramePoint({
+      clientX: event.clientX,
+      clientY: event.clientY,
     });
+    const spawnPoint = controller.frameToWorld(framePoint);
+    const result = beginEnergyStackTokenDrag(dragStateRef.current, spawnPoint);
     dragStateRef.current = result.state;
     onDragStateChange(result.state);
 
@@ -422,11 +461,70 @@ const SpaceshipBoardCanvas = ({
       pointerId: event.pointerId,
       startClientX: event.clientX,
       startClientY: event.clientY,
-      startX: stack ? stack.x + 35 : 0,
-      startY: stack ? stack.y + 35 : 0,
+      startX: spawnPoint.x,
+      startY: spawnPoint.y,
       zoom: snapshot.viewport.zoom,
     };
     setActiveCardItemId(null);
+    onTrashTargetActiveChange(false);
+    onItemDragActiveChange(true);
+  };
+
+  const onEffectDispenserPointerDown = (
+    effectType: ShipEffectType,
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ): void => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const snapshot = controller.getSnapshot();
+    const framePoint = getFramePoint({
+      clientX: event.clientX,
+      clientY: event.clientY,
+    });
+    const spawnPoint = controller.frameToWorld(framePoint);
+    const result = beginSpaceshipEffectDispenserCardDrag(
+      dragStateRef.current,
+      effectType,
+      spawnPoint,
+    );
+    const card = result.state.cards.find(
+      (candidate) => candidate.itemId === result.dragItemId,
+    );
+    if (!card) {
+      return;
+    }
+
+    controller.upsertItem({
+      id: result.dragItemId,
+      kind: "card",
+      x: card.x,
+      y: card.y,
+      width: card.width,
+      height: card.height,
+      zIndex: card.zIndex,
+    });
+    dragStateRef.current = result.state;
+    onDragStateChange(result.state);
+    activeDragRef.current = {
+      kind: "card",
+      itemId: result.dragItemId,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startX: card.x,
+      startY: card.y,
+      zoom: snapshot.viewport.zoom,
+      mode: "free",
+      layoutAnchorClientX: event.clientX,
+      layoutAnchorClientY: event.clientY,
+      snapBlockedUntilMs: null,
+      tearOffBlockedUntilMs: null,
+    };
+    setActiveCardItemId(result.dragItemId);
     onTrashTargetActiveChange(false);
     onItemDragActiveChange(true);
   };
@@ -444,6 +542,24 @@ const SpaceshipBoardCanvas = ({
     const handlePointerMove = (event: PointerEvent): void => {
       const activeDrag = activeDragRef.current;
       if (!activeDrag || activeDrag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      if (activeDrag.kind === "dispenser-panel") {
+        const moved = moveDispenserPanelFromDragOrigin(
+          dragStateRef.current,
+          {
+            startX: activeDrag.startX,
+            startY: activeDrag.startY,
+            startClientX: activeDrag.startClientX,
+            startClientY: activeDrag.startClientY,
+            clientX: event.clientX,
+            clientY: event.clientY,
+            zoom: activeDrag.zoom,
+          },
+        );
+        dragStateRef.current = moved;
+        onDragStateChange(moved);
         return;
       }
 
@@ -624,6 +740,12 @@ const SpaceshipBoardCanvas = ({
       );
       const synced = syncSpaceshipTokenPositions(syncedCards, snapshot.items);
 
+      if (activeDrag.kind === "dispenser-panel") {
+        dragStateRef.current = synced;
+        onDragStateChange(synced);
+        return;
+      }
+
       if (activeDrag.kind === "card") {
         const card = synced.cards.find(
           (candidate) => candidate.itemId === activeDrag.itemId,
@@ -749,15 +871,16 @@ const SpaceshipBoardCanvas = ({
   ]);
 
   return (
-    <Board
+      <Board
       renderItem={(item) => (
         <SpaceshipBoardItem
           item={item}
           metaMap={metaMap}
-          dragState={dragState}
           onCardPointerDown={onCardPointerDown}
           onTokenPointerDown={onTokenPointerDown}
-          onEnergyStackPointerDown={onEnergyStackPointerDown}
+          onEnergyDispenserPointerDown={onEnergyDispenserPointerDown}
+          onEffectDispenserPointerDown={onEffectDispenserPointerDown}
+          onDispenserPanelHandlePointerDown={onDispenserPanelHandlePointerDown}
         />
       )}
     />
@@ -776,7 +899,7 @@ const SpaceshipBoardControls = ({
   const enemyPaneId = scene.panes[1].paneId;
   const focusOptions = { smooth: true, durationMs: 240 };
   const allBoardItemIds = [
-    spaceshipBoardItemId.energyStack(),
+    spaceshipBoardItemId.dispenserPanel(),
     ...scene.panes.flatMap((pane) =>
       getSpaceshipBoardPaneItemIds(scene, pane.paneId, dragState),
     ),

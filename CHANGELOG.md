@@ -10,7 +10,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 - Web: add the Exiles Corvette and Xithrax Raider artifact images as `/spaceship` board backgrounds behind their ship areas.
 - Web: remove extra horizontal padding from the shared `Tag` leading slot so embedded controls align tightly.
-- Web: move the `/spaceship` energy token stack into the board flow above the Exiles ship title.
+- Web: replace the `/spaceship` finite energy stack with a vertical draggable unlimited dispenser panel for Energy plus Injury, Distress, Complication, Freezing, and Burning effect cards.
+- Web: move the `/spaceship` token dispenser into board state so it participates in board fitting.
 - Web: move the `/spaceship` Location level control beside the top-right Location symbol and keep its +/- buttons interactive over the board.
 - Web: bottom-align `/spaceship` Location cards within each row so rooms without Devices line up with rooms that have Devices or Effects.
 - Web: align `/spaceship` Location effect cards to the bottom of their Location cards while preserving upward stack offsets.
@@ -64,7 +65,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: add a frame-corner trash drop area to `/spaceship` so draggable cards and tokens can be removed from the local board, including bundled child pieces.
 - Web: add live local snapping and layout reflow for `/spaceship` card dragging across ship rows, Device columns, actor rows, and effect stacks.
 - Web: add frontend-local free dragging for `/spaceship` Location, Device, effect, Actor, and Actor effect cards.
-- Web: add frontend-local `/spaceship` token drag/drop, including individual draggable energy and actor tokens plus a 20-count energy stack source/sink.
+- Web: add frontend-local `/spaceship` token drag/drop, including individual draggable energy and actor tokens plus a board source/sink.
 - Web: add a `/styleguide/tokens` lab for circular image tokens with the ten standard colors and 0.5in/1in/2in/3in sizes.
 - Web: add a `/board` fan layout helper and demo control for arc-based hand layouts with configurable overlap and arc angle.
 - Web: add `/board` stack, deck, and pile layout helpers plus demo controls for header-peek stacks, compact decks, rotated piles, and token-on-card placement.
