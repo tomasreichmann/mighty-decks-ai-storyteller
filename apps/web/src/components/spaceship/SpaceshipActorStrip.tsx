@@ -1,6 +1,6 @@
 import { ActorCard } from "../cards/ActorCard";
-import type { ShipActorInstance } from "../../lib/spaceship/spaceshipTypes";
-import type { ShipEffectType } from "../../lib/spaceship/spaceshipTypes";
+import type { ShipActorInstance } from "../../lib/spaceship/scene/types";
+import type { ShipEffectType } from "../../lib/spaceship/scene/types";
 import { ShipEffectCardSurface } from "./ShipEffectStack";
 
 interface SpaceshipActorStripProps {
@@ -61,3 +61,4 @@ export const SpaceshipActorStrip = ({
     </section>
   );
 };
+

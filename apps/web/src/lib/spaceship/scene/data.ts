@@ -1,13 +1,13 @@
-import { cardLibrary } from "./spaceshipCardLibraryData";
+import { cardLibrary } from "./cardLibraryData";
 import {
   pirateActors,
   pirateShipLocations,
-} from "./spaceshipScenePirateData";
+} from "./pirateData";
 import {
   playerActors,
   playerShipLocations,
-} from "./spaceshipScenePlayerData";
-import type { SpaceshipScene } from "./spaceshipTypes";
+} from "./playerData";
+import type { SpaceshipScene } from "./types";
 
 export const spaceshipScene: SpaceshipScene = {
   sceneId: "scene-exiles-ship-prototype",
@@ -69,3 +69,4 @@ export const spaceshipScene: SpaceshipScene = {
   },
   cardLibrary,
 };
+

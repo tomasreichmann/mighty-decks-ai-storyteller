@@ -1,9 +1,9 @@
-import { getActorBaseImageUri } from "../../data/actorCards";
-import { createActor, createPlayerLocation } from "./spaceshipSceneContent";
+import { getActorBaseImageUri } from "../../../data/actorCards";
+import { createActor, createPlayerLocation } from "./content";
 import type {
   ShipActorInstance,
   ShipLocationInstance,
-} from "./spaceshipTypes";
+} from "./types";
 
 export const pirateShipLocations: ShipLocationInstance[] = [
   createPlayerLocation(
@@ -273,3 +273,4 @@ export const pirateActors: ShipActorInstance[] = [
     1,
   ),
 ];
+

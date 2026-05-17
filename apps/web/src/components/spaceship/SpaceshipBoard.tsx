@@ -11,9 +11,9 @@ import {
 } from "react";
 import type {
   ShipEffectType,
-  SpaceshipDragState,
   SpaceshipScene,
-} from "../../lib/spaceship/spaceshipTypes";
+} from "../../lib/spaceship/scene/types";
+import type { SpaceshipDragState } from "../../lib/spaceship/drag/types";
 import type { BoardBounds, BoardPoint } from "../../lib/board/boardController";
 import { worldToFrame } from "../../lib/board/boardController";
 import {
@@ -43,7 +43,7 @@ import {
   spaceshipCardSnapInsertCooldownMs,
   syncSpaceshipCardPositions,
   syncSpaceshipTokenPositions,
-} from "../../lib/spaceship/spaceshipDragState";
+} from "../../lib/spaceship/drag/state";
 import {
   createSpaceshipBoardItemMeta,
   createSpaceshipBoardItems,
@@ -52,7 +52,7 @@ import {
   isSpaceshipCardDropTargetItemId,
   spaceshipBoardSize,
   spaceshipBoardItemId,
-} from "../../lib/spaceship/spaceshipBoardLayout";
+} from "../../lib/spaceship/board/layout";
 import { cn } from "../../utils/cn";
 import { Board } from "../board/Board";
 import { BoardFrame } from "../board/BoardFrame";
@@ -1032,3 +1032,4 @@ export const SpaceshipBoard = ({
     </div>
   );
 };
+

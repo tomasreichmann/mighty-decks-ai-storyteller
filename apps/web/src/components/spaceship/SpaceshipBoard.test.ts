@@ -13,7 +13,7 @@ const readDispenserPanelSource = (): string =>
 
 const readBoardGeometrySource = (): string =>
   readFileSync(
-    new URL("../../lib/spaceship/spaceshipBoardGeometry.ts", import.meta.url),
+    new URL("../../lib/spaceship/board/geometry.ts", import.meta.url),
     "utf8",
   );
 
@@ -197,11 +197,11 @@ test("SpaceshipBoard wires the trash target before regular card and token drop h
 
 test("SpaceshipBoard does not treat the trash target as a card drop target", () => {
   const boardItemsSource = readFileSync(
-    new URL("../../lib/spaceship/spaceshipBoardItems.ts", import.meta.url),
+    new URL("../../lib/spaceship/board/items.ts", import.meta.url),
     "utf8",
   );
   const boardGeometrySource = readFileSync(
-    new URL("../../lib/spaceship/spaceshipBoardGeometry.ts", import.meta.url),
+    new URL("../../lib/spaceship/board/geometry.ts", import.meta.url),
     "utf8",
   );
 
@@ -274,3 +274,4 @@ test("SpaceshipBoard shows the live board zoom in the header", () => {
   assert.match(source, /Zoom/);
   assert.match(source, /useBoard\(\)/);
 });
+

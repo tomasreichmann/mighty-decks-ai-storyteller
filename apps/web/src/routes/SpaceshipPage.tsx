@@ -6,9 +6,9 @@ import {
   createCardLibraryOverlayState,
   toggleCardLibraryEntrySelection,
   toggleCardLibraryOpen,
-} from "../lib/spaceship/spaceshipSceneState";
-import { spaceshipScene } from "../lib/spaceship/spaceshipSceneData";
-import { createSpaceshipDragState } from "../lib/spaceship/spaceshipDragState";
+} from "../lib/spaceship/scene/state";
+import { spaceshipScene } from "../lib/spaceship/scene/data";
+import { createSpaceshipDragState } from "../lib/spaceship/drag/state";
 
 export const SpaceshipPage = (): JSX.Element => {
   const [cardLibrary, setCardLibrary] = useState(createCardLibraryOverlayState());
@@ -54,3 +54,4 @@ export const SpaceshipPage = (): JSX.Element => {
     </div>
   );
 };
+

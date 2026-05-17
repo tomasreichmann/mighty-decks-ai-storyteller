@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spaceshipScene } from "./spaceshipSceneData";
+import { spaceshipScene } from "./data";
 
 test("spaceshipScene seeds two panes with locations, actor strips, and a card library", () => {
   assert.equal(spaceshipScene.panes.length, 2);
@@ -87,3 +87,4 @@ test("spaceshipScene keeps support-only rooms free of removed Devices", () => {
   assert.ok(!deviceTitles.includes("Cargo Rig"));
   assert.ok(!deviceTitles.includes("Crew Quarters"));
 });
+

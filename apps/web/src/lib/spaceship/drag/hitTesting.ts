@@ -3,12 +3,12 @@ import type {
   BoardItemRecord,
   BoardPoint,
   BoardSize,
-} from "../board/boardController";
-import { getItemBounds } from "../board/boardController";
+} from "../../board/boardController";
+import { getItemBounds } from "../../board/boardController";
 import {
   spaceshipBoardItemId,
   spaceshipDispenserPanelSize,
-} from "./spaceshipBoardLayout";
+} from "../board/geometry";
 
 export const spaceshipTrashFrameTargetSize = 80;
 
@@ -98,3 +98,4 @@ export const getEnergyStackInitialItem = (): {
   height: spaceshipDispenserPanelSize.height,
   zIndex: 900,
 });
+

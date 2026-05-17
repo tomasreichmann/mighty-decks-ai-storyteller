@@ -1,12 +1,11 @@
-import type { BoardItemInput } from "../board/boardController";
-import type { BoardLayoutItemBox } from "../board/boardLayout";
+import type { BoardItemInput } from "../../board/boardController";
+import type { BoardLayoutItemBox } from "../../board/boardLayout";
 import type {
   ShipActorInstance,
   ShipEffectType,
   ShipLocationInstance,
-  ShipPaneModel,
-  SpaceshipDraggableToken,
-} from "./spaceshipTypes";
+} from "../scene/types";
+import type { SpaceshipDraggableToken } from "../drag/types";
 
 type ActorConsequenceEffectType = Extract<ShipEffectType, "injury" | "distress">;
 
@@ -72,26 +71,6 @@ export const spaceshipBoardItemId = {
   ) => `spaceship:actor-effect-card:${actorId}:${effectType}:${index}`,
   actorCard: (actorId: string) => `spaceship:actor-card:${actorId}`,
 };
-
-export type SpaceshipBoardItemRole =
-  | "ship-background"
-  | "ship-header"
-  | "location"
-  | "device"
-  | "effect-card"
-  | "token"
-  | "dispenser-panel"
-  | "actor-effect-card"
-  | "actor-card";
-
-export interface SpaceshipBoardItemMeta {
-  role: SpaceshipBoardItemRole;
-  pane?: ShipPaneModel;
-  location?: ShipLocationInstance;
-  actor?: ShipActorInstance;
-  token?: SpaceshipDraggableToken;
-  effectType?: ShipEffectType;
-}
 
 export const item = ({
   id,
@@ -185,3 +164,4 @@ export const actorEffectCards = (
     },
   );
 };
+

@@ -1,6 +1,6 @@
 import type { PointerEvent, ReactNode } from "react";
 import { rulesEffectCards } from "../../data/rulesComponents";
-import type { ShipEffectType } from "../../lib/spaceship/spaceshipTypes";
+import type { ShipEffectType } from "../../lib/spaceship/scene/types";
 import { EnergyToken } from "./EnergyToken";
 
 const dispenserEffectTypes = [
@@ -109,3 +109,4 @@ export const SpaceshipDispenserPanel = ({
     </div>
   </div>
 );
+

@@ -4,7 +4,7 @@ import {
   createCardLibraryOverlayState,
   toggleCardLibraryEntrySelection,
   toggleCardLibraryOpen,
-} from "./spaceshipSceneState";
+} from "./state";
 
 test("toggleCardLibraryOpen opens and closes the overlay", () => {
   const initialState = createCardLibraryOverlayState();
@@ -26,3 +26,4 @@ test("toggleCardLibraryEntrySelection tracks multi-select entry ids", () => {
   assert.deepEqual(selectedTwice.selectedEntryIds, ["card-1", "card-2"]);
   assert.deepEqual(deselected.selectedEntryIds, ["card-2"]);
 });
+

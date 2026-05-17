@@ -1,4 +1,4 @@
-import type { CardLibraryEntry } from "./spaceshipTypes";
+import type { CardLibraryEntry } from "./types";
 
 export const cardLibrary: CardLibraryEntry[] = [
   {
@@ -54,3 +54,4 @@ export const cardLibrary: CardLibraryEntry[] = [
     badge: "Actor",
   },
 ];
+

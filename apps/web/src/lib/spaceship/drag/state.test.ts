@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spaceshipScene } from "./spaceshipSceneData";
+import { spaceshipScene } from "../scene/data";
 import {
   applySpaceshipCardLiveSnap,
   beginDispenserPanelDrag,
@@ -31,11 +31,9 @@ import {
   spaceshipCardLayoutTearOffDistancePx,
   spaceshipCardSnapInsertCooldownMs,
   spaceshipTrashFrameTargetSize,
-} from "./spaceshipDragState";
-import {
-  createSpaceshipBoardLayout,
-  spaceshipBoardItemId,
-} from "./spaceshipBoardLayout";
+} from "./state";
+import { createSpaceshipBoardLayout } from "../board/layout";
+import { spaceshipBoardItemId } from "../board/geometry";
 
 test("didSpaceshipCardLayoutDragExceedTearOffDistance requires a 10px tear-off from layout", () => {
   assert.equal(spaceshipCardLayoutTearOffDistancePx, 10);
@@ -885,3 +883,4 @@ test("dropSpaceshipCardOnTrashTarget removes only the targeted effect card and a
     false,
   );
 });
+

@@ -1,5 +1,6 @@
-import type { BoardItemInput } from "../board/boardController";
-import type { SpaceshipDragState, SpaceshipScene } from "./spaceshipTypes";
+import type { BoardItemInput } from "../../board/boardController";
+import type { SpaceshipDragState } from "../drag/types";
+import type { SpaceshipScene } from "../scene/types";
 import {
   actorCardHeight,
   actorCardWidth,
@@ -17,8 +18,8 @@ import {
   shipWidth,
   spaceshipBoardItemId,
   tokenItem,
-  type SpaceshipBoardItemMeta,
-} from "./spaceshipBoardGeometry";
+} from "./geometry";
+import type { SpaceshipBoardItemMeta } from "./types";
 
 export const createSpaceshipBoardItems = (
   scene: SpaceshipScene,
@@ -264,3 +265,4 @@ export const isSpaceshipCardDropTargetItemId = (itemId: string): boolean =>
   itemId.startsWith("spaceship:spawned-effect-card:") ||
   itemId.startsWith("spaceship:actor-card:") ||
   itemId.startsWith("spaceship:actor-effect-card:");
+

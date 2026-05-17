@@ -3,7 +3,7 @@ import { resolveGameCard } from "../../lib/markdownGameComponents";
 import type {
   ShipEffectInstance,
   ShipEffectType,
-} from "../../lib/spaceship/spaceshipTypes";
+} from "../../lib/spaceship/scene/types";
 import { cn } from "../../utils/cn";
 
 interface ShipEffectStackProps {
@@ -65,3 +65,4 @@ export const ShipEffectStack = ({
     </div>
   );
 };
+

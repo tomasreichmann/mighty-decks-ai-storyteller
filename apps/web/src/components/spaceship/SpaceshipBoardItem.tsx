@@ -3,14 +3,12 @@ import type {
   ReactNode,
 } from "react";
 import type { BoardItemRecord } from "../../lib/board/boardController";
-import {
-  createSpaceshipBoardItemMeta,
-} from "../../lib/spaceship/spaceshipBoardLayout";
 import type {
   ShipEffectType,
-  SpaceshipDraggableToken,
   SpaceshipScene,
-} from "../../lib/spaceship/spaceshipTypes";
+} from "../../lib/spaceship/scene/types";
+import type { SpaceshipDraggableToken } from "../../lib/spaceship/drag/types";
+import { createSpaceshipBoardItemMeta } from "../../lib/spaceship/board/layout";
 import { Text } from "../common/Text";
 import { ActorToken } from "./ActorToken";
 import { EnergyToken } from "./EnergyToken";
@@ -232,3 +230,4 @@ export const SpaceshipBoardItem = ({
       return null;
   }
 };
+

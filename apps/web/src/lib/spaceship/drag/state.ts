@@ -1,29 +1,39 @@
-import type { BoardItemRecord, BoardPoint } from "../board/boardController";
+import type { BoardItemRecord, BoardPoint } from "../../board/boardController";
 import {
-  createSpaceshipBoardItemMeta,
-  createSpaceshipBoardLayout,
   boardOrigin,
   effectCardHeight,
   effectCardWidth,
-  isSpaceshipCardDropTargetItemId,
   spaceshipBoardItemId,
   spaceshipDispenserPanelSize,
   spaceshipTokenSize,
-} from "./spaceshipBoardLayout";
+} from "../board/geometry";
+import {
+  createSpaceshipBoardItemMeta,
+  isSpaceshipCardDropTargetItemId,
+} from "../board/items";
+import { createSpaceshipBoardLayout } from "../board/layout";
 import {
   createInitialSpaceshipLayouts,
   findCardLayoutId,
-} from "./spaceshipDragLayoutState";
+} from "./layoutState";
 import type {
   ActorTokenModel,
   EnergyTokenModel,
   ShipEffectType,
+  SpaceshipScene,
+} from "../scene/types";
+import type {
   SpaceshipDragState,
   SpaceshipDraggableCard,
   SpaceshipDraggableCardRole,
   SpaceshipDraggableToken,
-  SpaceshipScene,
-} from "./spaceshipTypes";
+  SpaceshipTrashDropResult,
+} from "./types";
+import {
+  mapSpaceshipCards,
+  mapSpaceshipTokens,
+  removeIds,
+} from "./stateHelpers";
 
 export {
   findTopmostItemAtPoint,
@@ -33,7 +43,7 @@ export {
   isFramePointOverTrashTarget,
   isPointOverEnergyStack,
   spaceshipTrashFrameTargetSize,
-} from "./spaceshipDragHitTesting";
+} from "./hitTesting";
 export {
   applySpaceshipCardLiveSnap,
   createInitialSpaceshipLayouts,
@@ -42,7 +52,7 @@ export {
   removeSpaceshipCardFromLayouts,
   resolveSpaceshipCardSnapTarget,
   spaceshipLayoutId,
-} from "./spaceshipDragLayoutState";
+} from "./layoutState";
 
 const tokenGap = 10;
 const cardZIndexBase = 1000;
@@ -249,31 +259,6 @@ export const createSpaceshipDragState = (
   };
 };
 
-const mapCards = (
-  state: SpaceshipDragState,
-  itemId: string,
-  updater: (card: SpaceshipDraggableCard) => SpaceshipDraggableCard,
-): SpaceshipDragState => ({
-  ...state,
-  cards: state.cards.map((card) =>
-    card.itemId === itemId ? updater(card) : card,
-  ),
-});
-
-const mapTokens = (
-  state: SpaceshipDragState,
-  tokenId: string,
-  updater: (token: SpaceshipDraggableToken) => SpaceshipDraggableToken,
-): SpaceshipDragState => ({
-  ...state,
-  tokens: state.tokens.map((token) =>
-    token.tokenId === tokenId ? updater(token) : token,
-  ),
-});
-
-const removeIds = (ids: readonly string[], removedIds: Set<string>): string[] =>
-  ids.filter((id) => !removedIds.has(id));
-
 const removeCardsFromLayouts = (
   state: SpaceshipDragState,
   removedCardIds: Set<string>,
@@ -307,7 +292,7 @@ export const beginSpaceshipCardDrag = (
   return {
     dragItemId: itemId,
     state: {
-      ...mapCards(state, itemId, (card) => ({
+      ...mapSpaceshipCards(state, itemId, (card) => ({
         ...card,
         zIndex,
       })),
@@ -324,7 +309,7 @@ export const beginSpaceshipTokenDrag = (
   return {
     dragTokenId: tokenId,
     state: {
-      ...mapTokens(state, tokenId, (token) => ({
+      ...mapSpaceshipTokens(state, tokenId, (token) => ({
         ...token,
         zIndex,
       })),
@@ -424,7 +409,7 @@ export const moveSpaceshipCardFromDragOrigin = (
   },
 ): SpaceshipDragState => {
   const zoom = Number.isFinite(drag.zoom) && drag.zoom > 0 ? drag.zoom : 1;
-  return mapCards(state, itemId, (card) => ({
+  return mapSpaceshipCards(state, itemId, (card) => ({
     ...card,
     x: drag.startX + (drag.clientX - drag.startClientX) / zoom,
     y: drag.startY + (drag.clientY - drag.startClientY) / zoom,
@@ -461,7 +446,7 @@ export const moveSpaceshipToken = (
   delta: { deltaX: number; deltaY: number; zoom: number },
 ): SpaceshipDragState => {
   const zoom = Number.isFinite(delta.zoom) && delta.zoom > 0 ? delta.zoom : 1;
-  return mapTokens(state, tokenId, (token) => ({
+  return mapSpaceshipTokens(state, tokenId, (token) => ({
     ...token,
     x: token.x + delta.deltaX / zoom,
     y: token.y + delta.deltaY / zoom,
@@ -483,7 +468,7 @@ export const moveSpaceshipTokenFromDragOrigin = (
   },
 ): SpaceshipDragState => {
   const zoom = Number.isFinite(drag.zoom) && drag.zoom > 0 ? drag.zoom : 1;
-  return mapTokens(state, tokenId, (token) => ({
+  return mapSpaceshipTokens(state, tokenId, (token) => ({
     ...token,
     x: drag.startX + (drag.clientX - drag.startClientX) / zoom,
     y: drag.startY + (drag.clientY - drag.startClientY) / zoom,
@@ -495,7 +480,7 @@ export const dropSpaceshipCardOnBoard = (
   state: SpaceshipDragState,
   itemId: string,
 ): SpaceshipDragState =>
-  mapCards(state, itemId, (card) => ({
+  mapSpaceshipCards(state, itemId, (card) => ({
     ...card,
     placement: { type: "board" },
   }));
@@ -506,7 +491,7 @@ export const dropSpaceshipTokenOnCard = (
   cardItemId: string,
   cardPosition: BoardPoint,
 ): SpaceshipDragState =>
-  mapTokens(state, tokenId, (token) => ({
+  mapSpaceshipTokens(state, tokenId, (token) => ({
     ...token,
     placement: {
       type: "card",
@@ -520,7 +505,7 @@ export const dropSpaceshipTokenOnBoard = (
   state: SpaceshipDragState,
   tokenId: string,
 ): SpaceshipDragState =>
-  mapTokens(state, tokenId, (token) => ({
+  mapSpaceshipTokens(state, tokenId, (token) => ({
     ...token,
     placement: { type: "board" },
   }));
@@ -539,11 +524,6 @@ export const dropSpaceshipTokenOnEnergyStack = (
     tokens: state.tokens.filter((candidate) => candidate.tokenId !== tokenId),
   };
 };
-
-export interface SpaceshipTrashDropResult {
-  state: SpaceshipDragState;
-  removedItemIds: string[];
-}
 
 const removeTokensFromTrashDrop = (
   state: SpaceshipDragState,
@@ -711,3 +691,5 @@ export const syncSpaceshipCardPositions = (
     }),
   };
 };
+
+

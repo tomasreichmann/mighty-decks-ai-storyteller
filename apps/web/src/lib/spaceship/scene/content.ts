@@ -6,7 +6,7 @@ import type {
   ShipDeviceInstance,
   ShipLocationInstance,
   ShipLocationType,
-} from "./spaceshipTypes";
+} from "./types";
 
 export const exilesActorCards = {
   machinistPriestHeretic: {
@@ -271,3 +271,4 @@ export const exilesActorTokens = {
     locationId: "player-life-support",
   },
 } satisfies Record<string, ActorTokenModel>;
+

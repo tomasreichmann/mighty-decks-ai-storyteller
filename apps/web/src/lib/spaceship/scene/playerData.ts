@@ -3,11 +3,11 @@ import {
   createPlayerLocation,
   exilesActorCards,
   exilesActorTokens,
-} from "./spaceshipSceneContent";
+} from "./content";
 import type {
   ShipActorInstance,
   ShipLocationInstance,
-} from "./spaceshipTypes";
+} from "./types";
 
 export const playerShipLocations: ShipLocationInstance[] = [
   createPlayerLocation(
@@ -369,3 +369,4 @@ export const playerActors: ShipActorInstance[] = [
     3,
   ),
 ];
+

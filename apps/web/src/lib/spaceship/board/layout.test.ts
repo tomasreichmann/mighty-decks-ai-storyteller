@@ -1,19 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spaceshipScene } from "./spaceshipSceneData";
+import { spaceshipScene } from "../scene/data";
 import {
-  createSpaceshipBoardLayout,
   createSpaceshipBoardItems,
   getSpaceshipBoardPaneItemIds,
   isSpaceshipCardDropTargetItemId,
-  spaceshipBoardItemId,
-} from "./spaceshipBoardLayout";
+} from "./items";
+import { spaceshipBoardItemId } from "./geometry";
+import { createSpaceshipBoardLayout } from "./layout";
 import {
   createSpaceshipDragState,
   insertSpaceshipCardIntoLayout,
   moveSpaceshipCardFromDragOrigin,
   removeSpaceshipCardFromLayouts,
-} from "./spaceshipDragState";
+} from "../drag/state";
 
 test("createSpaceshipBoardItems creates board entries for ship backgrounds, locations, devices, individual tokens, effects, actors, and the dispenser panel", () => {
   const dragState = createSpaceshipDragState(spaceshipScene);
@@ -604,3 +604,4 @@ test("createSpaceshipBoardLayout bottom-aligns Location cards within each locati
 
   assert.equal(new Set(bottoms).size, 1);
 });
+

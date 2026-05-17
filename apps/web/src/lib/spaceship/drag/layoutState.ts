@@ -1,15 +1,19 @@
-import type { BoardItemRecord, BoardPoint } from "../board/boardController";
-import { spaceshipBoardItemId } from "./spaceshipBoardLayout";
-import { findTopmostItemAtPoint } from "./spaceshipDragHitTesting";
+import type { BoardItemRecord, BoardPoint } from "../../board/boardController";
+import { spaceshipBoardItemId } from "../board/geometry";
+import { findTopmostItemAtPoint } from "./hitTesting";
 import type {
-  ShipLocationRow,
   SpaceshipCardSnapTarget,
   SpaceshipDragState,
   SpaceshipDraggableCard,
   SpaceshipDraggableCardRole,
   SpaceshipLayoutMembershipState,
+} from "./types";
+import type {
+  ShipLocationRow,
   SpaceshipScene,
-} from "./spaceshipTypes";
+} from "../scene/types";
+import { insertId, removeId } from "./stateHelpers";
+import { mapSpaceshipCards } from "./stateHelpers";
 
 export const spaceshipLayoutId = {
   locationRow: (paneId: string, row: ShipLocationRow) =>
@@ -19,37 +23,6 @@ export const spaceshipLayoutId = {
   effectStack: (ownerItemId: string) => `spaceship:effect-stack:${ownerItemId}`,
   actorRow: (paneId: string) => `spaceship:actor-row:${paneId}`,
 };
-
-const clampInsertionIndex = (index: number, length: number): number =>
-  Math.max(0, Math.min(length, index));
-
-const removeId = (ids: readonly string[], itemId: string): string[] =>
-  ids.filter((id) => id !== itemId);
-
-const insertId = (
-  ids: readonly string[],
-  itemId: string,
-  index: number,
-): string[] => {
-  const withoutItem = removeId(ids, itemId);
-  const insertionIndex = clampInsertionIndex(index, withoutItem.length);
-  return [
-    ...withoutItem.slice(0, insertionIndex),
-    itemId,
-    ...withoutItem.slice(insertionIndex),
-  ];
-};
-
-const mapCards = (
-  state: SpaceshipDragState,
-  itemId: string,
-  updater: (card: SpaceshipDraggableCard) => SpaceshipDraggableCard,
-): SpaceshipDragState => ({
-  ...state,
-  cards: state.cards.map((card) =>
-    card.itemId === itemId ? updater(card) : card,
-  ),
-});
 
 export const createInitialSpaceshipLayouts = (
   scene: SpaceshipScene,
@@ -198,7 +171,7 @@ export const removeSpaceshipCardFromLayouts = (
   state: SpaceshipDragState,
   itemId: string,
 ): SpaceshipDragState => ({
-  ...mapCards(state, itemId, (card) => ({
+  ...mapSpaceshipCards(state, itemId, (card) => ({
     ...card,
     placement: { type: "board" },
   })),
@@ -229,7 +202,7 @@ export const insertSpaceshipCardIntoLayout = (
 ): SpaceshipDragState => {
   const withoutItem = removeSpaceshipCardFromLayouts(state, itemId);
   const setLayoutPlacement = (nextState: SpaceshipDragState): SpaceshipDragState =>
-    mapCards(nextState, itemId, (card) => ({
+    mapSpaceshipCards(nextState, itemId, (card) => ({
       ...card,
       placement: { type: "layout", layoutId: target.layoutId },
     }));
@@ -506,3 +479,5 @@ export const applySpaceshipCardLiveSnap = (
     ? insertSpaceshipCardIntoLayout(state, itemId, target)
     : removeSpaceshipCardFromLayouts(state, itemId);
 };
+
+

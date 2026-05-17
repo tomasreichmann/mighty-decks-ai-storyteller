@@ -2,14 +2,14 @@ import {
   flexLayout,
   stackLayout,
   type BoardLayoutResult,
-} from "../board/boardLayout";
+} from "../../board/boardLayout";
 import type {
   ShipActorInstance,
   ShipLocationInstance,
   ShipPaneModel,
-  SpaceshipDragState,
   SpaceshipScene,
-} from "./spaceshipTypes";
+} from "../scene/types";
+import type { SpaceshipDragState } from "../drag/types";
 import {
   actorBaseHeight,
   actorCardHeight,
@@ -37,9 +37,9 @@ import {
   sortActors,
   sortLocations,
   spaceshipBoardItemId,
-} from "./spaceshipBoardGeometry";
-import { createMembershipBaseLayout } from "./spaceshipBoardMembershipLayout";
-import { getSpaceshipBoardPaneItemIds } from "./spaceshipBoardItems";
+} from "./geometry";
+import { createMembershipBaseLayout } from "./membershipLayout";
+import { getSpaceshipBoardPaneItemIds } from "./items";
 export {
   spaceshipBoardItemId,
   spaceshipDispenserPanelSize,
@@ -49,15 +49,14 @@ export {
   effectCardWidth,
   shipWidth,
   spaceshipTokenSize,
-  type SpaceshipBoardItemMeta,
-  type SpaceshipBoardItemRole,
-} from "./spaceshipBoardGeometry";
+} from "./geometry";
+export { type SpaceshipBoardItemMeta, type SpaceshipBoardItemRole } from "./types";
 export {
   createSpaceshipBoardItemMeta,
   createSpaceshipBoardItems,
   getSpaceshipBoardPaneItemIds,
   isSpaceshipCardDropTargetItemId,
-} from "./spaceshipBoardItems";
+} from "./items";
 
 const locationGroupLayout = (
   location: ShipLocationInstance,
@@ -487,3 +486,4 @@ export const createSpaceshipBoardLayout = (
     ],
   };
 };
+

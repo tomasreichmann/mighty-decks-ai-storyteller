@@ -1,6 +1,6 @@
 import { GameCardView } from "../adventure-module/GameCardView";
 import { resolveGameCard } from "../../lib/markdownGameComponents";
-import type { CardLibraryEntry } from "../../lib/spaceship/spaceshipTypes";
+import type { CardLibraryEntry } from "../../lib/spaceship/scene/types";
 import { cn } from "../../utils/cn";
 import { Button } from "../common/Button";
 import { Label } from "../common/Label";
@@ -163,3 +163,4 @@ export const CardLibraryOverlay = ({
     </Overlay>
   );
 };
+

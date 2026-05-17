@@ -1,5 +1,5 @@
 import { cn } from "../../utils/cn";
-import type { PowerTokenState } from "../../lib/spaceship/spaceshipTypes";
+import type { PowerTokenState } from "../../lib/spaceship/scene/types";
 
 interface EnergyTokenProps {
   label: string;
@@ -30,3 +30,4 @@ export const EnergyToken = ({
     </div>
   );
 };
+

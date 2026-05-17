@@ -1,11 +1,13 @@
-import { flexLayout, type BoardLayoutResult } from "../board/boardLayout";
+import { flexLayout, type BoardLayoutResult } from "../../board/boardLayout";
 import type {
   ShipPaneModel,
+  SpaceshipScene,
+} from "../scene/types";
+import type {
   SpaceshipDragState,
   SpaceshipDraggableCard,
   SpaceshipLayoutMembershipState,
-  SpaceshipScene,
-} from "./spaceshipTypes";
+} from "../drag/types";
 import {
   actorCardHeight,
   actorCardWidth,
@@ -16,9 +18,6 @@ import {
   deviceGap,
   deviceHeight,
   deviceWidth,
-  effectCardHeight,
-  effectCardWidth,
-  effectHeaderOffset,
   locationColumnGap,
   locationHeight,
   locationRowGap,
@@ -29,7 +28,8 @@ import {
   shipPadding,
   shipWidth,
   spaceshipBoardItemId,
-} from "./spaceshipBoardGeometry";
+} from "./geometry";
+import { appendLayoutAt, createOwnerWithEffectsLayout } from "./ownerLayout";
 
 const getCardFromState = (
   dragState: SpaceshipDragState,
@@ -62,78 +62,6 @@ const getLayoutEffectStackForOwner = (
     isLayoutPlacedCard(dragState, itemId),
   );
 
-const ownerWithEffectsLayout = ({
-  ownerItemId,
-  ownerWidth,
-  ownerHeight,
-  groupWidth,
-  ownerZIndex,
-  effectItemIds,
-}: {
-  ownerItemId: string;
-  ownerWidth: number;
-  ownerHeight: number;
-  groupWidth: number;
-  ownerZIndex: number;
-  effectItemIds: readonly string[];
-}): BoardLayoutResult => {
-  const effectPeek =
-    effectItemIds.length > 0
-      ? Math.max(effectHeaderOffset, effectCardHeight - ownerHeight)
-      : 0;
-  const ownerYOffset =
-    effectItemIds.length > 0
-      ? effectPeek + (effectItemIds.length - 1) * effectHeaderOffset
-      : 0;
-  const placements: BoardLayoutResult["placements"] = [];
-  const ownerX = (groupWidth - ownerWidth) / 2;
-
-  effectItemIds.forEach((effectItemId, stackIndex) => {
-    placements.push({
-      id: effectItemId,
-      x: (groupWidth - effectCardWidth) / 2,
-      y: ownerYOffset - effectPeek - stackIndex * effectHeaderOffset,
-      width: effectCardWidth,
-      height: effectCardHeight,
-      zIndex: ownerZIndex - stackIndex - 1,
-    });
-  });
-
-  placements.push({
-    id: ownerItemId,
-    x: ownerX,
-    y: ownerYOffset,
-    width: ownerWidth,
-    height: ownerHeight,
-    zIndex: ownerZIndex,
-  });
-
-  return {
-    placements,
-    bounds: {
-      x: 0,
-      y: 0,
-      width: groupWidth,
-      height: ownerYOffset + ownerHeight,
-    },
-  };
-};
-
-const appendLayoutAt = (
-  target: BoardLayoutResult["placements"],
-  layout: BoardLayoutResult,
-  x: number,
-  y: number,
-): void => {
-  layout.placements.forEach((placement) => {
-    target.push({
-      ...placement,
-      x: x + placement.x - layout.bounds.x,
-      y: y + placement.y - layout.bounds.y,
-    });
-  });
-};
-
 const roomLayoutFromMembership = (
   locationItemId: string,
   dragState: SpaceshipDragState,
@@ -149,7 +77,7 @@ const roomLayoutFromMembership = (
     .filter((deviceItemId) => isLayoutPlacedCard(dragState, deviceItemId))
     .forEach((deviceItemId) => {
       const device = getCardFromState(dragState, deviceItemId);
-      const deviceLayout = ownerWithEffectsLayout({
+      const deviceLayout = createOwnerWithEffectsLayout({
         ownerItemId: deviceItemId,
         ownerWidth: device?.width ?? deviceWidth,
         ownerHeight: device?.height ?? deviceHeight,
@@ -161,7 +89,7 @@ const roomLayoutFromMembership = (
       cursorY += deviceLayout.bounds.height + deviceGap;
     });
 
-  const locationLayout = ownerWithEffectsLayout({
+  const locationLayout = createOwnerWithEffectsLayout({
     ownerItemId: locationItemId,
     ownerWidth: card?.width ?? locationWidth,
     ownerHeight: card?.height ?? locationHeight,
@@ -220,7 +148,7 @@ const actorGroupLayoutFromMembership = (
   dragState: SpaceshipDragState,
 ): BoardLayoutResult => {
   const card = getCardFromState(dragState, actorItemId);
-  return ownerWithEffectsLayout({
+  return createOwnerWithEffectsLayout({
     ownerItemId: actorItemId,
     ownerWidth: card?.width ?? actorCardWidth,
     ownerHeight: card?.height ?? actorCardHeight,
@@ -341,7 +269,7 @@ const manualLayoutForCard = (
   }
 
   if (card.role === "device") {
-    const layout = ownerWithEffectsLayout({
+    const layout = createOwnerWithEffectsLayout({
       ownerItemId: card.itemId,
       ownerWidth: card.width,
       ownerHeight: card.height,
@@ -476,3 +404,4 @@ export const createMembershipBaseLayout = (
     placements: [...basePlacements, ...manualPlacements],
   };
 };
+

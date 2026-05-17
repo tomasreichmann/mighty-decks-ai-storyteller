@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import TestRenderer, { act } from "react-test-renderer";
 import { ShipLocationCard } from "./ShipLocationCard";
-import type { ShipLocationInstance } from "../../lib/spaceship/spaceshipTypes";
+import type { ShipLocationInstance } from "../../lib/spaceship/scene/types";
 
 type RenderNode = TestRenderer.ReactTestRendererJSON | string | null;
 
@@ -145,3 +145,4 @@ test("ShipLocationCard positions level controls beside the location symbol and k
   assert.match(levelControls.props.className, /pointer-events-auto/);
   assert.equal(typeof levelControls.props.onPointerDown, "function");
 });
+

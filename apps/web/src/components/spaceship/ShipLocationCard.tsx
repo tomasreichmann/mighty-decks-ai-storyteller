@@ -1,5 +1,5 @@
 import { useState, type PointerEvent } from "react";
-import type { ShipLocationInstance } from "../../lib/spaceship/spaceshipTypes";
+import type { ShipLocationInstance } from "../../lib/spaceship/scene/types";
 import { ActorToken } from "./ActorToken";
 import { EnergyToken } from "./EnergyToken";
 import { ShipEffectStack } from "./ShipEffectStack";
@@ -179,3 +179,4 @@ export const ShipLocationCard = ({
     </article>
   );
 };
+
