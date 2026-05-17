@@ -305,6 +305,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Docs
 
+- Add agent token budget guardrails with capped validation commands, local full-output logs, and automatic cheap-subagent delegation guidance.
 - Add repo-local Codex skills for vertical-slice workflow, UI pattern reuse, and Mighty Decks rules guidance.
 - Extend the repo-local vertical-slice skill with an adventure-artifact image index reminder.
 - Document the new panel lab, cards gallery shape, expanded typography/tag palette, and input/button alignment guidance in the UI component and style-system docs.

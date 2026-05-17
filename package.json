@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "pnpm -C spec build && pnpm --parallel --filter @mighty-decks/server --filter @mighty-decks/web --if-present dev",
     "build": "pnpm -r --if-present build",
+    "build:agent": "node scripts/run-agent-command.mjs --log-name build-agent --max-chars 12000 -- pnpm build",
+    "check:agent": "node scripts/run-agent-command.mjs --log-name check-agent --max-chars 12000 -- pnpm typecheck",
+    "test:agent": "node scripts/run-agent-command.mjs --log-name test-agent --tail-lines 120 -- pnpm -C apps/server test",
     "typecheck": "pnpm -r --if-present typecheck"
   }
 }

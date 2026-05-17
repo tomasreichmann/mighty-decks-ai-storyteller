@@ -12,6 +12,7 @@ apps/server/logs
 
 # Local dev command logs
 /dev*.log
+.agent-logs/
 
 # Runtime/generated artifacts
 apps/server/output/

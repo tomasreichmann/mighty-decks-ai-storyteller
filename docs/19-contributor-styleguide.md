@@ -8,7 +8,7 @@ Use it alongside `AGENTS.md` and `README.md`. If instructions conflict, `AGENTS.
 
 ## 1. Work from shared contracts outward
 
-- Read `docs/` and `spec/` before changing behavior.
+- Read the relevant `docs/` and `spec/` files before changing behavior. Use targeted search first instead of bulk-loading unrelated docs, generated output, logs, dist files, or image assets.
 - Shared contracts live in `spec/*.ts` and are imported by both web and server.
 - Implement behavior changes as vertical slices: `spec` -> server -> client state -> UI.
 - If you edit `spec/` directly while using split commands, rerun `pnpm -C spec build`.
@@ -65,9 +65,15 @@ Use it alongside `AGENTS.md` and `README.md`. If instructions conflict, `AGENTS.
 
 ## 7. Default verification commands
 
+- Agent-first checks with capped terminal output:
+  - `pnpm check:agent`
+  - `pnpm test:agent`
+  - `pnpm build:agent`
 - `pnpm typecheck`
 - `pnpm -C apps/server test`
+- `pnpm build`
 - `pnpm dev`
 - `pnpm -C apps/server dev`
 - `pnpm -C apps/web dev --host`
+- Agent runs should summarize raw install/build/test output and reference the full local log under `.agent-logs/` instead of pasting noisy output into context.
 - Style-only changes usually do not need new automated tests; avoid brittle class-name or DOM-structure assertions unless the change also affects behavior or a public contract.

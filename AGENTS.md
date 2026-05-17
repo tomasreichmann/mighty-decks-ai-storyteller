@@ -189,7 +189,7 @@ If you are editing files under `spec/` directly while using split commands, reru
 
 ## How to work in this repo (Codex operating procedure)
 
-1. **Read `/docs/` and `/spec/` before coding.**
+1. **Read relevant `/docs/` and `/spec/` files before coding.** Use targeted search first; do not bulk-load unrelated docs, generated output, logs, dist files, or image assets.
 2. When implementing a feature, do it as a **vertical slice**:
    - spec types/events → server handler → client state → UI component
 3. Keep MVP scope tight. If a requested change expands scope, propose a smaller MVP alternative.
@@ -206,6 +206,33 @@ If you are editing files under `spec/` directly while using split commands, reru
    - skip pure internal refactors unless they change behavior, fix a bug, or clarify important docs
 8. If docs are missing or stale for the change you are making, fix them before considering the task complete.
 9. Style-only changes usually do not need new tests; avoid brittle class-name or DOM-structure assertions for layout, typography, spacing, or color tweaks unless the behavior itself changed.
+
+### Agent token budget guardrails
+
+- Use `pnpm check:agent` before `pnpm typecheck` unless you specifically need uncapped output.
+- Use `pnpm test:agent` before full server test output when inspecting failures.
+- Use `pnpm build:agent` before `pnpm build` when checking build health.
+- Do not paste raw install/build/test output into Codex context. Summarize the result and reference the full local log under `.agent-logs/`.
+- Prefer targeted `rg` searches and capped validation output over broad terminal dumps.
+
+### Automatic cheap-subagent delegation
+
+Codex may automatically spawn a cheaper subagent such as `gpt-5.4-mini` for bounded read-only work when it is likely to reduce total token use or latency. It is acceptable to wait for that subagent when it can complete the task more efficiently than the main agent.
+
+Delegate when the subagent can return a compact answer without forcing the main agent to re-read the same large files or logs. Do not delegate when the main agent would need to inspect substantially the same files afterward to trust or use the result.
+
+Good delegation targets:
+
+- summarize `.agent-logs/*` build or test logs
+- map relevant files for a bug or component area
+- search for existing component/style patterns
+- check docs/API usage
+- identify candidate tests for a narrow change
+- compare unrelated failing test files
+
+Do not delegate automatically for code edits, architecture decisions, security/privacy-sensitive review, product behavior decisions, tasks where correctness depends on the main agent personally reading the same large context, or tasks requiring multiple agents to write overlapping files.
+
+Subagent prompts must include exact scope, a read-only constraint, compact output expectations (`paths`, `findings`, and no long excerpts), and enough evidence that the main agent does not need to re-read the same files.
 
 ---
 
