@@ -8,6 +8,11 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Docs: require the token-optimized `pnpm check:agent`, `pnpm test:agent`, and `pnpm build:agent` commands as the default validation path in `AGENTS.md`.
+- Fixed: `/spaceship` cards removed by dragging to the trash now disappear instead of reappearing as inert items at the board origin.
+- Repo: remove the oversized local `vercel-react-best-practices` skill pack and trim duplicated contributor guidance to reduce Codex context.
+- Repo: make `webapp-testing` on-demand for behavior checks instead of cosmetic-only or content-only edits.
+- Web: remove all Injury and Distress cards from the saved `/spaceship` Exiles Corvette vs Raider board state.
 - Web: add the Exiles Corvette and Xithrax Raider artifact images as `/spaceship` board backgrounds behind their ship areas.
 - Web: remove extra horizontal padding from the shared `Tag` leading slot so embedded controls align tightly.
 - Web: replace the `/spaceship` finite energy stack with a vertical draggable unlimited dispenser panel for Energy plus Injury, Distress, Complication, Freezing, and Burning effect cards.
@@ -61,6 +66,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web/Spec/Server: add named `/spaceship` board-state save/restore with committed default JSON files and backend REST persistence.
+- Web: add a browser-global `/spaceship` connector so Codex/devtools automation can apply typed live board operations, including adding ship Locations and Energy tokens without reloading the page.
 - Web/Spec/Server: add Campaign-attached worldbuilding sessions with shared result contracts, Socket.IO actions, a board-based result page, and import into campaign Locations, Actors, Assets, Encounters, and Quests.
 - Web: add a frame-corner trash drop area to `/spaceship` so draggable cards and tokens can be removed from the local board, including bundled child pieces.
 - Web: add live local snapping and layout reflow for `/spaceship` card dragging across ship rows, Device columns, actor rows, and effect stacks.

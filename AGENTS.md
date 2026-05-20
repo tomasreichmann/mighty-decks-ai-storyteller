@@ -165,6 +165,7 @@ Create `.env.local` (not committed):
 - `IMAGE_TIMEOUT_MS=30000`
 - `AI_RETRY_COUNT=1`
 - `VOTE_TIMEOUT_MS=60000`
+- `SPACESHIP_BOARD_STATE_DIR=output/spaceship-board-states`
 - `MAX_ACTIVE_ADVENTURES=1` # local/dev default
 - `DEBUG_MODE=false`
 
@@ -209,11 +210,21 @@ If you are editing files under `spec/` directly while using split commands, reru
 
 ### Agent token budget guardrails
 
-- Use `pnpm check:agent` before `pnpm typecheck` unless you specifically need uncapped output.
-- Use `pnpm test:agent` before full server test output when inspecting failures.
-- Use `pnpm build:agent` before `pnpm build` when checking build health.
+- Use the token-optimized `:agent` wrappers for validation by default:
+  - `pnpm check:agent` before `pnpm typecheck`
+  - `pnpm test:agent` before full server test output when inspecting failures
+  - `pnpm build:agent` before `pnpm build` when checking build health
+- Prefer the `:agent` wrapper whenever a task maps cleanly to one of those commands.
+- Use the uncapped command only when you need the full output or the task is not covered by an existing `:agent` wrapper.
+- Use `webapp-testing` only when a change needs browser verification of behavior, interactions, or runtime bugs; skip it for cosmetic-only or content-only edits unless you need to confirm a regression in a real browser.
 - Do not paste raw install/build/test output into Codex context. Summarize the result and reference the full local log under `.agent-logs/`.
 - Prefer targeted `rg` searches and capped validation output over broad terminal dumps.
+
+### Current `:agent` coverage
+
+- Covered: repo typechecking, root build, and server test runs.
+- Not covered yet: frontend-only test runs, linting, file-scoped test invocations, ad hoc repro commands, and other custom scripts.
+- For uncovered cases, use the direct command that best matches the task, and add a new `:agent` wrapper only if that command becomes a common validation path.
 
 ### Automatic cheap-subagent delegation
 
