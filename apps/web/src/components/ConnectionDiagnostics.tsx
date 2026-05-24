@@ -61,6 +61,8 @@ export const ConnectionDiagnostics = ({
     typeof window !== "undefined" ? window.location.origin : "unknown";
   const secureContextLabel =
     typeof window !== "undefined" && window.isSecureContext ? "yes" : "no";
+  const showDebugDetails =
+    import.meta.env.DEV || import.meta.env.VITE_DEBUG_MODE === "true";
 
   useEffect(() => {
     if (!isAdventureCapError || !serverOrigin) {
@@ -277,18 +279,19 @@ export const ConnectionDiagnostics = ({
           Warning: {serverUrlWarning}
         </Text>
       ) : null}
-      {/* TODO: Show only in Debug mode */}
-      <div className="mt-2">
-        <Text variant="note" color="iron-light">
-          Page origin: {origin}
-        </Text>
-        <Text variant="note" color="iron-light">
-          Socket URL: {serverUrl}
-        </Text>
-        <Text variant="note" color="iron-light">
-          Secure context: {secureContextLabel}
-        </Text>
-      </div>
+      {showDebugDetails ? (
+        <div className="mt-2">
+          <Text variant="note" color="iron-light">
+            Page origin: {origin}
+          </Text>
+          <Text variant="note" color="iron-light">
+            Socket URL: {serverUrl}
+          </Text>
+          <Text variant="note" color="iron-light">
+            Secure context: {secureContextLabel}
+          </Text>
+        </div>
+      ) : null}
     </Message>
   );
 };
