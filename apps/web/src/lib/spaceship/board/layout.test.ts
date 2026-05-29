@@ -10,6 +10,7 @@ import { spaceshipBoardItemId } from "./geometry";
 import { createSpaceshipBoardLayout } from "./layout";
 import {
   createSpaceshipDragState,
+  dropSpaceshipCardOnTrashTarget,
   insertSpaceshipCardIntoLayout,
   moveSpaceshipCardFromDragOrigin,
   removeSpaceshipCardFromLayouts,
@@ -34,6 +35,31 @@ test("createSpaceshipBoardItems creates board entries for ship backgrounds, loca
   assert.ok(
     ids.has(spaceshipBoardItemId.actorEffectCard("actor-machinist", "injury", 0)),
   );
+});
+
+test("createSpaceshipBoardItems omits trash-removed effect cards from the board", () => {
+  const dragState = createSpaceshipDragState(spaceshipScene);
+  const removed = dropSpaceshipCardOnTrashTarget(
+    dragState,
+    spaceshipBoardItemId.effectCard("reactor-distress", 0),
+  );
+  const items = createSpaceshipBoardItems(spaceshipScene, removed.state);
+  const ids = new Set(items.map((item) => item.id));
+
+  assert.equal(ids.has(spaceshipBoardItemId.effectCard("reactor-distress", 0)), false);
+  assert.equal(ids.has(spaceshipBoardItemId.location("player-reactor")), true);
+});
+
+test("createSpaceshipBoardLayout does not resurrect trash-removed effect cards", () => {
+  const dragState = createSpaceshipDragState(spaceshipScene);
+  const removed = dropSpaceshipCardOnTrashTarget(
+    dragState,
+    spaceshipBoardItemId.effectCard("reactor-distress", 0),
+  );
+  const layout = createSpaceshipBoardLayout(spaceshipScene, removed.state);
+  const ids = new Set(layout.placements.map((placement) => placement.id));
+
+  assert.equal(ids.has(spaceshipBoardItemId.effectCard("reactor-distress", 0)), false);
 });
 
 test("createSpaceshipBoardLayout places each ship background behind its ship content", () => {

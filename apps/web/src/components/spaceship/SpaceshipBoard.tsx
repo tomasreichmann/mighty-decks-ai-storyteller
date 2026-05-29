@@ -14,7 +14,11 @@ import type {
   SpaceshipScene,
 } from "../../lib/spaceship/scene/types";
 import type { SpaceshipDragState } from "../../lib/spaceship/drag/types";
-import type { BoardBounds, BoardPoint } from "../../lib/board/boardController";
+import type {
+  BoardBounds,
+  BoardPoint,
+  BoardViewport,
+} from "../../lib/board/boardController";
 import { worldToFrame } from "../../lib/board/boardController";
 import {
   applySpaceshipCardLiveSnap,
@@ -56,15 +60,28 @@ import {
 import { cn } from "../../utils/cn";
 import { Board } from "../board/Board";
 import { BoardFrame } from "../board/BoardFrame";
-import { BoardProvider, useBoard } from "../board/BoardProvider";
+import {
+  BoardProvider,
+  useBoard,
+  type BoardController,
+} from "../board/BoardProvider";
 import { Button } from "../common/Button";
 import { Text } from "../common/Text";
 import { SpaceshipBoardItem } from "./SpaceshipBoardItem";
+
+export type SpaceshipBoardExternalController = Pick<
+  BoardController,
+  "fitItems" | "focusItem" | "getSnapshot" | "setViewport"
+>;
 
 interface SpaceshipBoardProps {
   scene: SpaceshipScene;
   dragState: SpaceshipDragState;
   onDragStateChange: Dispatch<SetStateAction<SpaceshipDragState>>;
+  onControllerChange?: (
+    controller: SpaceshipBoardExternalController | null,
+  ) => void;
+  initialViewport?: BoardViewport;
   actionSlot?: ReactNode;
   className?: string;
 }
@@ -196,6 +213,7 @@ const SpaceshipBoardCanvas = ({
   onItemDragActiveChange,
   onTrashTargetActiveChange,
   getFramePoint,
+  skipInitialFit,
 }: {
   scene: SpaceshipScene;
   dragState: SpaceshipDragState;
@@ -203,6 +221,7 @@ const SpaceshipBoardCanvas = ({
   onItemDragActiveChange: (active: boolean) => void;
   onTrashTargetActiveChange: (active: boolean) => void;
   getFramePoint: (point: { clientX: number; clientY: number }) => BoardPoint;
+  skipInitialFit?: boolean;
 }): JSX.Element => {
   const controller = useBoard();
   const didInitialLayout = useRef(false);
@@ -261,10 +280,34 @@ const SpaceshipBoardCanvas = ({
     () => layout.placements.map((placement) => placement.id),
     [layout],
   );
+  const desiredItems = useMemo(
+    () => createSpaceshipBoardItems(scene, dragState),
+    [dragState, scene],
+  );
+  const desiredItemIds = useMemo(
+    () =>
+      new Set(
+        desiredItems.flatMap((item) => (item.id ? [item.id] : [])),
+      ),
+    [desiredItems],
+  );
+  const previousDesiredItemIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     dragStateRef.current = dragState;
   }, [dragState]);
+
+  useEffect(() => {
+    const previousDesiredItemIds = previousDesiredItemIdsRef.current;
+    previousDesiredItemIds.forEach((itemId) => {
+      if (!desiredItemIds.has(itemId)) {
+        controller.removeItem(itemId);
+      }
+    });
+    previousDesiredItemIdsRef.current = desiredItemIds;
+
+    desiredItems.forEach((item) => controller.upsertItem(item));
+  }, [controller, desiredItemIds, desiredItems]);
 
   useEffect(() => {
     if (didInitialLayout.current) {
@@ -273,10 +316,12 @@ const SpaceshipBoardCanvas = ({
 
     didInitialLayout.current = true;
     controller.applyLayout(layout);
-    window.requestAnimationFrame(() => {
-      controller.fitItems(layoutItemIds, { smooth: true, durationMs: 260 });
-    });
-  }, [controller, layout, layoutItemIds]);
+    if (!skipInitialFit) {
+      window.requestAnimationFrame(() => {
+        controller.fitItems(layoutItemIds, { smooth: true, durationMs: 260 });
+      });
+    }
+  }, [controller, layout, layoutItemIds, skipInitialFit]);
 
   useEffect(() => {
     if (
@@ -290,8 +335,10 @@ const SpaceshipBoardCanvas = ({
 
     didMeasuredLayout.current = true;
     controller.applyLayout(layout, { smooth: true, durationMs: 220 });
-    controller.fitItems(layoutItemIds, { smooth: true, durationMs: 220 });
-  }, [controller, controller.items, layout, layoutItemIds]);
+    if (!skipInitialFit) {
+      controller.fitItems(layoutItemIds, { smooth: true, durationMs: 220 });
+    }
+  }, [controller, controller.items, layout, layoutItemIds, skipInitialFit]);
 
   useEffect(() => {
     const shouldAnimateLayoutReflow =
@@ -771,9 +818,9 @@ const SpaceshipBoardCanvas = ({
             synced,
             activeDrag.itemId,
           );
-          removeBoardItems(controller, result.removedItemIds);
           dragStateRef.current = result.state;
           onDragStateChange(result.state);
+          removeBoardItems(controller, result.removedItemIds);
           return;
         }
         const nextState =
@@ -816,9 +863,9 @@ const SpaceshipBoardCanvas = ({
           synced,
           activeDrag.tokenId,
         );
-        removeBoardItems(controller, result.removedItemIds);
         dragStateRef.current = result.state;
         onDragStateChange(result.state);
+        removeBoardItems(controller, result.removedItemIds);
         return;
       }
       const isEnergyStackDrop =
@@ -973,10 +1020,40 @@ const SpaceshipBoardHeader = ({
   );
 };
 
+const SpaceshipBoardControllerBridge = ({
+  onControllerChange,
+}: {
+  onControllerChange?: (
+    controller: SpaceshipBoardExternalController | null,
+  ) => void;
+}): null => {
+  const controller = useBoard();
+  const externalController = useMemo<SpaceshipBoardExternalController>(
+    () => ({
+      fitItems: controller.fitItems,
+      focusItem: controller.focusItem,
+      getSnapshot: controller.getSnapshot,
+      setViewport: controller.setViewport,
+    }),
+    [controller],
+  );
+
+  useEffect(() => {
+    onControllerChange?.(externalController);
+    return () => {
+      onControllerChange?.(null);
+    };
+  }, [externalController, onControllerChange]);
+
+  return null;
+};
+
 export const SpaceshipBoard = ({
   scene,
   dragState,
   onDragStateChange,
+  onControllerChange,
+  initialViewport,
   actionSlot,
   className,
 }: SpaceshipBoardProps): JSX.Element => {
@@ -1005,7 +1082,14 @@ export const SpaceshipBoard = ({
         className,
       )}
     >
-      <BoardProvider boardSize={spaceshipBoardSize} initialItems={initialItems}>
+      <BoardProvider
+        boardSize={spaceshipBoardSize}
+        initialItems={initialItems}
+        initialViewport={initialViewport}
+      >
+        <SpaceshipBoardControllerBridge
+          onControllerChange={onControllerChange}
+        />
         <SpaceshipBoardHeader
           scene={scene}
           dragState={dragState}
@@ -1022,6 +1106,7 @@ export const SpaceshipBoard = ({
             onItemDragActiveChange={setIsItemDragActive}
             onTrashTargetActiveChange={setIsTrashTargetActive}
             getFramePoint={getFramePoint}
+            skipInitialFit={Boolean(initialViewport)}
           />
           <SpaceshipTrashFrameTarget
             active={isTrashTargetActive}

@@ -116,6 +116,15 @@ test("SpaceshipBoard wires all unlimited effect dispenser slugs", () => {
   assert.doesNotMatch(source, /icon: "\?"/);
 });
 
+test("SpaceshipBoard prunes stale board items before upserting the desired set", () => {
+  const source = readBoardSource();
+
+  assert.match(source, /previousDesiredItemIdsRef/);
+  assert.match(source, /previousDesiredItemIds\.forEach/);
+  assert.match(source, /if \(!desiredItemIds\.has\(itemId\)\)[\s\S]*controller\.removeItem\(itemId\)/);
+  assert.match(source, /previousDesiredItemIdsRef\.current = desiredItemIds/);
+});
+
 test("SpaceshipBoard registers spawned effect cards with the board controller immediately", () => {
   const source = readBoardSource();
 
@@ -273,5 +282,14 @@ test("SpaceshipBoard shows the live board zoom in the header", () => {
   assert.match(source, /viewport\.zoom \* 100/);
   assert.match(source, /Zoom/);
   assert.match(source, /useBoard\(\)/);
+});
+
+test("SpaceshipBoard can start from a restored viewport without auto-fitting", () => {
+  const source = readBoardSource();
+
+  assert.match(source, /initialViewport/);
+  assert.match(source, /skipInitialFit/);
+  assert.match(source, /setViewport: controller\.setViewport/);
+  assert.match(source, /<BoardProvider[\s\S]*initialViewport=\{initialViewport\}/);
 });
 

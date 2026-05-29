@@ -11,3 +11,4 @@ export * from "./adventureModuleAuthoring";
 export * from "./events";
 export * from "./imageGeneration";
 export * from "./workflowLab";
+export * from "./spaceshipBoardState";

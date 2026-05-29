@@ -1,79 +1,38 @@
 # 19 - Contributor Styleguide
 
-This is the short reference for repo conventions already used across the codebase.
+This is the compact repo reference that sits alongside `AGENTS.md`.
 
-Use it alongside `AGENTS.md` and `README.md`. If instructions conflict, `AGENTS.md` wins.
+## Shared-contract flow
 
----
+- Read the relevant `docs/` and `spec/` files before changing behavior.
+- Use targeted search first; avoid loading unrelated logs, generated output, or assets.
+- Implement changes vertically: `spec` -> server -> client state -> UI.
+- If you edit `spec/` directly, rerun `pnpm -C spec build`.
 
-## 1. Work from shared contracts outward
+## Coding baseline
 
-- Read the relevant `docs/` and `spec/` files before changing behavior. Use targeted search first instead of bulk-loading unrelated docs, generated output, logs, dist files, or image assets.
-- Shared contracts live in `spec/*.ts` and are imported by both web and server.
-- Implement behavior changes as vertical slices: `spec` -> server -> client state -> UI.
-- If you edit `spec/` directly while using split commands, rerun `pnpm -C spec build`.
+- Use strict TypeScript and keep modules small.
+- Avoid `any` unless the boundary genuinely needs it.
+- Prefer pure helpers, clear names, and runtime validation where Zod already exists.
+- Keep UI presentational and orchestration/server logic separate.
 
----
+## Repo habits
 
-## 2. Keep TypeScript explicit and modules small
+- Use `Adventure` terminology; do not add `room` aliases.
+- Keep public and debug payloads explicit.
+- Update docs and `CHANGELOG.md` when behavior, routes, env vars, or workflow change.
+- Keep comments short and intentional.
 
-- Use TypeScript everywhere and keep strict typing intact.
-- Avoid `any` unless the boundary genuinely requires it and the reason is clear.
-- Prefer pure helpers, focused modules, and names that explain intent.
-- Keep runtime validation at boundaries when Zod schemas already exist.
-- Avoid new dependencies unless they clearly reduce MVP complexity.
+## Repo-local skills
 
----
+- `adventure-authoring-cli` for Adventure Modules or Campaigns from the terminal.
+- `mighty-decks-vertical-slice` for changes crossing `spec`, server, web, docs, or changelog.
+- `mighty-decks-ui-patterns` for web UI, styleguide, shared components, board/table, `/board`, and `/spaceship`.
+- `mighty-decks-rules` for gameplay, adventure, encounter, card, effect, counter, scene pacing, and ship-combat decisions.
 
-## 3. Follow the established UI and server split
+## Verification
 
-- Keep UI components presentational; move orchestration, persistence, and async coordination into hooks or server-side modules.
-- Reuse shared UI primitives such as `Button`, and keep player-facing surfaces narration-first instead of dashboard-heavy.
-- Wrap brittle route shells, large sections, and card renderers in local error boundaries so a single crash does not take down the whole page.
-- Treat the server as authoritative for adventure state, phase changes, scenes, transcripts, and hidden/debug data.
-- Prefer retry-safe and idempotent handlers where practical, especially for toggles, votes, and async lookups.
-
----
-
-## 4. Use repo-native naming and documentation habits
-
-- Use `Adventure` terminology in routes, events, and state; do not introduce `room` aliases.
-- Keep public and debug payloads explicit instead of relying on implicit filtering.
-- Update relevant docs in the same change when behavior, routes, env vars, deployment, or contributor workflow changes.
-- Update `CHANGELOG.md` under `## [Unreleased]` with concise `Added`, `Changed`, `Fixed`, or `Docs` bullets when the change matters to players, operators, or future contributors.
-
----
-
-## 5. Keep comments and JSDoc intentional
-
-- Prefer self-explanatory code first.
-- Use short inline comments for invariants, recovery paths, tricky effects, or non-obvious control flow.
-- Use JSDoc for helpers with contract-like behavior worth documenting, such as inputs, outputs, fallback behavior, or subtle constraints.
-- Do not leave tool- or agent-branded notes in checked-in code.
-- When a component renders a root element with a `className`, start the class list with a component-name token in kebab-case so the root is easy to search and visually identify in code review. Apply this to new shared components and to updated shared components when you touch them.
-
----
-
-## 6. Repo-local skills
-
-- Use `adventure-authoring-cli` when inspecting or editing Adventure Modules or Campaigns from the terminal.
-- Use `mighty-decks-vertical-slice` for behavior that crosses `spec`, server, web, docs, or changelog.
-- Use `mighty-decks-ui-patterns` for web UI, styleguide, shared components, board/table, `/board`, and `/spaceship` work.
-- Use `mighty-decks-rules` for gameplay, adventure, encounter, card, effect, counter, scene pacing, and ship-combat decisions.
-
----
-
-## 7. Default verification commands
-
-- Agent-first checks with capped terminal output:
-  - `pnpm check:agent`
-  - `pnpm test:agent`
-  - `pnpm build:agent`
-- `pnpm typecheck`
-- `pnpm -C apps/server test`
-- `pnpm build`
-- `pnpm dev`
-- `pnpm -C apps/server dev`
-- `pnpm -C apps/web dev --host`
-- Agent runs should summarize raw install/build/test output and reference the full local log under `.agent-logs/` instead of pasting noisy output into context.
-- Style-only changes usually do not need new automated tests; avoid brittle class-name or DOM-structure assertions unless the change also affects behavior or a public contract.
+- Prefer `pnpm check:agent`, `pnpm test:agent`, and `pnpm build:agent` first.
+- Use narrow checks before full `typecheck`, `test`, or `build`.
+- Use `webapp-testing` only when a change needs browser verification of behavior, interactions, or runtime bugs; skip it for cosmetic-only or content-only edits unless you need to confirm a regression in a real browser.
+- Summarize results instead of pasting raw logs.

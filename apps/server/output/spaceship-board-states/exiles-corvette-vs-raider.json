@@ -1,0 +1,2552 @@
+{
+  "version": 1,
+  "stateId": "exiles-corvette-vs-raider",
+  "name": "Exiles Corvette vs Raider",
+  "updatedAtIso": "2026-05-20T10:07:38.066Z",
+  "scene": {
+    "sceneId": "scene-exiles-ship-prototype",
+    "title": "Exiles Ship Combat Mockup",
+    "subtitle": "",
+    "panes": [
+      {
+        "paneId": "pane-player",
+        "title": "Exiles Corvette",
+        "subtitle": "Derelict corvette held together by ritual, frost, and stubborn crew.",
+        "backgroundImageUrl": "/api/adventure-artifacts/exiles-corvette.png",
+        "faction": "Crew",
+        "emphasis": "player",
+        "hullPoints": 8,
+        "hullDamage": 3,
+        "generatorLevel": 5,
+        "rangeBand": "near",
+        "detectionPower": 1,
+        "cloakingPower": 0,
+        "locations": [
+          {
+            "locationId": "player-docking-bay",
+            "title": "Docking Bay",
+            "locationType": "docking-bay",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "docking-bay",
+            "summary": "Imperial shuttle still latched to the scarred lock.",
+            "status": "Boarding option held in reserve.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/docking-bay-63de54ac4b3c469379e9.png",
+            "lastTouchedOrder": 1
+          },
+          {
+            "locationId": "player-reactor",
+            "title": "Reactor",
+            "locationType": "reactor",
+            "level": 2,
+            "row": "top",
+            "moduleLocationSlug": "reactor",
+            "summary": "Minimal output, one line feeding life support.",
+            "status": "1 PU online, fuel gone, overdrive tempting.",
+            "effects": [],
+            "energyTokens": [
+              {
+                "tokenId": "reactor-energy",
+                "label": "1",
+                "detail": "Active power",
+                "locationId": "player-reactor"
+              }
+            ],
+            "actorTokens": [
+              {
+                "tokenId": "actor-machinist-token",
+                "label": "Machinist",
+                "imageUrl": "/api/adventure-artifacts/machinist-priest-profile-ec92bc7e9074ab3a50ec.png",
+                "title": "Reactor",
+                "subtitle": "Routing power",
+                "tone": "gold",
+                "locationId": "player-reactor"
+              }
+            ],
+            "imageUrl": "/api/adventure-artifacts/reactor-99836c3e8add9c720018.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "player-reactor-device",
+              "title": "Reactor",
+              "type": "reactor",
+              "level": 2,
+              "damage": 0,
+              "used": false,
+              "maxPower": 2,
+              "powerTokens": [
+                {
+                  "tokenId": "reactor-energy",
+                  "label": "1",
+                  "detail": "Active power",
+                  "locationId": "player-reactor"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Reactor",
+                "nounDescription": "Ship power heart for routing Power, overrides, and risky cascade choices.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/reactor-device.png"
+              }
+            },
+            "lastTouchedOrder": 2
+          },
+          {
+            "locationId": "player-engines",
+            "title": "Engines",
+            "locationType": "engine-room",
+            "level": 2,
+            "row": "top",
+            "moduleLocationSlug": "engines",
+            "summary": "Cold thrusters waiting for power and a real pilot.",
+            "status": "Unpowered, maneuvering only if fed.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/engine-room-e8d353054b6ec0d933a4.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "player-engines-device",
+              "title": "Engines",
+              "type": "engines",
+              "level": 2,
+              "damage": 0,
+              "used": false,
+              "maxPower": 2,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Engines",
+                "nounDescription": "Drive system that controls range pressure and risky overdrive output.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/engines-device.png"
+              }
+            },
+            "lastTouchedOrder": 3
+          },
+          {
+            "locationId": "player-spin-drive",
+            "title": "Spin Drive",
+            "locationType": "spin-drive",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "spin-drive",
+            "summary": "Five turns from escape, if the rings stay intact.",
+            "status": "Charging sequence stalled.",
+            "effects": [
+              {
+                "effectId": "spin-freezing",
+                "type": "freezing",
+                "label": "Freezing",
+                "detail": "Pressure outside the hull keeps climbing.",
+                "count": 1
+              }
+            ],
+            "energyTokens": [
+              {
+                "tokenId": "spin-energy",
+                "label": "1",
+                "detail": "Charge line",
+                "locationId": "player-spin-drive"
+              }
+            ],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/spin-drive-0272c9d7519a20661052.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "player-spin-drive-device",
+              "title": "Spin Drive",
+              "type": "spin-drive",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 1,
+              "powerTokens": [
+                {
+                  "tokenId": "spin-energy",
+                  "label": "1",
+                  "detail": "Charge line",
+                  "locationId": "player-spin-drive"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Spin Drive",
+                "nounDescription": "Interstellar travel drive that charges over multiple powered rounds.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/spin-drive-device.png"
+              }
+            },
+            "lastTouchedOrder": 4
+          },
+          {
+            "locationId": "player-weapon-station",
+            "title": "Weapon Station",
+            "locationType": "weapons-station",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "weapon-station",
+            "summary": "One surviving laser array and a half-burned capacitor.",
+            "status": "Single shot lane only.",
+            "effects": [],
+            "energyTokens": [
+              {
+                "tokenId": "weapon-energy",
+                "label": "1",
+                "detail": "Spent laser feed locked until End of Round",
+                "locationId": "player-weapon-station",
+                "state": "spent"
+              }
+            ],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/weapons-station-436da3cb55bbcb0d221c.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "player-weapon-station-device",
+              "title": "Weapon Turret",
+              "type": "weapon-turret",
+              "level": 1,
+              "damage": 1,
+              "used": true,
+              "maxPower": 1,
+              "powerTokens": [
+                {
+                  "tokenId": "weapon-energy",
+                  "label": "1",
+                  "detail": "Spent laser feed locked until End of Round",
+                  "locationId": "player-weapon-station",
+                  "state": "spent"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Weapon Turret",
+                "nounDescription": "Powered ship weapon station for attacking ships or defending from missiles.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/weapon-turret-device.png"
+              }
+            },
+            "lastTouchedOrder": 5
+          },
+          {
+            "locationId": "player-missile-bay",
+            "title": "Missile Bay",
+            "locationType": "missile-bay",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "missile-bay",
+            "summary": "No missiles loaded, but enough scrap for one ugly shell.",
+            "status": "Manual loading only.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/missile-bay-97234afe5d3d668c403b.png",
+            "device": {
+              "deviceId": "player-missile-bay-device",
+              "title": "Missile Bay",
+              "type": "missile-bay",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 0,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Missile Bay",
+                "nounDescription": "Munition station where crews craft, load, arm, and target missiles.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/missile-bay-device.png"
+              }
+            },
+            "lastTouchedOrder": 6
+          },
+          {
+            "locationId": "player-sealed-corridor",
+            "title": "Sealed Corridor",
+            "locationType": "sealed-corridor",
+            "level": 1,
+            "row": "bottom",
+            "moduleLocationSlug": "sealed-corridor",
+            "summary": "Hard seals, scratch marks, and the promise of more rooms.",
+            "status": "Locked down until heavier tools arrive.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [
+              {
+                "tokenId": "actor-veteran-token",
+                "label": "Veteran",
+                "imageUrl": "/api/adventure-artifacts/augmented-veteran-male-profile-f520a85de6d856aee8ae.png",
+                "title": "Sealed Corridor",
+                "subtitle": "Holding line",
+                "tone": "fire",
+                "locationId": "player-sealed-corridor"
+              }
+            ],
+            "imageUrl": "/api/adventure-artifacts/elevator-0bad159122ccb9891981.png",
+            "lastTouchedOrder": 7
+          },
+          {
+            "locationId": "player-crew-quarters",
+            "title": "Crew Quarters",
+            "locationType": "crew-quarters",
+            "level": 1,
+            "row": "bottom",
+            "moduleLocationSlug": "crew-quarters",
+            "summary": "Eight bunks, one corpse, one missing key.",
+            "status": "Still unpressurized.",
+            "effects": [
+              {
+                "effectId": "quarters-freezing",
+                "type": "freezing",
+                "label": "Freezing",
+                "detail": "Vacuum frost lingers behind the hatch.",
+                "count": 1
+              }
+            ],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/crew-quarters-fb4b60ee93280b0a8dca.png",
+            "device": {
+              "deviceId": "player-crew-quarters-device",
+              "title": "Workbench",
+              "type": "workbench",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 0,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Workbench",
+                "nounDescription": "Repair and fabrication station for specialized shipboard crafting.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/workbench-device.png"
+              }
+            },
+            "lastTouchedOrder": 8
+          },
+          {
+            "locationId": "player-life-support",
+            "title": "Life Support",
+            "locationType": "life-support",
+            "level": 2,
+            "row": "bottom",
+            "moduleLocationSlug": "life-support",
+            "summary": "Pressure, heat, and water routing all bottleneck here.",
+            "status": "Barely breathable ship-wide.",
+            "effects": [],
+            "energyTokens": [
+              {
+                "tokenId": "life-support-energy",
+                "label": "1",
+                "detail": "Air loop",
+                "locationId": "player-life-support"
+              }
+            ],
+            "actorTokens": [
+              {
+                "tokenId": "actor-medic-token",
+                "label": "Medic",
+                "imageUrl": "/api/adventure-artifacts/robot-surgeon-male-profile-dea30fb20cdbdfbce28d.png",
+                "title": "Life Support",
+                "subtitle": "Repressurizing",
+                "tone": "monster",
+                "locationId": "player-life-support"
+              }
+            ],
+            "imageUrl": "/api/adventure-artifacts/life-support-7cc06593453ccad5dd9c.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "player-life-support-device",
+              "title": "Life Support",
+              "type": "life-support",
+              "level": 2,
+              "damage": 0,
+              "used": false,
+              "maxPower": 2,
+              "powerTokens": [
+                {
+                  "tokenId": "life-support-energy",
+                  "label": "1",
+                  "detail": "Air loop",
+                  "locationId": "player-life-support"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Life Support",
+                "nounDescription": "Atmosphere, pressure, temperature, gravity, and door-control system.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/life-support-device.png"
+              }
+            },
+            "lastTouchedOrder": 9
+          },
+          {
+            "locationId": "player-cockpit",
+            "title": "Cockpit",
+            "locationType": "cockpit",
+            "level": 1,
+            "row": "bottom",
+            "moduleLocationSlug": "cockpit",
+            "summary": "Navigation cradle, evasive lane, and a broken orientation dial.",
+            "status": "Pilot station clear.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/cockpit-435a2f81c0be0c184b58.png",
+            "device": {
+              "deviceId": "player-cockpit-device",
+              "title": "Flight Controls",
+              "type": "flight-controls",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 0,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Flight Controls",
+                "nounDescription": "Pilot station for dodging, range changes, target locks, and positional Boosts.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/flight-controls-device.png"
+              }
+            },
+            "lastTouchedOrder": 10
+          },
+          {
+            "locationId": "player-sensor-array",
+            "title": "Sensor Array",
+            "locationType": "sensor-array",
+            "level": 1,
+            "row": "bottom",
+            "moduleLocationSlug": "sensor-array",
+            "summary": "Contact map, breach alarms, and a haunted lifesign feed.",
+            "status": "Calibration pending.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [
+              {
+                "tokenId": "actor-seer-token",
+                "label": "Void-seer",
+                "imageUrl": "/api/adventure-artifacts/void-seer-male-profile-068f166010f79cfded63.png",
+                "title": "Sensor Array",
+                "subtitle": "Reading echoes",
+                "tone": "cloth",
+                "locationId": "player-sensor-array"
+              }
+            ],
+            "imageUrl": "/api/adventure-artifacts/sensor-array-b8329e59ab1bed4cfeae.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "player-sensor-array-device",
+              "title": "Sensors",
+              "type": "sensors",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 1,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Sensors",
+                "nounDescription": "Scanner and electronic warfare station for Detection, Cloaking, and target locks.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/sensors-device.png"
+              }
+            },
+            "lastTouchedOrder": 11
+          },
+          {
+            "locationId": "player-cargo-hold",
+            "title": "Cargo Hold",
+            "locationType": "cargo-hold",
+            "level": 1,
+            "row": "bottom",
+            "moduleLocationSlug": "cargo-hold",
+            "summary": "Rations, scavenged parts, and nowhere near enough margin.",
+            "status": "Supply stack stable.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/cargo-hold-202afa0e160b9f892887.png",
+            "lastTouchedOrder": 12
+          }
+        ],
+        "actors": [
+          {
+            "actorId": "actor-machinist",
+            "name": "Machinist-Priest",
+            "callout": "Reactor rites and patchwork miracles.",
+            "baseLayerSlug": "cog",
+            "tacticalRoleSlug": "champion",
+            "customCard": {
+              "imageUrl": "/api/adventure-artifacts/machinist-priest-profile-ec92bc7e9074ab3a50ec.png",
+              "adjective": "",
+              "noun": "Machinist-Priest Heretic",
+              "nounDescription": "An exiled engineer-priest who treats forbidden machine communion as holy work.",
+              "adjectiveDescription": "Machine Speaker\nServo-Arms\nSpecialized Augments"
+            },
+            "token": {
+              "tokenId": "actor-machinist-token",
+              "label": "Machinist",
+              "imageUrl": "/api/adventure-artifacts/machinist-priest-profile-ec92bc7e9074ab3a50ec.png",
+              "title": "Reactor",
+              "subtitle": "Routing power",
+              "tone": "gold"
+            },
+            "injuryCount": 0,
+            "distressCount": 0,
+            "lastTouchedOrder": 1
+          },
+          {
+            "actorId": "actor-veteran",
+            "name": "Augmented Veteran",
+            "callout": "Keeps the corridor sealed and the crew upright.",
+            "baseLayerSlug": "bruiser_red",
+            "tacticalRoleSlug": "brute",
+            "customCard": {
+              "imageUrl": "/api/adventure-artifacts/augmented-veteran-male-profile-f520a85de6d856aee8ae.png",
+              "adjective": "",
+              "noun": "Augmented Veteran",
+              "nounDescription": "A battle-scarred Legion deserter rebuilt for war and stubborn survival.",
+              "adjectiveDescription": "Weapon Proficiency\nAugmented Body\nPain Inhibitor"
+            },
+            "token": {
+              "tokenId": "actor-veteran-token",
+              "label": "Veteran",
+              "imageUrl": "/api/adventure-artifacts/augmented-veteran-male-profile-f520a85de6d856aee8ae.png",
+              "title": "Sealed Corridor",
+              "subtitle": "Holding line",
+              "tone": "fire"
+            },
+            "injuryCount": 0,
+            "distressCount": 0,
+            "lastTouchedOrder": 2
+          },
+          {
+            "actorId": "actor-seer",
+            "name": "Void-seer",
+            "callout": "Surveys the black and counts the seconds to jump.",
+            "baseLayerSlug": "manipulator",
+            "tacticalRoleSlug": "ranger",
+            "customCard": {
+              "imageUrl": "/api/adventure-artifacts/void-seer-male-profile-068f166010f79cfded63.png",
+              "adjective": "",
+              "noun": "Void-seer",
+              "nounDescription": "A navigator-mystic who reads the Void and bends space just enough to survive it.",
+              "adjectiveDescription": "Certified Navigator\nSpace Folding\nGravity Manipulation"
+            },
+            "token": {
+              "tokenId": "actor-seer-strip-token",
+              "label": "Void-seer",
+              "imageUrl": "/api/adventure-artifacts/void-seer-male-profile-068f166010f79cfded63.png",
+              "title": "Sensor Array",
+              "subtitle": "Reading echoes",
+              "tone": "cloth"
+            },
+            "injuryCount": 0,
+            "distressCount": 0,
+            "lastTouchedOrder": 3
+          },
+          {
+            "actorId": "actor-medic",
+            "name": "Synthetic Medic",
+            "callout": "Keeping the air and blood in the same places.",
+            "baseLayerSlug": "healer",
+            "tacticalRoleSlug": "ranger",
+            "customCard": {
+              "imageUrl": "/api/adventure-artifacts/robot-surgeon-male-profile-dea30fb20cdbdfbce28d.png",
+              "adjective": "",
+              "noun": "Synthetic Medic",
+              "nounDescription": "An illegal sentient intelligence piloting a medic shell and looking for purpose.",
+              "adjectiveDescription": "Knowledge Base\nExpert Doctor\nVacuum Tolerance"
+            },
+            "token": {
+              "tokenId": "actor-medic-token",
+              "label": "Medic",
+              "imageUrl": "/api/adventure-artifacts/robot-surgeon-male-profile-dea30fb20cdbdfbce28d.png",
+              "title": "Life Support",
+              "subtitle": "Repressurizing",
+              "tone": "monster"
+            },
+            "injuryCount": 0,
+            "distressCount": 0,
+            "lastTouchedOrder": 4
+          }
+        ]
+      },
+      {
+        "paneId": "pane-pirate",
+        "title": "Xithrax Raider",
+        "subtitle": "Stolen corvette pushing a transport through the rocks.",
+        "backgroundImageUrl": "/api/adventure-artifacts/pirate-corvette.png",
+        "faction": "Pirates",
+        "emphasis": "enemy",
+        "hullPoints": 6,
+        "hullDamage": 2,
+        "generatorLevel": 4,
+        "rangeBand": "near",
+        "detectionPower": 0,
+        "cloakingPower": 1,
+        "locations": [
+          {
+            "locationId": "pirate-docking-bay",
+            "title": "Docking Bay",
+            "locationType": "docking-bay",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "pirate-docking-bay",
+            "summary": "A stripped bay ready for looting runs, not comfort.",
+            "status": "Breaching hooks primed.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/docking-bay-63de54ac4b3c469379e9.png",
+            "lastTouchedOrder": 13
+          },
+          {
+            "locationId": "pirate-cargo-hold",
+            "title": "Cargo Hold",
+            "locationType": "cargo-hold",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "pirate-cargo-hold",
+            "summary": "Loot cages and scorched crates rattle with every turn.",
+            "status": "Spoils unsecured.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/cargo-hold-202afa0e160b9f892887.png",
+            "lastTouchedOrder": 14
+          },
+          {
+            "locationId": "pirate-crew-quarters",
+            "title": "Crew Quarters",
+            "locationType": "crew-quarters",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "pirate-crew-quarters",
+            "summary": "Skeleton crew, idle bunks, and bodies that stopped moving.",
+            "status": "Life signs low.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/crew-quarters-fb4b60ee93280b0a8dca.png",
+            "device": {
+              "deviceId": "pirate-crew-quarters-device",
+              "title": "Workbench",
+              "type": "workbench",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 0,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Workbench",
+                "nounDescription": "Repair and fabrication station for specialized shipboard crafting.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/workbench-device.png"
+              }
+            },
+            "lastTouchedOrder": 15
+          },
+          {
+            "locationId": "pirate-spin-drive",
+            "title": "Spin Drive",
+            "locationType": "spin-drive",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "pirate-spin-drive",
+            "summary": "Their escape route stays one powering cycle away.",
+            "status": "Charging under pressure.",
+            "effects": [],
+            "energyTokens": [
+              {
+                "tokenId": "pirate-spin-energy",
+                "label": "1",
+                "detail": "Charge line",
+                "locationId": "pirate-spin-drive"
+              }
+            ],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/spin-drive-0272c9d7519a20661052.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "pirate-spin-drive-device",
+              "title": "Spin Drive",
+              "type": "spin-drive",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 1,
+              "powerTokens": [
+                {
+                  "tokenId": "pirate-spin-energy",
+                  "label": "1",
+                  "detail": "Charge line",
+                  "locationId": "pirate-spin-drive"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Spin Drive",
+                "nounDescription": "Interstellar travel drive that charges over multiple powered rounds.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/spin-drive-device.png"
+              }
+            },
+            "lastTouchedOrder": 16
+          },
+          {
+            "locationId": "pirate-engine-room",
+            "title": "Engine Room",
+            "locationType": "engine-room",
+            "level": 1,
+            "row": "top",
+            "moduleLocationSlug": "pirate-engine-room",
+            "summary": "Damaged engines still bully the transport through the rocks.",
+            "status": "Running hot in the asteroid field.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/engine-room-e8d353054b6ec0d933a4.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "pirate-engine-room-device",
+              "title": "Engines",
+              "type": "engines",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 1,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Engines",
+                "nounDescription": "Drive system that controls range pressure and risky overdrive output.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/engines-device.png"
+              }
+            },
+            "lastTouchedOrder": 17
+          },
+          {
+            "locationId": "pirate-reactor",
+            "title": "Reactor",
+            "locationType": "reactor",
+            "level": 2,
+            "row": "bottom",
+            "moduleLocationSlug": "pirate-reactor",
+            "summary": "Damaged enough that the raiders alternate weapon feeds.",
+            "status": "Output unstable.",
+            "effects": [],
+            "energyTokens": [
+              {
+                "tokenId": "pirate-reactor-energy",
+                "label": "2",
+                "detail": "Core feed",
+                "locationId": "pirate-reactor"
+              }
+            ],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/reactor-99836c3e8add9c720018.png",
+            "energyCost": 2,
+            "device": {
+              "deviceId": "pirate-reactor-device",
+              "title": "Reactor",
+              "type": "reactor",
+              "level": 2,
+              "damage": 0,
+              "used": false,
+              "maxPower": 2,
+              "powerTokens": [
+                {
+                  "tokenId": "pirate-reactor-energy",
+                  "label": "2",
+                  "detail": "Core feed",
+                  "locationId": "pirate-reactor"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Reactor",
+                "nounDescription": "Ship power heart for routing Power, overrides, and risky cascade choices.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/reactor-device.png"
+              }
+            },
+            "lastTouchedOrder": 18
+          },
+          {
+            "locationId": "pirate-shield-generator",
+            "title": "Shield Generator",
+            "locationType": "shield-generator",
+            "level": 1,
+            "row": "bottom",
+            "moduleLocationSlug": "pirate-shield-generator",
+            "summary": "A thin energy skin soaking glancing laser fire.",
+            "status": "Shield shimmer visible.",
+            "effects": [],
+            "energyTokens": [
+              {
+                "tokenId": "pirate-shield-energy",
+                "label": "1",
+                "detail": "Barrier",
+                "locationId": "pirate-shield-generator"
+              }
+            ],
+            "actorTokens": [],
+            "imageUrl": "/api/adventure-artifacts/shield-generator-4cba0cdd2221c9828238.png",
+            "energyCost": 2,
+            "device": {
+              "deviceId": "pirate-shield-generator-device",
+              "title": "Shields",
+              "type": "shields",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 1,
+              "powerTokens": [
+                {
+                  "tokenId": "pirate-shield-energy",
+                  "label": "1",
+                  "detail": "Barrier",
+                  "locationId": "pirate-shield-generator"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Shields",
+                "nounDescription": "Powered shield projector for damage reduction and damage-type tuning.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/shields-device.png"
+              }
+            },
+            "lastTouchedOrder": 19
+          },
+          {
+            "locationId": "pirate-weapons-station",
+            "title": "Weapons Station",
+            "locationType": "weapons-station",
+            "level": 2,
+            "row": "bottom",
+            "moduleLocationSlug": "pirate-weapons-station",
+            "summary": "Disruptor and laser array chained into one predatory fire lane.",
+            "status": "Alternating weapon feed.",
+            "effects": [],
+            "energyTokens": [
+              {
+                "tokenId": "pirate-weapons-energy",
+                "label": "1",
+                "detail": "Spent weapon lane",
+                "locationId": "pirate-weapons-station",
+                "state": "spent"
+              }
+            ],
+            "actorTokens": [
+              {
+                "tokenId": "raider-gunner-token",
+                "label": "Raider",
+                "imageUrl": "/actors/base/animal-red.png",
+                "title": "Weapons Station",
+                "subtitle": "Target lock",
+                "tone": "fire",
+                "locationId": "pirate-weapons-station"
+              }
+            ],
+            "imageUrl": "/api/adventure-artifacts/weapons-station-436da3cb55bbcb0d221c.png",
+            "energyCost": 1,
+            "device": {
+              "deviceId": "pirate-weapons-station-device",
+              "title": "Weapon Turret",
+              "type": "weapon-turret",
+              "level": 2,
+              "damage": 1,
+              "used": true,
+              "maxPower": 2,
+              "powerTokens": [
+                {
+                  "tokenId": "pirate-weapons-energy",
+                  "label": "1",
+                  "detail": "Spent weapon lane",
+                  "locationId": "pirate-weapons-station",
+                  "state": "spent"
+                }
+              ],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Weapon Turret",
+                "nounDescription": "Powered ship weapon station for attacking ships or defending from missiles.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/weapon-turret-device.png"
+              }
+            },
+            "lastTouchedOrder": 20
+          },
+          {
+            "locationId": "pirate-cockpit",
+            "title": "Cockpit",
+            "locationType": "cockpit",
+            "level": 1,
+            "row": "bottom",
+            "moduleLocationSlug": "pirate-cockpit",
+            "summary": "A stolen corvette bridge driven on appetite and spite.",
+            "status": "Asteroid weave engaged.",
+            "effects": [],
+            "energyTokens": [],
+            "actorTokens": [
+              {
+                "tokenId": "raider-pilot-token",
+                "label": "Pilot",
+                "imageUrl": "/actors/base/animal-red.png",
+                "title": "Cockpit",
+                "subtitle": "Weaving",
+                "tone": "blood",
+                "locationId": "pirate-cockpit"
+              }
+            ],
+            "imageUrl": "/api/adventure-artifacts/cockpit-435a2f81c0be0c184b58.png",
+            "device": {
+              "deviceId": "pirate-cockpit-device",
+              "title": "Flight Controls",
+              "type": "flight-controls",
+              "level": 1,
+              "damage": 0,
+              "used": false,
+              "maxPower": 0,
+              "powerTokens": [],
+              "asset": {
+                "deck": "sci-fi",
+                "modifier": "",
+                "noun": "Flight Controls",
+                "nounDescription": "Pilot station for dodging, range changes, target locks, and positional Boosts.",
+                "adjectiveDescription": "A custom ship Device Asset card for the ship-combat prototype.",
+                "iconUrl": "/assets/spaceship/devices/flight-controls-device.png"
+              }
+            },
+            "lastTouchedOrder": 21
+          }
+        ],
+        "actors": [
+          {
+            "actorId": "actor-raider-gunner",
+            "name": "Raider Gunner",
+            "callout": "Alternates disruptor bursts with the laser lane.",
+            "baseLayerSlug": "animal_red",
+            "tacticalRoleSlug": "minion",
+            "token": {
+              "tokenId": "actor-raider-gunner-strip-token",
+              "label": "Gunner",
+              "imageUrl": "/actors/base/animal-red.png",
+              "title": "Weapons Station",
+              "subtitle": "Harassing fire",
+              "tone": "blood"
+            },
+            "injuryCount": 0,
+            "distressCount": 0,
+            "lastTouchedOrder": 1
+          },
+          {
+            "actorId": "actor-raider-pilot",
+            "name": "Raider Pilot",
+            "callout": "Cuts through the asteroid field on stolen instincts.",
+            "baseLayerSlug": "animal_red",
+            "tacticalRoleSlug": "minion",
+            "token": {
+              "tokenId": "actor-raider-pilot-strip-token",
+              "label": "Pilot",
+              "imageUrl": "/actors/base/animal-red.png",
+              "title": "Cockpit",
+              "subtitle": "Asteroid weave",
+              "tone": "fire"
+            },
+            "injuryCount": 0,
+            "distressCount": 0,
+            "lastTouchedOrder": 2
+          }
+        ]
+      }
+    ],
+    "overlay": {
+      "open": false
+    },
+    "selection": {
+      "selectedEntryIds": []
+    },
+    "zBands": {
+      "cards": [
+        "player-docking-bay",
+        "player-reactor",
+        "player-engines",
+        "player-spin-drive",
+        "player-weapon-station",
+        "player-missile-bay",
+        "player-sealed-corridor",
+        "player-crew-quarters",
+        "player-life-support",
+        "player-cockpit",
+        "player-sensor-array",
+        "player-cargo-hold",
+        "pirate-docking-bay",
+        "pirate-cargo-hold",
+        "pirate-crew-quarters",
+        "pirate-spin-drive",
+        "pirate-engine-room",
+        "pirate-reactor",
+        "pirate-shield-generator",
+        "pirate-weapons-station",
+        "pirate-cockpit"
+      ],
+      "tokens": [
+        "actor-machinist-token",
+        "actor-veteran-token",
+        "actor-medic-token",
+        "actor-seer-token",
+        "raider-gunner-token",
+        "raider-pilot-token"
+      ]
+    },
+    "cardLibrary": [
+      {
+        "entryId": "card-player-cockpit",
+        "type": "location",
+        "title": "Cockpit",
+        "category": "Player Ship",
+        "summary": "Movement, evasive maneuvers, and the best window into the chaos.",
+        "badge": "Location",
+        "imageUrl": "/api/adventure-artifacts/cockpit-435a2f81c0be0c184b58.png"
+      },
+      {
+        "entryId": "card-player-reactor",
+        "type": "location",
+        "title": "Reactor",
+        "category": "Player Ship",
+        "summary": "Power routing, overdrive, and the whole ship's pacing lever.",
+        "badge": "Location",
+        "imageUrl": "/api/adventure-artifacts/reactor-99836c3e8add9c720018.png"
+      },
+      {
+        "entryId": "card-player-freezing",
+        "type": "effect",
+        "title": "Freezing",
+        "category": "Effect",
+        "summary": "Decompression marker for hull breaches and cold-soaked rooms.",
+        "badge": "Effect",
+        "effectSlug": "freezing"
+      },
+      {
+        "entryId": "card-energy-token",
+        "type": "token",
+        "title": "Energy Token",
+        "category": "Token",
+        "summary": "Shows which system is currently being fed.",
+        "badge": "Token"
+      },
+      {
+        "entryId": "card-raider-gunner",
+        "type": "actor",
+        "title": "Raider Gunner",
+        "category": "Enemy Crew",
+        "summary": "Placeholder crew card for the pirate weapons lane.",
+        "badge": "Actor"
+      }
+    ]
+  },
+  "dragState": {
+    "layouts": {
+      "locationRows": [
+        {
+          "layoutId": "spaceship:location-row:pane-player:top",
+          "type": "location-row",
+          "paneId": "pane-player",
+          "row": "top",
+          "itemIds": [
+            "spaceship:location:player-docking-bay",
+            "spaceship:location:player-reactor",
+            "spaceship:location:player-engines",
+            "spaceship:location:player-spin-drive",
+            "spaceship:location:player-weapon-station",
+            "spaceship:location:player-missile-bay"
+          ]
+        },
+        {
+          "layoutId": "spaceship:location-row:pane-player:bottom",
+          "type": "location-row",
+          "paneId": "pane-player",
+          "row": "bottom",
+          "itemIds": [
+            "spaceship:location:player-sealed-corridor",
+            "spaceship:location:player-crew-quarters",
+            "spaceship:location:player-life-support",
+            "spaceship:location:player-cockpit",
+            "spaceship:location:player-sensor-array",
+            "spaceship:location:player-cargo-hold"
+          ]
+        },
+        {
+          "layoutId": "spaceship:location-row:pane-pirate:top",
+          "type": "location-row",
+          "paneId": "pane-pirate",
+          "row": "top",
+          "itemIds": [
+            "spaceship:location:pirate-docking-bay",
+            "spaceship:location:pirate-cargo-hold",
+            "spaceship:location:pirate-crew-quarters",
+            "spaceship:location:pirate-spin-drive",
+            "spaceship:location:pirate-engine-room"
+          ]
+        },
+        {
+          "layoutId": "spaceship:location-row:pane-pirate:bottom",
+          "type": "location-row",
+          "paneId": "pane-pirate",
+          "row": "bottom",
+          "itemIds": [
+            "spaceship:location:pirate-reactor",
+            "spaceship:location:pirate-shield-generator",
+            "spaceship:location:pirate-weapons-station",
+            "spaceship:location:pirate-cockpit"
+          ]
+        }
+      ],
+      "deviceColumns": [
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-docking-bay",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-docking-bay",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-reactor",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-reactor",
+          "itemIds": [
+            "spaceship:device:player-reactor-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-engines",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-engines",
+          "itemIds": [
+            "spaceship:device:player-engines-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-spin-drive",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-spin-drive",
+          "itemIds": [
+            "spaceship:device:player-spin-drive-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-weapon-station",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-weapon-station",
+          "itemIds": [
+            "spaceship:device:player-weapon-station-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-missile-bay",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-missile-bay",
+          "itemIds": [
+            "spaceship:device:player-missile-bay-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-sealed-corridor",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-sealed-corridor",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-crew-quarters",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-crew-quarters",
+          "itemIds": [
+            "spaceship:device:player-crew-quarters-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-life-support",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-life-support",
+          "itemIds": [
+            "spaceship:device:player-life-support-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-cockpit",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-cockpit",
+          "itemIds": [
+            "spaceship:device:player-cockpit-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-sensor-array",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-sensor-array",
+          "itemIds": [
+            "spaceship:device:player-sensor-array-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:player-cargo-hold",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:player-cargo-hold",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-docking-bay",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-docking-bay",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-cargo-hold",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-cargo-hold",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-crew-quarters",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-crew-quarters",
+          "itemIds": [
+            "spaceship:device:pirate-crew-quarters-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-spin-drive",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-spin-drive",
+          "itemIds": [
+            "spaceship:device:pirate-spin-drive-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-engine-room",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-engine-room",
+          "itemIds": [
+            "spaceship:device:pirate-engine-room-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-reactor",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-reactor",
+          "itemIds": [
+            "spaceship:device:pirate-reactor-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-shield-generator",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-shield-generator",
+          "itemIds": [
+            "spaceship:device:pirate-shield-generator-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-weapons-station",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-weapons-station",
+          "itemIds": [
+            "spaceship:device:pirate-weapons-station-device"
+          ]
+        },
+        {
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-cockpit",
+          "type": "device-column",
+          "locationItemId": "spaceship:location:pirate-cockpit",
+          "itemIds": [
+            "spaceship:device:pirate-cockpit-device"
+          ]
+        }
+      ],
+      "effectStacks": [
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-docking-bay",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-docking-bay",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-reactor",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-reactor",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-reactor-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-reactor-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-engines",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-engines",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-engines-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-engines-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-spin-drive",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-spin-drive",
+          "itemIds": [
+            "spaceship:effect-card:spin-freezing:0"
+          ]
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-spin-drive-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-spin-drive-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-weapon-station",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-weapon-station",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-weapon-station-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-weapon-station-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-missile-bay",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-missile-bay",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-missile-bay-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-missile-bay-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-sealed-corridor",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-sealed-corridor",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-crew-quarters",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-crew-quarters",
+          "itemIds": [
+            "spaceship:effect-card:quarters-freezing:0"
+          ]
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-crew-quarters-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-crew-quarters-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-life-support",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-life-support",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-life-support-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-life-support-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-cockpit",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-cockpit",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-cockpit-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-cockpit-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-sensor-array",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-sensor-array",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:player-sensor-array-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:player-sensor-array-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-cargo-hold",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:player-cargo-hold",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:actor-card:actor-machinist",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:actor-card:actor-machinist",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:actor-card:actor-veteran",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:actor-card:actor-veteran",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:actor-card:actor-seer",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:actor-card:actor-seer",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:actor-card:actor-medic",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:actor-card:actor-medic",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-docking-bay",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-docking-bay",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-cargo-hold",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-cargo-hold",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-crew-quarters",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-crew-quarters",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:pirate-crew-quarters-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:pirate-crew-quarters-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-spin-drive",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-spin-drive",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:pirate-spin-drive-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:pirate-spin-drive-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-engine-room",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-engine-room",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:pirate-engine-room-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:pirate-engine-room-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-reactor",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-reactor",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:pirate-reactor-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:pirate-reactor-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-shield-generator",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-shield-generator",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:pirate-shield-generator-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:pirate-shield-generator-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-weapons-station",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-weapons-station",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:pirate-weapons-station-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:pirate-weapons-station-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:location:pirate-cockpit",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:location:pirate-cockpit",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:device:pirate-cockpit-device",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:device:pirate-cockpit-device",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:actor-card:actor-raider-gunner",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:actor-card:actor-raider-gunner",
+          "itemIds": []
+        },
+        {
+          "layoutId": "spaceship:effect-stack:spaceship:actor-card:actor-raider-pilot",
+          "type": "effect-stack",
+          "ownerItemId": "spaceship:actor-card:actor-raider-pilot",
+          "itemIds": []
+        }
+      ],
+      "actorRows": [
+        {
+          "layoutId": "spaceship:actor-row:pane-player",
+          "type": "actor-row",
+          "paneId": "pane-player",
+          "itemIds": [
+            "spaceship:actor-card:actor-machinist",
+            "spaceship:actor-card:actor-veteran",
+            "spaceship:actor-card:actor-seer",
+            "spaceship:actor-card:actor-medic"
+          ]
+        },
+        {
+          "layoutId": "spaceship:actor-row:pane-pirate",
+          "type": "actor-row",
+          "paneId": "pane-pirate",
+          "itemIds": [
+            "spaceship:actor-card:actor-raider-gunner",
+            "spaceship:actor-card:actor-raider-pilot"
+          ]
+        }
+      ]
+    },
+    "cards": [
+      {
+        "itemId": "spaceship:location:player-docking-bay",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-docking-bay",
+        "x": 124,
+        "y": 708,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-reactor-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-reactor",
+        "x": 548,
+        "y": 238,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-reactor"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-reactor",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-reactor",
+        "x": 484,
+        "y": 708,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-engines-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-engines",
+        "x": 908,
+        "y": 366,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-engines"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-engines",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-engines",
+        "x": 844,
+        "y": 708,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-spin-drive-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-spin-drive",
+        "x": 1268,
+        "y": 238,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-spin-drive"
+        }
+      },
+      {
+        "itemId": "spaceship:effect-card:spin-freezing:0",
+        "role": "effect-card",
+        "effectType": "freezing",
+        "paneId": "pane-player",
+        "ownerId": "player-spin-drive",
+        "x": 1268,
+        "y": 580,
+        "width": 204,
+        "height": 332,
+        "zIndex": 10,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-spin-drive"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-spin-drive",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-spin-drive",
+        "x": 1204,
+        "y": 708,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-weapon-station-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-weapon-station",
+        "x": 1628,
+        "y": 238,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-weapon-station"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-weapon-station",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-weapon-station",
+        "x": 1564,
+        "y": 708,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-missile-bay-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-missile-bay",
+        "x": 1988,
+        "y": 366,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-missile-bay"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-missile-bay",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-missile-bay",
+        "x": 1924,
+        "y": 708,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:top"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-sealed-corridor",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-sealed-corridor",
+        "x": 124,
+        "y": 1416,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-crew-quarters-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-crew-quarters",
+        "x": 548,
+        "y": 946,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-crew-quarters"
+        }
+      },
+      {
+        "itemId": "spaceship:effect-card:quarters-freezing:0",
+        "role": "effect-card",
+        "effectType": "freezing",
+        "paneId": "pane-player",
+        "ownerId": "player-crew-quarters",
+        "x": 548,
+        "y": 1288,
+        "width": 204,
+        "height": 332,
+        "zIndex": 10,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:effect-stack:spaceship:location:player-crew-quarters"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-crew-quarters",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-crew-quarters",
+        "x": 484,
+        "y": 1416,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-life-support-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-life-support",
+        "x": 908,
+        "y": 1074,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-life-support"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-life-support",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-life-support",
+        "x": 844,
+        "y": 1416,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-cockpit-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-cockpit",
+        "x": 1268,
+        "y": 1074,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-cockpit"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-cockpit",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-cockpit",
+        "x": 1204,
+        "y": 1416,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:device:player-sensor-array-device",
+        "role": "device",
+        "paneId": "pane-player",
+        "ownerId": "player-sensor-array",
+        "x": 1628,
+        "y": 1074,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:player-sensor-array"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-sensor-array",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-sensor-array",
+        "x": 1564,
+        "y": 1416,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:location:player-cargo-hold",
+        "role": "location",
+        "paneId": "pane-player",
+        "ownerId": "player-cargo-hold",
+        "x": 1924,
+        "y": 1416,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-player:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:actor-card:actor-machinist",
+        "role": "actor-card",
+        "paneId": "pane-player",
+        "ownerId": "actor-machinist",
+        "x": 145,
+        "y": 1748,
+        "width": 204,
+        "height": 332,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:actor-row:pane-player"
+        }
+      },
+      {
+        "itemId": "spaceship:actor-card:actor-veteran",
+        "role": "actor-card",
+        "paneId": "pane-player",
+        "ownerId": "actor-veteran",
+        "x": 415,
+        "y": 1820,
+        "width": 204,
+        "height": 332,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:actor-row:pane-player"
+        }
+      },
+      {
+        "itemId": "spaceship:actor-card:actor-seer",
+        "role": "actor-card",
+        "paneId": "pane-player",
+        "ownerId": "actor-seer",
+        "x": 685,
+        "y": 1784,
+        "width": 204,
+        "height": 332,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:actor-row:pane-player"
+        }
+      },
+      {
+        "itemId": "spaceship:actor-card:actor-medic",
+        "role": "actor-card",
+        "paneId": "pane-player",
+        "ownerId": "actor-medic",
+        "x": 955,
+        "y": 1784,
+        "width": 204,
+        "height": 332,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:actor-row:pane-player"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-docking-bay",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-docking-bay",
+        "x": 124,
+        "y": 2856,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:top"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-cargo-hold",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-cargo-hold",
+        "x": 484,
+        "y": 2856,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:pirate-crew-quarters-device",
+        "role": "device",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-crew-quarters",
+        "x": 908,
+        "y": 2386,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-crew-quarters"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-crew-quarters",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-crew-quarters",
+        "x": 844,
+        "y": 2856,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:pirate-spin-drive-device",
+        "role": "device",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-spin-drive",
+        "x": 1268,
+        "y": 2514,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-spin-drive"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-spin-drive",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-spin-drive",
+        "x": 1204,
+        "y": 2856,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:pirate-engine-room-device",
+        "role": "device",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-engine-room",
+        "x": 1628,
+        "y": 2514,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-engine-room"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-engine-room",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-engine-room",
+        "x": 1564,
+        "y": 2856,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:top"
+        }
+      },
+      {
+        "itemId": "spaceship:device:pirate-reactor-device",
+        "role": "device",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-reactor",
+        "x": 188,
+        "y": 3094,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-reactor"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-reactor",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-reactor",
+        "x": 124,
+        "y": 3564,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:device:pirate-shield-generator-device",
+        "role": "device",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-shield-generator",
+        "x": 548,
+        "y": 3222,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-shield-generator"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-shield-generator",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-shield-generator",
+        "x": 484,
+        "y": 3564,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:device:pirate-weapons-station-device",
+        "role": "device",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-weapons-station",
+        "x": 908,
+        "y": 3222,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-weapons-station"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-weapons-station",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-weapons-station",
+        "x": 844,
+        "y": 3564,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:device:pirate-cockpit-device",
+        "role": "device",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-cockpit",
+        "x": 1268,
+        "y": 3222,
+        "width": 204,
+        "height": 332,
+        "zIndex": 20,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:device-column:spaceship:location:pirate-cockpit"
+        }
+      },
+      {
+        "itemId": "spaceship:location:pirate-cockpit",
+        "role": "location",
+        "paneId": "pane-pirate",
+        "ownerId": "pirate-cockpit",
+        "x": 1204,
+        "y": 3564,
+        "width": 332,
+        "height": 204,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:location-row:pane-pirate:bottom"
+        }
+      },
+      {
+        "itemId": "spaceship:actor-card:actor-raider-gunner",
+        "role": "actor-card",
+        "paneId": "pane-pirate",
+        "ownerId": "actor-raider-gunner",
+        "x": 145,
+        "y": 3932,
+        "width": 204,
+        "height": 332,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:actor-row:pane-pirate"
+        }
+      },
+      {
+        "itemId": "spaceship:actor-card:actor-raider-pilot",
+        "role": "actor-card",
+        "paneId": "pane-pirate",
+        "ownerId": "actor-raider-pilot",
+        "x": 415,
+        "y": 3932,
+        "width": 204,
+        "height": 332,
+        "zIndex": 30,
+        "placement": {
+          "type": "layout",
+          "layoutId": "spaceship:actor-row:pane-pirate"
+        }
+      }
+    ],
+    "tokens": [
+      {
+        "tokenId": "reactor-energy",
+        "kind": "energy",
+        "label": "1",
+        "detail": "Active power",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100000,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-reactor",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-reactor",
+          "offsetX": 89,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "actor-machinist-token",
+        "kind": "actor",
+        "label": "Machinist",
+        "imageUrl": "/api/adventure-artifacts/machinist-priest-profile-ec92bc7e9074ab3a50ec.png",
+        "tone": "gold",
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 112,
+        "zIndex": 100001,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-reactor",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-reactor",
+          "offsetX": 147,
+          "offsetY": 46
+        }
+      },
+      {
+        "tokenId": "spin-energy",
+        "kind": "energy",
+        "label": "1",
+        "detail": "Charge line",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100002,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-spin-drive",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-spin-drive",
+          "offsetX": 142,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "weapon-energy",
+        "kind": "energy",
+        "label": "1",
+        "detail": "Spent laser feed locked until End of Round",
+        "state": "spent",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100003,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-weapon-station",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-weapon-station",
+          "offsetX": 142,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "actor-veteran-token",
+        "kind": "actor",
+        "label": "Veteran",
+        "imageUrl": "/api/adventure-artifacts/augmented-veteran-male-profile-f520a85de6d856aee8ae.png",
+        "tone": "fire",
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 112,
+        "zIndex": 100004,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-sealed-corridor",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-sealed-corridor",
+          "offsetX": 118,
+          "offsetY": 46
+        }
+      },
+      {
+        "tokenId": "life-support-energy",
+        "kind": "energy",
+        "label": "1",
+        "detail": "Air loop",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100005,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-life-support",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-life-support",
+          "offsetX": 89,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "actor-medic-token",
+        "kind": "actor",
+        "label": "Medic",
+        "imageUrl": "/api/adventure-artifacts/robot-surgeon-male-profile-dea30fb20cdbdfbce28d.png",
+        "tone": "monster",
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 112,
+        "zIndex": 100006,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-life-support",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-life-support",
+          "offsetX": 147,
+          "offsetY": 46
+        }
+      },
+      {
+        "tokenId": "actor-seer-token",
+        "kind": "actor",
+        "label": "Void-seer",
+        "imageUrl": "/api/adventure-artifacts/void-seer-male-profile-068f166010f79cfded63.png",
+        "tone": "cloth",
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 112,
+        "zIndex": 100007,
+        "paneId": "pane-player",
+        "sourceLocationId": "player-sensor-array",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:player-sensor-array",
+          "offsetX": 118,
+          "offsetY": 46
+        }
+      },
+      {
+        "tokenId": "pirate-spin-energy",
+        "kind": "energy",
+        "label": "1",
+        "detail": "Charge line",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100008,
+        "paneId": "pane-pirate",
+        "sourceLocationId": "pirate-spin-drive",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:pirate-spin-drive",
+          "offsetX": 142,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "pirate-reactor-energy",
+        "kind": "energy",
+        "label": "2",
+        "detail": "Core feed",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100009,
+        "paneId": "pane-pirate",
+        "sourceLocationId": "pirate-reactor",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:pirate-reactor",
+          "offsetX": 142,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "pirate-shield-energy",
+        "kind": "energy",
+        "label": "1",
+        "detail": "Barrier",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100010,
+        "paneId": "pane-pirate",
+        "sourceLocationId": "pirate-shield-generator",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:pirate-shield-generator",
+          "offsetX": 142,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "pirate-weapons-energy",
+        "kind": "energy",
+        "label": "1",
+        "detail": "Spent weapon lane",
+        "state": "spent",
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 48,
+        "zIndex": 100011,
+        "paneId": "pane-pirate",
+        "sourceLocationId": "pirate-weapons-station",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:pirate-weapons-station",
+          "offsetX": 89,
+          "offsetY": 78
+        }
+      },
+      {
+        "tokenId": "raider-gunner-token",
+        "kind": "actor",
+        "label": "Raider",
+        "imageUrl": "/actors/base/animal-red.png",
+        "tone": "fire",
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 112,
+        "zIndex": 100012,
+        "paneId": "pane-pirate",
+        "sourceLocationId": "pirate-weapons-station",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:pirate-weapons-station",
+          "offsetX": 147,
+          "offsetY": 46
+        }
+      },
+      {
+        "tokenId": "raider-pilot-token",
+        "kind": "actor",
+        "label": "Pilot",
+        "imageUrl": "/actors/base/animal-red.png",
+        "tone": "blood",
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 112,
+        "zIndex": 100013,
+        "paneId": "pane-pirate",
+        "sourceLocationId": "pirate-cockpit",
+        "placement": {
+          "type": "card",
+          "cardItemId": "spaceship:location:pirate-cockpit",
+          "offsetX": 118,
+          "offsetY": 46
+        }
+      }
+    ],
+    "dispenserPanel": {
+      "x": -112,
+      "y": 124,
+      "width": 184,
+      "height": 1000,
+      "zIndex": 900
+    },
+    "nextCardZIndex": 1000,
+    "nextZIndex": 100014,
+    "nextEnergyTokenIndex": 1,
+    "nextEffectCardIndex": 1,
+    "items": []
+  },
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  }
+}

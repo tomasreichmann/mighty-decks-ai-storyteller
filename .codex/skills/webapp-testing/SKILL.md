@@ -6,6 +6,8 @@ license: Complete terms in LICENSE.txt
 
 # Web Application Testing
 
+Use this skill only when browser verification is needed for behavior, interactions, or runtime bugs. Skip it for cosmetic-only or content-only changes unless you need to confirm a layout or copy regression in a real browser.
+
 To test local web applications, write native Python Playwright scripts.
 
 **Helper Scripts Available**:

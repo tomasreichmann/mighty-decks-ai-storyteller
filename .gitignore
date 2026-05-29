@@ -39,3 +39,7 @@ apps/server/output/adventure-modules/*
 # Keep the Exiles of the Hungry Void image artifact store versioned in Git.
 !apps/server/output/adventure-artifacts/
 !apps/server/output/adventure-artifacts/**
+
+# Keep the hidden spaceship board-state lab snapshots versioned in Git.
+!apps/server/output/spaceship-board-states/
+!apps/server/output/spaceship-board-states/**

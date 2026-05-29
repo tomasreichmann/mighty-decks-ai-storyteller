@@ -147,6 +147,7 @@ interface BoardContextValue extends BoardController {
 interface BoardProviderProps extends PropsWithChildren {
   boardSize: BoardSize;
   initialItems?: BoardItemInput[];
+  initialViewport?: BoardViewport;
 }
 
 interface BoardState {
@@ -207,9 +208,11 @@ const createItemId = (): string => {
 const createInitialBoardState = ({
   boardSize,
   initialItems,
+  initialViewport,
 }: {
   boardSize: BoardSize;
   initialItems: BoardItemInput[];
+  initialViewport?: BoardViewport;
 }): BoardState => {
   const items = new Map<string, BoardItemRecord>();
   initialItems.forEach((item, index) => {
@@ -226,11 +229,13 @@ const createInitialBoardState = ({
   return {
     boardSize,
     frameSize: defaultFrameSize,
-    viewport: fitBoundsToFrame({
-      bounds: { x: 0, y: 0, ...boardSize },
-      frameSize: defaultFrameSize,
-    }),
-    focus: { mode: "board" },
+    viewport:
+      initialViewport ??
+      fitBoundsToFrame({
+        bounds: { x: 0, y: 0, ...boardSize },
+        frameSize: defaultFrameSize,
+      }),
+    focus: initialViewport ? { mode: "manual" } : { mode: "board" },
     items,
     transitionDurationMs: 0,
     transitionToken: 0,
@@ -510,6 +515,7 @@ const boardReducer = (state: BoardState, action: BoardAction): BoardState => {
 export const BoardProvider = ({
   boardSize,
   initialItems = [],
+  initialViewport,
   children,
 }: BoardProviderProps): JSX.Element => {
   const itemResizeObservers = useRef(new Map<string, ResizeObserver>());
@@ -517,7 +523,7 @@ export const BoardProvider = ({
   const listeners = useRef(new Set<(snapshot: BoardSnapshot) => void>());
   const [state, dispatch] = useReducer(
     boardReducer,
-    { boardSize, initialItems },
+    { boardSize, initialItems, initialViewport },
     createInitialBoardState,
   );
   const stateRef = useRef(state);

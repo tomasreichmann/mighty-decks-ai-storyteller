@@ -20,8 +20,9 @@ tokens, actor/minis tokens, and status/effect cards.
 - Describe circular Power tokens with active and spent states.
 - Render Special Location reference panels as `LocationCard` previews using tracked adventure-artifact images, including the Morgue.
 - Document the selected round-power model and alternatives.
-- Keep the implementation frontend-local with no new shared `spec/` contracts,
-  no sockets, and no persistence.
+- Keep the interaction model local to the hidden lab with no sockets or
+  multiplayer synchronization; named lab board states are saved through a small
+  backend file store so useful defaults can be committed.
 
 ### Existing hidden lab goals
 
@@ -33,12 +34,13 @@ tokens, actor/minis tokens, and status/effect cards.
 - Support live local snapping and layout reflow while dragging cards across compatible ship rows, Device columns, actor rows, and effect stacks.
 - Render the Exiles Corvette and Xithrax Raider artifact images as low-z board backgrounds behind their ship areas.
 - Add an unlimited draggable dispenser panel that creates Energy tokens and Injury, Distress, Complication, Freezing, and Burning effect cards when dragged from their sources.
+- Expose a typed browser-global connector for Codex/devtools automation to add local ship content without reloading the page or discarding manual board edits.
 - Expand the Exiles importer so ship locations are authored as normalized adventure-module locations instead of living only inside scene prose.
 
 ### Non-goals
 
 - Ghost/silhouette insertion previews and fine-grained effect-stack insertion positions.
-- Scene persistence or multiplayer synchronization.
+- Multiplayer synchronization.
 - Combat rules resolution, energy spending logic, or turn orchestration.
 - Mutation from the card library overlay into the scene.
 - Fetching the spaceship scene from server state.
@@ -53,7 +55,10 @@ tokens, actor/minis tokens, and status/effect cards.
   - page chrome overlays the board in one header action row; scene content is board-positioned
   - the board frame is square, unrounded, and flush to the viewport edges
   - has `Show All`, `Focus Ally Ship`, and `Focus Enemy Ship` controls that fit the viewport to current board items
-  - local seeded scene state only
+  - loads its default scene, drag layout, and viewport from a named board-state JSON file
+  - can Save, Save As, Restore, and Set Default for named board states through `/api/spaceship-board-states/*`
+  - exposes `window.mightyDecksSpaceship` while mounted so Codex or devtools can apply typed operations such as adding a Location card and Energy tokens to the live local board
+  - local lab state persisted to commit-friendly JSON files, not multiplayer session state
 - `/rules/ship-combat`
   - Rules tab
   - fit-content route inside the Rules layout
@@ -232,6 +237,15 @@ Milestone 1 keeps all state local to the route and mirrors the later reducer sha
   - manual card placement fallback when a card is dragged away from compatible layouts
   - dispenser panel board position
   - next card/token z-order plus generated energy token and effect card counters
+- named board state persistence
+  - files live under `apps/server/output/spaceship-board-states/` by default
+  - `index.json` stores the `defaultStateId` and state summaries
+  - each state file stores `scene`, `dragState`, and `viewport`
+  - `SPACESHIP_BOARD_STATE_DIR` can point the backend at another local folder
+- `window.mightyDecksSpaceship`
+  - exposes `getSnapshot`, `applyOperations`, `focusPane`, and `focusItem`
+  - accepts deterministic typed operations, not arbitrary HTML or natural-language prompts
+  - syncs current board item positions into local drag state before applying operations so manual edits survive live Codex-driven changes
 - `overlay`
   - whether the overlay is open
 - `selection`
@@ -312,7 +326,6 @@ The first interaction slice follows the pointer-event style already used by `app
 - finer per-index insertion for effect stacks
 - collision rules
 - combat validation
-- persistence
 - multiplayer sync
 
 ---
@@ -374,5 +387,6 @@ The legacy compatibility location `the-ship` remains in the module as the broad 
 
 - Hydrate the seeded scene from imported module locations instead of duplicating summary copy in frontend data.
 - Turn `SpaceshipPage` state into a reducer once drag/drop and insertion start mutating multiple slices together.
+- Expand the browser-global connector only after the typed operation surface proves useful; natural-language interpretation should stay outside the app until there is a real non-Codex user need.
 - Add scene-level selection and focus rules for keyboard accessibility.
 - Decide whether actor cards and actor tokens are linked views of the same entity or separate draggable pieces.
