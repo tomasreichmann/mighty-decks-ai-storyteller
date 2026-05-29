@@ -26,6 +26,11 @@ export const createSpaceshipBoardItems = (
   dragState?: SpaceshipDragState,
 ): BoardItemInput[] => {
   const items: BoardItemInput[] = [];
+  const activeCardIds = dragState
+    ? new Set(dragState.cards.map((card) => card.itemId))
+    : null;
+  const shouldRenderCard = (itemId: string): boolean =>
+    activeCardIds ? activeCardIds.has(itemId) : true;
 
   scene.panes.forEach((pane) => {
     items.push(
@@ -44,22 +49,33 @@ export const createSpaceshipBoardItems = (
     );
 
     pane.locations.forEach((location) => {
+      const locationItemId = spaceshipBoardItemId.location(location.locationId);
       if (location.device) {
-        items.push(
-          item({
-            id: spaceshipBoardItemId.device(location.device.deviceId),
-            width: deviceWidth,
-            height: deviceHeight,
-            zIndex: 20,
-          }),
-        );
+        const deviceItemId = spaceshipBoardItemId.device(location.device.deviceId);
+        if (shouldRenderCard(deviceItemId)) {
+          items.push(
+            item({
+              id: deviceItemId,
+              width: deviceWidth,
+              height: deviceHeight,
+              zIndex: 20,
+            }),
+          );
+        }
       }
 
       location.effects.forEach((effect) => {
         Array.from({ length: effect.count }).forEach((_, index) => {
+          const effectItemId = spaceshipBoardItemId.effectCard(
+            effect.effectId,
+            index,
+          );
+          if (!shouldRenderCard(effectItemId)) {
+            return;
+          }
           items.push(
             item({
-              id: spaceshipBoardItemId.effectCard(effect.effectId, index),
+              id: effectItemId,
               width: effectCardWidth,
               height: effectCardHeight,
               zIndex: 10 + index,
@@ -68,27 +84,34 @@ export const createSpaceshipBoardItems = (
         });
       });
 
-      items.push(
-        item({
-          id: spaceshipBoardItemId.location(location.locationId),
-          width: locationWidth,
-          height: locationHeight,
-          zIndex: 30,
-        }),
-      );
+      if (shouldRenderCard(locationItemId)) {
+        items.push(
+          item({
+            id: locationItemId,
+            width: locationWidth,
+            height: locationHeight,
+            zIndex: 30,
+          }),
+        );
+      }
     });
 
     pane.actors.forEach((actor) => {
+      const actorCardId = spaceshipBoardItemId.actorCard(actor.actorId);
       const effectCards = actorEffectCards(actor);
 
       effectCards.forEach(({ effectType, index, stackIndex }) => {
+        const effectCardId = spaceshipBoardItemId.actorEffectCard(
+          actor.actorId,
+          effectType,
+          index,
+        );
+        if (!shouldRenderCard(effectCardId)) {
+          return;
+        }
         items.push(
           item({
-            id: spaceshipBoardItemId.actorEffectCard(
-              actor.actorId,
-              effectType,
-              index,
-            ),
+            id: effectCardId,
             width: effectCardWidth,
             height: effectCardHeight,
             zIndex: 20 + effectCards.length - stackIndex - 1,
@@ -96,14 +119,16 @@ export const createSpaceshipBoardItems = (
         );
       });
 
-      items.push(
-        item({
-          id: spaceshipBoardItemId.actorCard(actor.actorId),
-          width: actorCardWidth,
-          height: actorCardHeight,
-          zIndex: 30,
-        }),
-      );
+      if (shouldRenderCard(actorCardId)) {
+        items.push(
+          item({
+            id: actorCardId,
+            width: actorCardWidth,
+            height: actorCardHeight,
+            zIndex: 30,
+          }),
+        );
+      }
     });
   });
 

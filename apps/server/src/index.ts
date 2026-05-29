@@ -36,6 +36,8 @@ import { AdventureArtifactStore } from "./persistence/AdventureArtifactStore";
 import { AdventureModuleStore } from "./persistence/AdventureModuleStore";
 import { AdventureSnapshotStore } from "./persistence/AdventureSnapshotStore";
 import { CampaignStore } from "./persistence/CampaignStore";
+import { SpaceshipBoardStateStore } from "./persistence/SpaceshipBoardStateStore";
+import { registerSpaceshipBoardStateRoutes } from "./spaceship/registerSpaceshipBoardStateRoutes";
 import { registerSocketHandlers } from "./socket/registerSocketHandlers";
 import { createWorkflowFactory } from "./workflow/executor";
 import { registerWorkflowLabRoutes } from "./workflow/registerWorkflowLabRoutes";
@@ -138,6 +140,10 @@ const campaignStore = new CampaignStore({
   sourceModuleStore: adventureModuleStore,
 });
 await campaignStore.initialize();
+const spaceshipBoardStateStore = new SpaceshipBoardStateStore({
+  rootDir: env.spaceshipBoardStates.outputDir,
+});
+await spaceshipBoardStateStore.initialize();
 const adventureSnapshotStore = new AdventureSnapshotStore({
   rootDir: env.adventureSnapshots.outputDir,
   historyLimit: env.adventureSnapshots.historyLimit,
@@ -295,6 +301,9 @@ registerWorkflowLabRoutes(app, {
 });
 registerAdventureModuleRoutes(app, {
   store: adventureModuleStore,
+});
+registerSpaceshipBoardStateRoutes(app, {
+  store: spaceshipBoardStateStore,
 });
 registerCampaignRoutes(app, {
   store: campaignStore,

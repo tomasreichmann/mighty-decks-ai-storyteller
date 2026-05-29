@@ -8,11 +8,28 @@ The hidden `/spaceship` visual lab consumes the same board primitives for a real
 prototype surface: ship metadata, Devices, Location cards, effect cards, token
 rows, actor cards, and actor consequence cards are all direct board items placed
 by pure layout helpers. Its route keeps `Show All`, `Focus Ally Ship`, `Focus
-Enemy Ship`, and the card-library `+` action in one overlay header row above a
-square board frame that fills the viewport. The route also renders a
+Enemy Ship`, named board-state controls, and the card-library `+` action in one
+overlay header row above a square board frame that fills the viewport. The route
+also renders a
 semi-transparent trash drop area in the visible lower-left frame corner; it is
 outside the board transform, highlights during draggable item hover, and
 removes dropped draggable cards or tokens without affecting pan/zoom bounds.
+While mounted, `/spaceship` also exposes `window.mightyDecksSpaceship` as a
+typed local automation connector. Codex or devtools scripts can call
+`applyOperations`, `getSnapshot`, `focusPane`, and `focusItem` to mutate the
+current local board state without a page reload; the connector does not accept
+arbitrary HTML or own natural-language parsing.
+
+`/spaceship` now loads its initial scene, drag layout, and viewport from the
+server-backed named board-state store. Files are persisted under
+`apps/server/output/spaceship-board-states/` by default so useful lab states can
+be committed. The store exposes:
+
+- `GET /api/spaceship-board-states`
+- `GET /api/spaceship-board-states/default`
+- `GET /api/spaceship-board-states/:stateId`
+- `PUT /api/spaceship-board-states/:stateId`
+- `PUT /api/spaceship-board-states/default`
 
 ## Purpose
 
@@ -183,9 +200,11 @@ the current world-space center across resize.
 
 ## Non-goals
 
-- No shared `/spec` contracts.
-- No server routes or Socket.IO events.
-- No persistence.
+- No shared gameplay/session `/spec` contracts.
+- No Socket.IO events.
+- No multiplayer persistence or session-table replacement.
 - No arbitrary HTML injection from external scripts.
+- No app-owned natural-language command parser for `/spaceship`; agents should
+  translate language into typed browser operations externally.
 - No production session-table replacement yet.
 - No 3D deck perspective or z-axis thickness model yet.

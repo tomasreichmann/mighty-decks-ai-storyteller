@@ -8,8 +8,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Fixed: `/spaceship` trash drops now remove the dragged card instead of letting layout membership resurrect it at the board origin.
+- Fixed: `/spaceship` now prunes stale rendered effect cards after trash removal, so Freezing cards disappear from the live board instead of lingering as inert copies.
 - Docs: require the token-optimized `pnpm check:agent`, `pnpm test:agent`, and `pnpm build:agent` commands as the default validation path in `AGENTS.md`.
-- Fixed: `/spaceship` cards removed by dragging to the trash now disappear instead of reappearing as inert items at the board origin.
 - Repo: remove the oversized local `vercel-react-best-practices` skill pack and trim duplicated contributor guidance to reduce Codex context.
 - Repo: make `webapp-testing` on-demand for behavior checks instead of cosmetic-only or content-only edits.
 - Web: remove all Injury and Distress cards from the saved `/spaceship` Exiles Corvette vs Raider board state.

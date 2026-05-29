@@ -64,6 +64,10 @@
     "./workflowLab": {
       "types": "./dist/workflowLab.d.ts",
       "import": "./dist/workflowLab.js"
+    },
+    "./spaceshipBoardState": {
+      "types": "./dist/spaceshipBoardState.d.ts",
+      "import": "./dist/spaceshipBoardState.js"
     }
   },
   "scripts": {

@@ -45,7 +45,9 @@ const isBoardPlacedCard = (
 const isLayoutPlacedCard = (
   dragState: SpaceshipDragState,
   itemId: string,
-): boolean => !isBoardPlacedCard(dragState, itemId);
+): boolean =>
+  Boolean(getCardFromState(dragState, itemId)) &&
+  !isBoardPlacedCard(dragState, itemId);
 
 const getEffectStackForOwner = (
   layouts: SpaceshipLayoutMembershipState,

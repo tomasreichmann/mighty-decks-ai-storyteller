@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "defaultStateId": "exiles-corvette-vs-raider",
+  "states": [
+    {
+      "stateId": "exiles-corvette-vs-raider",
+      "name": "Exiles Corvette vs Raider",
+      "updatedAtIso": "2026-05-20T10:07:38.066Z"
+    }
+  ]
+}
