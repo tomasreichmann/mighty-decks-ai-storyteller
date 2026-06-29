@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Server content: rewrite the Exiles opening premise, player summary, storyteller summary, and `Dumped in the Void` intro so the adventure starts with faster crew formation, clearer immediate pressure, and less lore-heavy derelict exposition.
 - Web: add the Exiles Corvette and Xithrax Raider artifact images as `/spaceship` board backgrounds behind their ship areas.
 - Web: remove extra horizontal padding from the shared `Tag` leading slot so embedded controls align tightly.
 - Web: replace the `/spaceship` finite energy stack with a vertical draggable unlimited dispenser panel for Energy plus Injury, Distress, Complication, Freezing, and Burning effect cards.
