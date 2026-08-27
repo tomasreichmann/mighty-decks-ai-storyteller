@@ -71,6 +71,19 @@ test("keeps Distress thresholds as rules prose rather than a simulated example",
   );
 });
 
+test("preserves both canonical Fumble resolutions in public prose", () => {
+  const document = parseRulebookDocument(canonicalRulebook);
+  const outcomeCards = document.sections.find(
+    (section) => section.id === "outcome-cards",
+  );
+
+  assert.ok(outcomeCards);
+  assert.match(outcomeCards.body, /The arrow flies wide/);
+  assert.match(outcomeCards.body, /normal 1 Injury/);
+  assert.match(outcomeCards.body, /bowstring snaps/);
+  assert.match(outcomeCards.body, /cannot be fired again until Mira repairs it/);
+});
+
 test("excludes editorial notes and illustration briefs from reader prose", () => {
   const document = parseRulebookDocument(canonicalRulebook);
   const renderedSource = document.sections.map((section) => section.body).join("\n");

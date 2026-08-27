@@ -34,41 +34,15 @@ test("rulebook reader delegates its public section inventory to the parsed canon
   assert.match(source, /document\.sections\.map/);
 });
 
-test("player action examples use the shared Message treatment", () => {
-  const example = readFileSync(
-    new URL("../components/rules/RulesActionExample.tsx", import.meta.url),
-    "utf8",
-  );
+test("canonical Markdown blocks are never replaced by visual enhancements", () => {
   const content = readFileSync(
     new URL("../components/rules/RulesRulebookContent.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(example, /<Message/);
-  assert.match(example, /<Panel/);
-  assert.match(example, /className="mt-2"/);
-  assert.match(example, /<OutcomeCard/);
-  assert.match(example, /outcomes/);
-  assert.match(example, /card=\{outcome\}/);
-  assert.match(example, /speaker === "player"/);
-  assert.match(example, /\? "fire"/);
-  assert.match(example, /\? "gold"/);
-  assert.match(example, /: "cloth"/);
-  assert.match(example, /self-end/);
-  assert.match(example, /self-start/);
-  for (const id of [
-    "example-a-basic-action",
-    "example-partial-success",
-    "example-effect-is-impact-not-damage",
-    "example-defense",
-    "example-catastrophe",
-    "example-progress-counter",
-  ]) {
-    assert.match(example, new RegExp(id));
-  }
-  assert.match(content, /ruleExampleById/);
-  assert.match(content, /RulesActionExample/);
-  assert.doesNotMatch(example, /tiny-example-distress-thresholds/);
+  assert.match(content, /markdown=\{block\}/);
+  assert.doesNotMatch(content, /ruleExampleById/);
+  assert.doesNotMatch(content, /if \(example\)/);
 });
 
 test("rulebook mounts accessible illustrations made from the existing component catalog", () => {
@@ -113,13 +87,34 @@ test("rulebook mounts accessible illustrations made from the existing component 
   assert.match(illustrations, /Safecracker adds 1 more/);
   assert.match(illustrations, /5 Effect/);
   assert.match(illustrations, /const locationExamples/);
-  assert.match(illustrations, /docking-bay/);
-  assert.match(illustrations, /cargo-hold/);
-  assert.match(illustrations, /crew-quarters/);
   assert.match(illustrations, /outcomeCardClassName/);
-  assert.match(illustrations, /import cargoHoldImage from .*cargo-hold/);
   assert.doesNotMatch(illustrations, /\/api\/adventure-artifacts/);
   assert.match(content, /rulebookIllustrationsBySectionId/);
+  assert.match(illustrations, /export const FumbleBranches/);
+  assert.match(illustrations, /rulebookIllustrationsBySubsectionId/);
+  assert.match(illustrations, /"example-two-valid-fumbles": FumbleBranches/);
+  assert.match(illustrations, /MISS/);
+  assert.match(illustrations, /HIT, BUT/);
+  assert.match(illustrations, /Broken String/);
+  assert.match(illustrations, /1 Injury/);
+  assert.match(illustrations, /Action to repair/);
+  assert.match(content, /rulebookIllustrationsBySubsectionId/);
+  assert.match(content, /<RulebookMarkdown markdown=\{block\} subsectionId=\{id\} \/>/);
+  assert.match(content, /Enhancement \? <Enhancement \/> : null/);
+
+  for (const label of [
+    "Choose card",
+    "Resolve Effect",
+    "Discard",
+    "Draw replacement",
+    "Catastrophe check",
+  ]) {
+    assert.match(illustrations, new RegExp(label));
+  }
+  assert.match(illustrations, /export const CoreActionLoop/);
+  assert.match(illustrations, /"core-action-loop": CoreActionLoop/);
+  assert.match(illustrations, /minmax\(18rem,1\.5fr\)/);
+  assert.ok((illustrations.match(/<ResolvedCard type="OutcomeCard"/g) ?? []).length >= 3);
 });
 
 test("the Effect illustration uses the actual component cards", () => {
@@ -135,6 +130,81 @@ test("the Effect illustration uses the actual component cards", () => {
   assert.match(effectEquation, /<ResolvedCard type="StuntCard" slug="safecracker"/);
   assert.match(effectEquation, /<ResolvedCard type="OutcomeCard" slug="success"/);
   assert.match(effectEquation, /5 Effect/);
+});
+
+test("Actor initiative places Actors immediately after their player slots", () => {
+  const illustrations = readFileSync(
+    new URL("../components/rules/RulesIllustrations.tsx", import.meta.url),
+    "utf8",
+  );
+  const initiative = illustrations
+    .split("export const ActorInitiative")[1]
+    ?.split("export const ZonesAndRange")[0] ?? "";
+
+  const labels = ["Mira", "Guard", "Wolf", "Aldren", "Bandit", "Tomas"];
+  let previousIndex = -1;
+  for (const label of labels) {
+    const index = initiative.indexOf(label);
+    assert.ok(index > previousIndex, `${label} should follow the prior initiative entry`);
+    previousIndex = index;
+  }
+  assert.match(initiative, /Actors act immediately after the player they sit in front of/);
+  assert.match(initiative, /actors: \["Guard", "Wolf"\]/);
+  assert.match(initiative, /actors: \["Bandit"\]/);
+  assert.match(initiative, /<ActorCard/);
+});
+
+test("Toughness and Counter figures place d4 markers directly over cards", () => {
+  const illustrations = readFileSync(
+    new URL("../components/rules/RulesIllustrations.tsx", import.meta.url),
+    "utf8",
+  );
+
+  const toughness = illustrations
+    .split("export const RemainingToughness")[1]
+    ?.split("export const CounterTracking")[0] ?? "";
+  assert.match(toughness, /DieMarker sides=\{4\} value=\{value\}/);
+  assert.match(toughness, /relative inline-flex/);
+  assert.match(toughness, /Bandit/);
+  for (const value of ["3", "1", "0"]) {
+    assert.match(illustrations, new RegExp(`\\[${value},`));
+  }
+
+  const counter = illustrations
+    .split("export const CounterTracking")[1]
+    ?.split("export const CatastropheFlow")[0] ?? "";
+  assert.match(counter, /Ice Storm/);
+  assert.match(counter, /Bandit/);
+  assert.match(counter, /3 \/ 4/);
+  assert.match(counter, /DieMarker sides=\{4\} value=\{3\}/);
+  assert.match(counter, /DieMarker sides=\{4\} value=\{1\}/);
+  assert.match(counter, /Dice track values; they are not rolled/);
+});
+
+test("Zones and Range uses the medieval mini-adventure and explicit reach legend", () => {
+  const illustrations = readFileSync(
+    new URL("../components/rules/RulesIllustrations.tsx", import.meta.url),
+    "utf8",
+  );
+
+  for (const obsolete of ["Docking Bay", "Cargo Hold", "Crew Quarters"]) {
+    assert.doesNotMatch(illustrations, new RegExp(obsolete));
+  }
+  for (const required of [
+    "Castle Gate",
+    "Courtyard",
+    "Tower",
+    "Sword: same zone",
+    "Throw: +1 zone",
+    "Bow: +2 zones",
+    "Sniper: anywhere in sight",
+  ]) {
+    assert.match(illustrations, new RegExp(required.replace(/[+]/g, "\\+")));
+  }
+  for (const path of ["castle-gate", "courtyard", "tower"]) {
+    assert.match(illustrations, new RegExp(`/rules/locations/${path}\\.png`));
+  }
+  assert.doesNotMatch(illustrations, /server\/output\/adventure-artifacts/);
 });
 
 test("rulebook tables use the shared framed table treatment", () => {

@@ -12,6 +12,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: preserve complete canonical examples on `/rules` and add clearer component-based diagrams for the action loop, Fumbles, Actor initiative, Toughness and Counter dice, and medieval Zones and Range.
 - Web: replace rulebook Outcome text with compact Outcome cards, frame message examples, use actual cards in Effect illustrations, bundle rulebook location art, normalize instructional card sizing, and add the shared table treatment to the typography styleguide.
 - Docs: present rulebook Distress thresholds as ordinary rules prose instead of a simulated table exchange.
 - Fixed: `/spaceship` trash drops now remove the dragged card instead of letting layout membership resurrect it at the board origin.

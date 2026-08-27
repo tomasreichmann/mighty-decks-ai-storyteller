@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Heading } from "../common/Heading";
@@ -6,10 +6,9 @@ import { Message } from "../common/Message";
 import { Table } from "../common/Table";
 import { Text } from "../common/Text";
 import {
-  RulesActionExample,
-  ruleExampleById,
-} from "./RulesActionExample";
-import { rulebookIllustrationsBySectionId } from "./RulesIllustrations";
+  rulebookIllustrationsBySectionId,
+  rulebookIllustrationsBySubsectionId,
+} from "./RulesIllustrations";
 import {
   toRulebookFragmentId,
   type RulebookDocument,
@@ -101,26 +100,20 @@ export const RulesRulebookContent = ({
             return Illustration ? <Illustration /> : null;
           })()}
           <div className={`${styles.prose} stack gap-4`}>
-            {subsectionBlocks(section.body).map((block) => {
+            {subsectionBlocks(section.body).map((block, index) => {
               const match = block.match(/^###\s+(.+)$/m);
               const subsection = match
                 ? section.subsections.find((candidate) => candidate.title === match[1])
                 : undefined;
               const id = subsection?.id;
-              const example = id ? ruleExampleById[id] : undefined;
-              if (example) {
-                return (
-                  <div key={id} id={id} className={styles.subheading}>
-                    <RulesActionExample example={example} />
-                  </div>
-                );
-              }
+              const Enhancement = id
+                ? rulebookIllustrationsBySubsectionId[id]
+                : undefined;
               return (
-                <RulebookMarkdown
-                  key={id ?? section.id}
-                  markdown={block}
-                  subsectionId={id}
-                />
+                <Fragment key={id ?? `${section.id}-${index}`}>
+                  <RulebookMarkdown markdown={block} subsectionId={id} />
+                  {Enhancement ? <Enhancement /> : null}
+                </Fragment>
               );
             })}
           </div>

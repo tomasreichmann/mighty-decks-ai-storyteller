@@ -8,28 +8,26 @@ import { Token } from "../common/Token";
 import { Text } from "../common/Text";
 import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
-import cargoHoldImage from "../../../../server/output/adventure-artifacts/cargo-hold-202afa0e160b9f892887.png";
-import crewQuartersImage from "../../../../server/output/adventure-artifacts/crew-quarters-fb4b60ee93280b0a8dca.png";
-import dockingBayImage from "../../../../server/output/adventure-artifacts/docking-bay-63de54ac4b3c469379e9.png";
+import { DieMarker } from "./DieMarker";
 
 const actorToken = "/actors/base/guard-blue.png";
-const locationImage = cargoHoldImage;
+const locationImage = "/rules/locations/courtyard.png";
 const outcomeCardClassName = "w-[6rem]";
 const locationExamples = [
   {
-    title: "Docking Bay",
-    imageUrl: dockingBayImage,
-    reach: "Melee",
+    title: "Castle Gate",
+    imageUrl: "/rules/locations/castle-gate.png",
+    occupant: "Mira",
   },
   {
-    title: "Cargo Hold",
-    imageUrl: cargoHoldImage,
-    reach: "Thrown",
+    title: "Courtyard",
+    imageUrl: "/rules/locations/courtyard.png",
+    occupant: undefined,
   },
   {
-    title: "Crew Quarters",
-    imageUrl: crewQuartersImage,
-    reach: "Ranged",
+    title: "Tower",
+    imageUrl: "/rules/locations/tower.png",
+    occupant: "Bandit",
   },
 ] as const;
 
@@ -42,7 +40,7 @@ const RulebookFigure = ({
   summary: string;
   children: ReactNode;
 }): JSX.Element => (
-  <figure className="stack gap-3 border-y-2 border-kac-iron/20 py-5 print:break-inside-avoid">
+  <figure className="stack gap-3 py-3 print:break-inside-avoid">
     <div className="flex flex-wrap items-center gap-2">{children}</div>
     <figcaption>
       <Text variant="note" color="iron-light">
@@ -110,8 +108,8 @@ export const CompleteTableSetup = (): JSX.Element => (
       <Text variant="emphasised" color="iron">Shared scene</Text>
       <LocationCard
         imageUrl={locationImage}
-        imageAlt="Cargo hold location"
-        title="Cargo Hold"
+        imageAlt="Medieval courtyard location"
+        title="Courtyard"
         description="A shared location for the scene."
         className="w-[13rem] max-w-full"
       />
@@ -132,49 +130,149 @@ export const ComposedAssetEquation = (): JSX.Element => (
   </RulebookFigure>
 );
 
-export const ActorInitiative = (): JSX.Element => (
+export const FumbleBranches = (): JSX.Element => (
   <RulebookFigure
-    title="Actor initiative"
-    summary="Players take turns, then the Storyteller resolves the active actors in the order that fits the scene."
+    title="Two valid Fumbles"
+    summary="A Fumble can miss cleanly, or it can hit while creating a fitting consequence. The canonical example above gives the full rule text."
   >
-    <div className="flex flex-wrap items-center gap-3">
-      <Token imageUrl={actorToken} imageAlt="Mira player token" label="Mira" color="fire" size="md" />
-      <span aria-hidden="true" className="font-heading text-2xl">→</span>
-      <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[8rem]" />
-      <span aria-hidden="true" className="font-heading text-2xl">→</span>
-      <Token imageUrl={actorToken} imageAlt="Aldren player token" label="Aldren" color="gold" size="md" />
+    <div className="grid w-full items-start gap-4 md:grid-cols-[minmax(0,0.7fr)_auto_minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="justify-self-center">
+        <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[8rem]" />
+      </div>
+      <span aria-hidden="true" className="hidden self-center font-heading text-2xl md:block">→</span>
+      <div className="stack items-center gap-2 text-center">
+        <Text variant="emphasised" color="blood">MISS</Text>
+        <Text variant="note" color="iron-light">The arrow flies wide: no useful Effect.</Text>
+      </div>
+      <div className="stack items-center gap-2 text-center">
+        <Text variant="emphasised" color="blood">HIT, BUT...</Text>
+        <div className="flex flex-wrap justify-center gap-2">
+          <ResolvedCard type="EffectCard" slug="injury" className="w-[6rem]" />
+          <ResolvedCard type="AssetCard" slug="medieval_hunting_bow" className="w-[6rem]" />
+          <ResolvedCard type="EffectCard" slug="complication" className="w-[6rem]" />
+        </div>
+        <Text variant="note" color="iron-light">1 Injury · Broken String · Action to repair</Text>
+      </div>
     </div>
   </RulebookFigure>
 );
 
-export const ZonesAndRange = (): JSX.Element => (
+export const CoreActionLoop = (): JSX.Element => (
   <RulebookFigure
-    title="Zones and range"
-    summary="Locations establish zones. Tokens show who is present; the action tells you whether its reach is melee, thrown, or ranged."
+    title="Core Action Loop"
+    summary="Choose an Outcome, resolve it, refill the hand, then check the new hand for Catastrophe."
   >
-    <div className="grid w-full gap-3 sm:grid-cols-3">
-      {locationExamples.map((location) => (
-        <div key={location.title} className="stack gap-2">
-          <LocationCard imageUrl={location.imageUrl} imageAlt={`${location.title} location`} title={location.title} description={`${location.reach} reach marker.`} />
-          <Token imageUrl={actorToken} imageAlt={`${location.title} actor`} label="Actor" color="monster" size="sm" />
+    <ol className="sr-only">
+      <li>Choose card from the three-card hand.</li>
+      <li>Resolve Effect.</li>
+      <li>Discard the played card.</li>
+      <li>Draw replacement.</li>
+      <li>Catastrophe check the refreshed hand.</li>
+    </ol>
+    <div className="grid w-full items-center gap-4 md:grid-cols-[minmax(18rem,1.5fr)_repeat(5,minmax(0,1fr))]">
+      <div className="flex flex-wrap justify-center gap-2" aria-label="Three-card Outcome hand">
+        <ResolvedCard type="OutcomeCard" slug="success" className="w-[5.5rem] -translate-y-2 ring-2 ring-kac-gold" />
+        <ResolvedCard type="OutcomeCard" slug="partial-success" className="w-[5.5rem]" />
+        <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[5.5rem]" />
+      </div>
+      {[
+        "Choose card",
+        "Resolve Effect",
+        "Discard",
+        "Draw replacement",
+        "Catastrophe check",
+      ].map((step, index) => (
+        <div key={step} className="flex min-h-16 flex-col items-center justify-center gap-1 text-center">
+          {index > 0 ? <span aria-hidden="true" className="hidden font-heading text-xl md:block">→</span> : null}
+          <Text variant="note" color="iron">{step}</Text>
         </div>
       ))}
     </div>
   </RulebookFigure>
 );
 
+export const ActorInitiative = (): JSX.Element => {
+  const initiativeSlots = [
+    { player: "Mira", actors: ["Guard", "Wolf"] },
+    { player: "Aldren", actors: ["Bandit"] },
+    { player: "Tomas", actors: [] },
+  ] as const;
+
+  return (
+    <RulebookFigure
+      title="Actor initiative"
+      summary="Actors act immediately after the player they sit in front of. Multiple Actors may share a slot, and all act after that player."
+    >
+      <ol className="sr-only">
+        <li>Mira</li><li>Guard</li><li>Wolf</li><li>Aldren</li><li>Bandit</li><li>Tomas</li>
+      </ol>
+      <div className="grid w-full gap-4 md:grid-cols-3">
+        {initiativeSlots.map((slot, index) => (
+          <div key={slot.player} className="stack items-center gap-2 text-center">
+            <Token
+              imageUrl={actorToken}
+              imageAlt={`${slot.player} player token`}
+              label={slot.player}
+              color={index === 0 ? "fire" : index === 1 ? "gold" : "cloth"}
+              size="md"
+            />
+            <div className="flex flex-wrap justify-center gap-2">
+              {slot.actors.map((actor) => (
+                <div key={actor} className="stack items-center gap-1">
+                  <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[7rem]" />
+                  <Text variant="note" color="iron">{actor}</Text>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </RulebookFigure>
+  );
+};
+
+export const ZonesAndRange = (): JSX.Element => (
+  <RulebookFigure
+    title="Zones and range"
+    summary="Castle Gate, Courtyard, and Tower are connected zones. A weapon's reach tells you how many zones away it can affect."
+  >
+    <div className="grid w-full gap-3 sm:grid-cols-3">
+      {locationExamples.map((location) => (
+        <div key={location.title} className="stack gap-2">
+          <LocationCard imageUrl={location.imageUrl} imageAlt={`${location.title} medieval location`} title={location.title} description="A connected scene zone." />
+          {location.occupant ? (
+            <Token imageUrl={actorToken} imageAlt={`${location.occupant} at ${location.title}`} label={location.occupant} color={location.occupant === "Mira" ? "fire" : "monster"} size="sm" />
+          ) : null}
+        </div>
+      ))}
+    </div>
+    <div className="flex w-full flex-wrap justify-center gap-x-4 gap-y-2 text-center">
+      <Text variant="note" color="iron">Sword: same zone</Text>
+      <Text variant="note" color="iron">Throw: +1 zone</Text>
+      <Text variant="note" color="iron">Bow: +2 zones</Text>
+      <Text variant="note" color="iron">Sniper: anywhere in sight</Text>
+    </div>
+  </RulebookFigure>
+);
+
+const toughnessStates = [
+  [3, "Starting Toughness"],
+  [1, "After 2 Injury"],
+  [0, "After 1 Distress / Taken Out"],
+] as const;
+
 export const RemainingToughness = (): JSX.Element => (
   <RulebookFigure
     title="Remaining Toughness"
     summary="The same Actor moves from ready, to pressured, to Taken Out as its remaining Toughness is reduced."
   >
-    {[
-      [3, "Ready"],
-      [1, "Injury"],
-      [0, "Taken Out"],
-    ].map(([value, label]) => (
+    {toughnessStates.map(([value, label]) => (
       <div key={String(label)} className="stack items-center gap-2">
-        <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="brute" className="w-[8rem]" />
+        <div className="relative inline-flex">
+          <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="brute" className="w-[8rem]" />
+          <DieMarker sides={4} value={value} className="absolute -right-2 -top-2 z-10" />
+        </div>
+        <Text variant="note" color="iron">Bandit</Text>
         <Text variant="emphasised" color={value === 0 ? "blood" : "iron"}>{`${value} Toughness — ${label}`}</Text>
       </div>
     ))}
@@ -184,11 +282,23 @@ export const RemainingToughness = (): JSX.Element => (
 export const CounterTracking = (): JSX.Element => (
   <RulebookFigure
     title="Counter tracking"
-    summary="The Counter card tells you what its value means; the Actor's remaining Toughness is tracked separately."
+    summary="The Counter card tells you what its value means; the Actor's remaining Toughness is tracked separately. Dice track values; they are not rolled."
   >
-    <CounterCard iconSlug="tracking" title="Raise the Portcullis" currentValue={3} maxValue={4} className="w-[10rem]" />
-    <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[9rem]" />
-    <Text variant="emphasised" color="blood">1 remaining Toughness</Text>
+    <div className="stack items-center gap-2">
+      <div className="relative inline-flex">
+        <CounterCard iconSlug="tracking" title="Ice Storm" currentValue={3} maxValue={4} className="w-[10rem]" />
+        <DieMarker sides={4} value={3} className="absolute -right-2 -top-2 z-10" />
+      </div>
+      <Text variant="emphasised" color="iron">Counter value: 3 / 4</Text>
+    </div>
+    <div className="stack items-center gap-2">
+      <div className="relative inline-flex">
+        <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[9rem]" />
+        <DieMarker sides={4} value={1} className="absolute -right-2 -top-2 z-10" />
+      </div>
+      <Text variant="note" color="iron">Bandit</Text>
+      <Text variant="emphasised" color="blood">Remaining Toughness: 1</Text>
+    </div>
   </RulebookFigure>
 );
 
@@ -213,9 +323,14 @@ export const rulebookIllustrationsBySectionId: Readonly<Record<string, () => JSX
   "what-you-need-to-play": CompleteTableSetup,
   effect: EffectEquation,
   "characters-expertise-stunts-assets": ComposedAssetEquation,
+  "core-action-loop": CoreActionLoop,
   actors: RemainingToughness,
   "turn-based-play": ActorInitiative,
   "locations-zones-movement-range": ZonesAndRange,
   catastrophe: CatastropheFlow,
   counters: CounterTracking,
+};
+
+export const rulebookIllustrationsBySubsectionId: Readonly<Record<string, () => JSX.Element>> = {
+  "example-two-valid-fumbles": FumbleBranches,
 };
