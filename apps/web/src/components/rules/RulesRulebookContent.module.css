@@ -1,0 +1,61 @@
+.content {
+  min-width: 0;
+}
+
+.section {
+  scroll-margin-top: 1.5rem;
+  border-left: 3px solid transparent;
+  padding-left: 0.25rem;
+}
+
+.section:target {
+  border-left-color: var(--kac-gold, #ffd23b);
+  background: rgb(255 210 59 / 0.1);
+}
+
+.prose {
+  max-width: 72ch;
+}
+
+.prose :global(li + li) {
+  margin-top: 0.35rem;
+}
+
+.prose :global(a) {
+  color: #735716;
+  text-decoration: underline;
+  text-decoration-color: rgb(92 119 178 / 0.7);
+  text-underline-offset: 0.16em;
+}
+
+.prose :global(a:hover) {
+  color: #b5162b;
+}
+
+.inlineCode {
+  border-radius: 0.18rem;
+  background: rgb(92 119 178 / 0.16);
+  padding: 0.08rem 0.25rem;
+  color: #121b23;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.subheading {
+  scroll-margin-top: 1.5rem;
+}
+
+@media print {
+  .content :global(figure) {
+    break-inside: avoid-page;
+  }
+
+  .section {
+    break-inside: avoid-page;
+  }
+
+  .section:target {
+    border-left-color: transparent;
+    background: transparent;
+  }
+}

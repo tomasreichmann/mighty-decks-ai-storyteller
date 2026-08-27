@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { rulebookSectionDefinitions } from "../lib/rulebookDocument";
 
 test("App registers the rules reference routes", () => {
   const source = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
@@ -10,15 +11,45 @@ test("App registers the rules reference routes", () => {
   assert.match(source, /path="ship-combat"\s+element={<RulesShipCombatPage \/>}/);
 });
 
-test("RulesLayoutPage includes Assets and Ship Combat tabs", () => {
+test("RulesLayoutPage includes the exact-match Rulebook tab and reference tabs", () => {
   const source = readFileSync(new URL("./RulesLayoutPage.tsx", import.meta.url), "utf8");
 
   assert.match(source, /SectionBoundary/);
   assert.match(source, /resetKey=\{location\.pathname\}/);
+  assert.match(
+    source,
+    /\{ to: "\/rules", label: "Rulebook", end: true \}/,
+  );
   assert.match(source, /label: "Assets"/);
   assert.match(source, /to: "\/rules\/assets"/);
   assert.match(source, /label: "Ship Combat"/);
   assert.match(source, /to: "\/rules\/ship-combat"/);
+});
+
+test("RulesTableOfContents drives desktop and mobile navigation from the inventory", () => {
+  const source = readFileSync(
+    new URL("../components/rules/RulesTableOfContents.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /aria-label="Rulebook sections"/);
+  assert.match(source, /rulebookNavigationGroups/);
+  assert.match(source, /rulebookSectionDefinitions/);
+  assert.match(source, /<details/);
+  assert.match(source, /<nav/);
+  for (const id of [
+    "core-action-loop",
+    "outcome-cards",
+    "actors",
+    "turn-based-play",
+    "defense",
+    "counters",
+    "storyteller-principles",
+    "quick-reference",
+  ]) {
+    assert.ok(rulebookSectionDefinitions.some((section) => section.id === id));
+  }
+  assert.match(source, /href=\{`#\$\{section\.id\}`\}/);
 });
 
 test("Rules card pages wrap GameCardView in CardBoundary", () => {

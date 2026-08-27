@@ -526,6 +526,7 @@ Components:
 - `Tags`
 - `ConnectionStatusPill`
 - `Panel`
+- `Table`
 - `ToggleButton`
 - `ButtonRadioGroup`
 - `RockerSwitch`
@@ -537,6 +538,7 @@ Behavior:
 - the overview now reads as a design reference: principles, the complete color-family ledger shown as swatches with hex values, shared-component rules, and component use cases
 - the section nav provides access to `/styleguide/typography`, `/styleguide/labels`, `/styleguide/messages`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/tokens`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
 - the cards page is the primary gallery entry point; the detail routes remain direct drill-down pages for internal inspection but are not surfaced in the main styleguide nav
+- the typography lab includes the shared framed table treatment so reference tables can be checked alongside the system's text scale
 
 ---
 
@@ -550,6 +552,7 @@ Components:
 - `Heading`
 - `Text`
 - `Label`
+- `Table`
 
 Behavior:
 
@@ -557,6 +560,7 @@ Behavior:
 - keeps semantic heading usage scoped here while the dedicated sticker lab lives on `/styleguide/labels` and the editable chip/tag patterns stay on `/styleguide/tags`
 - includes the full `Label` palette and the `Small` / `Medium` / `Large` size ladder so chips can be checked across the same surface
 - uses different heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
+- includes the shared table treatment with framed headers, alternating rows, and a horizontal-scroll fallback for narrow screens
 
 ---
 

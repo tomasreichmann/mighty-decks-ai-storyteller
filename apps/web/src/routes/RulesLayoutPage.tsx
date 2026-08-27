@@ -5,6 +5,7 @@ import { Text } from "../components/common/Text";
 import { SectionBoundary } from "../components/common/SectionBoundary";
 
 const rulesTabs: TabItem[] = [
+  { to: "/rules", label: "Rulebook", end: true },
   { to: "/rules/outcomes", label: "Outcomes" },
   { to: "/rules/effects", label: "Effects" },
   { to: "/rules/stunts", label: "Stunts" },
@@ -38,11 +39,16 @@ export const RulesLayoutPage = (): JSX.Element => {
           color="iron-light"
           className="relative z-10 mt-3 text-sm"
         >
-          Mighty Decks rule components reference for markdown authoring.
+          Read the full Mighty Decks rules, then browse the component reference pages.
         </Text>
       </div>
 
-      <Tabs items={rulesTabs} ariaLabel="Rules sections" color="cloth" />
+      <Tabs
+        items={rulesTabs}
+        ariaLabel="Rules sections"
+        color="cloth"
+        className="print:hidden"
+      />
 
       <SectionBoundary
         resetKey={location.pathname}

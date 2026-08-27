@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
 import { Panel } from "../components/common/Panel";
+import { Table } from "../components/common/Table";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
@@ -170,6 +171,39 @@ export const StyleguideTypographyPage = (): JSX.Element => {
           </div>
         </Panel>
       </div>
+
+      <Panel as="section" tone="gold" contentClassName="stack gap-3">
+        <div className="stack gap-1">
+          <Text variant="h3" color="iron">
+            Table treatment
+          </Text>
+          <Text variant="body" color="iron-light" className="text-sm">
+            Use the shared `Table` for readable reference data. It keeps a framed
+            header, calm alternating rows, and horizontal scrolling on narrow screens.
+          </Text>
+        </div>
+        <Table>
+          <thead>
+            <tr>
+              <th>Outcome</th>
+              <th>Effect</th>
+              <th>At the table</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Success</td>
+              <td>+2</td>
+              <td>The action lands cleanly.</td>
+            </tr>
+            <tr>
+              <td>Partial Success</td>
+              <td>+1</td>
+              <td>Progress comes with a cost.</td>
+            </tr>
+          </tbody>
+        </Table>
+      </Panel>
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">

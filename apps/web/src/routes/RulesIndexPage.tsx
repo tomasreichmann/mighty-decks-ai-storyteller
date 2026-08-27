@@ -1,15 +1,17 @@
-import { Panel } from "../components/common/Panel";
-import { Text } from "../components/common/Text";
+import canonicalRulebook from "../../../../docs/mighty-decks-rulebook.md?raw";
+import { RulesRulebookContent } from "../components/rules/RulesRulebookContent";
+import { RulesTableOfContents } from "../components/rules/RulesTableOfContents";
+import { parseRulebookDocument } from "../lib/rulebookDocument";
+
+const rulebookDocument = parseRulebookDocument(canonicalRulebook);
 
 export const RulesIndexPage = (): JSX.Element => {
   return (
-    <Panel className="stack gap-2" contentClassName="stack gap-2">
-      <Text variant="emphasised" color="iron">
-        Rules navigation stub
-      </Text>
-      <Text variant="body" color="iron-light" className="text-sm">
-        Choose Outcomes, Effects, Stunts, or Assets. Full rulebook content will be added in a later milestone.
-      </Text>
-    </Panel>
+    <div className="grid gap-8 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
+      <RulesTableOfContents />
+      <article aria-label="Mighty Decks rulebook" className="min-w-0">
+        <RulesRulebookContent document={rulebookDocument} />
+      </article>
+    </div>
   );
 };

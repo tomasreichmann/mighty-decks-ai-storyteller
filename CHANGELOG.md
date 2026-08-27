@@ -6,8 +6,14 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ## [Unreleased]
 
+### Added
+
+- Web: add a complete anchored `/rules` rulebook with component-composed instructional figures and Message-based play examples.
+
 ### Changed
 
+- Web: replace rulebook Outcome text with compact Outcome cards, frame message examples, use actual cards in Effect illustrations, bundle rulebook location art, normalize instructional card sizing, and add the shared table treatment to the typography styleguide.
+- Docs: present rulebook Distress thresholds as ordinary rules prose instead of a simulated table exchange.
 - Fixed: `/spaceship` trash drops now remove the dragged card instead of letting layout membership resurrect it at the board origin.
 - Fixed: `/spaceship` now prunes stale rendered effect cards after trash removal, so Freezing cards disappear from the live board instead of lingering as inert copies.
 - Docs: require the token-optimized `pnpm check:agent`, `pnpm test:agent`, and `pnpm build:agent` commands as the default validation path in `AGENTS.md`.

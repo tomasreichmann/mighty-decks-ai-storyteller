@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-test("StyleguideTypographyPage showcases Label, Text, and Heading", () => {
+test("StyleguideTypographyPage showcases Label, Text, Heading, and Table", () => {
   const source = readFileSync(
     new URL("./StyleguideTypographyPage.tsx", import.meta.url),
     "utf8",
@@ -13,6 +13,10 @@ test("StyleguideTypographyPage showcases Label, Text, and Heading", () => {
   assert.match(source, /Label/);
   assert.match(source, /Text/);
   assert.match(source, /Heading/);
+  assert.match(source, /Table/);
+  assert.match(source, /Table treatment/);
+  assert.match(source, /<thead>/);
+  assert.match(source, /<tbody>/);
   assert.match(source, /"blood"/);
   assert.match(source, /"steel"/);
   assert.match(source, /size="sm"/);

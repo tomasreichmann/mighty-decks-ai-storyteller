@@ -450,6 +450,21 @@
       "fileName": "pirate-corvette.png",
       "contentType": "image/png",
       "createdAtIso": "2026-05-13T20:50:00.000Z"
+    },
+    "ea219929835764e9f28d850053f7fdd037c5304d05ae1ebac8906c710771ee16": {
+      "fileName": "ai-inline-ea219929835764e9f28d.png",
+      "contentType": "image/png",
+      "createdAtIso": "2026-06-01T15:05:38.873Z"
+    },
+    "bfe530a491c4969f21a52fb062202bb02a48f35f0eb8f0442e0460aa83d0f606": {
+      "fileName": "ai-inline-bfe530a491c4969f21a5.png",
+      "contentType": "image/png",
+      "createdAtIso": "2026-06-01T15:07:06.653Z"
+    },
+    "5e64e24f75542c07c604f4c379c510047de9d75ccd1e7908ba4b206c7c038eca": {
+      "fileName": "ai-inline-5e64e24f75542c07c604.png",
+      "contentType": "image/png",
+      "createdAtIso": "2026-06-01T15:09:09.365Z"
     }
   }
 }
