@@ -16,6 +16,8 @@ import styles from "./RulesRulebookContent.module.css";
 const actorToken = "/actors/base/guard-blue.png";
 const outcomeCardClassName = "w-[6rem]";
 const trackingCardClassName = "w-[10rem]";
+const fumbleCardClassName = "w-[6.5rem]";
+const tableSetupCardClassName = "w-[9rem]";
 const locationExamples = [
   {
     title: "Castle Gate",
@@ -151,7 +153,7 @@ export const CompleteTableSetup = (): JSX.Element => (
               title="Reinforcements Coming"
               currentValue={2}
               maxValue={4}
-              className="w-[9rem]"
+              className={tableSetupCardClassName}
             />
             <DieMarker sides={4} value={2} className="!absolute right-2 top-2 z-20" />
           </div>
@@ -159,7 +161,7 @@ export const CompleteTableSetup = (): JSX.Element => (
             <ActorCard
               baseLayerSlug="guard_blue"
               tacticalRoleSlug="brute"
-              className="w-[9rem]"
+              className={tableSetupCardClassName}
             />
             <DieMarker sides={4} value={3} className="!absolute right-2 top-2 z-20" />
           </div>
@@ -167,18 +169,18 @@ export const CompleteTableSetup = (): JSX.Element => (
 
         <div className={styles.tableSetupOutcomes} aria-label="Outcome deck and hand">
           <div className={styles.tableSetupOutcomeDeck}>
-            <OutcomeCard card="success" face="back" className="w-[7rem]" />
+            <OutcomeCard card="success" face="back" className={tableSetupCardClassName} />
           </div>
           <div className={styles.tableSetupOutcomeHand}>
-            <ResolvedCard type="OutcomeCard" slug="success" className="w-[7rem]" />
-            <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[7rem]" />
-            <ResolvedCard type="OutcomeCard" slug="chaos" className="w-[7rem]" />
+            <ResolvedCard type="OutcomeCard" slug="success" className={tableSetupCardClassName} />
+            <ResolvedCard type="OutcomeCard" slug="fumble" className={tableSetupCardClassName} />
+            <ResolvedCard type="OutcomeCard" slug="chaos" className={tableSetupCardClassName} />
           </div>
         </div>
 
         <div className={styles.tableSetupPlayer} aria-label="Player components">
-          <ResolvedCard type="EffectCard" slug="injury" className="w-[9rem]" />
-          <ResolvedCard type="StuntCard" slug="marksman" className="w-[9rem]" />
+          <ResolvedCard type="EffectCard" slug="injury" className={tableSetupCardClassName} />
+          <ResolvedCard type="StuntCard" slug="marksman" className={tableSetupCardClassName} />
           <AssetCard
             kind="custom"
             noun="Throwing Knife"
@@ -187,7 +189,7 @@ export const CompleteTableSetup = (): JSX.Element => (
             adjectiveDescription="Returns after a throw."
             iconUrl="/assets/medieval/dagger.png"
             overlayUrl="/assets/base/empowered.png"
-            className="w-[9rem]"
+            className={tableSetupCardClassName}
           />
         </div>
       </div>
@@ -483,15 +485,11 @@ export const FumbleBranchesV2 = (): JSX.Element => (
     <ol className="sr-only"><li>Fumble.</li><li>Miss: no useful Effect.</li><li>Hit, but: Bandit receives Injury and Bow receives Complication.</li></ol>
     <div className={styles.fumbleFork}>
       <div className={styles.fumbleSource}>
-        <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[8rem]" />
+        <ResolvedCard type="OutcomeCard" slug="fumble" className={fumbleCardClassName} />
       </div>
       <div className={styles.fumbleBranches}>
         <section className={styles.fumbleBranch} aria-label="Miss: no useful Effect">
           <Text variant="emphasised" color="blood">MISS</Text>
-          <div className={styles.fumbleMissMark} aria-hidden="true">
-            <span className={styles.fumbleArrowShot} />
-            <span className={styles.fumbleMissX}>X</span>
-          </div>
           <Text variant="note" color="iron-light">The arrow flies wide. No useful Effect.</Text>
         </section>
         <section className={styles.fumbleBranch} aria-label="Hit with a fitting consequence">
@@ -499,15 +497,15 @@ export const FumbleBranchesV2 = (): JSX.Element => (
           <div className={styles.fumbleConsequences}>
             <div className={styles.fumbleConsequence}>
               <div className={styles.fumbleCardPair}>
-                <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[4.75rem]" />
-                <ResolvedCard type="EffectCard" slug="injury" className="w-[4.75rem]" />
+                <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className={fumbleCardClassName} />
+                <ResolvedCard type="EffectCard" slug="injury" className={fumbleCardClassName} />
               </div>
               <Text variant="note" color="blood">Bandit takes 1 Injury</Text>
             </div>
             <div className={styles.fumbleConsequence}>
               <div className={styles.fumbleCardPair}>
-                <ResolvedCard type="AssetCard" slug="medieval_hunting_bow" className="w-[4.75rem]" />
-                <ResolvedCard type="EffectCard" slug="complication" className="w-[4.75rem]" />
+                <ResolvedCard type="AssetCard" slug="medieval_hunting_bow" className={fumbleCardClassName} />
+                <ResolvedCard type="EffectCard" slug="complication" className={fumbleCardClassName} />
               </div>
               <Text variant="note" color="blood">Bow gains a Complication</Text>
             </div>

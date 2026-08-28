@@ -46,6 +46,10 @@ Place the tableau inside a dedicated horizontal-scroll viewport and give the
 inner canvas a fixed minimum width of roughly 44–48rem. Cards receive explicit
 widths and must not shrink when the rulebook content column is narrow.
 
+All portrait-format cards use the established 9rem tableau width, including
+the Outcome deck and three-card hand. The landscape Location keeps its wider
+canonical footprint rather than being distorted into a portrait slot.
+
 The three semantic rows remain intact at small viewport widths. Horizontal
 scrolling is preferred over CSS transforms because scaled card text would be
 harder to read and transformed dimensions interact poorly with overflow. The
@@ -63,7 +67,8 @@ Existing card-level accessible names provide the details within each group.
 ## Verification
 
 Update the focused source-level illustration test to require the exact cards,
-actor role, marker values, and Outcome back. Assert that the removed player
+actor role, marker values, Outcome back, and one shared portrait-card width.
+Assert that the removed player
 lanes and their old example cards no longer appear in `CompleteTableSetup`.
 
 Run the focused rules illustration test and the web TypeScript check. Browser

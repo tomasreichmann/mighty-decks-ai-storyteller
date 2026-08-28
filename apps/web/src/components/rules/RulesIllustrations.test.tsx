@@ -57,6 +57,11 @@ test("uses the approved canonical-card tableau for What You Need to Play", () =>
   assert.match(completeTable, /<DieMarker sides=\{4\} value=\{3\}/);
   assert.match(completeTable, /className=\{styles\.tableSetupViewport\}/);
   assert.match(completeTable, /className=\{styles\.tableSetupCanvas\}/);
+  assert.match(illustrations, /const tableSetupCardClassName = "w-\[9rem\]"/);
+  assert.equal((completeTable.match(/className=\{tableSetupCardClassName\}/g) ?? []).length, 9);
+  assert.match(rulebookStyles, /--table-setup-card-width: 9rem/);
+  assert.match(rulebookStyles, /\.tableSetupOutcomeDeck\s*{[^}]+width: var\(--table-setup-card-width\)/s);
+  assert.match(rulebookStyles, /\.tableSetupOutcomeHand\s*{[^}]+repeat\(3, var\(--table-setup-card-width\)\)/s);
   assert.doesNotMatch(completeTable, /\["Mira", "Aldren", "Tomas"\]/);
   assert.doesNotMatch(completeTable, /slug="safecracker"/);
   assert.doesNotMatch(completeTable, /slug="boost"/);
@@ -100,8 +105,15 @@ test("lays out the two Fumble outcomes as a compact responsive fork", () => {
   assert.match(fumble, /styles\.fumbleBranches/);
   assert.equal((fumble.match(/styles\.fumbleBranch(?!es)/g) ?? []).length, 2);
   assert.equal((fumble.match(/styles\.fumbleConsequence(?!s)/g) ?? []).length, 2);
+  assert.match(illustrations, /const fumbleCardClassName = "w-\[6\.5rem\]"/);
+  assert.equal((fumble.match(/className=\{fumbleCardClassName\}/g) ?? []).length, 5);
+  assert.doesNotMatch(fumble, /fumbleMissMark|fumbleArrowShot|fumbleMissX/);
   assert.match(rulebookStyles, /\.fumbleSource::after/);
   assert.match(rulebookStyles, /\.fumbleBranch::before/);
+  assert.match(rulebookStyles, /\.fumbleBranches\s*{[^}]+grid-template-columns: minmax\(0, 3fr\) minmax\(0, 7fr\)[^}]+padding-top: 2\.25rem/s);
+  assert.match(rulebookStyles, /\.fumbleBranches::before\s*{[^}]+right: 35%[^}]+left: 15%/s);
+  assert.match(rulebookStyles, /\.fumbleBranch::before\s*{[^}]+top: -2\.25rem[^}]+height: 2\.25rem/s);
+  assert.match(rulebookStyles, /@media \(max-width: 640px\)[\s\S]+\.fumbleBranch\s*{[^}]+padding-top: 1\.75rem/);
   assert.match(rulebookStyles, /@media \(max-width: 640px\)/);
   assert.doesNotMatch(fumble, /â/);
 });

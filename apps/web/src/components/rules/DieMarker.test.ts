@@ -12,8 +12,6 @@ test("DieMarker exposes marker semantics without interaction", () => {
   assert.match(source, /Dice track values; they are not rolled/);
   assert.match(source, /DieMarker\.module\.css/);
   assert.match(source, /face/);
-  assert.match(source, /leftEdge/);
-  assert.match(source, /rightEdge/);
   assert.match(source, /showTypeLabel/);
   assert.match(source, /shadow/);
   assert.match(source, /className=\{styles\.value\}/);

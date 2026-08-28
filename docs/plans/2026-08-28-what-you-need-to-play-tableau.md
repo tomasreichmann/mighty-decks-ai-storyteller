@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Replace the `/rules` “What You Need to Play” figure with the approved, responsive card tableau.
+**Goal:** Keep the approved `/rules` “What You Need to Play” tableau responsive while giving every portrait-format card one consistent size.
 
-**Architecture:** Keep the change inside the existing rulebook illustration module and its CSS module. Compose canonical card components in three semantic rows inside a minimum-width canvas, and contain that canvas in a horizontal-scroll viewport so narrow rulebook columns cannot squash cards or widen the page.
+**Architecture:** Keep the change inside the existing rulebook illustration module and its CSS module. Apply one shared 9rem class to every portrait-format card and mirror that width in the Outcome deck and hand grid; retain the landscape Location width. Keep the minimum-width canvas inside its horizontal-scroll viewport so narrow rulebook columns cannot squash cards or widen the page.
 
 **Tech Stack:** React, TypeScript, CSS Modules, Tailwind utility classes, Node test runner with `tsx`.
 

@@ -8,9 +8,11 @@ Improve the existing `Two valid Fumbles` figure on `/rules` without changing the
 
 Use the canonical Fumble card as the centered source of a compact Y-fork. A visible stem and two branches lead to equal-width `MISS` and `HIT, BUT...` outcomes so the shared cause and alternative resolutions read immediately.
 
-The miss branch stays intentionally spare: a short statement that the arrow flies wide and causes no useful Effect. The hit branch contains two balanced consequence pairs: Bandit with Injury, and Hunting Bow with Complication. Each pair uses existing full card components at a readable, consistent scale.
+The miss branch stays intentionally spare and narrow: a short statement that the arrow flies wide and causes no useful Effect, without an extra arrow or failure symbol. The wider hit branch contains two balanced consequence pairs: Bandit with Injury, and Hunting Bow with Complication. Every card in the figure uses one larger fixed width so the source and consequences have a consistent visual scale.
 
-On narrow screens the fork becomes a vertical sequence, preserving reading order and avoiding horizontal overflow. The existing screen-reader summary remains the semantic description of the diagram.
+The horizontal connector follows the asymmetric branch centers. Its endpoints meet both vertical branch stems without visible gaps, and the branch labels have clear breathing room below it.
+
+On narrow screens the fork becomes a vertical sequence and the consequence pairs stack, preserving reading order and avoiding horizontal overflow without resizing cards. The existing screen-reader summary remains the semantic description of the diagram.
 
 ## Alternatives Considered
 

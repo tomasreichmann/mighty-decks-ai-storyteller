@@ -19,14 +19,23 @@ export const DieMarker = ({
 }: DieMarkerProps): JSX.Element => {
   const displayedValue = Math.min(sides, Math.max(0, Math.round(value)));
   const markerClassName = [
-    sides === 4 ? styles.marker : "inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-kac-iron bg-kac-gold font-heading text-lg font-bold shadow-sm",
+    sides === 4
+      ? styles.marker
+      : "inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-kac-iron bg-kac-gold font-heading text-lg font-bold shadow-sm",
     removed ? styles.removed : "",
     className,
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <span
-      aria-label={label ?? (removed ? `d${sides} marker removed` : `d${sides} marker showing ${displayedValue}`)}
+      aria-label={
+        label ??
+        (removed
+          ? `d${sides} marker removed`
+          : `d${sides} marker showing ${displayedValue}`)
+      }
       className={markerClassName}
       data-sides={sides}
       role="img"
@@ -34,8 +43,6 @@ export const DieMarker = ({
       {sides === 4 ? (
         <>
           <span aria-hidden="true" className={styles.face} />
-          <span aria-hidden="true" className={styles.leftEdge} />
-          <span aria-hidden="true" className={styles.rightEdge} />
           <span aria-hidden="true" className={styles.value}>
             {removed ? "×" : displayedValue}
           </span>
@@ -43,7 +50,11 @@ export const DieMarker = ({
       ) : (
         <span aria-hidden="true">{removed ? "×" : displayedValue}</span>
       )}
-      {showTypeLabel && sides === 4 ? <span aria-hidden="true" className={styles.typeLabel}>d4</span> : null}
+      {showTypeLabel && sides === 4 ? (
+        <span aria-hidden="true" className={styles.typeLabel}>
+          d4
+        </span>
+      ) : null}
       <span className="sr-only">Dice track values; they are not rolled.</span>
     </span>
   );
