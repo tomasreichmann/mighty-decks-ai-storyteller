@@ -45,6 +45,20 @@
   scroll-margin-top: 1.5rem;
 }
 
+.cardFloat {
+  float: right;
+  width: min(11rem, 36%);
+  margin: 0.25rem 0 1rem 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .cardFloat {
+    float: none;
+    width: min(100%, 12rem);
+    margin: 0.75rem auto;
+  }
+}
+
 @media print {
   .content :global(figure) {
     break-inside: avoid-page;

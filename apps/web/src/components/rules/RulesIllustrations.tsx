@@ -9,6 +9,7 @@ import { Text } from "../common/Text";
 import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
+import styles from "./RulesRulebookContent.module.css";
 
 const actorToken = "/actors/base/guard-blue.png";
 const locationImage = "/rules/locations/courtyard.png";
@@ -78,6 +79,42 @@ const ResolvedCard = ({
     </CardBoundary>
   );
 };
+
+const RulebookCardFloat = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}): JSX.Element => (
+  <aside aria-label={label} className={styles.cardFloat}>
+    {children}
+  </aside>
+);
+
+export const DistressCardIllustration = (): JSX.Element => (
+  <RulebookCardFloat label="Distress card illustration">
+    <ResolvedCard type="EffectCard" slug="distress" />
+  </RulebookCardFloat>
+);
+
+export const StuntCardIllustration = (): JSX.Element => (
+  <RulebookCardFloat label="Stunt card illustration">
+    <ResolvedCard type="StuntCard" slug="safecracker" />
+  </RulebookCardFloat>
+);
+
+export const AssetCardIllustration = (): JSX.Element => (
+  <RulebookCardFloat label="Asset card illustration">
+    <ResolvedCard type="AssetCard" slug="base_tools" />
+  </RulebookCardFloat>
+);
+
+export const ConsumableCardIllustration = (): JSX.Element => (
+  <RulebookCardFloat label="Consumable card illustration">
+    <ResolvedCard type="AssetCard" slug="base_healing" />
+  </RulebookCardFloat>
+);
 
 export const EffectEquation = (): JSX.Element => (
   <div className="flex flex-wrap items-center justify-center gap-2 text-center font-heading text-xl font-bold text-kac-iron">
@@ -332,5 +369,9 @@ export const rulebookIllustrationsBySectionId: Readonly<Record<string, () => JSX
 };
 
 export const rulebookIllustrationsBySubsectionId: Readonly<Record<string, () => JSX.Element>> = {
+  "7-2-distress": DistressCardIllustration,
+  "9-2-stunts": StuntCardIllustration,
+  "9-3-assets": AssetCardIllustration,
+  "9-4-consumables": ConsumableCardIllustration,
   "example-two-valid-fumbles": FumbleBranches,
 };
