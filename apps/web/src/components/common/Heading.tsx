@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react";
 import { cn } from "../../utils/cn";
-import { Highlight, HighlightProps } from "./Highlight";
+import { Highlight, type HighlightProps } from "./Highlight";
 import { Text, type TextColor, type TextVariant } from "./Text";
 
 export type HeadingLevel = "h1" | "h2" | "h3";
@@ -18,6 +18,12 @@ const headingVariantMap: Record<HeadingLevel, TextVariant> = {
   h3: "h3",
 };
 
+const headingHighlightColorByLevel: Record<HeadingLevel, HighlightProps["color"]> = {
+  h1: "gold",
+  h2: "fire",
+  h3: "cloth",
+};
+
 export const Heading = ({
   level = "h2",
   highlightProps = {},
@@ -25,6 +31,11 @@ export const Heading = ({
   className,
   children,
 }: HeadingProps): JSX.Element => {
+  const resolvedHighlightProps: HighlightProps = {
+    color: headingHighlightColorByLevel[level],
+    ...highlightProps,
+  };
+
   return (
     <Text
       variant={headingVariantMap[level]}
@@ -39,10 +50,10 @@ export const Heading = ({
           lineHeight={10}
           brushHeight={8}
           lineOffsets={[0, 10, 30, 50]}
-          {...highlightProps}
+          {...resolvedHighlightProps}
           className={cn(
             "absolute w-[calc(100%+0.5em)] h-[calc(100%-0.4em)] left-1/2 bottom-0 -translate-x-1/2 -z-10",
-            highlightProps.className,
+            resolvedHighlightProps.className,
           )}
         />
       </span>

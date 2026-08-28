@@ -31,3 +31,12 @@ test("Heading resolves the semantic highlight palette with lighter tones", () =>
     assert.equal(resolveHeadingHighlightColorClass(color), expectedClass);
   }
 });
+
+test("Heading defaults its highlight color by semantic level", () => {
+  const source = readFileSync(new URL("./Heading.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /h1:\s*"gold"/);
+  assert.match(source, /h2:\s*"fire"/);
+  assert.match(source, /h3:\s*"cloth"/);
+  assert.match(source, /color:\s*headingHighlightColorByLevel\[level\]/);
+});
