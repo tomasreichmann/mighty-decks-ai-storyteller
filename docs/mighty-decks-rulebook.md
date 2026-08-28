@@ -438,6 +438,10 @@ Be generous when the connection is natural, but reject tenuous attempts to turn 
 
 Stunts represent talents, unusual abilities, learned techniques, supernatural powers, background advantages, or signature moves.
 
+At the beginning of some scenes, the Storyteller may choose up to as many scene-appropriate Stunts as there are players and place them face up on the table. Each displayed Stunt lists a requirement that players can fulfill during that scene. The first player to fulfill a Stunt's requirement gains that Stunt immediately and keeps it for the rest of the Adventure.
+
+A player may earn more than one Stunt, but the Storyteller should guide opportunities so that one player does not hoard the available Stunts.
+
 Players normally choose **2 Stunts** during setup unless the Adventure says otherwise.
 
 A Stunt may:

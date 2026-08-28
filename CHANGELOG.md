@@ -17,6 +17,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Docs: explain how scene-specific Stunts are offered, earned by the first qualifying player, retained for the Adventure, and shared without a hard per-player cap.
 - Web: update the rulebook's "What You Need to Play" figure to show a readable, horizontally scrollable tabletop of canonical Locations, Counters, Actors, Outcomes, Effects, Stunts, and Assets.
 - Web: rebuild `/rules` instructional figures for status thresholds, table setup, card composition, range, initiative, the action loop, Fumbles, and Catastrophes with canonical cards, clearer flows, and responsive tabletop layouts.
 - Web: improve `/rules` long-form reading rhythm and reduce its edge halftone without changing shared site typography.

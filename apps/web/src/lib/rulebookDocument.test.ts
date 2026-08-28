@@ -100,6 +100,17 @@ test("states the finalized Defense timing and counterattack limit", () => {
   assert.doesNotMatch(canonicalRulebook, /\bST\b/);
 });
 
+test("keeps scene-earned Stunts for the rest of the Adventure", () => {
+  assert.match(
+    canonicalRulebook,
+    /The first player to fulfill a Stunt's requirement gains that Stunt immediately/,
+  );
+  assert.match(
+    canonicalRulebook,
+    /keeps it for the rest of the Adventure/,
+  );
+});
+
 test("excludes editorial notes and illustration briefs from reader prose", () => {
   const document = parseRulebookDocument(canonicalRulebook);
   const renderedSource = document.sections.map((section) => section.body).join("\n");
