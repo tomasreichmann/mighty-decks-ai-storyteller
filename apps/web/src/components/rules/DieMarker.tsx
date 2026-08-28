@@ -31,8 +31,18 @@ export const DieMarker = ({
       data-sides={sides}
       role="img"
     >
-      <span aria-hidden="true">{removed ? "✕" : displayedValue}</span>
-      {sides === 4 ? <><span aria-hidden="true" className={styles.face} /><span aria-hidden="true" className={styles.leftEdge} /><span aria-hidden="true" className={styles.rightEdge} /></> : null}
+      {sides === 4 ? (
+        <>
+          <span aria-hidden="true" className={styles.face} />
+          <span aria-hidden="true" className={styles.leftEdge} />
+          <span aria-hidden="true" className={styles.rightEdge} />
+          <span aria-hidden="true" className={styles.value}>
+            {removed ? "×" : displayedValue}
+          </span>
+        </>
+      ) : (
+        <span aria-hidden="true">{removed ? "×" : displayedValue}</span>
+      )}
       {showTypeLabel && sides === 4 ? <span aria-hidden="true" className={styles.typeLabel}>d4</span> : null}
       <span className="sr-only">Dice track values; they are not rolled.</span>
     </span>

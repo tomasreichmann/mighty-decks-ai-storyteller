@@ -2,6 +2,101 @@
   min-width: 0;
 }
 
+.tableSetupViewport {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  padding: 0.25rem 0.25rem 0.8rem;
+  scrollbar-color: var(--kac-cloth, #80a0bc) rgb(18 27 35 / 0.14);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.tableSetupViewport::-webkit-scrollbar {
+  height: 0.6rem;
+}
+
+.tableSetupViewport::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgb(18 27 35 / 0.14);
+}
+
+.tableSetupViewport::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--kac-cloth, #80a0bc);
+  background-clip: padding-box;
+}
+
+.tableSetupCanvas {
+  display: grid;
+  width: max-content;
+  min-width: 46rem;
+  gap: 1.35rem;
+  padding: 0.35rem 0.75rem 0.55rem;
+}
+
+.tableSetupShared,
+.tableSetupOutcomes,
+.tableSetupPlayer {
+  display: grid;
+  align-items: start;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.tableSetupShared {
+  grid-template-columns: 20rem 9rem 9rem;
+}
+
+.tableSetupOutcomes {
+  grid-template-columns: 7.75rem auto;
+}
+
+.tableSetupOutcomeDeck {
+  position: relative;
+  isolation: isolate;
+  width: 7rem;
+}
+
+.tableSetupOutcomeDeck::before,
+.tableSetupOutcomeDeck::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border: 2px solid var(--kac-iron, #121b23);
+  border-radius: 0.6rem;
+  background: var(--kac-cloth, #80a0bc);
+  content: "";
+}
+
+.tableSetupOutcomeDeck::before {
+  transform: translate(-0.28rem, 0.28rem);
+}
+
+.tableSetupOutcomeDeck::after {
+  transform: translate(-0.55rem, 0.55rem);
+}
+
+.tableSetupOutcomeHand {
+  display: grid;
+  grid-template-columns: repeat(3, 7rem);
+  align-items: start;
+  gap: 0.75rem;
+}
+
+.tableSetupPlayer {
+  grid-template-columns: repeat(3, 9rem);
+}
+
+.tableSetupTrackedCard {
+  position: relative;
+  display: inline-flex;
+  width: 9rem;
+}
+
 .section {
   scroll-margin-top: 1.5rem;
   border-left: 3px solid transparent;
@@ -54,15 +149,279 @@
   margin: 0.25rem 0 1rem 1.25rem;
 }
 
+.statusThresholds {
+  display: grid;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+.statusLane {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.statusSequence {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.statusMilestone {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.statusCardPair {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.countedStatusCard {
+  position: relative;
+}
+
+.statusCount {
+  position: absolute;
+  top: -0.45rem;
+  right: -0.45rem;
+  z-index: 10;
+}
+
+.statusArrow {
+  flex: 0 0 auto;
+  font-family: var(--font-heading, serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--kac-iron, #121b23);
+}
+
+.statusTransition {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: center;
+  gap: 0.1rem;
+  color: var(--kac-blood-dark, #81182a);
+  font-family: var(--font-ui, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.trackingGrid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.fumbleFork {
+  display: grid;
+  width: 100%;
+  justify-items: center;
+}
+
+.fumbleSource {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  padding-bottom: 2rem;
+}
+
+.fumbleSource::after {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0.2rem;
+  height: 2rem;
+  background: var(--kac-blood-dark, #81182a);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.fumbleBranches {
+  position: relative;
+  display: grid;
+  width: min(100%, 48rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 7vw, 5rem);
+  padding-top: 1.8rem;
+}
+
+.fumbleBranches::before {
+  position: absolute;
+  top: 0;
+  right: 25%;
+  left: 25%;
+  height: 0.2rem;
+  background: var(--kac-blood-dark, #81182a);
+  content: "";
+}
+
+.fumbleBranch {
+  position: relative;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.fumbleBranch::before {
+  position: absolute;
+  top: -1.8rem;
+  left: 50%;
+  width: 0.2rem;
+  height: 1.8rem;
+  background: var(--kac-blood-dark, #81182a);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.fumbleMissMark {
+  position: relative;
+  display: grid;
+  width: 6rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0.2rem solid var(--kac-blood-dark, #81182a);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--kac-bone-light, #f3e7ce) 76%, transparent);
+  color: var(--kac-blood-dark, #81182a);
+}
+
+.fumbleArrowShot {
+  position: relative;
+  display: block;
+  width: 3.4rem;
+  height: 0.18rem;
+  background: currentcolor;
+  transform: rotate(-14deg);
+}
+
+.fumbleArrowShot::before,
+.fumbleArrowShot::after {
+  position: absolute;
+  right: -0.05rem;
+  width: 0.8rem;
+  height: 0.18rem;
+  background: currentcolor;
+  content: "";
+  transform-origin: right center;
+}
+
+.fumbleArrowShot::before {
+  transform: rotate(35deg);
+}
+
+.fumbleArrowShot::after {
+  transform: rotate(-35deg);
+}
+
+.fumbleMissX {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.35rem;
+  font-family: var(--font-heading, serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.fumbleConsequences {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.fumbleConsequence {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  gap: 0.55rem;
+}
+
+.fumbleCardPair {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
 @media (max-width: 640px) {
   .cardFloat {
     float: none;
     width: min(100%, 12rem);
     margin: 0.75rem auto;
   }
+
+  .statusSequence {
+    display: grid;
+    justify-items: center;
+  }
+
+  .statusArrow {
+    transform: rotate(90deg);
+  }
+
+  .statusTransition .statusArrow {
+    transform: rotate(90deg);
+  }
+
+  .fumbleSource {
+    padding-bottom: 1.5rem;
+  }
+
+  .fumbleSource::after {
+    height: 1.5rem;
+  }
+
+  .fumbleBranches {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-top: 0;
+  }
+
+  .fumbleBranches::before {
+    display: none;
+  }
+
+  .fumbleBranch {
+    padding-top: 1.25rem;
+  }
+
+  .fumbleBranch::before {
+    top: 0;
+    height: 1.25rem;
+  }
+
+  .fumbleConsequences {
+    width: min(100%, 24rem);
+  }
 }
 
 @media print {
+  .tableSetupViewport {
+    overflow: visible;
+    padding-bottom: 0;
+    scrollbar-width: none;
+  }
+
+  .tableSetupCanvas {
+    width: 125%;
+    min-width: 0;
+    zoom: 0.8;
+  }
+
   .content :global(figure) {
     break-inside: avoid-page;
   }

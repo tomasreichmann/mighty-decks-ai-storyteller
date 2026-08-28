@@ -6,7 +6,7 @@
 
 ## 1. What Is Mighty Decks?
 
-**Mighty Decks** is a fast-paced tabletop roleplaying game for **1â€“4 players and one Storyteller**.
+**Mighty Decks** is a fast-paced tabletop roleplaying game for **1–4 players and one Storyteller**.
 
 Players describe what their characters do. When an action is risky, uncertain, or dramatically important, they resolve it by choosing a card from their personal **Outcome Deck** instead of rolling dice.
 
@@ -27,17 +27,17 @@ The rules are **setting-independent**. The same mechanics can handle sword fight
 
 ## 2. What You Need to Play
 
-- **1 Storyteller** â€” describes the world, presents challenges, controls NPCs, and interprets consequences.
-- **1â€“4 Players** â€” each plays one main character.
-- **An Adventure** â€” a prepared scenario or an original story.
-- **Outcome Decks** â€” one 12-card deck for each player.
-- **Stunt Cards** â€” talents, abilities, specialties, and signature moves.
-- **Effect Cards** â€” conditions and consequences such as Injury, Distress, Stuck, or Boost.
-- **Asset Cards** â€” equipment, tools, weapons, vehicles, consumables, and other useful things.
-- **Actor Cards** â€” characters and creatures controlled by the Storyteller, and optionally illustrations for player characters.
-- **Counter Cards** â€” progress, threats, countdowns, resources, and other changing scene values.
-- **Location Cards or a zone map** â€” used when positioning matters.
-- **Dice used as markers** â€” typically d4, d6, d8, and d12. Dice are not rolled to resolve actions; they show current values on Counters and Actors.
+- **1 Storyteller** — describes the world, presents challenges, controls NPCs, and interprets consequences.
+- **1–4 Players** — each plays one main character.
+- **An Adventure** — a prepared scenario or an original story.
+- **Outcome Decks** — one 12-card deck for each player.
+- **Stunt Cards** — talents, abilities, specialties, and signature moves.
+- **Effect Cards** — conditions and consequences such as Injury, Distress, Stuck, or Boost.
+- **Asset Cards** — equipment, tools, weapons, vehicles, consumables, and other useful things.
+- **Actor Cards** — characters and creatures controlled by the Storyteller, and optionally illustrations for player characters.
+- **Counter Cards** — progress, threats, countdowns, resources, and other changing scene values.
+- **Location Cards or a zone map** — used when positioning matters.
+- **Dice used as markers** — typically d4, d6, d8, and d12. Dice are not rolled to resolve actions; they show current values on Counters and Actors.
 
 All components needed by a published Adventure should be included or clearly listed.
 
@@ -47,11 +47,11 @@ All components needed by a published Adventure should be included or clearly lis
 
 Each player normally has an identical **12-card Outcome Deck**:
 
-- 1 Ã— **Special Action**
-- 3 Ã— **Success**
-- 3 Ã— **Partial Success**
-- 4 Ã— **Fumble**
-- 1 Ã— **Chaos**
+- 1 × **Special Action**
+- 3 × **Success**
+- 3 × **Partial Success**
+- 4 × **Fumble**
+- 1 × **Chaos**
 
 At the start of play, shuffle your deck and draw **3 cards**.
 
@@ -79,15 +79,15 @@ When an action is risky or dramatically important:
 6. **Discard and redraw.** Discard the played Outcome card and immediately draw a replacement.
 7. **Check for Catastrophe.** If your new hand triggers a Catastrophe, announce and resolve it immediately.
 
-### Example â€” A Basic Action
+### Example — A Basic Action
 
 Mira wants to climb a crumbling wall before guards arrive.
 
-**Storyteller:** â€œIf this goes badly, you could fall or get stuck halfway.â€
+**Storyteller:** “If this goes badly, you could fall or get stuck halfway.”
 
 Mira plays **Success: +2 Effect**.
 
-**Storyteller:** â€œYou reach the top quickly and find a good vantage point.â€
+**Storyteller:** “You reach the top quickly and find a good vantage point.”
 
 Mira discards the Success and immediately draws a replacement Outcome card.
 
@@ -115,7 +115,7 @@ A Partial Success usually means the action works, but with reduced impact, a com
 
 A Partial Success does **not** always create a Complication card.
 
-### Example â€” Partial Success
+### Example — Partial Success
 
 Brother Tomas tells a suspicious guard that the party was summoned by the lord of the keep.
 
@@ -123,13 +123,13 @@ He plays **Partial Success: +1 Effect**.
 
 The Storyteller decides that Tomas gets what he wanted, but not cleanly.
 
-**Storyteller:** â€œThe guard lets you through, but follows you to verify your story.â€
+**Storyteller:** “The guard lets you through, but follows you to verify your story.”
 
 ---
 
 ### 5.3 Fumble
 
-**Fumble: roughly âˆ’1 Effect**
+**Fumble: roughly −1 Effect**
 
 A Fumble means something goes wrong. The exact result depends on the action and the fiction.
 
@@ -145,19 +145,19 @@ A useful guideline is that one Fumble creates roughly **one significant negative
 
 A Fumble does **not** always mean that the attempted action simply fails. The Storyteller may allow some useful part of the action to happen and attach a consequence instead.
 
-### Example â€” Two Valid Fumbles
+### Example — Two Valid Fumbles
 
 Mira fires her bow at a bandit and plays a **Fumble**.
 
 **Simple failure:**
 
-**Storyteller:** â€œThe arrow flies wide and strikes the wall.â€
+**Storyteller:** “The arrow flies wide and strikes the wall.”
 
 The attack does no useful Effect.
 
 **Success with a larger consequence:**
 
-**Storyteller:** â€œThe arrow hits for the bow's normal 1 Injury, but the bowstring snaps.â€
+**Storyteller:** “The arrow hits for the bow's normal 1 Injury, but the bowstring snaps.”
 
 The bow cannot be fired again until Mira repairs it. The Storyteller may represent this with a **Complication** attached to the bow Asset.
 
@@ -173,11 +173,11 @@ Chaos is neither a normal success nor a normal failure. The Storyteller changes 
 
 Chaos cannot be used for Defense.
 
-### Example â€” Chaos
+### Example — Chaos
 
 Sir Aldren tries to smash through a locked door and plays **Chaos**.
 
-**Storyteller:** â€œBefore your hammer lands, the door opens from the other side. A surprised guard is standing there.â€
+**Storyteller:** “Before your hammer lands, the door opens from the other side. A surprised guard is standing there.”
 
 A different Chaos result might be:
 
@@ -228,7 +228,7 @@ The Storyteller interprets the final total according to what the character actua
 
 A successful sword strike may turn +2 Effect into **2 Injury**. Convincing a frightened enemy to surrender may create **Distress**. Repairing a machine may add progress to a **Counter**. Pulling someone free may remove **Stuck**. A clever defensive maneuver may create a **Boost**.
 
-### Example â€” Effect Is Impact, Not Damage
+### Example — Effect Is Impact, Not Damage
 
 A heavy chandelier hangs above a guard.
 
@@ -239,7 +239,7 @@ The Storyteller agrees that the fiction supports the attempt and resolves the +2
 - **1 Distress**
 - **1 Stuck**
 
-**Storyteller:** â€œThe chandelier crashes beside him. He dives away in panic but is trapped beneath fallen furniture.â€
+**Storyteller:** “The chandelier crashes beside him. He dives away in panic but is trapped beneath fallen furniture.”
 
 The Outcome determined **how much** happened. The fictional action determined **what** happened.
 
@@ -304,19 +304,19 @@ Boosts may belong to a player, Actor, Asset, Location, or situation when that ma
 
 A Complication represents a temporary problem that makes something harder.
 
-Unless the Storyteller explains a different effect, a Complication gives **âˆ’1 Effect the next time it applies, then is discarded**.
+Unless the Storyteller explains a different effect, a Complication gives **−1 Effect the next time it applies, then is discarded**.
 
 A Complication can be attached to whatever it affects:
 
-- a character â€” twisted ankle,
-- an Asset â€” jammed gun or damaged bow,
-- a Location â€” unstable rubble,
-- an Actor â€” distracted or exposed,
-- a situation â€” suspicious guards.
+- a character — twisted ankle,
+- an Asset — jammed gun or damaged bow,
+- a Location — unstable rubble,
+- an Actor — distracted or exposed,
+- a situation — suspicious guards.
 
 The Storyteller explains what the Complication means and how it can be removed.
 
-Some Complications behave differently. For example, a snapped bowstring might make the bow unusable until a character spends an Action repairing it instead of simply applying âˆ’1 Effect once.
+Some Complications behave differently. For example, a snapped bowstring might make the bow unusable until a character spends an Action repairing it instead of simply applying −1 Effect once.
 
 ---
 
@@ -392,7 +392,7 @@ Possible consequences include:
 
 A Catastrophe **can** Take Out a character when that makes sense, especially if they were already near their limit, but the recommended default is to bring characters to the brink rather than remove them from play immediately.
 
-### Example â€” Catastrophe
+### Example — Catastrophe
 
 Mira takes her Action normally and then draws a replacement Outcome card.
 
@@ -408,7 +408,7 @@ The Storyteller resolves it as three connected consequences:
 - Her bow gains a **Complication**.
 - A nearby bandit gains a **Boost**.
 
-**Storyteller:** â€œLoose stones give way beneath you. You slam into the wall, damage your bow, and leave yourself open to the bandit.â€
+**Storyteller:** “Loose stones give way beneath you. You slam into the wall, damage your bow, and leave yourself open to the bandit.”
 
 Mira discards the three Fumbles and redraws three cards.
 
@@ -471,7 +471,7 @@ Assets can:
 
 Assets may be built from a **base card plus one or more modifier cards in a sleeve**, allowing the physical object to change during play.
 
-### Example â€” Stacking Modifiers
+### Example — Stacking Modifiers
 
 Mira uses a magical throwing knife that gives **+1 Effect when thrown**.
 
@@ -499,7 +499,7 @@ If the player uses an Outcome card for the same task as the Consumable, the Outc
 
 A Consumable can also be used during Defense if the item's text and the fiction support it.
 
-### Example â€” Healing with a Consumable
+### Example — Healing with a Consumable
 
 Aldren has 3 Injury.
 
@@ -549,7 +549,7 @@ Depending on what happened, an Actor may:
 
 The Storyteller narrates the result.
 
-### Example â€” Injury and Distress Combine
+### Example — Injury and Distress Combine
 
 A Bandit has **Toughness 3**.
 
@@ -559,7 +559,7 @@ Later Brother Tomas intimidates the wounded bandit and gets **Partial Success: +
 
 The bandit's remaining Toughness reaches **0**.
 
-**Storyteller:** â€œBleeding and surrounded, he throws down his weapon.â€
+**Storyteller:** “Bleeding and surrounded, he throws down his weapon.”
 
 The bandit is **Taken Out** even though the final Effect was mental rather than physical.
 
@@ -669,21 +669,21 @@ The Storyteller decides what ranges make sense unless a card gives a specific ru
 
 Useful defaults:
 
-- a punch or sword strike â€” same Zone,
-- a thrown object â€” adjacent Zone,
-- an ordinary ranged weapon â€” often up to 2 Zones,
-- a sniper weapon â€” anywhere in sight,
-- artillery â€” anywhere the shot can reasonably reach ballistically.
+- a punch or sword strike — same Zone,
+- a thrown object — adjacent Zone,
+- an ordinary ranged weapon — often up to 2 Zones,
+- a sniper weapon — anywhere in sight,
+- artillery — anywhere the shot can reasonably reach ballistically.
 
 If a target is outside the action's range, the action is normally **not possible** rather than merely taking a numerical penalty.
 
 Stunts and Assets can change these permissions. A Stunt might let a character throw one Zone farther. A magical throwing knife might give +1 Effect and return to the wielder after the attack.
 
-### Example â€” Range and Zones
+### Example — Range and Zones
 
 The scene uses three Location cards:
 
-**Gate â†’ Courtyard â†’ Tower**
+**Gate → Courtyard → Tower**
 
 Mira is at the Gate. A bandit is in the Tower.
 
@@ -739,7 +739,7 @@ If the player chooses not to defend, resolve the full incoming Effect as if thei
 
 A defensive Fumble normally gives **no protection**, but it does not automatically increase the incoming Injury or other Effect. The Storyteller may add another fitting consequence, such as a Complication, but should generally avoid turning a 2-Injury attack into 3 Injury merely because the Defense was a Fumble.
 
-### Example â€” Defense
+### Example — Defense
 
 A Bandit attacks Aldren for **2 Injury**.
 
@@ -754,7 +754,7 @@ Aldren plays Success.
 
 Because his Defense exceeds what was needed, the Storyteller may let the excess create a small advantage.
 
-**Storyteller:** â€œYou catch his axe on your shield and force him off balance. Take a Boost.â€
+**Storyteller:** “You catch his axe on your shield and force him off balance. Take a Boost.”
 
 Excess Defense can create a Boost or narrative advantage, but does not normally become a free counterattack.
 
@@ -776,7 +776,7 @@ Do not divide Splash Effect between targets. Each target receives the full liste
 
 Each player defends separately.
 
-### Tiny Example â€” Splash
+### Tiny Example — Splash
 
 A dragon breathes fire into the Courtyard for **2 Burning, Splash**.
 
@@ -836,7 +836,7 @@ Taken Out does **not** automatically mean dying.
 
 Another character can help them recover through an Action, Consumable, or other appropriate method. If the High Tension scene ends and the situation becomes safe enough for a Low Tension scene, the Taken Out character may recover normally if the fiction allows it.
 
-### Example â€” Taken Out
+### Example — Taken Out
 
 Aldren reaches his maximum of 4 Injury during a battle.
 
@@ -880,11 +880,11 @@ The wording and narration should make clear whether an event happens once or rem
 
 If Security arrives when a Counter reaches 3, reducing the Counter later does not make the guards disappear, and reaching 3 again does not summon a second identical security team unless the Adventure says so.
 
-### Example â€” Progress Counter
+### Example — Progress Counter
 
 The Storyteller announces:
 
-**Raise the Portcullis â€” 0/4**
+**Raise the Portcullis — 0/4**
 
 Aldren forces the mechanism and plays Success.
 
@@ -894,11 +894,11 @@ Later Mira Fumbles while helping. The Storyteller decides the mechanism slips an
 
 At **4**, the portcullis opens.
 
-### Example â€” Ongoing Counter
+### Example — Ongoing Counter
 
 The Storyteller places:
 
-**Ice Storm â€” 3/4**
+**Ice Storm — 3/4**
 
 The Adventure says:
 
@@ -932,9 +932,9 @@ Players should still have room to contribute.
 
 The Storyteller can invite a player to describe important moments:
 
-- â€œDescribe how you defeated him.â€
-- â€œWhat does your spell look like?â€
-- â€œHow did you actually fail to defend against the punch?â€
+- “Describe how you defeated him.”
+- “What does your spell look like?”
+- “How did you actually fail to defend against the punch?”
 
 The Storyteller keeps final authority over consequences involving the world and NPCs, while players remain the primary authors of their own character's intent, attitude, and style.
 
@@ -1031,7 +1031,7 @@ Players should understand the broad risk before choosing their Outcome.
 
 You do not need to announce exact Effect cards in advance.
 
-> â€œIf this goes badly, you're probably going over the edge.â€
+> “If this goes badly, you're probably going over the edge.”
 
 is usually enough.
 

@@ -308,7 +308,7 @@ const outcomesCsvRaw = `"slug","title","icon","description","instructions","coun
 const effectsCsvRaw = `"slug","title","icon","effect","count","deck"
 "injury","Injury","/mighty-decks/effects/injury.png","4xÂ Injury âžœ Unconscious.â”€â”€Use an action or an Asset to heal and discard.",4,"base"
 "distress","Distress","/mighty-decks/effects/distress.png","3xÂ Distress âžœ Panic.<BR>4xÂ Distress âžœ Hopeless.â”€â”€Use an action or an Asset to recover and discard.",4,"base"
-"dying","Dying","/mighty-decks/effects/dying.png","4xÂ Injury: You cannot take actions until someone revives you. Check optional dying rules.â”€â”€Heal your Injuries to discard.",1,"base"
+"taken-out","Taken Out","/mighty-decks/effects/dying.png","4xÂ Injury: You are Taken Out. You cannot act until the fiction and recovery rules allow it.â”€â”€Heal your Injuries to discard.",1,"base"
 "panicked","Panicked","/mighty-decks/effects/panicked.png","3xÂ Distress: You can only play the top card of your Outcome deck.â”€â”€Recover from your Distress to discard.",1,"base"
 "hopeless","Hopeless","/mighty-decks/effects/hopeless.png","4xÂ Distress: You can only flee or give up.â”€â”€Recover from your Distress to discard.",1,"base"
 "stuck","Stuck","/mighty-decks/effects/stuck.png","You cannot move, but you can still take other actions.â”€â”€Use an action to free yourself and discard.",1,"base"

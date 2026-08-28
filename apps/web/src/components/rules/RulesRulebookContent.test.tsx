@@ -19,10 +19,10 @@ test("registers compact status thresholds alongside the floated component illust
   assert.match(illustrations, /"9-4-consumables": ConsumableCardIllustration/);
   assert.match(illustrations, /<RulebookCardFloat label=/);
   assert.match(styles, /\.cardFloat/);
-  assert.match(illustrations, /RulebookDiagramCard/);
-  assert.match(illustrations, /PANICKED/);
-  assert.match(illustrations, /HOPELESS/);
-  assert.match(illustrations, /TAKEN OUT/);
+  assert.match(illustrations, /GameCardView/);
+  assert.match(illustrations, /slug="panicked"/);
+  assert.match(illustrations, /slug="hopeless"/);
+  assert.match(illustrations, /slug="taken-out"/);
 });
 
 test("disables preserved whitespace on Rules callouts", () => {

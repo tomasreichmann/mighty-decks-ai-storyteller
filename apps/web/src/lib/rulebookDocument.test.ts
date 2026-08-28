@@ -126,6 +126,10 @@ test("publishes only reader-facing rulebook copy and numbers Quick Reference as 
   );
 });
 
+test("keeps reader-facing rulebook punctuation in UTF-8", () => {
+  assert.doesNotMatch(canonicalRulebook, /â(?:€”|€|†)/);
+});
+
 test("fails clearly when the canonical heading inventory changes", () => {
   const renamed = canonicalRulebook.replace(
     "## 8. Catastrophe",

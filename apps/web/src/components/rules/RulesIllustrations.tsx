@@ -3,17 +3,17 @@ import type { ReactNode } from "react";
 import { ActorCard } from "../cards/ActorCard";
 import { AssetCard } from "../cards/AssetCard";
 import { CounterCard } from "../cards/CounterCard";
+import { OutcomeCard } from "../cards/OutcomeCard";
 import { CardBoundary } from "../common/CardBoundary";
+import { Label } from "../common/Label";
 import { Token } from "../common/Token";
 import { Text } from "../common/Text";
 import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
-import { RulebookDiagramCard } from "./RulebookDiagramCard";
 import styles from "./RulesRulebookContent.module.css";
 
 const actorToken = "/actors/base/guard-blue.png";
-const locationImage = "/rules/locations/courtyard.png";
 const outcomeCardClassName = "w-[6rem]";
 const trackingCardClassName = "w-[10rem]";
 const locationExamples = [
@@ -133,35 +133,63 @@ export const EffectEquation = (): JSX.Element => (
 export const CompleteTableSetup = (): JSX.Element => (
   <RulebookFigure
     title="Complete table setup"
-    summary="Outcome hands, player components, shared locations, actors, and a counter stay visible at the table."
+    summary="The shared scene, Outcome deck and hand, and player components stay visible in distinct rows at the table."
   >
-    <div className="grid w-full gap-3 md:grid-cols-3" aria-label="Shared scene: Castle Gate, Courtyard, Tower">
-      {locationExamples.map((location) => <LocationCard key={location.title} imageUrl={location.imageUrl} imageAlt={`${location.title} location`} title={location.title} description="Shared scene location." />)}
-    </div>
-    <div className="grid w-full gap-3 md:grid-cols-3" aria-label="Player component lanes">
-      {["Mira", "Aldren", "Tomas"].map((player) => <div key={player} className="stack items-center gap-2"><Text variant="emphasised" color="iron">{player}</Text><div className="flex flex-wrap justify-center gap-1"><RulebookDiagramCard type="OutcomeCard" slug="success" badge="Outcome hand" /><RulebookDiagramCard type="StuntCard" slug="safecracker" badge="Stunt" /><RulebookDiagramCard type="EffectCard" slug="boost" badge="Effect" /></div><Text variant="note" color="iron-light">Asset · Actor</Text></div>)}
-    </div>
-    <div className="relative"><CounterCard iconSlug="tracking" title="Counter" currentValue={2} maxValue={4} className="w-[8rem]" /><DieMarker sides={4} value={2} showTypeLabel className="absolute -right-2 -top-2" /></div>
-    <div className="flex min-w-[12rem] flex-1 flex-col gap-2">
-      <Text variant="emphasised" color="iron">Player lane</Text>
-      <div className="flex flex-wrap gap-2">
-        <ResolvedCard type="OutcomeCard" slug="success" className="w-[7.5rem]" />
-        <ResolvedCard type="OutcomeCard" slug="partial-success" className="w-[7.5rem]" />
-        <AssetCard baseAssetSlug="base_tools" className="w-[7.5rem]" />
-      </div>
-    </div>
-    <div className="flex min-w-[12rem] flex-1 flex-col gap-2">
-      <Text variant="emphasised" color="iron">Shared scene</Text>
-      <LocationCard
-        imageUrl={locationImage}
-        imageAlt="Medieval courtyard location"
-        title="Courtyard"
-        description="A shared location for the scene."
-        className="w-[13rem] max-w-full"
-      />
-      <div className="flex flex-wrap items-center gap-3">
-        <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[8rem]" />
-        <CounterCard iconSlug="tracking" title="Escape" currentValue={2} maxValue={4} className="w-[8rem]" />
+    <div className={styles.tableSetupViewport}>
+      <div className={styles.tableSetupCanvas}>
+        <div className={styles.tableSetupShared} aria-label="Shared scene components">
+          <LocationCard
+            imageUrl="/rules/locations/castle-gate.png"
+            imageAlt="Castle Gate location"
+            title="Castle Gate"
+            description="Shared scene location."
+            className="w-[20rem]"
+          />
+          <div className={styles.tableSetupTrackedCard}>
+            <CounterCard
+              iconSlug="tracking"
+              title="Reinforcements Coming"
+              currentValue={2}
+              maxValue={4}
+              className="w-[9rem]"
+            />
+            <DieMarker sides={4} value={2} className="!absolute right-2 top-2 z-20" />
+          </div>
+          <div className={styles.tableSetupTrackedCard}>
+            <ActorCard
+              baseLayerSlug="guard_blue"
+              tacticalRoleSlug="brute"
+              className="w-[9rem]"
+            />
+            <DieMarker sides={4} value={3} className="!absolute right-2 top-2 z-20" />
+          </div>
+        </div>
+
+        <div className={styles.tableSetupOutcomes} aria-label="Outcome deck and hand">
+          <div className={styles.tableSetupOutcomeDeck}>
+            <OutcomeCard card="success" face="back" className="w-[7rem]" />
+          </div>
+          <div className={styles.tableSetupOutcomeHand}>
+            <ResolvedCard type="OutcomeCard" slug="success" className="w-[7rem]" />
+            <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[7rem]" />
+            <ResolvedCard type="OutcomeCard" slug="chaos" className="w-[7rem]" />
+          </div>
+        </div>
+
+        <div className={styles.tableSetupPlayer} aria-label="Player components">
+          <ResolvedCard type="EffectCard" slug="injury" className="w-[9rem]" />
+          <ResolvedCard type="StuntCard" slug="marksman" className="w-[9rem]" />
+          <AssetCard
+            kind="custom"
+            noun="Throwing Knife"
+            modifier="Returning"
+            nounDescription="A light thrown weapon."
+            adjectiveDescription="Returns after a throw."
+            iconUrl="/assets/medieval/dagger.png"
+            overlayUrl="/assets/base/empowered.png"
+            className="w-[9rem]"
+          />
+        </div>
       </div>
     </div>
   </RulebookFigure>
@@ -310,9 +338,9 @@ export const ZonesAndRange = (): JSX.Element => (
 );
 
 const toughnessStates = [
-  [3, "Starting Toughness"],
-  [1, "After 2 Injury"],
-  [0, "After 1 Distress / Taken Out"],
+  [3, "3 Toughness — Starting"],
+  [1, "1 Toughness — after 2 Injury"],
+  [0, "Taken Out — after 1 Distress"],
 ] as const;
 
 export const RemainingToughness = (): JSX.Element => (
@@ -320,16 +348,18 @@ export const RemainingToughness = (): JSX.Element => (
     title="Remaining Toughness"
     summary="The same Actor moves from ready, to pressured, to Taken Out as its remaining Toughness is reduced."
   >
-    {toughnessStates.map(([value, label]) => (
-      <div key={String(label)} className="stack items-center gap-2">
-        <div className="relative inline-flex">
-          <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="brute" className="w-[8rem]" />
-          <DieMarker sides={4} value={value} removed={value === 0} className="absolute -right-2 -top-2 z-10" />
+    <div className={styles.trackingGrid}>
+      {toughnessStates.map(([value, label]) => (
+        <div key={String(label)} className="stack items-center gap-2">
+          <div className="relative inline-flex">
+            <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="brute" className="w-[8rem]" />
+            <DieMarker sides={4} value={value} removed={value === 0} className="!absolute right-2 top-2 z-20" />
+          </div>
+          <Text variant="note" color="iron">Bandit</Text>
+          <Text variant="emphasised" color={value === 0 ? "blood" : "iron"}>{label}</Text>
         </div>
-        <Text variant="note" color="iron">Bandit</Text>
-        <Text variant="emphasised" color={value === 0 ? "blood" : "iron"}>{`${value} Toughness — ${label}`}</Text>
-      </div>
-    ))}
+      ))}
+    </div>
   </RulebookFigure>
 );
 
@@ -338,20 +368,22 @@ export const CounterTracking = (): JSX.Element => (
     title="Counter tracking"
     summary="The Counter card tells you what its value means; the Actor's remaining Toughness is tracked separately. Dice track values; they are not rolled."
   >
-    <div className="stack items-center gap-2">
-      <div className="relative inline-flex">
-        <CounterCard iconSlug="tracking" title="Ice Storm" currentValue={3} maxValue={4} className={trackingCardClassName} />
-        <DieMarker sides={4} value={3} className="absolute -right-2 -top-2 z-10" />
+    <div className={styles.trackingGrid}>
+      <div className="stack items-center gap-2">
+        <div className="relative inline-flex">
+          <CounterCard iconSlug="tracking" title="Ice Storm" currentValue={3} maxValue={4} className={trackingCardClassName} />
+          <DieMarker sides={4} value={3} className="!absolute right-2 top-2 z-20" />
+        </div>
+        <Text variant="emphasised" color="iron">Counter value: 3 / 4</Text>
       </div>
-      <Text variant="emphasised" color="iron">Counter value: 3 / 4</Text>
-    </div>
-    <div className="stack items-center gap-2">
-      <div className="relative inline-flex">
-        <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className={trackingCardClassName} />
-        <DieMarker sides={4} value={1} className="absolute -right-2 -top-2 z-10" />
+      <div className="stack items-center gap-2">
+        <div className="relative inline-flex">
+          <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className={trackingCardClassName} />
+          <DieMarker sides={4} value={1} className="!absolute right-2 top-2 z-20" />
+        </div>
+        <Text variant="note" color="iron">Bandit</Text>
+        <Text variant="emphasised" color="blood">Remaining Toughness: 1</Text>
       </div>
-      <Text variant="note" color="iron">Bandit</Text>
-      <Text variant="emphasised" color="blood">Remaining Toughness: 1</Text>
     </div>
   </RulebookFigure>
 );
@@ -374,12 +406,66 @@ export const CatastropheFlow = (): JSX.Element => (
 );
 
 export const StatusThresholds = (): JSX.Element => (
-  <RulebookFigure title="Distress and Injury thresholds" summary="Effect cards make the two tracks and their terminal states easy to scan.">
-    <ol className="sr-only"><li>Distress: 0, 1, 2, 3 Panicked, 4 Hopeless.</li><li>Injury: 0, 1, 2, 3, 4 Taken Out.</li></ol>
-    <div className="grid w-full gap-4 overflow-x-auto sm:grid-cols-2">
-      {[{ label: "Distress", terminal: ["3", "PANICKED", "4", "HOPELESS"] }, { label: "Injury", terminal: ["4", "TAKEN OUT"] }].map(({ label, terminal }) => (
-        <div key={label} className="stack min-w-[18rem] gap-2"><Text variant="emphasised" color="iron">{label}</Text><div className="flex flex-wrap items-center gap-1"><RulebookDiagramCard type="EffectCard" slug={label.toLocaleLowerCase()} badge="0" />{[1, 2, 3, 4].map((value) => <div key={value} className="stack items-center gap-1"><span aria-hidden="true">→</span><RulebookDiagramCard type="EffectCard" slug={label.toLocaleLowerCase()} badge={terminal.includes(String(value)) ? `${value} ${terminal[terminal.indexOf(String(value)) + 1] ?? ""}` : String(value)} /></div>)}</div></div>
-      ))}
+  <RulebookFigure title="Distress and Injury thresholds" summary="Status cards appear only when each track reaches its threshold; recovering Distress can step the character back down.">
+    <ol className="sr-only">
+      <li>Distress: 0–2 OK; 3 Distress + Panicked; 4 Distress + Hopeless.</li>
+      <li>Injury: 0–3 OK; 4 Injury + Taken Out.</li>
+    </ol>
+    <div className={styles.statusThresholds}>
+      <section aria-label="Distress thresholds" className={styles.statusLane}>
+        <Text variant="emphasised" color="iron">Distress</Text>
+        <div className={styles.statusSequence}>
+          <div className={styles.statusMilestone}>
+            <Label color="bone" rotate={false}>0–2</Label>
+            <Text variant="note" color="iron">OK</Text>
+          </div>
+          <span aria-hidden="true" className={styles.statusArrow}>→</span>
+          <div className={styles.statusMilestone}>
+            <div className={styles.statusCardPair}>
+              <div className={styles.countedStatusCard}>
+                <ResolvedCard type="EffectCard" slug="distress" className="w-[5.75rem]" />
+                <Label color="fire" size="sm" rotate={false} className={styles.statusCount}>×3</Label>
+              </div>
+              <ResolvedCard type="EffectCard" slug="panicked" className="w-[5.75rem]" />
+            </div>
+            <Text variant="emphasised" color="blood">3 Distress + Panicked</Text>
+          </div>
+          <div aria-hidden="true" className={styles.statusTransition}>
+            <span className={styles.statusArrow}>→</span>
+            <span>← recover 1</span>
+          </div>
+          <div className={styles.statusMilestone}>
+            <div className={styles.statusCardPair}>
+              <div className={styles.countedStatusCard}>
+                <ResolvedCard type="EffectCard" slug="distress" className="w-[5.75rem]" />
+                <Label color="blood" size="sm" rotate={false} className={styles.statusCount}>×4</Label>
+              </div>
+              <ResolvedCard type="EffectCard" slug="hopeless" className="w-[5.75rem]" />
+            </div>
+            <Text variant="emphasised" color="blood">4 Distress + Hopeless</Text>
+          </div>
+        </div>
+      </section>
+      <section aria-label="Injury thresholds" className={styles.statusLane}>
+        <Text variant="emphasised" color="iron">Injury</Text>
+        <div className={styles.statusSequence}>
+          <div className={styles.statusMilestone}>
+            <Label color="bone" rotate={false}>0–3</Label>
+            <Text variant="note" color="iron">OK</Text>
+          </div>
+          <span aria-hidden="true" className={styles.statusArrow}>→</span>
+          <div className={styles.statusMilestone}>
+            <div className={styles.statusCardPair}>
+              <div className={styles.countedStatusCard}>
+                <ResolvedCard type="EffectCard" slug="injury" className="w-[5.75rem]" />
+                <Label color="blood" size="sm" rotate={false} className={styles.statusCount}>×4</Label>
+              </div>
+              <ResolvedCard type="EffectCard" slug="taken-out" className="w-[5.75rem]" />
+            </div>
+            <Text variant="emphasised" color="blood">4 Injury + Taken Out</Text>
+          </div>
+        </div>
+      </section>
     </div>
   </RulebookFigure>
 );
@@ -388,22 +474,55 @@ export const PhysicalAssetComposition = (): JSX.Element => (
   <RulebookFigure title="Physical Asset composition" summary="A base Asset and its modifier remain a readable combined card; a Stunt sits beside it without becoming an Effect equation.">
     <AssetCard kind="custom" noun="Throwing Knife" modifier="Returning" nounDescription="A light thrown weapon." adjectiveDescription="Returns after a throw." iconUrl="/assets/medieval/dagger.png" overlayUrl="/assets/base/empowered.png" className="w-[10rem]" />
     <span aria-hidden="true" className="font-heading text-2xl">+</span>
-    <ResolvedCard type="StuntCard" slug="sharpshooter" className="w-[10rem]" />
+    <ResolvedCard type="StuntCard" slug="marksman" className="w-[10rem]" />
   </RulebookFigure>
 );
 
 export const FumbleBranchesV2 = (): JSX.Element => (
   <RulebookFigure title="Two valid Fumbles" summary="A Fumble can miss cleanly, or hit while creating a fitting consequence.">
     <ol className="sr-only"><li>Fumble.</li><li>Miss: no useful Effect.</li><li>Hit, but: Bandit receives Injury and Bow receives Complication.</li></ol>
-    <div className="grid w-full gap-4"><div className="justify-self-center"><ResolvedCard type="OutcomeCard" slug="fumble" className="w-[8rem]" /></div><div className="grid gap-5 md:grid-cols-2"><div className="stack items-center gap-2 text-center"><Text variant="emphasised" color="blood">MISS</Text><Text variant="note" color="iron-light">The arrow flies wide: no useful Effect.</Text></div><div className="stack items-center gap-2 text-center"><Text variant="emphasised" color="blood">HIT, BUT...</Text><div className="flex flex-wrap justify-center gap-3"><div className="stack items-center"><RulebookDiagramCard type="EffectCard" slug="injury" badge="Bandit + Injury" /></div><div className="stack items-center"><RulebookDiagramCard type="EffectCard" slug="complication" badge="Bow + Complication" /></div></div></div></div></div>
+    <div className={styles.fumbleFork}>
+      <div className={styles.fumbleSource}>
+        <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[8rem]" />
+      </div>
+      <div className={styles.fumbleBranches}>
+        <section className={styles.fumbleBranch} aria-label="Miss: no useful Effect">
+          <Text variant="emphasised" color="blood">MISS</Text>
+          <div className={styles.fumbleMissMark} aria-hidden="true">
+            <span className={styles.fumbleArrowShot} />
+            <span className={styles.fumbleMissX}>X</span>
+          </div>
+          <Text variant="note" color="iron-light">The arrow flies wide. No useful Effect.</Text>
+        </section>
+        <section className={styles.fumbleBranch} aria-label="Hit with a fitting consequence">
+          <Text variant="emphasised" color="blood">HIT, BUT...</Text>
+          <div className={styles.fumbleConsequences}>
+            <div className={styles.fumbleConsequence}>
+              <div className={styles.fumbleCardPair}>
+                <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[4.75rem]" />
+                <ResolvedCard type="EffectCard" slug="injury" className="w-[4.75rem]" />
+              </div>
+              <Text variant="note" color="blood">Bandit takes 1 Injury</Text>
+            </div>
+            <div className={styles.fumbleConsequence}>
+              <div className={styles.fumbleCardPair}>
+                <ResolvedCard type="AssetCard" slug="medieval_hunting_bow" className="w-[4.75rem]" />
+                <ResolvedCard type="EffectCard" slug="complication" className="w-[4.75rem]" />
+              </div>
+              <Text variant="note" color="blood">Bow gains a Complication</Text>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
   </RulebookFigure>
 );
 
 export const CatastropheFlowV2 = (): JSX.Element => (
   <RulebookFigure title="Catastrophe flow" summary="The current action resolves before the replacement draw reveals a three-Fumble Catastrophe.">
     <ol className="sr-only"><li>Action resolves.</li><li>Draw replacement.</li><li>Three Fumbles.</li><li>Catastrophe.</li><li>Injury, Bow Complication, or Enemy Boost.</li></ol>
-    <div className="grid w-full items-center gap-3 md:grid-cols-4"><div className="stack items-center"><Text variant="emphasised" color="iron">1. Action resolves</Text><RulebookDiagramCard type="OutcomeCard" slug="success" badge="resolved" /></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="iron">2. Draw replacement</Text></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="blood">3. Fumble + Fumble + Fumble</Text><div className="flex -space-x-6">{[1, 2, 3].map((value) => <ResolvedCard key={value} type="OutcomeCard" slug="fumble" className="w-[4.5rem]" />)}</div></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="blood">CATASTROPHE</Text></div></div>
-    <div className="flex w-full flex-wrap justify-center gap-3"><RulebookDiagramCard type="EffectCard" slug="injury" badge="Injury" /><RulebookDiagramCard type="EffectCard" slug="complication" badge="Bow Complication" /><RulebookDiagramCard type="EffectCard" slug="boost" badge="Enemy Boost" title="Enemy Boost" /></div>
+    <div className="grid w-full items-center gap-3 md:grid-cols-4"><div className="stack items-center"><Text variant="emphasised" color="iron">1. Action resolves</Text><ResolvedCard type="OutcomeCard" slug="success" className="w-[6rem]" /></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="iron">2. Draw replacement</Text></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="blood">3. Fumble + Fumble + Fumble</Text><div className="flex -space-x-6">{[1, 2, 3].map((value) => <ResolvedCard key={value} type="OutcomeCard" slug="fumble" className="w-[4.5rem]" />)}</div></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="blood">CATASTROPHE</Text></div></div>
+    <div className="flex w-full flex-wrap justify-center gap-3"><div className="stack items-center"><ResolvedCard type="EffectCard" slug="injury" className="w-[6rem]" /><Text variant="note" color="blood">Injury</Text></div><div className="stack items-center"><ResolvedCard type="EffectCard" slug="complication" className="w-[6rem]" /><Text variant="note" color="blood">Bow Complication</Text></div><div className="stack items-center"><ResolvedCard type="EffectCard" slug="boost" className="w-[6rem]" /><Text variant="note" color="blood">Enemy Boost</Text></div></div>
   </RulebookFigure>
 );
 

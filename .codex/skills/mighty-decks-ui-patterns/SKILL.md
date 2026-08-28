@@ -16,6 +16,22 @@ Use this skill before changing UI so new work reuses the existing tactile style 
 5. Promote repeated styled wrappers only after the same pattern appears in 2+ views.
 6. For board/tabletop work, keep rendered board items flat and use pure layout helpers.
 
+## Existing Card Components
+
+Use the existing card implementations for cards shown in product UI or teaching figures; do not build miniature look-alike card shells with hand-authored art, titles, or rules text.
+
+| Need | Use |
+| --- | --- |
+| Catalog-backed Outcome, Effect, Stunt, Actor, Counter, or Asset | `resolveGameCard` with `GameCardView`, wrapped in `CardBoundary` |
+| Authored or layered Asset example | `AssetCard` |
+| Actor with selected base/tactical layers | `ActorCard` |
+| Adjustable/read-only tracked Counter | `CounterCard` |
+| Scene or zone card | `LocationCard` |
+
+- Scale an existing card with its `className` and compose labels or arrows around it; keep the card itself canonical.
+- Use `GameCardView` for a known catalog entry so its artwork, type treatment, and card copy stay in sync with the rest of the app.
+- Use local CSS only for layout, stacking, movement, or marker overlays around a real card—not to recreate a card face.
+
 ## References
 
 - Read `references/shared-components.md` before choosing UI primitives.
