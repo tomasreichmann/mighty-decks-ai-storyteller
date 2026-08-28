@@ -9,10 +9,13 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 ### Added
 
 - Web: add a complete anchored `/rules` rulebook with component-composed instructional figures and Message-based play examples.
+- Web: add compact, responsive card illustrations for the rulebook's Distress, Stunts, Assets, and Consumables subsections.
 
 ### Changed
 
+- Docs: standardize public rulebook terminology on `Storyteller`, clarify Defense timing, and make counterattacks require an explicit Stunt.
 - Web: preserve complete canonical examples on `/rules` and add clearer component-based diagrams for the action loop, Fumbles, Actor initiative, Toughness and Counter dice, and medieval Zones and Range.
+- Web: give rulebook headings semantic highlight colors and show Actor removal with a crossed-out d4 marker instead of a zero value.
 - Web: replace rulebook Outcome text with compact Outcome cards, frame message examples, use actual cards in Effect illustrations, bundle rulebook location art, normalize instructional card sizing, and add the shared table treatment to the typography styleguide.
 - Docs: present rulebook Distress thresholds as ordinary rules prose instead of a simulated table exchange.
 - Fixed: `/spaceship` trash drops now remove the dragged card instead of letting layout membership resurrect it at the board origin.
