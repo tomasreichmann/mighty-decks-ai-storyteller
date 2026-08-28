@@ -13,6 +13,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: remove preserved whitespace from rulebook callout wrappers so Markdown quotes do not add blank lines.
 - Docs: standardize public rulebook terminology on `Storyteller`, clarify Defense timing, and make counterattacks require an explicit Stunt.
 - Web: preserve complete canonical examples on `/rules` and add clearer component-based diagrams for the action loop, Fumbles, Actor initiative, Toughness and Counter dice, and medieval Zones and Range.
 - Web: give rulebook headings semantic highlight colors and show Actor removal with a crossed-out d4 marker instead of a zero value.

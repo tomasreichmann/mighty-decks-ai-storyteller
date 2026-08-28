@@ -68,7 +68,12 @@ const RulebookMarkdown = ({
         <Table>{children}</Table>
       ),
       blockquote: ({ children }) => (
-        <Message color="cloth" label="Rules" rotateLabel={false}>
+        <Message
+          color="cloth"
+          label="Rules"
+          rotateLabel={false}
+          preserveWhitespace={false}
+        >
           {children}
         </Message>
       ),

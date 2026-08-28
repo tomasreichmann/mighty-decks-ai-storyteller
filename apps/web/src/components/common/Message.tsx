@@ -214,6 +214,7 @@ export type MessageProps = PropsWithChildren<{
   className?: string;
   contentClassName?: string;
   labelClassName?: string;
+  preserveWhitespace?: boolean;
 }>;
 
 type MessageHighlightStyle = CSSProperties & {
@@ -231,6 +232,7 @@ export const Message = ({
   className = "",
   contentClassName = "",
   labelClassName = "",
+  preserveWhitespace = true,
   children,
 }: MessageProps): JSX.Element => {
   const tone = resolveMessageTone(color);
@@ -284,7 +286,8 @@ export const Message = ({
         ) : null}
         <div
           className={cn(
-            "min-w-0 w-full flex-1 whitespace-pre-wrap text-sm leading-relaxed",
+            "min-w-0 w-full flex-1 text-sm leading-relaxed",
+            preserveWhitespace ? "whitespace-pre-wrap" : "whitespace-normal",
             tone.text,
             contentClassName,
           )}

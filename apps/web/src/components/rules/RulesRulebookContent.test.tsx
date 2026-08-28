@@ -20,3 +20,15 @@ test("registers floated card illustrations for core component subsections", () =
   assert.match(illustrations, /<RulebookCardFloat label=/);
   assert.match(styles, /\.cardFloat/);
 });
+
+test("disables preserved whitespace on Rules callouts", () => {
+  const content = readFileSync(
+    new URL("./RulesRulebookContent.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(
+    content,
+    /<Message\s+color="cloth"\s+label="Rules"\s+rotateLabel=\{false\}\s+preserveWhitespace=\{false\}/,
+  );
+});
