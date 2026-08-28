@@ -302,11 +302,11 @@ const outcomesCsvRaw = `"slug","title","icon","description","instructions","coun
 "special","Special action","/mighty-decks/outcomes/special-action.png","Activate your special action","3â€‚Effect",1,"base"
 "success","Success","/mighty-decks/outcomes/success.png","It worked!","2â€‚Effect",3,"base"
 "partial","Partial success","/mighty-decks/outcomes/partial-success.png","It mostly worked","1â€‚Effect",3,"base"
-"fumble","Fumble","/mighty-decks/outcomes/fumble.png","It failed!<BR>Bonuses to Effect do not apply","Catastrophe: 3 orÂ only Fumbles after draw.",4,"base"
+"fumble","Fumble","/mighty-decks/outcomes/fumble.png","The action most likely fails.<BR>The Storyteller may allow partial success with a serious Complication.","Catastrophe: 3 orÂ only Fumbles after draw.",4,"base"
 "chaos","Chaos","/mighty-decks/outcomes/chaos.png","Something unexpected happened","Cannot be used for defense",1,"base"`;
 
 const effectsCsvRaw = `"slug","title","icon","effect","count","deck"
-"injury","Injury","/mighty-decks/effects/injury.png","4xÂ Injury âžœ Unconscious.â”€â”€Use an action or an Asset to heal and discard.",4,"base"
+"injury","Injury","/mighty-decks/effects/injury.png","4xÂ Injury âžœ Taken Out.â”€â”€Use an action or an Asset to heal and discard.",4,"base"
 "distress","Distress","/mighty-decks/effects/distress.png","3xÂ Distress âžœ Panic.<BR>4xÂ Distress âžœ Hopeless.â”€â”€Use an action or an Asset to recover and discard.",4,"base"
 "taken-out","Taken Out","/mighty-decks/effects/dying.png","4xÂ Injury: You are Taken Out. You cannot act until the fiction and recovery rules allow it.â”€â”€Heal your Injuries to discard.",1,"base"
 "panicked","Panicked","/mighty-decks/effects/panicked.png","3xÂ Distress: You can only play the top card of your Outcome deck.â”€â”€Recover from your Distress to discard.",1,"base"
@@ -314,7 +314,7 @@ const effectsCsvRaw = `"slug","title","icon","effect","count","deck"
 "stuck","Stuck","/mighty-decks/effects/stuck.png","You cannot move, but you can still take other actions.â”€â”€Use an action to free yourself and discard.",1,"base"
 "hindered","Hindered","/mighty-decks/effects/hindered.png","You can only move or take actions, but not both.â”€â”€Use an action to free yourself and discard.",1,"base"
 "boost","Boost","/mighty-decks/effects/boost.png","Your next action or defense has +1Â Effect or +1Â Move.",1,"base"
-"complication","Complication","/mighty-decks/effects/complication.png","A Complication makes your life harder.â”€â”€Next action or defense has -1Â Effect, then discard.",1,"base"
+"complication","Complication","/mighty-decks/effects/complication.png","A Complication makes your life harder.â”€â”€Usually âˆ’1Â Effect the next time it applies, then discard. The Storyteller may define another fitting effect or removal condition.",1,"base"
 "freezing","Freezing","/mighty-decks/effects/freezing.png","Every turn you end with 2xÂ Freezing or more, you receive a Distress. Cancelled by Burning.â”€â”€Use an action or an Asset to discard.",2,"base"
 "burning","Burning","/mighty-decks/effects/burning.png","Every turn you end with 2xÂ Burning or more, you receive an Injury. Cancelled by Freezing.â”€â”€Use an action or an Asset to discard.",2,"base"
 "infection","Spore infection","/LP/icons/spore-infection.png","+1Â Doom",0,"base"
@@ -323,7 +323,7 @@ const effectsCsvRaw = `"slug","title","icon","effect","count","deck"
 const stuntsCsvRaw = [
   `"slug","title","icon","requirements","effect","deck","count"`,
   `"dontGiveUp","Don't Give Up","/mighty-decks/stunts/base/dont-give-up.png","Recover from Panicked.","You need +1Â Distress to get Panicked or Hopeless.","Brawler",1`,
-  `"bringThePain","Bring the Pain","/mighty-decks/stunts/base/bring-the-pain.png","Recover from Unconscious.","You need +1Â Injury to get Unconscious.","Brawler",1`,
+  `"bringThePain","Bring the Pain","/mighty-decks/stunts/base/bring-the-pain.png","Recover from being Taken Out.","You need +1Â Injury to be Taken Out.","Brawler",1`,
   `"fearless","Fearless","/mighty-decks/stunts/base/fearless.png","Defend from a Distress while Panicked.","You are always Panicked, but you get Hindered instead of Hopeless.","Brawler",1`,
   `"pummel","Pummel","/mighty-decks/stunts/base/pummel.png","Knock out an opponent unarmed.","Playing a Partial Success to attack an opponent while unarmed inflicts +1Â Injury.","Brawler",1`,
   `"flex","Flex","/mighty-decks/stunts/base/flex.png","Impress or intimidate someone with your body.","+1Â Effect when using your body to impress or intimidate.","Brawler",1`,
@@ -379,7 +379,7 @@ const stuntsCsvRaw = [
   `"bless","Bless","/mighty-decks/stunts/base/bless.png","Bless someone.","Once per scene, play a Success to remove a status card other than Injury from an ally.","Mystic",1`,
   `"circleOfProtection","Circle of Protection","/mighty-decks/stunts/base/circle-of-protection.png","Create a protective boundary.","Once per session, play a Success to shield yourself and allies in your zone from the next hostile action.","Mystic",1`,
   `"tactician","Tactician","/mighty-decks/stunts/base/tactician.png","Execute a named tactic.","Once per scene, play a Success to prevent your ally in the same zone from receiving any cards until your next turn.",Scholar,0`,
-  `"lastStand","Last Stand","/mighty-decks/stunts/base/last-stand.png","Defeat an enemy while one Injury away from being Unconscious.","Receive 1 less negative Effect card but at least 1 when you already have at least 5.","Brawler",0`,
+  `"lastStand","Last Stand","/mighty-decks/stunts/base/last-stand.png","Defeat an enemy while one Injury away from being Taken Out.","Receive 1 less negative Effect card but at least 1 when you already have at least 5.","Brawler",0`,
   `"kleptomaniac","Kleptomaniac","/mighty-decks/stunts/base/kleptomaniac.png","Steal something you don't need.","When stealing or looting, play up to 3 cards from your Outcome deck. Get an extra Asset for Success, Distress for Fumble and Injury for Chaos.","Universal",0`,
   `"hardenedSkin","Hardened Skin","/mighty-decks/stunts/base/hardened-skin.png","Receive 3Â Injury from one attack and remain standing.","Unarmed attacks against you deal -1Â Injury.","Brawler",0`,
   `"enterTrance","Enter Trance","/mighty-decks/stunts/base/enter-trance.png","Experience a trance like state.","Play a Success to fall into a trance and ignore a mental or environmental hazard or charm someone to stun them for a round.","Mystic",0`,

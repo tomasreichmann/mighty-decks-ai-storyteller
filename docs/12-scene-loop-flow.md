@@ -1,11 +1,13 @@
 # 12 - Scene Loop Flow (Draft)
 
+This is a proposed AI Storyteller orchestration flow, not a separate rules source. Core gameplay follows [the canonical Mighty Decks rulebook](mighty-decks-rulebook.md), which is rendered at `/rules`. The runtime may automate or defer a rule, but it must not silently redefine it.
+
 This flow chart defines the proposed play-phase turn loop to address:
 
 1. Information-seeking actions should return concrete information (with longer output when needed).
 2. Dangerous failed actions should apply visible negative consequences.
 3. NPCs should act from their own agenda, not only react to player actions.
-4. Rewards should be granted when goals are actually completed, not just when a single roll/card is strong.
+4. Rewards should be granted when goals are actually completed, not just when a single Outcome is strong.
 
 ---
 
@@ -38,7 +40,7 @@ sequenceDiagram
     end
   end
 
-  S->>C: apply world reaction (goal progress, NPC beat, pressure, reward gate, closeScene)
+  S->>C: apply world reaction (goal progress, due Actor turn, pressure, reward gate, closeScene)
   C-->>S: structured turn package
   S->>K: refresh rolling summary + facts + open threads
   K-->>S: continuity update
@@ -58,11 +60,11 @@ sequenceDiagram
 ```mermaid
 flowchart TD
   A[Scene active] --> B{Scene mode?}
-  B -->|High tension| C[Storyteller controls acting order and next actor]
+  B -->|High tension| C[Use agreed player order and placed Actor timing]
   B -->|Low tension| D[Any connected player may act when queue is free]
-  C --> E[Current actor submits action]
+  C --> E[Current player submits action]
   D --> E
-  E --> F[AdventureManager validates phase, actor eligibility, and queue]
+  E --> F[AdventureManager validates phase, player eligibility, and queue]
   F --> G[Outcome Decider classifies intent and stakes]
   G --> H{Outcome check needed?}
 
@@ -82,17 +84,19 @@ flowchart TD
   P -->|Yes| Q[Reward package: loot, intel, recognition, access, advantage]
   P -->|No| R[No reward yet: narrate progress or setback only]
 
-  O --> S{Result quality}
-  S -->|Strong success| T[Major progress or setup advantage]
-  S -->|Mixed result| U[Progress plus cost]
-  S -->|Fail or chaos| V[Consequence package with fail-forward path]
+  O --> S{Outcome guidance}
+  S -->|Positive Effect| T[Apply total Effect through the fiction]
+  S -->|Fumble| U[Apply roughly one negative Effect and fail forward]
+  S -->|Chaos| V[Create an unpredictable roughly neutral twist]
 
-  Q --> W[NPC agenda beat executes]
+  Q --> W{Actor placed after this player?}
   R --> W
   T --> W
   U --> W
   V --> W
-  W --> X[Recalculate scene tension from latest fiction]
+  W -->|Yes| WA[Resolve all due Actors in Storyteller-chosen order using fixed Effects]
+  W -->|No| X[Recalculate scene tension from latest fiction]
+  WA --> X
   X --> Y{Tension changed?}
   Y -->|Escalated| YA[Switch to high_tension immediately if needed]
   Y -->|Dropped| YB[Switch to low_tension immediately if needed]
@@ -112,11 +116,11 @@ flowchart TD
 
 | Outcome signal | Minimum narrative obligation |
 | --- | --- |
-| `success` | Advance objective; reward only if this completes a concrete goal or milestone. |
-| `special-action` | Major breakthrough; usually strong progress, but reward still waits for completion gate. |
-| `partial-success` | Progress plus meaningful cost or exposure. |
-| `fumble` | Immediate setback with concrete consequence; fail forward. |
-| `chaos` | Unstable twist that changes priorities and risk profile. |
+| `success` | Apply +2 Effect through the fiction; reward only if this completes a concrete goal or milestone. |
+| `special-action` | Apply +3 Effect when the card is legal through a Stunt, expertise, another rule, or Storyteller approval. |
+| `partial-success` | Apply +1 Effect as reduced impact, an imperfect result, or a fitting cost; do not automatically create a Complication card. |
+| `fumble` | Apply roughly one significant negative Effect. The attempted action may fail or partly work with a larger consequence; fail forward. |
+| `chaos` | Create an unpredictable, roughly neutral twist rather than a disguised Success or Fumble. Chaos cannot be used for Defense. |
 
 Consequence examples (from Mighty Decks effect concepts): injury, distress, complication, movement hindrance, or environmental pressure.
 
@@ -156,10 +160,10 @@ Example sequence:
 
 ## Tension Modes And Acting Order
 
-- `high_tension`: Storyteller/Scene Controller determines turn order and resolves NPC turns between player turns.
+- `high_tension`: use the simple player order agreed before the Adventure. An NPC Actor acts after the player its card is placed in front of; several Actors at one position act in Storyteller-chosen order.
 - `low_tension`: players act more freely (queue-limited), and NPC beats trigger when fiction demands.
 - Mode can switch mid-scene as pressure escalates or drops.
-- NPC agenda beats are mandatory in both modes; only cadence changes.
+- The Scene Controller tracks the agreed order and Actor placement; it does not invent a new initiative order when tension rises.
 
 ---
 
@@ -195,5 +199,5 @@ Mode switch rule:
 
 - Keep this text-first: rewards and consequences can be represented in narration plus continuity facts; no new dashboard UI is required.
 - Preserve server authority and FIFO action processing.
-- Keep `Scene Controller` as the source of mode (`high_tension`/`low_tension`), NPC beats, and close/continue decisions.
+- Keep `Scene Controller` as the source of mode (`high_tension`/`low_tension`), due Actor turns and other NPC beats, and close/continue decisions while preserving canonical player order and Actor placement.
 - Keep `Continuity Keeper` responsible for persisting consequences and rewards as durable story facts.

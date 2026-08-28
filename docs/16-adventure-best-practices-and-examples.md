@@ -4,6 +4,7 @@ This appendix records external design patterns and examples that inform the Adve
 It translates those patterns into practical authoring rules for Mighty Decks modules.
 
 This document is advisory research support for the post-MVP module track.
+It does not override the core gameplay in [the canonical Mighty Decks rulebook](mighty-decks-rulebook.md), rendered at `/rules`; external sources inform scenario structure only.
 
 ---
 

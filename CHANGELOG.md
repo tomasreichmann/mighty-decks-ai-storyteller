@@ -10,6 +10,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 - Web: add a complete anchored `/rules` rulebook with component-composed instructional figures and Message-based play examples.
 - Web: add compact, responsive card illustrations for the rulebook's Distress, Stunts, Assets, and Consumables subsections.
+- Docs: add `pnpm docs:cards` to generate a standalone Markdown inventory of shared Outcome, Effect, Stunt, Actor, Asset, and Counter card components.
 
 ### Fixed
 
@@ -17,6 +18,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Rules: standardize the maximum-Injury status on Taken Out, make failure the most likely Fumble result while allowing partial success with a serious Complication, and let Storytellers define other fitting Complication effects or removal conditions.
+- Docs: make the `/rules` rulebook the explicit core-gameplay authority, align the AI scene-loop draft with canonical Outcome and Actor timing rules, and route the Mighty Decks rules skill away from stale duplicated mechanics.
 - Docs: explain how scene-specific Stunts are offered, earned by the first qualifying player, retained for the Adventure, and shared without a hard per-player cap.
 - Web: update the rulebook's "What You Need to Play" figure to show a readable, horizontally scrollable tabletop of canonical Locations, Counters, Actors, Outcomes, Effects, Stunts, and Assets.
 - Web: rebuild `/rules` instructional figures for status thresholds, table setup, card composition, range, initiative, the action loop, Fumbles, and Catastrophes with canonical cards, clearer flows, and responsive tabletop layouts.

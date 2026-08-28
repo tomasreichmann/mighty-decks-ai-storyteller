@@ -1,6 +1,6 @@
 # Adventure Examples
 
-Use the external prototype pages as reference material, not vendored source. Do not copy the full bundled SPA into this repo or into skills.
+Use the external prototype pages as reference material, not vendored source. They are not rules authority: when their wording or examples differ from `docs/mighty-decks-rulebook.md`, the repo rulebook rendered at `/rules` wins. Do not copy the full bundled SPA into this repo or into skills.
 
 ## Source Links
 
@@ -12,7 +12,7 @@ Use the external prototype pages as reference material, not vendored source. Do 
 
 ## How To Use These Pages
 
-- Treat them as tone, pacing, encounter, and component examples.
+- Treat them as tone, pacing, encounter, and component examples, never as canonical mechanics.
 - Infer adventure structure from repeated patterns: player-facing setup, Storyteller-facing context, scenes, Locations, Actors, Assets, Effects, Counters, and escalation hooks.
 - Prefer concise player-facing summaries and richer Storyteller-only detail.
 - Preserve the repo rule that hidden secrets and debug/intention notes must not appear in player-visible payloads.

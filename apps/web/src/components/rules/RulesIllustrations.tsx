@@ -209,7 +209,7 @@ export const ComposedAssetEquation = (): JSX.Element => (
 export const FumbleBranches = (): JSX.Element => (
   <RulebookFigure
     title="Two valid Fumbles"
-    summary="A Fumble can miss cleanly, or it can hit while creating a fitting consequence. The canonical example above gives the full rule text."
+    summary="A Fumble most likely fails, but the Storyteller may allow partial success with a serious Complication. The canonical example above gives the full rule text."
   >
     <div className="grid w-full items-start gap-4 md:grid-cols-[minmax(0,0.7fr)_auto_minmax(0,1fr)_minmax(0,1fr)]">
       <div className="justify-self-center">
@@ -481,7 +481,7 @@ export const PhysicalAssetComposition = (): JSX.Element => (
 );
 
 export const FumbleBranchesV2 = (): JSX.Element => (
-  <RulebookFigure title="Two valid Fumbles" summary="A Fumble can miss cleanly, or hit while creating a fitting consequence.">
+  <RulebookFigure title="Two valid Fumbles" summary="A Fumble most likely fails, but the Storyteller may allow partial success with a serious Complication.">
     <ol className="sr-only"><li>Fumble.</li><li>Miss: no useful Effect.</li><li>Hit, but: Bandit receives Injury and Bow receives Complication.</li></ol>
     <div className={styles.fumbleFork}>
       <div className={styles.fumbleSource}>

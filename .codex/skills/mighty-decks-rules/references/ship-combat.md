@@ -1,6 +1,6 @@
 # Ship Combat
 
-Ship combat uses normal Mighty Decks pacing, but the table represents ships through cards and tokens.
+Ship combat is a separate prototype extension, not part of the canonical `/rules` core rulebook. Read the relevant core sections in `docs/mighty-decks-rulebook.md` first. Prototype rules below override core rules only where they say so explicitly; otherwise core action, Effect, Actor, Defense, and recovery rules apply.
 
 ## Components
 
@@ -12,7 +12,7 @@ Ship combat uses normal Mighty Decks pacing, but the table represents ships thro
 
 ## Round Shape
 
-- Each Actor may move to any Location on the same small ship and take one action.
+- Ship-scale movement override: a crew member's normal Move may reach any Location on the same small ship; their turn still provides one Move and one Action.
 - Most ship actions activate the Device in the Actor's current Location.
 - End of Round cleanup clears Device Used markers and flips spent Power tokens back active.
 
@@ -28,12 +28,13 @@ Ship combat uses normal Mighty Decks pacing, but the table represents ships thro
 
 ## Attacks
 
-- An Actor at a powered weapon Device may attack another ship.
+- A player character at a powered weapon Device may attack another ship by resolving a normal risky Action.
 - The Actor may spend less Power than the Device maximum.
 - If Sensors Detection is higher than target Cloaking, choose a specific Device or hull target.
 - Otherwise choose the target Device randomly by dice.
 - Target pilot may defend with an Outcome card.
 - Damage is `attacker Outcome Effect + weapon damage - defender Outcome Effect - Shields`.
+- NPC Actors do not play Outcome cards; use their fixed attack Effect unless a later ship-combat rule explicitly defines another NPC procedure.
 - Positive damage applies to the targeted Device first.
 - Overflow after Device destruction applies to hull and gives the hit Location a status.
 - At hull points, the ship enters Rupture Cascade; it cannot be stopped and the ship breaks up at the end of the next turn.
@@ -75,6 +76,7 @@ Pilot options include:
 
 ## UI/Prototype Notes
 
+- `docs/22-spaceship-combat-prototype.md` documents the implementation and prototype boundary.
 - `/rules/ship-combat` is a text-first rules reference.
 - `/spaceship` is a hidden visual board lab, not a persisted combat runtime.
 - Prefer `LocationCard`, custom `AssetCard` Devices, `Token`, and full-size Effect card stacks when visualizing ship combat.

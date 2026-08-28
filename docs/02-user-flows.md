@@ -176,11 +176,13 @@ This is the core gameplay loop and may repeat multiple times.
 1. Player writes a text action and submits
 2. Server enqueues the action (FIFO per adventure)
 3. AI processes the action:
-   - Applies secret success bias
+   - In the cardless MVP path, applies the configured secret success bias
    - Maintains continuity
    - Produces a narrative response
 4. Server broadcasts Storyteller response
 5. Transcript updates for all clients
+
+The hidden bias belongs only to this cardless AI Storyteller flow. When an Outcome card is in use, the chosen card and canonical `/rules` Effect procedure determine the result instead.
 
 ### Constraints
 

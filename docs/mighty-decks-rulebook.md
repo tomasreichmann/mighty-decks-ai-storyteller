@@ -131,7 +131,7 @@ The Storyteller decides that Tomas gets what he wanted, but not cleanly.
 
 **Fumble: roughly −1 Effect**
 
-A Fumble means something goes wrong. The exact result depends on the action and the fiction.
+A Fumble means something goes wrong. **Most likely, the attempted action fails.** The exact result depends on the action and the fiction.
 
 A useful guideline is that one Fumble creates roughly **one significant negative Effect**. This might be:
 
@@ -143,7 +143,7 @@ A useful guideline is that one Fumble creates roughly **one significant negative
 - a Boost for an enemy,
 - lost time, ammunition, position, or another meaningful setback.
 
-A Fumble does **not** always mean that the attempted action simply fails. The Storyteller may allow some useful part of the action to happen and attach a consequence instead.
+The Storyteller may instead rule that the action is a **partial success with a serious Complication** when that better fits the fiction. The useful part still happens, but the consequence must be substantial enough to make the Fumble matter.
 
 ### Example — Two Valid Fumbles
 
@@ -155,13 +155,13 @@ Mira fires her bow at a bandit and plays a **Fumble**.
 
 The attack does no useful Effect.
 
-**Success with a larger consequence:**
+**Partial success with a serious Complication:**
 
 **Storyteller:** “The arrow hits for the bow's normal 1 Injury, but the bowstring snaps.”
 
 The bow cannot be fired again until Mira repairs it. The Storyteller may represent this with a **Complication** attached to the bow Asset.
 
-Both are valid Fumble results. The Storyteller chooses the one that best fits the scene.
+Both are valid Fumble results, but simple failure is the most likely. The Storyteller chooses the result that best fits the scene.
 
 ---
 
@@ -304,7 +304,7 @@ Boosts may belong to a player, Actor, Asset, Location, or situation when that ma
 
 A Complication represents a temporary problem that makes something harder.
 
-Unless the Storyteller explains a different effect, a Complication gives **−1 Effect the next time it applies, then is discarded**.
+Unless the Storyteller explains a different effect, a Complication gives **−1 Effect the next time it applies, then is discarded**. The Storyteller may define another effect or removal condition when it better fits the fiction.
 
 A Complication can be attached to whatever it affects:
 
@@ -316,7 +316,7 @@ A Complication can be attached to whatever it affects:
 
 The Storyteller explains what the Complication means and how it can be removed.
 
-Some Complications behave differently. For example, a snapped bowstring might make the bow unusable until a character spends an Action repairing it instead of simply applying −1 Effect once.
+For example, a snapped bowstring might make the bow unusable until a character spends an Action repairing it instead of simply applying −1 Effect once.
 
 ---
 
@@ -1102,7 +1102,7 @@ Explain these expectations before play.
 | Special Action | +3 Effect; only when qualified |
 | Success | +2 Effect |
 | Partial Success | +1 Effect or imperfect success |
-| Fumble | roughly one negative Effect |
+| Fumble | most likely failure and roughly one negative Effect; may be partial success with a serious Complication |
 | Chaos | unpredictable, roughly neutral; not Defense |
 
 ### Toughness

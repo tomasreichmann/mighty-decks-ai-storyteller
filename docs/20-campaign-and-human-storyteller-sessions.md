@@ -228,13 +228,15 @@ Current player session scope:
 - let the live transcript scroll area grow to the remaining viewport height once play starts, so the composer stays on-screen while the transcript absorbs the extra space
 - see the same shared table lanes as the storyteller in a responsive `Table / Chat` split view
 - own a private outcome deck/hand/discard lane under the shared table, with the current player seeing face-up hand cards and other viewers seeing back-face hands and decks
-- draw from the deck, select hand cards, and play them to the discard pile; the play action writes an inline transcript message like `Character played: @outcome/success, @outcome/fumble`
+- draw from the deck, select hand cards, and play them to the discard pile; the play action writes an inline transcript message like `Character played: @outcome/success`
 - remove table cards only from the player's own lane (server-enforced)
+
+Canonical rules normally allow one Outcome for an Action or Defense unless a Stunt or another explicit rule permits multiple cards. The current multi-select transport is table tooling, not permission to combine cards, and relies on the Storyteller to enforce legality.
 
 Not yet included:
 
 - private messages
-- hand-limit enforcement or broader outcome automation
+- Outcome legality, opening all-Fumble redraws, modified hand sizes, Catastrophes, or broader Outcome automation
 - stunt, asset, or effect hand management
 
 ---
@@ -305,7 +307,7 @@ Socket.IO handles:
 - group chat messages
 - draw outcome card from a player deck
 - shuffle a player discard pile back into the deck when the deck is empty
-- play selected outcome cards from a player's hand to the discard pile
+- play selected Outcome-card payloads from a player's hand to the discard pile; the transport can batch selections, while canonical multi-card legality remains manually enforced
 - close session
 - add cards to the shared session table or a specific player lane
 - remove a card entry from the session table (storyteller any lane; player own lane only)
@@ -328,6 +330,7 @@ Smoke-test workflow:
 
 Campaign session state now includes `outcomePilesByParticipantId`, keyed by `participantId`.
 Each player pile has a server-seeded 12-card deck, a 3-card opening hand, and an empty discard pile.
+The current session slice does not automatically redraw an all-Fumble opening hand or resolve Catastrophes. Those are implementation gaps, not alternate rules; the canonical `/rules` procedure remains authoritative.
 
 Transcript persistence includes:
 
@@ -361,5 +364,5 @@ Realtime stability note:
 - No campaign-level dedicated storyteller assignment outside sessions
 - No private messaging
 - No separate GM workspace
-- No hand-limit enforcement or broader outcome automation yet
+- No automatic Outcome legality, all-Fumble opening redraw, modified hand-size, or Catastrophe enforcement yet
 - No AI-runtime coupling to the campaign session flow yet

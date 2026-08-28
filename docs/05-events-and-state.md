@@ -411,6 +411,8 @@ Campaign session state payloads are full `CampaignSessionDetail` objects. In pra
 
 Clients never invent outcome pile state locally. They only send intent events for drawing, shuffling, and playing outcome cards.
 
+The plural `play_campaign_session_outcome_cards` transport supports the current table-staging UI; it does not redefine play legality. Canonical play normally uses one Outcome for an Action or Defense unless a Stunt or another explicit rule permits multiple cards. This session slice does not yet enforce that legality, opening all-Fumble redraws, modified hand sizes, or Catastrophes automatically.
+
 Character claims survive incidental Socket.IO disconnects, including route remounts and page reloads, so a claimed player character remains reserved for that participant until an explicit leave, role change away from `player`, or session close releases it.
 
 ### Additional client -> server campaign events

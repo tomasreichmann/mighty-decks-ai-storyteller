@@ -82,14 +82,16 @@ At least **one complete scene** must be playable.
 
 ---
 
-### 6. Storyteller behavior (MVP rules)
+### 6. Storyteller behavior (cardless MVP runtime)
 
 - Reacts to player actions in a concise, narrative voice
-- Secretly biases outcomes toward success (~75%)
+- In the cardless AI Storyteller MVP only, secretly biases generated outcomes toward success (~75%)
 - Failures must introduce new situations, not dead ends
 - Maintains internal continuity (names, locations, facts)
 - Closes scenes proactively when appropriate
 - Responds to “not having fun” feedback by pivoting tone or pacing
+
+This is model behavior for the MVP's text-only resolution path, not a Mighty Decks Outcome rule. Any rules-driven mode follows the player-chosen Outcome cards and Effect procedure in the canonical `/rules` rulebook instead of applying a hidden success bias.
 
 ---
 

@@ -245,6 +245,7 @@ Rules:
 - `mini` and `map` opportunities are metadata tags only in this milestone
 - component opportunities are declarative authoring metadata
 - runtime enforcement is out of scope for this milestone
+- Outcome or Stunt opportunities attached to an Actor describe player-facing interactions with that Actor. NPC Actors never receive or play Outcome hands; their attacks and abilities use fixed Effects under the canonical rulebook.
 
 Authoring embed rules:
 
