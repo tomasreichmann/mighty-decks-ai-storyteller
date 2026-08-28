@@ -32,7 +32,7 @@ The rules are **setting-independent**. The same mechanics can handle sword fight
 
 ## 2. What You Need to Play
 
-- **1 Storyteller (ST)** — describes the world, presents challenges, controls NPCs, and interprets consequences.
+- **1 Storyteller** — describes the world, presents challenges, controls NPCs, and interprets consequences.
 - **1–4 Players** — each plays one main character.
 - **An Adventure** — a prepared scenario or an original story.
 - **Outcome Decks** — one 12-card deck for each player.
@@ -88,11 +88,11 @@ When an action is risky or dramatically important:
 
 Mira wants to climb a crumbling wall before guards arrive.
 
-**ST:** “If this goes badly, you could fall or get stuck halfway.”
+**Storyteller:** “If this goes badly, you could fall or get stuck halfway.”
 
 Mira plays **Success: +2 Effect**.
 
-**ST:** “You reach the top quickly and find a good vantage point.”
+**Storyteller:** “You reach the top quickly and find a good vantage point.”
 
 Mira discards the Success and immediately draws a replacement Outcome card.
 
@@ -126,9 +126,9 @@ Brother Tomas tells a suspicious guard that the party was summoned by the lord o
 
 He plays **Partial Success: +1 Effect**.
 
-The ST decides that Tomas gets what he wanted, but not cleanly.
+The Storyteller decides that Tomas gets what he wanted, but not cleanly.
 
-**ST:** “The guard lets you through, but follows you to verify your story.”
+**Storyteller:** “The guard lets you through, but follows you to verify your story.”
 
 ---
 
@@ -156,15 +156,15 @@ Mira fires her bow at a bandit and plays a **Fumble**.
 
 **Simple failure:**
 
-**ST:** “The arrow flies wide and strikes the wall.”
+**Storyteller:** “The arrow flies wide and strikes the wall.”
 
 The attack does no useful Effect.
 
 **Success with a larger consequence:**
 
-**ST:** “The arrow hits for the bow's normal 1 Injury, but the bowstring snaps.”
+**Storyteller:** “The arrow hits for the bow's normal 1 Injury, but the bowstring snaps.”
 
-The bow cannot be fired again until Mira repairs it. The ST may represent this with a **Complication** attached to the bow Asset.
+The bow cannot be fired again until Mira repairs it. The Storyteller may represent this with a **Complication** attached to the bow Asset.
 
 Both are valid Fumble results. The Storyteller chooses the one that best fits the scene.
 
@@ -182,7 +182,7 @@ Chaos cannot be used for Defense.
 
 Sir Aldren tries to smash through a locked door and plays **Chaos**.
 
-**ST:** “Before your hammer lands, the door opens from the other side. A surprised guard is standing there.”
+**Storyteller:** “Before your hammer lands, the door opens from the other side. A surprised guard is standing there.”
 
 A different Chaos result might be:
 
@@ -239,12 +239,12 @@ A heavy chandelier hangs above a guard.
 
 Instead of shooting the guard directly, Mira shoots the chain holding it and plays **Success: +2 Effect**.
 
-The ST agrees that the fiction supports the attempt and resolves the +2 Effect as:
+The Storyteller agrees that the fiction supports the attempt and resolves the +2 Effect as:
 
 - **1 Distress**
 - **1 Stuck**
 
-**ST:** “The chandelier crashes beside him. He dives away in panic but is trapped beneath fallen furniture.”
+**Storyteller:** “The chandelier crashes beside him. He dives away in panic but is trapped beneath fallen furniture.”
 
 The Outcome determined **how much** happened. The fictional action determined **what** happened.
 
@@ -407,13 +407,13 @@ Her hand becomes:
 
 She immediately announces a **Catastrophe**.
 
-The ST resolves it as three connected consequences:
+The Storyteller resolves it as three connected consequences:
 
 - Mira gains **1 Injury**.
 - Her bow gains a **Complication**.
 - A nearby bandit gains a **Boost**.
 
-**ST:** “Loose stones give way beneath you. You slam into the wall, damage your bow, and leave yourself open to the bandit.”
+**Storyteller:** “Loose stones give way beneath you. You slam into the wall, damage your bow, and leave yourself open to the bandit.”
 
 Mira discards the three Fumbles and redraws three cards.
 
@@ -570,7 +570,7 @@ Later Brother Tomas intimidates the wounded bandit and gets **Partial Success: +
 
 The bandit's remaining Toughness reaches **0**.
 
-**ST:** “Bleeding and surrounded, he throws down his weapon.”
+**Storyteller:** “Bleeding and surrounded, he throws down his weapon.”
 
 The bandit is **Taken Out** even though the final Effect was mental rather than physical.
 
@@ -660,12 +660,6 @@ An Actor can be moved in front of another player when the fiction changes. This 
 
 > **Illustration — Turn order around the table**  
 > Top-down view of four player positions around a table. Show two Actor cards in front of Player 2 and one Actor card in front of Player 4. Draw arrows: Player 1 → Player 2 → Actor → Actor → Player 3 → Player 4 → Actor → back to Player 1. Add a small note that an Actor card can move in front of another player when the situation changes.
-
-### Open Timing Note — Defense
-
-The current rules establish that players may play Outcome cards to defend when threatened and that NPCs can act after a player's turn. The exact relationship between Defense cards and the normal "one Outcome card for your Action" limit should be stated explicitly in the final production rules. Until finalized, follow the Adventure's guidance or agree on the convention before play.
-
----
 
 ## 14. Locations, Zones, Movement, and Range
 
@@ -760,6 +754,8 @@ When a player character is attacked or threatened by an Effect that can logicall
 
 **Chaos cannot be used for Defense.**
 
+During a round, a player may play one Outcome card for their Action on their own turn and any number of legal Outcome cards as Defenses when threatened.
+
 Defense Effect reduces the incoming Effect.
 
 If the player chooses not to defend, resolve the full incoming Effect as if their Defense provided no reduction.
@@ -779,11 +775,13 @@ A Bandit attacks Aldren for **2 Injury**.
 
 Aldren plays Success.
 
-Because his Defense exceeds what was needed, the ST may let the excess create a small advantage.
+Because his Defense exceeds what was needed, the Storyteller may let the excess create a small advantage.
 
-**ST:** “You catch his axe on your shield and force him off balance. Take a Boost.”
+**Storyteller:** “You catch his axe on your shield and force him off balance. Take a Boost.”
 
 Excess Defense can create a Boost or narrative advantage, but does not normally become a free counterattack.
+
+If Aldren wants to punch first, that is an Action, not a Defense; he needs an explicit Stunt that allows a counterattack to make that punch as part of his Defense.
 
 ### 16.1 Different Types of Incoming Effect
 
@@ -907,7 +905,7 @@ If Security arrives when a Counter reaches 3, reducing the Counter later does no
 
 ### Example — Progress Counter
 
-The ST announces:
+The Storyteller announces:
 
 **Raise the Portcullis — 0/4**
 
@@ -915,13 +913,13 @@ Aldren forces the mechanism and plays Success.
 
 The Counter rises from **0 to 2**.
 
-Later Mira Fumbles while helping. The ST decides the mechanism slips and reduces the Counter from **2 to 1**.
+Later Mira Fumbles while helping. The Storyteller decides the mechanism slips and reduces the Counter from **2 to 1**.
 
 At **4**, the portcullis opens.
 
 ### Example — Ongoing Counter
 
-The ST places:
+The Storyteller places:
 
 **Ice Storm — 3/4**
 
@@ -1174,7 +1172,7 @@ Keep it generic enough to reuse beside several rules sections.
 ### Risky Action
 
 1. State intent.
-2. ST explains stakes.
+2. Storyteller explains stakes.
 3. Play Outcome.
 4. Add modifiers.
 5. Resolve Effect.

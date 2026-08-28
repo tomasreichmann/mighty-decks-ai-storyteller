@@ -84,6 +84,22 @@ test("preserves both canonical Fumble resolutions in public prose", () => {
   assert.match(outcomeCards.body, /cannot be fired again until Mira repairs it/);
 });
 
+test("states the finalized Defense timing and counterattack limit", () => {
+  const document = parseRulebookDocument(canonicalRulebook);
+  const renderedSource = document.sections.map((section) => section.body).join("\n");
+
+  assert.match(
+    renderedSource,
+    /During a round, a player may play one Outcome card for their Action on their own turn and any number of legal Outcome cards as Defenses when threatened\./,
+  );
+  assert.match(
+    renderedSource,
+    /If Aldren wants to punch first, that is an Action, not a Defense; he needs an explicit Stunt that allows a counterattack to make that punch as part of his Defense\./,
+  );
+  assert.doesNotMatch(canonicalRulebook, /Open Timing Note/);
+  assert.doesNotMatch(canonicalRulebook, /\bST\b/);
+});
+
 test("excludes editorial notes and illustration briefs from reader prose", () => {
   const document = parseRulebookDocument(canonicalRulebook);
   const renderedSource = document.sections.map((section) => section.body).join("\n");
