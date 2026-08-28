@@ -14,11 +14,12 @@ import styles from "./RulesRulebookContent.module.css";
 const actorToken = "/actors/base/guard-blue.png";
 const locationImage = "/rules/locations/courtyard.png";
 const outcomeCardClassName = "w-[6rem]";
+const trackingCardClassName = "w-[10rem]";
 const locationExamples = [
   {
     title: "Castle Gate",
     imageUrl: "/rules/locations/castle-gate.png",
-    occupant: "Mira",
+    occupant: { label: "Mira", roleLabel: "Player", symbol: "✦", color: "fire" },
   },
   {
     title: "Courtyard",
@@ -28,7 +29,7 @@ const locationExamples = [
   {
     title: "Tower",
     imageUrl: "/rules/locations/tower.png",
-    occupant: "Bandit",
+    occupant: { label: "Bandit", roleLabel: "Enemy", symbol: "☠", color: "monster" },
   },
 ] as const;
 
@@ -275,10 +276,15 @@ export const ZonesAndRange = (): JSX.Element => (
   >
     <div className="grid w-full gap-3 sm:grid-cols-3">
       {locationExamples.map((location) => (
-        <div key={location.title} className="stack gap-2">
+        <div key={location.title} className="relative">
           <LocationCard imageUrl={location.imageUrl} imageAlt={`${location.title} medieval location`} title={location.title} description="A connected scene zone." />
           {location.occupant ? (
-            <Token imageUrl={actorToken} imageAlt={`${location.occupant} at ${location.title}`} label={location.occupant} color={location.occupant === "Mira" ? "fire" : "monster"} size="sm" />
+            <div className="absolute inset-0 z-20 flex items-center justify-center" aria-label={`${location.occupant.label}, ${location.occupant.roleLabel}, at ${location.title}`}>
+              <div className="stack items-center gap-1">
+                <Token imageUrl={actorToken} imageAlt={`${location.occupant.label} at ${location.title}`} label={location.occupant.label} color={location.occupant.color} size="sm" />
+                <span aria-hidden="true" className="rounded border border-kac-iron bg-kac-bone-light px-1 font-heading text-xs text-kac-iron">{location.occupant.symbol} {location.occupant.roleLabel}</span>
+              </div>
+            </div>
           ) : null}
         </div>
       ))}
@@ -307,7 +313,7 @@ export const RemainingToughness = (): JSX.Element => (
       <div key={String(label)} className="stack items-center gap-2">
         <div className="relative inline-flex">
           <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="brute" className="w-[8rem]" />
-          <DieMarker sides={4} value={value} className="absolute -right-2 -top-2 z-10" />
+          <DieMarker sides={4} value={value} removed={value === 0} className="absolute -right-2 -top-2 z-10" />
         </div>
         <Text variant="note" color="iron">Bandit</Text>
         <Text variant="emphasised" color={value === 0 ? "blood" : "iron"}>{`${value} Toughness — ${label}`}</Text>
@@ -323,14 +329,14 @@ export const CounterTracking = (): JSX.Element => (
   >
     <div className="stack items-center gap-2">
       <div className="relative inline-flex">
-        <CounterCard iconSlug="tracking" title="Ice Storm" currentValue={3} maxValue={4} className="w-[10rem]" />
+        <CounterCard iconSlug="tracking" title="Ice Storm" currentValue={3} maxValue={4} className={trackingCardClassName} />
         <DieMarker sides={4} value={3} className="absolute -right-2 -top-2 z-10" />
       </div>
       <Text variant="emphasised" color="iron">Counter value: 3 / 4</Text>
     </div>
     <div className="stack items-center gap-2">
       <div className="relative inline-flex">
-        <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className="w-[9rem]" />
+        <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className={trackingCardClassName} />
         <DieMarker sides={4} value={1} className="absolute -right-2 -top-2 z-10" />
       </div>
       <Text variant="note" color="iron">Bandit</Text>
