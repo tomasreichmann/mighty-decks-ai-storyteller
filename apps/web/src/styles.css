@@ -66,6 +66,8 @@ body {
   transform: translateZ(0);
 }
 
+body:has([data-rules-page]) .halftone-vignette { opacity: 0.6; }
+
 .halftone-vignette::after {
   content: "";
   position: absolute;

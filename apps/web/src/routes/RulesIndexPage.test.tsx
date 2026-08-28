@@ -11,12 +11,14 @@ test("RulesIndexPage composes the canonical Markdown rulebook as a reader-facing
 
   assert.match(page, /mighty-decks-rulebook\.md\?raw/);
   assert.match(page, /<RulesTableOfContents \/>/);
+  assert.match(page, /data-rules-page/);
   assert.match(page, /<article/);
   assert.match(page, /parseRulebookDocument/);
   assert.match(content, /ReactMarkdown/);
   assert.match(content, /remarkGfm/);
   assert.match(content, /<section id=\{section\.id\}/);
   assert.match(content, /<Text/);
+  assert.match(content, /styles\.bodyText/);
   assert.match(content, /<Heading/);
   assert.match(content, /table:/);
   assert.match(content, /<Table>/);

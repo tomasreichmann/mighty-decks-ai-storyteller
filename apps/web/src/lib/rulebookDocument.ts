@@ -77,7 +77,7 @@ export const rulebookSectionDefinitions: readonly RulebookSectionDefinition[] = 
   { sourceHeading: "## 25. Finishing an Adventure", id: "finishing-an-adventure", navGroup: "counters-storytelling", includeInNavigation: true },
   { sourceHeading: "## 26. Optional Lethal Rules", id: "optional-lethal-rules", navGroup: "optional-storyteller", includeInNavigation: true },
   { sourceHeading: "## 27. Storyteller Principles", id: "storyteller-principles", navGroup: "optional-storyteller", includeInNavigation: true },
-  { sourceHeading: "## 29. Quick Reference", id: "quick-reference", navGroup: "quick-reference", includeInNavigation: true },
+  { sourceHeading: "## 28. Quick Reference", id: "quick-reference", navGroup: "quick-reference", includeInNavigation: true },
   { sourceHeading: "# Design Philosophy", id: "design-philosophy", navGroup: "quick-reference", includeInNavigation: true },
 ] as const;
 
@@ -96,9 +96,7 @@ export const toRulebookFragmentId = (value: string): string =>
 
 const normalizeBody = (body: string): string =>
   body
-    .split("\n")
-    .filter((line) => !/^>\s+\*\*Illustration/i.test(line))
-    .join("\n")
+    .replace(/^>\s+\*\*Illustration[^\n]*\n(?:>[^\n]*\n?)+\n?/gim, "")
     .trim();
 
 export const parseRulebookDocument = (markdown: string): RulebookDocument => {

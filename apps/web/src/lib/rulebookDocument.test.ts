@@ -20,7 +20,7 @@ test("parses every public top-level section in source order", () => {
   );
   assert.ok(document.sections.some((section) => section.id === "quick-reference"));
   assert.ok(document.sections.some((section) => section.id === "design-philosophy"));
-  assert.ok(!document.sections.some((section) => section.sourceHeading.includes("28.")));
+  assert.ok(document.sections.some((section) => section.sourceHeading.includes("28.")));
 });
 
 test("assigns unique stable IDs, navigation groups, and addressable examples", () => {
@@ -107,6 +107,23 @@ test("excludes editorial notes and illustration briefs from reader prose", () =>
   assert.doesNotMatch(renderedSource, /Draft rules text/);
   assert.doesNotMatch(renderedSource, /Recommended Instructional Illustrations/);
   assert.doesNotMatch(renderedSource, /> \*\*Illustration/);
+});
+
+test("publishes only reader-facing rulebook copy and numbers Quick Reference as 28", () => {
+  const document = parseRulebookDocument(canonicalRulebook);
+  const renderedSource = document.sections.map((section) => section.body).join("\n");
+
+  assert.doesNotMatch(canonicalRulebook, /Layout callout/);
+  assert.doesNotMatch(canonicalRulebook, /Show a base Asset card/);
+  assert.doesNotMatch(canonicalRulebook, /Show two cards side by side/);
+  assert.doesNotMatch(canonicalRulebook, /Recommended Instructional Illustrations/);
+  assert.doesNotMatch(renderedSource, /Illustration\s+[—-]/i);
+  assert.match(canonicalRulebook, /^## 28\. Quick Reference$/m);
+  assert.doesNotMatch(canonicalRulebook, /^## 29\./m);
+  assert.equal(
+    document.sections.find((section) => section.id === "quick-reference")?.title,
+    "28. Quick Reference",
+  );
 });
 
 test("fails clearly when the canonical heading inventory changes", () => {

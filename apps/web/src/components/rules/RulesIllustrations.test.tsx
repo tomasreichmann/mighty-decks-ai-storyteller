@@ -11,7 +11,7 @@ const dieMarker = readFileSync(new URL("./DieMarker.tsx", import.meta.url), "utf
 test("uses removed d4s, equal tracking cards, and centered Location occupants", () => {
   assert.match(dieMarker, /removed\?: boolean/);
   assert.match(dieMarker, /d\$\{sides\} marker removed/);
-  assert.match(dieMarker, /text-kac-blood/);
+  assert.match(dieMarker, /styles\.removed/);
 
   const toughness = illustrations
     .split("export const RemainingToughness")[1]

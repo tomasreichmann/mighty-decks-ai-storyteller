@@ -11,14 +11,18 @@ const styles = readFileSync(
   "utf8",
 );
 
-test("registers floated card illustrations for core component subsections", () => {
+test("registers compact status thresholds alongside the floated component illustrations", () => {
   assert.match(illustrations, /const RulebookCardFloat/);
-  assert.match(illustrations, /"7-2-distress": DistressCardIllustration/);
+  assert.match(illustrations, /"7-2-distress": StatusThresholds/);
   assert.match(illustrations, /"9-2-stunts": StuntCardIllustration/);
   assert.match(illustrations, /"9-3-assets": AssetCardIllustration/);
   assert.match(illustrations, /"9-4-consumables": ConsumableCardIllustration/);
   assert.match(illustrations, /<RulebookCardFloat label=/);
   assert.match(styles, /\.cardFloat/);
+  assert.match(illustrations, /RulebookDiagramCard/);
+  assert.match(illustrations, /PANICKED/);
+  assert.match(illustrations, /HOPELESS/);
+  assert.match(illustrations, /TAKEN OUT/);
 });
 
 test("disables preserved whitespace on Rules callouts", () => {

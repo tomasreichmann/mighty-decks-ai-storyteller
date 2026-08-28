@@ -1,0 +1,5 @@
+.marker { position: relative; display: inline-grid; place-items: center; width: 2.45rem; height: 2.2rem; filter: drop-shadow(2px 3px 1px rgb(18 27 35 / 0.25)); }
+.face { position: absolute; inset: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(135deg, #fff1a2 0%, #ffd23b 52%, #b98a00 100%); border: 2px solid #121b23; }
+.leftEdge, .rightEdge { position: absolute; top: 28%; width: 2px; height: 58%; background: rgb(18 27 35 / 0.65); transform-origin: top; }
+.leftEdge { left: 49%; transform: rotate(30deg); }.rightEdge { left: 49%; transform: rotate(-30deg); }
+.value { position: relative; z-index: 1; margin-top: 0.45rem; font-family: var(--font-heading, serif); font-size: 1.1rem; font-weight: 800; }.removed .face { background: #e4ceb3; }.removed .value { color: #b5162b; }.typeLabel { position: absolute; bottom: -0.75rem; font: 700 0.55rem/1 var(--font-ui, sans-serif); letter-spacing: 0.06em; }

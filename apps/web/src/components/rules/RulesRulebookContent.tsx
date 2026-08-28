@@ -40,7 +40,7 @@ const RulebookMarkdown = ({
     remarkPlugins={[remarkGfm]}
     components={{
       p: ({ children }) => (
-        <Text variant="body" color="iron-light">
+        <Text className={styles.bodyText} variant="body" color="iron-light">
           {children}
         </Text>
       ),
@@ -55,12 +55,12 @@ const RulebookMarkdown = ({
         </div>
       ),
       ul: ({ children }) => (
-        <ul className="list-disc space-y-1 pl-6 font-ui text-base leading-relaxed text-kac-iron-light">
+        <ul className={`${styles.bodyText} list-disc space-y-1 pl-6 font-ui text-base text-kac-iron-light`}>
           {children}
         </ul>
       ),
       ol: ({ children }) => (
-        <ol className="list-decimal space-y-1 pl-6 font-ui text-base leading-relaxed text-kac-iron-light">
+        <ol className={`${styles.bodyText} list-decimal space-y-1 pl-6 font-ui text-base text-kac-iron-light`}>
           {children}
         </ol>
       ),

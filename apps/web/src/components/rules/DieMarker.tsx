@@ -1,9 +1,12 @@
+import styles from "./DieMarker.module.css";
+
 export interface DieMarkerProps {
   sides: 4 | 6 | 8 | 12;
   value: number;
   className?: string;
   label?: string;
   removed?: boolean;
+  showTypeLabel?: boolean;
 }
 
 export const DieMarker = ({
@@ -12,12 +15,12 @@ export const DieMarker = ({
   className,
   label,
   removed = false,
+  showTypeLabel = false,
 }: DieMarkerProps): JSX.Element => {
   const displayedValue = Math.min(sides, Math.max(0, Math.round(value)));
   const markerClassName = [
-    "inline-flex h-9 w-9 items-center justify-center border-2 border-kac-iron font-heading text-lg font-bold shadow-sm",
-    removed ? "bg-kac-bone-light text-kac-blood" : "bg-kac-gold text-kac-iron",
-    sides === 4 ? "[clip-path:polygon(50%_0,100%_100%,0_100%)] pt-2" : "rounded-full",
+    sides === 4 ? styles.marker : "inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-kac-iron bg-kac-gold font-heading text-lg font-bold shadow-sm",
+    removed ? styles.removed : "",
     className,
   ].filter(Boolean).join(" ");
 
@@ -29,6 +32,8 @@ export const DieMarker = ({
       role="img"
     >
       <span aria-hidden="true">{removed ? "✕" : displayedValue}</span>
+      {sides === 4 ? <><span aria-hidden="true" className={styles.face} /><span aria-hidden="true" className={styles.leftEdge} /><span aria-hidden="true" className={styles.rightEdge} /></> : null}
+      {showTypeLabel && sides === 4 ? <span aria-hidden="true" className={styles.typeLabel}>d4</span> : null}
       <span className="sr-only">Dice track values; they are not rolled.</span>
     </span>
   );
