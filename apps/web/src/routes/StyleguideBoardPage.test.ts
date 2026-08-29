@@ -18,10 +18,10 @@ test("StyleguideBoardPage teaches static board composition", () => {
     assert.match(source, new RegExp(heading));
   }
 
-  assert.match(source, /<BoardProvider/);
-  assert.match(source, /<BoardFrame[^>]*interactive=\{false\}/);
+  assert.match(source, /<StaticBoardFigure/);
   assert.match(source, /className="h-\[18rem\] w-full flex-none sm:h-\[22rem\]"/);
-  assert.match(source, /<Board/);
+  assert.doesNotMatch(source, /<BoardProvider/);
+  assert.doesNotMatch(source, /<BoardFrame/);
   assert.match(source, /GameCardView/);
   assert.match(source, /CardBoundary/);
   assert.match(source, /LocationCard/);

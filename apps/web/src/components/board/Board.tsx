@@ -6,6 +6,7 @@ import type { BoardItemRecord } from "../../lib/board/boardController";
 interface BoardProps {
   className?: string;
   renderItem?: (item: BoardItemRecord) => ReactNode;
+  backgroundImageUrl?: string;
 }
 
 const itemToneClass = {
@@ -93,7 +94,11 @@ const BoardItem = ({
   );
 };
 
-export const Board = ({ className, renderItem }: BoardProps): JSX.Element => {
+export const Board = ({
+  className,
+  renderItem,
+  backgroundImageUrl,
+}: BoardProps): JSX.Element => {
   const {
     boardSize,
     viewport,
@@ -109,6 +114,12 @@ export const Board = ({ className, renderItem }: BoardProps): JSX.Element => {
     transitionProperty: "transform",
     transitionDuration: `${transitionDurationMs}ms`,
     transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+    backgroundImage: backgroundImageUrl
+      ? `url(${JSON.stringify(backgroundImageUrl)})`
+      : undefined,
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
   };
 
   return (

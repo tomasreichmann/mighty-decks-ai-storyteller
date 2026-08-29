@@ -5,9 +5,7 @@ import type {
   ShipActorInstance,
   ShipLocationInstance,
 } from "../lib/spaceship/scene/types";
-import { Board } from "../components/board/Board";
-import { BoardFrame } from "../components/board/BoardFrame";
-import { BoardProvider } from "../components/board/BoardProvider";
+import { StaticBoardFigure } from "../components/board/StaticBoardFigure";
 import { GameCardView } from "../components/adventure-module/GameCardView";
 import { ActorCard } from "../components/cards/ActorCard";
 import { AssetCard } from "../components/cards/AssetCard";
@@ -31,28 +29,7 @@ import {
   layoutRecipeExamples,
   rulesIllustrationExample,
   spaceshipCompositionExample,
-  type StyleguideBoardExample,
 } from "./styleguideBoardExamples";
-
-const StaticBoardExample = ({
-  example,
-  ariaLabel,
-  renderItem,
-}: {
-  example: StyleguideBoardExample;
-  ariaLabel: string;
-  renderItem?: (item: BoardItemRecord) => ReactNode;
-}): JSX.Element => (
-  <BoardProvider boardSize={example.boardSize} initialItems={example.items}>
-    <BoardFrame
-      interactive={false}
-      ariaLabel={ariaLabel}
-      className="h-[18rem] w-full flex-none sm:h-[22rem]"
-    >
-      <Board renderItem={renderItem} />
-    </BoardFrame>
-  </BoardProvider>
-);
 
 const ResolvedBoardCard = ({
   type,
@@ -298,9 +275,11 @@ export const StyleguideBoardPage = (): JSX.Element => {
         <div className="grid gap-6 xl:grid-cols-2">
           {layoutRecipeExamples.map((example) => (
             <figure key={example.id} className="stack gap-3">
-              <StaticBoardExample
-                example={example}
+              <StaticBoardFigure
+                boardSize={example.boardSize}
+                items={example.items}
                 ariaLabel={`${example.layout} layout recipe`}
+                className="h-[18rem] w-full flex-none sm:h-[22rem]"
               />
               <figcaption className="stack gap-1">
                 <Text variant="h3" color="iron">{example.layout}</Text>
@@ -323,9 +302,11 @@ export const StyleguideBoardPage = (): JSX.Element => {
             faces in a custom board shell.
           </Text>
         </div>
-        <StaticBoardExample
-          example={canonicalBoardExample}
+        <StaticBoardFigure
+          boardSize={canonicalBoardExample.boardSize}
+          items={canonicalBoardExample.items}
           ariaLabel="Canonical board components"
+          className="h-[18rem] w-full flex-none sm:h-[22rem]"
           renderItem={renderCanonicalItem}
         />
       </section>
@@ -342,9 +323,11 @@ export const StyleguideBoardPage = (): JSX.Element => {
           </Text>
         </div>
         <div className="pointer-events-none">
-          <StaticBoardExample
-            example={spaceshipCompositionExample}
+          <StaticBoardFigure
+            boardSize={spaceshipCompositionExample.boardSize}
+            items={spaceshipCompositionExample.items}
             ariaLabel="Static spaceship composition"
+            className="h-[18rem] w-full flex-none sm:h-[22rem]"
             renderItem={renderSpaceshipItem}
           />
         </div>
@@ -362,9 +345,11 @@ export const StyleguideBoardPage = (): JSX.Element => {
           </Text>
         </div>
         <figure className="stack gap-3">
-          <StaticBoardExample
-            example={rulesIllustrationExample}
+          <StaticBoardFigure
+            boardSize={rulesIllustrationExample.boardSize}
+            items={rulesIllustrationExample.items}
             ariaLabel="Rules illustration recipe"
+            className="h-[18rem] w-full flex-none sm:h-[22rem]"
             renderItem={renderRulesItem}
           />
           <figcaption>
