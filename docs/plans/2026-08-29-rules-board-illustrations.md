@@ -662,7 +662,8 @@ verify:
 - each complex figure remains contained and legible with no horizontal page
   overflow;
 - wheel input over a figure scrolls the page and dragging does not pan;
-- the wood texture covers the virtual board without stretching outside it;
+- the seamlessly tileable wood texture covers the complete BoardFrame without
+  stretching outside it;
 - cards, tokens, dice, labels, and connectors preserve their intended z-order;
 - Outcome hands use a fan only where it clarifies hand state;
 - visible and screen-reader order match the canonical rulebook for the action

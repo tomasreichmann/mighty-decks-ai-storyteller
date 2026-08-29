@@ -41,16 +41,19 @@ a shared `StaticBoardFigure` component under `components/board`. It will own
 `BoardProvider`, a non-interactive `BoardFrame`, and `Board`, while callers own
 their fixture data, item renderer, accessible label, and frame sizing.
 
-Add an optional background image to `Board`. The rulebook passes
-`/backgrounds/board.jpg`; other board consumers retain their current surface by
-default. Keeping the texture on the transformed virtual board makes it scale
-and crop with the pieces rather than remaining fixed to the viewport.
+Add an optional background image to `BoardFrame`. The rulebook passes the
+seamlessly tileable `/backgrounds/board.jpg`; other board consumers retain
+their current dotted surface by default. The texture fills the complete frame,
+including its breathing room around the transformed virtual board.
 
 Create a rulebook-local pure fixture module containing flat `BoardItemInput`
 lists for the seven complex figures. Build those lists with the existing
 `flexLayout`, `stackLayout`, `deckLayout`, `pileLayout`, and `fanLayout` helpers
 where they fit. Compound arrangements may calculate several sub-layouts, but
 the final render list stays flat and uses stable semantic ids.
+
+Within each figure, every card item uses one shared width and height, even when
+the rendered cards are different canonical component types.
 
 Keep production fixtures independent from `styleguideBoardExamples.ts`. The
 styleguide demonstrates the pattern; it is not a production data dependency.
