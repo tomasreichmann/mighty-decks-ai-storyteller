@@ -11,7 +11,7 @@ import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
 import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
-import { CompleteTableSetup, CoreActionLoop } from "./RulesBoardIllustrations";
+import { CompleteTableSetup, CoreActionLoop, ActorInitiative } from "./RulesBoardIllustrations";
 import styles from "./RulesRulebookContent.module.css";
 
 const actorToken = "/actors/base/guard-blue.png";
@@ -167,47 +167,6 @@ export const FumbleBranches = (): JSX.Element => (
     </div>
   </RulebookFigure>
 );
-
-export const ActorInitiative = (): JSX.Element => {
-  const initiativeSlots = [
-    { player: "Mira", actors: ["Guard", "Wolf"] },
-    { player: "Aldren", actors: ["Bandit"] },
-    { player: "Tomas", actors: [] },
-  ] as const;
-
-  return (
-    <RulebookFigure
-      title="Actor initiative"
-      summary="Actors act immediately after the player they sit in front of. Multiple Actors may share a slot, and all act after that player."
-    >
-      <Text variant="emphasised" color="iron">Mira → Guard → Wolf → Aldren → Bandit → Tomas</Text>
-      <ol className="sr-only">
-        <li>Mira</li><li>Guard</li><li>Wolf</li><li>Aldren</li><li>Bandit</li><li>Tomas</li>
-      </ol>
-      <div className="grid w-full gap-4 md:grid-cols-3">
-        {initiativeSlots.map((slot, index) => (
-          <div key={slot.player} className="stack items-center gap-2 text-center">
-            <Token
-              imageUrl={actorToken}
-              imageAlt={`${slot.player} player token`}
-              label={slot.player}
-              color={index === 0 ? "fire" : index === 1 ? "gold" : "cloth"}
-              size="md"
-            />
-            <div className="flex flex-wrap justify-center gap-2">
-              {slot.actors.map((actor) => (
-                <div key={actor} className="stack items-center gap-1">
-                  <ActorCard baseLayerSlug={actor === "Wolf" ? "animal_red" : "guard_blue"} tacticalRoleSlug="minion" className="w-[7rem]" />
-                  <Text variant="note" color="iron">{actor}</Text>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </RulebookFigure>
-  );
-};
 
 export const ZonesAndRange = (): JSX.Element => (
   <RulebookFigure

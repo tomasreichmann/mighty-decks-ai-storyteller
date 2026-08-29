@@ -27,3 +27,15 @@ test("the core action loop uses matching card sizes for every state", () => {
   assert.match(source, /coreActionLoopMobileBoard/);
   assert.match(source, /Catastrophe check/);
 });
+
+test("actor initiative uses a static board with an explicit turn sequence", () => {
+  const source = readFileSync(
+    new URL("./RulesBoardIllustrations.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /export const ActorInitiative/);
+  assert.match(source, /actorInitiativeBoard/);
+  assert.match(source, /actorInitiativeMobileBoard/);
+  assert.match(source, /Actors act immediately after the player/);
+});

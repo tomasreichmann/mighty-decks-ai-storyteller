@@ -78,4 +78,35 @@ test("the complete table board is flat, labelled, and contained", async () => {
     assert.ok(example.items.some((item) => item.id === "loop-deck"));
     assert.ok(example.items.some((item) => item.id === "loop-refreshed-first"));
   }
+
+  assert.ok("actorInitiativeBoard" in fixtures);
+  assert.ok("actorInitiativeMobileBoard" in fixtures);
+  for (const example of [
+    fixtures.actorInitiativeBoard,
+    fixtures.actorInitiativeMobileBoard,
+  ]) {
+    const itemIds = example.items.map((item) => item.id);
+    assert.equal(new Set(itemIds).size, itemIds.length);
+    for (const item of example.items) {
+      assert.ok(item.x >= 0 && item.y >= 0);
+      assert.ok(item.x + (item.width ?? 0) <= example.boardSize.width);
+      assert.ok(item.y + (item.height ?? 0) <= example.boardSize.height);
+    }
+    for (const itemId of [
+      "initiative-mira",
+      "initiative-guard",
+      "initiative-wolf",
+      "initiative-aldren",
+      "initiative-bandit",
+      "initiative-tomas",
+    ]) {
+      assert.ok(itemIds.includes(itemId));
+    }
+    const cardSizes = new Set(
+      example.items
+        .filter((item) => item.kind === "card")
+        .map((item) => `${item.width}x${item.height}`),
+    );
+    assert.equal(cardSizes.size, 1);
+  }
 });

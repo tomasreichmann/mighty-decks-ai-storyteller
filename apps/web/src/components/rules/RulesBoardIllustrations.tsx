@@ -19,6 +19,8 @@ import { DieMarker } from "./DieMarker";
 import {
   completeTableSetupBoard,
   completeTableSetupMobileBoard,
+  actorInitiativeBoard,
+  actorInitiativeMobileBoard,
   coreActionLoopBoard,
   coreActionLoopMobileBoard,
 } from "./rulesBoardExamples";
@@ -193,5 +195,60 @@ export const CoreActionLoop = (): JSX.Element => (
     </ol>
     <StaticBoardFigure boardSize={coreActionLoopMobileBoard.boardSize} items={coreActionLoopMobileBoard.items} ariaLabel="Core action loop from choosing an Outcome card to checking the refreshed hand" backgroundImageUrl={boardBackground} className="h-[34rem] w-full flex-none sm:hidden" renderItem={renderCoreActionLoopItem} />
     <StaticBoardFigure boardSize={coreActionLoopBoard.boardSize} items={coreActionLoopBoard.items} ariaLabel="Core action loop from choosing an Outcome card to checking the refreshed hand" backgroundImageUrl={boardBackground} className="hidden h-[28rem] w-full flex-none sm:block" renderItem={renderCoreActionLoopItem} />
+  </RulebookBoardFigure>
+);
+
+const renderActorInitiativeItem = (item: BoardItemRecord): ReactNode => {
+  switch (item.id) {
+    case "initiative-mira-slot":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Mira's turn · then every Actor in front</Label>;
+    case "initiative-aldren-slot":
+      return <Label color="gold" rotate={false} className="w-full justify-center">Aldren's turn · then their Actor</Label>;
+    case "initiative-round-order":
+      return <Label color="cloth" rotate={false} className="w-full justify-center">Bandit → Tomas · then repeat the agreed player order.</Label>;
+    case "initiative-arrow-mira-guard":
+    case "initiative-arrow-guard-wolf":
+    case "initiative-arrow-wolf-aldren":
+    case "initiative-arrow-aldren-bandit":
+    case "initiative-arrow-bandit-tomas":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-3xl text-kac-iron">→</span>;
+    case "initiative-arrow-wolf-aldren-mobile":
+    case "initiative-arrow-bandit-tomas-mobile":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-2xl text-kac-iron">↓</span>;
+    case "initiative-mira":
+      return <Token imageUrl="/actors/base/specialist.png" imageAlt="Mira player token" label="Mira" color="fire" size="sm" />;
+    case "initiative-aldren":
+      return <Token imageUrl="/actors/base/guard-yellow.png" imageAlt="Aldren player token" label="Aldren" color="gold" size="sm" />;
+    case "initiative-tomas":
+      return <Token imageUrl="/actors/base/healer.png" imageAlt="Tomas player token" label="Tomas" color="skin" size="sm" />;
+    case "initiative-guard":
+      return <ActorCard kind="custom" custom={{ imageUrl: "/actors/base/guard-blue.png", adjective: "Watchful", noun: "Guard", nounDescription: "Acts after Mira.", adjectiveDescription: "Fixed Effect." }} className="w-full" />;
+    case "initiative-wolf":
+      return <ActorCard kind="custom" custom={{ imageUrl: "/actors/base/animal-red.png", adjective: "Hungry", noun: "Wolf", nounDescription: "Acts after Mira.", adjectiveDescription: "Fixed Effect." }} className="w-full" />;
+    case "initiative-bandit":
+      return <ActorCard kind="custom" custom={{ imageUrl: "/actors/base/guard-red.png", adjective: "Ruthless", noun: "Bandit", nounDescription: "Acts after Aldren.", adjectiveDescription: "Fixed Effect." }} className="w-full" />;
+    case "initiative-guard-label":
+      return <Label color="steel" rotate={false} className="w-full justify-center">Guard acts next</Label>;
+    case "initiative-wolf-label":
+      return <Label color="steel" rotate={false} className="w-full justify-center">Wolf acts next</Label>;
+    case "initiative-bandit-label":
+      return <Label color="steel" rotate={false} className="w-full justify-center">Bandit acts next</Label>;
+    default:
+      return null;
+  }
+};
+
+export const ActorInitiative = (): JSX.Element => (
+  <RulebookBoardFigure title="Actor initiative" summary="Actors act immediately after the player they sit in front of. If several Actors share a player, the Storyteller chooses their order before the next player acts.">
+    <ol className="sr-only">
+      <li>Mira</li>
+      <li>Guard</li>
+      <li>Wolf</li>
+      <li>Aldren</li>
+      <li>Bandit</li>
+      <li>Tomas</li>
+    </ol>
+    <StaticBoardFigure boardSize={actorInitiativeMobileBoard.boardSize} items={actorInitiativeMobileBoard.items} ariaLabel="Actor initiative order from Mira through Guard, Wolf, Aldren, Bandit, and Tomas" backgroundImageUrl={boardBackground} className="h-[34rem] w-full flex-none sm:hidden" renderItem={renderActorInitiativeItem} />
+    <StaticBoardFigure boardSize={actorInitiativeBoard.boardSize} items={actorInitiativeBoard.items} ariaLabel="Actor initiative order from Mira through Guard, Wolf, Aldren, Bandit, and Tomas" backgroundImageUrl={boardBackground} className="hidden h-[25rem] w-full flex-none sm:block" renderItem={renderActorInitiativeItem} />
   </RulebookBoardFigure>
 );

@@ -297,3 +297,48 @@ export const coreActionLoopMobileBoard: RulebookBoardExample = {
     ),
   ],
 };
+
+const initiativeActorCard = { width: 112, height: 156 };
+
+export const actorInitiativeBoard: RulebookBoardExample = {
+  boardSize: { width: 940, height: 400 },
+  items: [
+    { id: "initiative-mira-slot", kind: "note", x: 28, y: 18, width: 390, height: 32, zIndex: 8 },
+    { id: "initiative-aldren-slot", kind: "note", x: 450, y: 18, width: 340, height: 32, zIndex: 8 },
+    { id: "initiative-mira", kind: "note", x: 44, y: 138, width: 66, height: 70, zIndex: 8 },
+    { id: "initiative-arrow-mira-guard", kind: "note", x: 120, y: 146, width: 28, height: 48, zIndex: 8 },
+    { id: "initiative-guard", kind: "card", x: 160, y: 86, ...initiativeActorCard, zIndex: 4 },
+    { id: "initiative-arrow-guard-wolf", kind: "note", x: 279, y: 146, width: 28, height: 48, zIndex: 8 },
+    { id: "initiative-wolf", kind: "card", x: 319, y: 86, ...initiativeActorCard, zIndex: 4 },
+    { id: "initiative-arrow-wolf-aldren", kind: "note", x: 438, y: 146, width: 28, height: 48, zIndex: 8 },
+    { id: "initiative-aldren", kind: "note", x: 478, y: 138, width: 66, height: 70, zIndex: 8 },
+    { id: "initiative-arrow-aldren-bandit", kind: "note", x: 554, y: 146, width: 28, height: 48, zIndex: 8 },
+    { id: "initiative-bandit", kind: "card", x: 594, y: 86, ...initiativeActorCard, zIndex: 4 },
+    { id: "initiative-arrow-bandit-tomas", kind: "note", x: 713, y: 146, width: 28, height: 48, zIndex: 8 },
+    { id: "initiative-tomas", kind: "note", x: 753, y: 138, width: 66, height: 70, zIndex: 8 },
+    { id: "initiative-guard-label", kind: "note", x: 160, y: 260, width: 112, height: 28, zIndex: 8 },
+    { id: "initiative-wolf-label", kind: "note", x: 319, y: 260, width: 112, height: 28, zIndex: 8 },
+    { id: "initiative-bandit-label", kind: "note", x: 594, y: 260, width: 112, height: 28, zIndex: 8 },
+    { id: "initiative-round-order", kind: "note", x: 150, y: 330, width: 640, height: 34, zIndex: 8 },
+  ],
+};
+
+export const actorInitiativeMobileBoard: RulebookBoardExample = {
+  boardSize: { width: 380, height: 600 },
+  items: [
+    { id: "initiative-mira-slot", kind: "note", x: 20, y: 16, width: 340, height: 30, zIndex: 8 },
+    { id: "initiative-mira", kind: "note", x: 20, y: 104, width: 66, height: 70, zIndex: 8 },
+    { id: "initiative-arrow-mira-guard", kind: "note", x: 90, y: 116, width: 24, height: 44, zIndex: 8 },
+    { id: "initiative-guard", kind: "card", x: 122, y: 60, ...initiativeActorCard, zIndex: 4 },
+    { id: "initiative-arrow-guard-wolf", kind: "note", x: 236, y: 116, width: 18, height: 44, zIndex: 8 },
+    { id: "initiative-wolf", kind: "card", x: 254, y: 60, ...initiativeActorCard, zIndex: 4 },
+    { id: "initiative-arrow-wolf-aldren-mobile", kind: "note", x: 176, y: 218, width: 28, height: 24, zIndex: 8 },
+    { id: "initiative-aldren-slot", kind: "note", x: 20, y: 244, width: 340, height: 30, zIndex: 8 },
+    { id: "initiative-aldren", kind: "note", x: 50, y: 332, width: 66, height: 70, zIndex: 8 },
+    { id: "initiative-arrow-aldren-bandit", kind: "note", x: 134, y: 344, width: 28, height: 44, zIndex: 8 },
+    { id: "initiative-bandit", kind: "card", x: 194, y: 286, ...initiativeActorCard, zIndex: 4 },
+    { id: "initiative-arrow-bandit-tomas-mobile", kind: "note", x: 176, y: 450, width: 28, height: 24, zIndex: 8 },
+    { id: "initiative-round-order", kind: "note", x: 20, y: 474, width: 340, height: 30, zIndex: 8 },
+    { id: "initiative-tomas", kind: "note", x: 157, y: 516, width: 66, height: 70, zIndex: 8 },
+  ],
+};
