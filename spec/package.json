@@ -68,6 +68,10 @@
     "./spaceshipBoardState": {
       "types": "./dist/spaceshipBoardState.d.ts",
       "import": "./dist/spaceshipBoardState.js"
+    },
+    "./readiness": {
+      "types": "./dist/readiness.d.ts",
+      "import": "./dist/readiness.js"
     }
   },
   "scripts": {

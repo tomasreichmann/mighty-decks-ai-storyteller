@@ -10,6 +10,13 @@ import {
 import { Page } from "./components/layout/Page";
 import { PendingIndicator } from "./components/PendingIndicator";
 import { RouteBoundary } from "./components/common/RouteBoundary";
+import {
+  BackendReadinessProvider,
+  useBackendReadinessContext,
+} from "./components/BackendReadinessProvider";
+import { WakeScreen } from "./components/WakeScreen";
+import { isBackendDependentPath } from "./lib/backendReadiness";
+import type { ReadinessResponse } from "@mighty-decks/spec/readiness";
 
 const AdventureModuleAuthoringPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleAuthoringPage"))
@@ -252,10 +259,27 @@ const RouteShellBoundary = ({
   );
 };
 
-export const App = (): JSX.Element => {
+const BackendRouteGate = ({ children }: { children: JSX.Element }): JSX.Element => {
+  const { pathname } = useLocation();
+  const { status, elapsedMs, retry } = useBackendReadinessContext();
+
+  if (status !== "ready" && isBackendDependentPath(pathname)) {
+    return <WakeScreen status={status} elapsedMs={elapsedMs} onRetry={retry} />;
+  }
+
+  return children;
+};
+
+export const App = ({
+  initialReadinessPromise,
+}: {
+  initialReadinessPromise: Promise<ReadinessResponse>;
+}): JSX.Element => {
   return (
-    <Suspense fallback={<RouteLoadingFallback />}>
-      <Routes>
+    <BackendReadinessProvider initialReadinessPromise={initialReadinessPromise}>
+      <BackendRouteGate>
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Routes>
         <Route element={<FitContentLayout />}>
           <Route
             path="/"
@@ -636,7 +660,9 @@ export const App = (): JSX.Element => {
           element={<AdventureModuleRootRedirect />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+          </Routes>
+        </Suspense>
+      </BackendRouteGate>
+    </BackendReadinessProvider>
   );
 };

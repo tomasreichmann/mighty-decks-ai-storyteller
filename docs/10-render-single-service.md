@@ -55,6 +55,19 @@ Set service scaling to 1 instance for MVP (state is in-memory).
 After deploy:
 
 - `https://<your-service>.onrender.com/health`
+- `https://<your-service>.onrender.com/api/readiness`
 - open `https://<your-service>.onrender.com/`
 - join an adventure and submit an action
 - run `SMOKE_BASE_URL=https://<your-service>.onrender.com pnpm -C apps/server smoke:campaign-flow` to verify the authored-module -> campaign -> session-join flow and automatic cleanup against the live service
+
+## Free-tier wake-up behavior
+
+Render's free service may sleep after inactivity. The first page load starts a
+single `/api/readiness` request immediately, keeps static landing and reference
+pages usable, and disables Storyteller tools until the server responds. The
+client explains the wake-up after two seconds, offers retry after a minute, and
+does not poll the sleeping service.
+
+Keep `/health` reserved for Render infrastructure checks. `/api/readiness` is
+the user-facing endpoint and may later reflect dependencies required to serve
+the application.

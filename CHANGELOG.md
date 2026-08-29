@@ -8,6 +8,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web/server: add a user-facing `/api/readiness` check and diegetic Render wake-up UX that keeps static pages available while Storyteller tools wait for the free service.
+
 - Web: add a complete anchored `/rules` rulebook with component-composed instructional figures and Message-based play examples.
 - Web: add compact, responsive card illustrations for the rulebook's Distress, Stunts, Assets, and Consumables subsections.
 - Docs: add `pnpm docs:cards` to generate a standalone Markdown inventory of shared Outcome, Effect, Stunt, Actor, Asset, and Counter card components.

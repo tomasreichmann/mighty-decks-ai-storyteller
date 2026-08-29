@@ -44,6 +44,7 @@ import { registerWorkflowLabRoutes } from "./workflow/registerWorkflowLabRoutes"
 import { WorkflowRunLogger } from "./workflow/WorkflowRunLogger";
 import { WorkflowRegistry } from "./workflow/workflowRegistry";
 import { resolveWebDistDir } from "./webDistDir";
+import { registerReadinessRoutes } from "./routes/registerReadinessRoutes";
 
 const app = Fastify({ logger: true });
 const ADVENTURE_ARTIFACT_FILE_ROUTE_BASE_PATH = "/api/adventure-artifacts/";
@@ -314,6 +315,8 @@ registerCampaignRoutes(app, {
     });
   },
 });
+
+registerReadinessRoutes(app);
 
 app.get("/health", async () => {
   return {

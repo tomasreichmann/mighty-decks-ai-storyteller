@@ -82,6 +82,7 @@ VITE_SERVER_URL=http://<host>:8081
 Notes:
 
 - In local Vite dev on port `5173`, the browser stays on the Vite origin and the dev server proxies `/api`, `/adventures`, `/health`, and `/socket.io` to the backend `PORT`.
+- The web client checks `/api/readiness` at boot before enabling Storyteller tools. On Render's free tier, the first request after inactivity can take about a minute while the service wakes.
 - The Vite proxy reads `PORT` from the repo-root `.env.local` or falls back to `8081`, so local API calls stay aligned even if your backend is pinned to `8080`.
 - In the Render single-service deployment, the client uses same-origin API and Socket.IO calls, so `VITE_SERVER_URL` is not needed.
 - For split-origin setups such as Cloudflare Tunnel, set `VITE_SERVER_URL` to the public API origin.
@@ -178,6 +179,7 @@ The repo includes `render.yaml` for a single Render web service that:
 - starts the Node server with `node apps/server/dist/index.js`
 - serves the built web client and API from the same origin
 - exposes `/health` for health checks
+- exposes `/api/readiness` for the web client's user-facing readiness check
 
 Important constraints:
 
