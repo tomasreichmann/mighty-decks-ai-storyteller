@@ -15,3 +15,15 @@ test("the complete table figure uses the shared static board and wood surface", 
   assert.match(source, /completeTableSetupMobileBoard/);
   assert.match(source, /sm:hidden/);
 });
+
+test("the core action loop uses matching card sizes for every state", () => {
+  const source = readFileSync(
+    new URL("./RulesBoardIllustrations.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /export const CoreActionLoop/);
+  assert.match(source, /coreActionLoopBoard/);
+  assert.match(source, /coreActionLoopMobileBoard/);
+  assert.match(source, /Catastrophe check/);
+});

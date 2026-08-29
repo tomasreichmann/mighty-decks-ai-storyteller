@@ -11,7 +11,7 @@ import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
 import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
-import { CompleteTableSetup } from "./RulesBoardIllustrations";
+import { CompleteTableSetup, CoreActionLoop } from "./RulesBoardIllustrations";
 import styles from "./RulesRulebookContent.module.css";
 
 const actorToken = "/actors/base/guard-blue.png";
@@ -164,40 +164,6 @@ export const FumbleBranches = (): JSX.Element => (
         </div>
         <Text variant="note" color="iron-light">1 Injury · Broken String · Action to repair</Text>
       </div>
-    </div>
-  </RulebookFigure>
-);
-
-export const CoreActionLoop = (): JSX.Element => (
-  <RulebookFigure
-    title="Core Action Loop"
-    summary="Choose an Outcome, resolve it, refill the hand, then check the new hand for Catastrophe."
-  >
-    <ol className="sr-only">
-      <li>Choose card from the three-card hand.</li>
-      <li>Resolve Effect.</li>
-      <li>Discard the played card.</li>
-      <li>Draw replacement.</li>
-      <li>Catastrophe check the refreshed hand.</li>
-    </ol>
-    <div className="grid w-full items-center gap-4 md:grid-cols-[minmax(18rem,1.5fr)_repeat(5,minmax(0,1fr))]">
-      <div className="flex flex-wrap justify-center gap-2" aria-label="Three-card Outcome hand">
-        <ResolvedCard type="OutcomeCard" slug="success" className="w-[5.5rem] -translate-y-2 ring-2 ring-kac-gold" />
-        <ResolvedCard type="OutcomeCard" slug="partial-success" className="w-[5.5rem]" />
-        <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[5.5rem]" />
-      </div>
-      {[
-        "Choose card",
-        "Resolve Effect",
-        "Discard",
-        "Draw replacement",
-        "Catastrophe check",
-      ].map((step, index) => (
-        <div key={step} className="flex min-h-16 flex-col items-center justify-center gap-1 text-center">
-          {index > 0 ? <span aria-hidden="true" className="hidden font-heading text-xl md:block">→</span> : null}
-          <Text variant="note" color="iron">{step}</Text>
-        </div>
-      ))}
     </div>
   </RulebookFigure>
 );
@@ -451,17 +417,11 @@ export const CatastropheFlowV2 = (): JSX.Element => (
   </RulebookFigure>
 );
 
-export const CoreActionLoopV2 = (): JSX.Element => (
-  <RulebookFigure title="Core Action Loop" summary="A selected Success leaves the hand, is discarded, and is replaced before the Catastrophe check.">
-    <ol className="sr-only"><li>Choose.</li><li>Play and resolve.</li><li>Discard.</li><li>Draw replacement.</li><li>Check Catastrophe.</li></ol>
-    <div className="grid w-full gap-3 md:grid-cols-5">{[["1", "Choose", "Three-card Outcome hand"], ["2", "Play / resolve", "Selected Success"], ["3", "Discard", "Played card"], ["4", "Draw replacement", "Deck stack"], ["5", "Catastrophe check", "Refreshed hand"]].map(([number, label, detail]) => <div key={number} className="stack items-center gap-2 text-center"><span className="rounded-full bg-kac-gold px-2 font-heading">{number}</span><Text variant="emphasised" color="iron">{label}</Text><Text variant="note" color="iron-light">{detail}</Text></div>)}</div>
-  </RulebookFigure>
-);
-
 export const rulebookIllustrationsBySectionId: Readonly<Record<string, () => JSX.Element>> = {
   "what-you-need-to-play": CompleteTableSetup,
   effect: EffectEquation,
-  "core-action-loop": CoreActionLoopV2,
+  "characters-expertise-stunts-assets": PhysicalAssetComposition,
+  "core-action-loop": CoreActionLoop,
   actors: RemainingToughness,
   "turn-based-play": ActorInitiative,
   "locations-zones-movement-range": ZonesAndRange,

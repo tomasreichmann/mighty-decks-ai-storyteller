@@ -19,6 +19,8 @@ import { DieMarker } from "./DieMarker";
 import {
   completeTableSetupBoard,
   completeTableSetupMobileBoard,
+  coreActionLoopBoard,
+  coreActionLoopMobileBoard,
 } from "./rulesBoardExamples";
 
 const boardBackground = "/backgrounds/board.jpg";
@@ -127,5 +129,69 @@ export const CompleteTableSetup = (): JSX.Element => (
   <RulebookBoardFigure title="Complete table setup" summary="The shared scene stays in the middle, while every player keeps their own Outcome hand and personal cards in a clearly owned space.">
     <StaticBoardFigure boardSize={completeTableSetupMobileBoard.boardSize} items={completeTableSetupMobileBoard.items} ariaLabel="Complete Mighty Decks table setup showing the shared scene and one repeatable player space" backgroundImageUrl={boardBackground} className="h-[32rem] w-full flex-none sm:hidden" renderItem={renderCompleteTableItem} />
     <StaticBoardFigure boardSize={completeTableSetupBoard.boardSize} items={completeTableSetupBoard.items} ariaLabel="Complete Mighty Decks table setup with shared scene and player-owned spaces" backgroundImageUrl={boardBackground} className="hidden h-[30rem] w-full flex-none sm:block" renderItem={renderCompleteTableItem} />
+  </RulebookBoardFigure>
+);
+
+const renderCoreActionLoopItem = (item: BoardItemRecord): ReactNode => {
+  switch (item.id) {
+    case "loop-step-choose":
+      return <Label color="gold" rotate={false} className="w-full justify-center">1 · Choose card</Label>;
+    case "loop-step-resolve":
+      return <Label color="fire" rotate={false} className="w-full justify-center">2 · Resolve Effect</Label>;
+    case "loop-step-discard":
+      return <Label color="cloth" rotate={false} className="w-full justify-center">3 · Discard</Label>;
+    case "loop-step-draw":
+      return <Label color="steel" rotate={false} className="w-full justify-center">4 · Draw replacement</Label>;
+    case "loop-step-check":
+      return <Label color="blood" rotate={false} className="w-full justify-center">5 · Catastrophe check</Label>;
+    case "loop-arrow-choose-resolve":
+    case "loop-arrow-resolve-discard":
+    case "loop-arrow-discard-draw":
+    case "loop-arrow-draw-check":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-4xl text-kac-iron">→</span>;
+    case "loop-initial-first":
+      return <ResolvedBoardCard type="OutcomeCard" slug="success" />;
+    case "loop-initial-second":
+      return <ResolvedBoardCard type="OutcomeCard" slug="partial-success" />;
+    case "loop-initial-third":
+      return <ResolvedBoardCard type="OutcomeCard" slug="fumble" />;
+    case "loop-selected":
+      return <ResolvedBoardCard type="OutcomeCard" slug="success" />;
+    case "loop-discard":
+      return <ResolvedBoardCard type="OutcomeCard" slug="success" />;
+    case "loop-deck-bottom":
+    case "loop-deck-middle":
+    case "loop-deck":
+      return <OutcomeCard card="success" face="back" className="w-full" />;
+    case "loop-refreshed-first":
+      return <ResolvedBoardCard type="OutcomeCard" slug="partial-success" />;
+    case "loop-refreshed-second":
+      return <ResolvedBoardCard type="OutcomeCard" slug="success" />;
+    case "loop-refreshed-third":
+      return <ResolvedBoardCard type="OutcomeCard" slug="fumble" />;
+    case "loop-selected-detail":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Apply the Effect</Label>;
+    case "loop-discard-detail":
+      return <Label color="cloth" rotate={false} className="w-full justify-center">Played card leaves play</Label>;
+    case "loop-deck-detail":
+      return <Label color="steel" rotate={false} className="w-full justify-center">Refill the hand to three</Label>;
+    case "loop-catastrophe-rule":
+      return <Label color="blood" rotate={false} className="w-full justify-center">Check only after drawing: three Fumbles trigger a Catastrophe.</Label>;
+    default:
+      return null;
+  }
+};
+
+export const CoreActionLoop = (): JSX.Element => (
+  <RulebookBoardFigure title="Core Action Loop" summary="Choose an Outcome, resolve it, discard it, refill the hand, then check the refreshed hand for Catastrophe.">
+    <ol className="sr-only">
+      <li>Choose a card from the Outcome hand.</li>
+      <li>Resolve its Effect.</li>
+      <li>Discard the played card.</li>
+      <li>Draw a replacement card.</li>
+      <li>Check the refreshed hand for Catastrophe.</li>
+    </ol>
+    <StaticBoardFigure boardSize={coreActionLoopMobileBoard.boardSize} items={coreActionLoopMobileBoard.items} ariaLabel="Core action loop from choosing an Outcome card to checking the refreshed hand" backgroundImageUrl={boardBackground} className="h-[34rem] w-full flex-none sm:hidden" renderItem={renderCoreActionLoopItem} />
+    <StaticBoardFigure boardSize={coreActionLoopBoard.boardSize} items={coreActionLoopBoard.items} ariaLabel="Core action loop from choosing an Outcome card to checking the refreshed hand" backgroundImageUrl={boardBackground} className="hidden h-[28rem] w-full flex-none sm:block" renderItem={renderCoreActionLoopItem} />
   </RulebookBoardFigure>
 );

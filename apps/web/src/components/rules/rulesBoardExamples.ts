@@ -199,3 +199,101 @@ export const completeTableSetupMobileBoard: RulebookBoardExample = {
     ),
   ],
 };
+
+const coreActionLoopCard = { width: 105, height: 156 };
+
+const coreActionLoopHand = fanLayout(
+  [
+    { id: "loop-initial-first", ...coreActionLoopCard },
+    { id: "loop-initial-second", ...coreActionLoopCard },
+    { id: "loop-initial-third", ...coreActionLoopCard },
+  ],
+  { x: 30, y: 92, overlap: 75, arcAngle: 14, zIndexStart: 3 },
+);
+
+const coreActionLoopDeck = deckLayout(
+  [
+    { id: "loop-deck-bottom", ...coreActionLoopCard },
+    { id: "loop-deck-middle", ...coreActionLoopCard },
+    { id: "loop-deck", ...coreActionLoopCard },
+  ],
+  { x: 628, y: 92, offset: { x: -4, y: 4 }, zIndexStart: 2 },
+);
+
+const coreActionLoopRefreshedHand = fanLayout(
+  [
+    { id: "loop-refreshed-first", ...coreActionLoopCard },
+    { id: "loop-refreshed-second", ...coreActionLoopCard },
+    { id: "loop-refreshed-third", ...coreActionLoopCard },
+  ],
+  { x: 800, y: 92, overlap: 75, arcAngle: 14, zIndexStart: 3 },
+);
+
+export const coreActionLoopBoard: RulebookBoardExample = {
+  boardSize: { width: 1_050, height: 450 },
+  items: [
+    { id: "loop-step-choose", kind: "note", x: 10, y: 16, width: 190, height: 32, zIndex: 8 },
+    { id: "loop-step-resolve", kind: "note", x: 240, y: 16, width: 155, height: 32, zIndex: 8 },
+    { id: "loop-step-discard", kind: "note", x: 425, y: 16, width: 150, height: 32, zIndex: 8 },
+    { id: "loop-step-draw", kind: "note", x: 610, y: 16, width: 155, height: 32, zIndex: 8 },
+    { id: "loop-step-check", kind: "note", x: 795, y: 16, width: 205, height: 32, zIndex: 8 },
+    ...toBoardItems(coreActionLoopHand.placements),
+    { id: "loop-arrow-choose-resolve", kind: "note", x: 205, y: 136, width: 40, height: 60, zIndex: 8 },
+    { id: "loop-selected", kind: "card", x: 265, y: 92, ...coreActionLoopCard, zIndex: 4 },
+    { id: "loop-arrow-resolve-discard", kind: "note", x: 395, y: 136, width: 40, height: 60, zIndex: 8 },
+    { id: "loop-discard", kind: "card", x: 450, y: 92, ...coreActionLoopCard, zIndex: 4 },
+    { id: "loop-arrow-discard-draw", kind: "note", x: 580, y: 136, width: 40, height: 60, zIndex: 8 },
+    ...toBoardItems(coreActionLoopDeck.placements),
+    { id: "loop-arrow-draw-check", kind: "note", x: 760, y: 136, width: 40, height: 60, zIndex: 8 },
+    ...toBoardItems(coreActionLoopRefreshedHand.placements),
+    { id: "loop-selected-detail", kind: "note", x: 230, y: 286, width: 175, height: 32, zIndex: 8 },
+    { id: "loop-discard-detail", kind: "note", x: 418, y: 286, width: 170, height: 32, zIndex: 8 },
+    { id: "loop-deck-detail", kind: "note", x: 600, y: 286, width: 190, height: 32, zIndex: 8 },
+    { id: "loop-catastrophe-rule", kind: "note", x: 230, y: 350, width: 600, height: 46, zIndex: 8 },
+  ],
+};
+
+const coreActionLoopMobileCard = { width: 120, height: 156 };
+
+export const coreActionLoopMobileBoard: RulebookBoardExample = {
+  boardSize: { width: 380, height: 660 },
+  items: [
+    { id: "loop-step-choose", kind: "note", x: 20, y: 16, width: 340, height: 30, zIndex: 8 },
+    ...toBoardItems(
+      fanLayout(
+        [
+          { id: "loop-initial-first", ...coreActionLoopMobileCard },
+          { id: "loop-initial-second", ...coreActionLoopMobileCard },
+          { id: "loop-initial-third", ...coreActionLoopMobileCard },
+        ],
+        { x: 100, y: 60, overlap: 90, arcAngle: 14, zIndexStart: 3 },
+      ).placements,
+    ),
+    { id: "loop-step-resolve", kind: "note", x: 14, y: 238, width: 145, height: 28, zIndex: 8 },
+    { id: "loop-step-discard", kind: "note", x: 220, y: 238, width: 145, height: 28, zIndex: 8 },
+    { id: "loop-selected", kind: "card", x: 25, y: 276, ...coreActionLoopMobileCard, zIndex: 4 },
+    { id: "loop-discard", kind: "card", x: 225, y: 276, ...coreActionLoopMobileCard, zIndex: 4 },
+    { id: "loop-step-draw", kind: "note", x: 14, y: 446, width: 145, height: 28, zIndex: 8 },
+    { id: "loop-step-check", kind: "note", x: 190, y: 446, width: 175, height: 28, zIndex: 8 },
+    ...toBoardItems(
+      deckLayout(
+        [
+          { id: "loop-deck-bottom", ...coreActionLoopMobileCard },
+          { id: "loop-deck-middle", ...coreActionLoopMobileCard },
+          { id: "loop-deck", ...coreActionLoopMobileCard },
+        ],
+        { x: 33, y: 486, offset: { x: -4, y: 4 }, zIndexStart: 2 },
+      ).placements,
+    ),
+    ...toBoardItems(
+      fanLayout(
+        [
+          { id: "loop-refreshed-first", ...coreActionLoopMobileCard },
+          { id: "loop-refreshed-second", ...coreActionLoopMobileCard },
+          { id: "loop-refreshed-third", ...coreActionLoopMobileCard },
+        ],
+        { x: 190, y: 486, overlap: 90, arcAngle: 14, zIndexStart: 3 },
+      ).placements,
+    ),
+  ],
+};

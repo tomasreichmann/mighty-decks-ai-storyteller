@@ -60,4 +60,22 @@ test("the complete table board is flat, labelled, and contained", async () => {
 
     assert.equal(cardSizes.size, 1);
   }
+
+  assert.ok("coreActionLoopBoard" in fixtures);
+  assert.ok("coreActionLoopMobileBoard" in fixtures);
+  for (const example of [
+    fixtures.coreActionLoopBoard,
+    fixtures.coreActionLoopMobileBoard,
+  ]) {
+    const cardSizes = new Set(
+      example.items
+        .filter((item) => item.kind === "card")
+        .map((item) => `${item.width}x${item.height}`),
+    );
+
+    assert.equal(cardSizes.size, 1);
+    assert.ok(example.items.some((item) => item.id === "loop-selected"));
+    assert.ok(example.items.some((item) => item.id === "loop-deck"));
+    assert.ok(example.items.some((item) => item.id === "loop-refreshed-first"));
+  }
 });
