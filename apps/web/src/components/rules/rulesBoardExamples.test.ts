@@ -52,13 +52,24 @@ test("the complete table board is flat, labelled, and contained", async () => {
     completeTableSetupBoard,
     completeTableSetupMobileBoard,
   ]) {
-    const cardSizes = new Set(
-      example.items
-        .filter((item) => item.kind === "card")
-        .map((item) => `${item.width}x${item.height}`),
+    const locationCards = example.items.filter((item) =>
+      item.id?.startsWith("setup-location-") ?? false,
+    );
+    const portraitCards = example.items.filter(
+      (item) =>
+        item.kind === "card" && !(item.id?.startsWith("setup-location-") ?? false),
+    );
+    const locationSizes = new Set(
+      locationCards.map((item) => `${item.width}x${item.height}`),
+    );
+    const portraitSizes = new Set(
+      portraitCards.map((item) => `${item.width}x${item.height}`),
     );
 
-    assert.equal(cardSizes.size, 1);
+    assert.equal(locationSizes.size, 1);
+    assert.equal(portraitSizes.size, 1);
+    assert.equal(locationCards[0]?.width, portraitCards[0]?.height);
+    assert.equal(locationCards[0]?.height, portraitCards[0]?.width);
   }
 
   assert.ok("coreActionLoopBoard" in fixtures);

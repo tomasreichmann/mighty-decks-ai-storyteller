@@ -52,8 +52,9 @@ lists for the seven complex figures. Build those lists with the existing
 where they fit. Compound arrangements may calculate several sub-layouts, but
 the final render list stays flat and uses stable semantic ids.
 
-Within each figure, every card item uses one shared width and height, even when
-the rendered cards are different canonical component types.
+Within each figure, card items use one shared physical footprint even when the
+rendered cards are different canonical component types. Landscape Location cards
+may swap that footprint's width and height so their orientation stays readable.
 
 Keep production fixtures independent from `styleguideBoardExamples.ts`. The
 styleguide demonstrates the pattern; it is not a production data dependency.

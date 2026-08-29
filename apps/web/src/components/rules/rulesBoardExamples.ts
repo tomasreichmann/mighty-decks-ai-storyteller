@@ -8,6 +8,10 @@ export interface RulebookBoardExample {
 
 const boardSize = { width: 960, height: 640 };
 const standardCard = { width: 105, height: 156 };
+const landscapeLocationCard = {
+  width: standardCard.height,
+  height: standardCard.width,
+};
 
 const toBoardItems = (
   placements: ReturnType<typeof flexLayout>["placements"],
@@ -25,9 +29,9 @@ const toBoardItems = (
 
 const sharedScene = flexLayout(
   [
-    { id: "setup-location-gate", ...standardCard },
-    { id: "setup-location-courtyard", ...standardCard },
-    { id: "setup-location-tower", ...standardCard },
+    { id: "setup-location-gate", ...landscapeLocationCard },
+    { id: "setup-location-courtyard", ...landscapeLocationCard },
+    { id: "setup-location-tower", ...landscapeLocationCard },
     { id: "setup-counter", ...standardCard },
     { id: "setup-actor-guard", ...standardCard },
   ],
@@ -40,7 +44,7 @@ const outcomeDeck = deckLayout(
     { id: "setup-outcome-deck-middle", ...standardCard },
     { id: "setup-outcome-deck", ...standardCard },
   ],
-  { x: 760, y: 62, offset: { x: -4, y: 4 }, zIndexStart: 2 },
+  { x: 830, y: 62, offset: { x: -4, y: 4 }, zIndexStart: 2 },
 );
 
 const playerSpace = (
@@ -102,9 +106,9 @@ export const completeTableSetupBoard: RulebookBoardExample = {
     {
       id: "setup-deck-label",
       kind: "note",
-      x: 744,
+      x: 810,
       y: 14,
-      width: 160,
+      width: 130,
       height: 26,
       zIndex: 8,
     },
@@ -131,15 +135,15 @@ export const completeTableSetupMobileBoard: RulebookBoardExample = {
     {
       id: "setup-location-gate",
       kind: "card",
-      x: 40,
+      x: 20,
       y: 66,
-      width: 120,
-      height: 156,
+      width: 156,
+      height: 120,
     },
     {
       id: "setup-counter",
       kind: "card",
-      x: 180,
+      x: 200,
       y: 66,
       width: 120,
       height: 156,

@@ -26,7 +26,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: soften Iron heading and ghost-button highlights so Iron text remains readable on paper surfaces, including hovered and selected ghost actions.
 
 - Web: restore deep Iron text contrast for highlighted headings and light buttons, and neutral near-white labels on dark button families after the palette update.
-
+- Web: rotate the What You Need to Play Location-card footprint to its correct landscape orientation.
 - Web: repair `/rules` status thresholds, the missing Physical Asset Stunt, and d4 tracking figures so terminal cards, values, removal, overlap, and alignment read correctly.
 
 ### Changed
