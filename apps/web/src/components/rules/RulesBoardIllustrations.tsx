@@ -23,6 +23,8 @@ import {
   actorInitiativeMobileBoard,
   coreActionLoopBoard,
   coreActionLoopMobileBoard,
+  zonesAndRangeBoard,
+  zonesAndRangeMobileBoard,
 } from "./rulesBoardExamples";
 
 const boardBackground = "/backgrounds/board.jpg";
@@ -250,5 +252,46 @@ export const ActorInitiative = (): JSX.Element => (
     </ol>
     <StaticBoardFigure boardSize={actorInitiativeMobileBoard.boardSize} items={actorInitiativeMobileBoard.items} ariaLabel="Actor initiative order from Mira through Guard, Wolf, Aldren, Bandit, and Tomas" backgroundImageUrl={boardBackground} className="h-[34rem] w-full flex-none sm:hidden" renderItem={renderActorInitiativeItem} />
     <StaticBoardFigure boardSize={actorInitiativeBoard.boardSize} items={actorInitiativeBoard.items} ariaLabel="Actor initiative order from Mira through Guard, Wolf, Aldren, Bandit, and Tomas" backgroundImageUrl={boardBackground} className="hidden h-[25rem] w-full flex-none sm:block" renderItem={renderActorInitiativeItem} />
+  </RulebookBoardFigure>
+);
+
+const renderZonesAndRangeItem = (item: BoardItemRecord): ReactNode => {
+  switch (item.id) {
+    case "range-title":
+      return <Label color="cloth" rotate={false} className="w-full justify-center">Gate → Courtyard → Tower</Label>;
+    case "zone-gate":
+      return <LocationCard imageUrl="/rules/locations/castle-gate.png" imageAlt="Castle Gate location" title="Castle Gate" description="A connected scene zone." className="w-full" />;
+    case "zone-courtyard":
+      return <LocationCard imageUrl="/rules/locations/courtyard.png" imageAlt="Courtyard location" title="Courtyard" description="A connected scene zone." className="w-full" />;
+    case "zone-tower":
+      return <LocationCard imageUrl="/rules/locations/tower.png" imageAlt="Tower location" title="Tower" description="A connected scene zone." className="w-full" />;
+    case "zone-mira":
+      return <Token imageUrl="/actors/base/specialist.png" imageAlt="Mira at Castle Gate" label="Mira" color="fire" size="sm" />;
+    case "zone-bandit":
+      return <Token imageUrl="/actors/base/guard-red.png" imageAlt="Bandit at Tower" label="Bandit" color="monster" size="sm" />;
+    case "zone-arrow-gate-courtyard":
+    case "zone-arrow-courtyard-tower":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-3xl text-kac-iron">→</span>;
+    case "zone-arrow-gate-courtyard-mobile":
+    case "zone-arrow-courtyard-tower-mobile":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-2xl text-kac-iron">↓</span>;
+    case "range-sword":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Sword: same zone</Label>;
+    case "range-throw":
+      return <Label color="gold" rotate={false} className="w-full justify-center">Throw: +1 zone</Label>;
+    case "range-bow":
+      return <Label color="steel" rotate={false} className="w-full justify-center">Bow: +2 zones · Tower in range</Label>;
+    case "range-rule":
+      return <Label color="blood" rotate={false} className="w-full justify-center">Outside range is not possible · Sniper: anywhere in sight</Label>;
+    default:
+      return null;
+  }
+};
+
+export const ZonesAndRange = (): JSX.Element => (
+  <RulebookBoardFigure title="Zones and range" summary="Mira starts at the Gate and the Bandit is in the Tower. Reach tells you which connected Zones an action can affect.">
+    <ol className="sr-only"><li>Mira is at Castle Gate.</li><li>Courtyard is adjacent.</li><li>The Bandit is at Tower, two Zones from Mira.</li></ol>
+    <StaticBoardFigure boardSize={zonesAndRangeMobileBoard.boardSize} items={zonesAndRangeMobileBoard.items} ariaLabel="Zones and range with Mira at Castle Gate and a Bandit at Tower" backgroundImageUrl={boardBackground} className="h-[36rem] w-full flex-none sm:hidden" renderItem={renderZonesAndRangeItem} />
+    <StaticBoardFigure boardSize={zonesAndRangeBoard.boardSize} items={zonesAndRangeBoard.items} ariaLabel="Zones and range with Mira at Castle Gate and a Bandit at Tower" backgroundImageUrl={boardBackground} className="hidden h-[27rem] w-full flex-none sm:block" renderItem={renderZonesAndRangeItem} />
   </RulebookBoardFigure>
 );

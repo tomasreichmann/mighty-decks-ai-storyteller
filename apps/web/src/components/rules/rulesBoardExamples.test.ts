@@ -109,4 +109,27 @@ test("the complete table board is flat, labelled, and contained", async () => {
     );
     assert.equal(cardSizes.size, 1);
   }
+
+  assert.ok("zonesAndRangeBoard" in fixtures);
+  assert.ok("zonesAndRangeMobileBoard" in fixtures);
+  for (const example of [fixtures.zonesAndRangeBoard, fixtures.zonesAndRangeMobileBoard]) {
+    const itemIds = example.items.map((item) => item.id);
+    assert.equal(new Set(itemIds).size, itemIds.length);
+    for (const itemId of ["zone-gate", "zone-courtyard", "zone-tower", "zone-mira", "zone-bandit", "range-sword", "range-throw", "range-bow"]) {
+      assert.ok(itemIds.includes(itemId));
+    }
+    for (const item of example.items) {
+      assert.notEqual(item.width, undefined, `${item.id} has a width`);
+      assert.notEqual(item.height, undefined, `${item.id} has a height`);
+      const itemWidth = item.width ?? 0;
+      const itemHeight = item.height ?? 0;
+      assert.ok(item.x >= 0 && item.y >= 0, `${item.id} starts inside the board`);
+      assert.ok(
+        item.x + itemWidth <= example.boardSize.width && item.y + itemHeight <= example.boardSize.height,
+        `${item.id} stays inside the board`,
+      );
+    }
+    const cardSizes = new Set(example.items.filter((item) => item.kind === "card").map((item) => `${item.width}x${item.height}`));
+    assert.equal(cardSizes.size, 1);
+  }
 });

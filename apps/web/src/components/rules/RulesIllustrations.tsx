@@ -5,37 +5,16 @@ import { AssetCard } from "../cards/AssetCard";
 import { CounterCard } from "../cards/CounterCard";
 import { CardBoundary } from "../common/CardBoundary";
 import { Label } from "../common/Label";
-import { Token } from "../common/Token";
 import { Text } from "../common/Text";
-import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
 import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
-import { CompleteTableSetup, CoreActionLoop, ActorInitiative } from "./RulesBoardIllustrations";
+import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange } from "./RulesBoardIllustrations";
 import styles from "./RulesRulebookContent.module.css";
 
-const actorToken = "/actors/base/guard-blue.png";
 const outcomeCardClassName = "w-[6rem]";
 const trackingCardClassName = "w-[10rem]";
 const fumbleCardClassName = "w-[6.5rem]";
-const locationExamples = [
-  {
-    title: "Castle Gate",
-    imageUrl: "/rules/locations/castle-gate.png",
-    occupant: { label: "Mira", roleLabel: "Player", symbol: "✦", color: "fire" },
-  },
-  {
-    title: "Courtyard",
-    imageUrl: "/rules/locations/courtyard.png",
-    occupant: undefined,
-  },
-  {
-    title: "Tower",
-    imageUrl: "/rules/locations/tower.png",
-    occupant: { label: "Bandit", roleLabel: "Enemy", symbol: "☠", color: "monster" },
-  },
-] as const;
-
 const RulebookFigure = ({
   title,
   summary,
@@ -164,37 +143,6 @@ export const FumbleBranches = (): JSX.Element => (
         </div>
         <Text variant="note" color="iron-light">1 Injury · Broken String · Action to repair</Text>
       </div>
-    </div>
-  </RulebookFigure>
-);
-
-export const ZonesAndRange = (): JSX.Element => (
-  <RulebookFigure
-    title="Zones and range"
-    summary="Castle Gate, Courtyard, and Tower are connected zones. A weapon's reach tells you how many zones away it can affect."
-  >
-    <ol className="sr-only"><li>Mira at Castle Gate: Sword reaches the same zone.</li><li>Throw reaches Courtyard.</li><li>Bow reaches Tower.</li></ol>
-    <div className="grid w-full gap-3 sm:grid-cols-3">
-      {locationExamples.map((location) => (
-        <div key={location.title} className="relative">
-          <LocationCard imageUrl={location.imageUrl} imageAlt={`${location.title} medieval location`} title={location.title} description="A connected scene zone." />
-          {location.occupant ? (
-            <div className="absolute inset-0 z-20 flex items-center justify-center" aria-label={`${location.occupant.label}, ${location.occupant.roleLabel}, at ${location.title}`}>
-              <div className="stack items-center gap-1">
-                <Token imageUrl={actorToken} imageAlt={`${location.occupant.label} at ${location.title}`} label={location.occupant.label} color={location.occupant.color} size="sm" />
-                <span aria-hidden="true" className="rounded border border-kac-iron bg-kac-bone-light px-1 font-heading text-xs text-kac-iron">{location.occupant.symbol} {location.occupant.roleLabel}</span>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ))}
-    </div>
-    <div className="flex w-full flex-wrap justify-center gap-3 font-heading text-sm text-kac-iron"><span>Sword ↻ Gate</span><span>Throw → Courtyard</span><span>Bow → Tower</span></div>
-    <div className="flex w-full flex-wrap justify-center gap-x-4 gap-y-2 text-center">
-      <Text variant="note" color="iron">Sword: same zone</Text>
-      <Text variant="note" color="iron">Throw: +1 zone</Text>
-      <Text variant="note" color="iron">Bow: +2 zones</Text>
-      <Text variant="note" color="iron">Sniper: anywhere in sight</Text>
     </div>
   </RulebookFigure>
 );

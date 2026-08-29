@@ -342,3 +342,40 @@ export const actorInitiativeMobileBoard: RulebookBoardExample = {
     { id: "initiative-tomas", kind: "note", x: 157, y: 516, width: 66, height: 70, zIndex: 8 },
   ],
 };
+
+const zoneCard = { width: 220, height: 156 };
+
+export const zonesAndRangeBoard: RulebookBoardExample = {
+  boardSize: { width: 960, height: 430 },
+  items: [
+    { id: "range-title", kind: "note", x: 220, y: 16, width: 520, height: 32, zIndex: 8 },
+    { id: "zone-gate", kind: "card", x: 38, y: 96, ...zoneCard, zIndex: 2 },
+    { id: "zone-courtyard", kind: "card", x: 370, y: 96, ...zoneCard, zIndex: 2 },
+    { id: "zone-tower", kind: "card", x: 702, y: 96, ...zoneCard, zIndex: 2 },
+    { id: "zone-arrow-gate-courtyard", kind: "note", x: 272, y: 145, width: 80, height: 42, zIndex: 8 },
+    { id: "zone-arrow-courtyard-tower", kind: "note", x: 604, y: 145, width: 80, height: 42, zIndex: 8 },
+    { id: "zone-mira", kind: "note", x: 114, y: 132, width: 66, height: 70, zIndex: 10 },
+    { id: "zone-bandit", kind: "note", x: 778, y: 132, width: 66, height: 70, zIndex: 10 },
+    { id: "range-sword", kind: "note", x: 38, y: 296, width: 220, height: 30, zIndex: 8 },
+    { id: "range-throw", kind: "note", x: 370, y: 296, width: 220, height: 30, zIndex: 8 },
+    { id: "range-bow", kind: "note", x: 702, y: 296, width: 220, height: 30, zIndex: 8 },
+    { id: "range-rule", kind: "note", x: 210, y: 364, width: 540, height: 30, zIndex: 8 },
+  ],
+};
+
+export const zonesAndRangeMobileBoard: RulebookBoardExample = {
+  boardSize: { width: 380, height: 750 },
+  items: [
+    { id: "range-title", kind: "note", x: 20, y: 16, width: 340, height: 30, zIndex: 8 },
+    { id: "zone-gate", kind: "card", x: 80, y: 64, ...zoneCard, zIndex: 2 },
+    { id: "zone-mira", kind: "note", x: 157, y: 106, width: 66, height: 70, zIndex: 10 },
+    { id: "range-sword", kind: "note", x: 80, y: 230, width: 220, height: 28, zIndex: 8 },
+    { id: "zone-arrow-gate-courtyard-mobile", kind: "note", x: 166, y: 262, width: 48, height: 28, zIndex: 8 },
+    { id: "zone-courtyard", kind: "card", x: 80, y: 298, ...zoneCard, zIndex: 2 },
+    { id: "range-throw", kind: "note", x: 80, y: 464, width: 220, height: 28, zIndex: 8 },
+    { id: "zone-arrow-courtyard-tower-mobile", kind: "note", x: 166, y: 496, width: 48, height: 28, zIndex: 8 },
+    { id: "zone-tower", kind: "card", x: 80, y: 532, ...zoneCard, zIndex: 2 },
+    { id: "zone-bandit", kind: "note", x: 157, y: 574, width: 66, height: 70, zIndex: 10 },
+    { id: "range-bow", kind: "note", x: 20, y: 704, width: 340, height: 26, zIndex: 8 },
+  ],
+};

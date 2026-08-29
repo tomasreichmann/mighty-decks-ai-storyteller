@@ -39,3 +39,12 @@ test("actor initiative uses a static board with an explicit turn sequence", () =
   assert.match(source, /actorInitiativeMobileBoard/);
   assert.match(source, /Actors act immediately after the player/);
 });
+
+test("zones and range uses a static board with matching location card footprints", () => {
+  const source = readFileSync(new URL("./RulesBoardIllustrations.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /export const ZonesAndRange/);
+  assert.match(source, /zonesAndRangeBoard/);
+  assert.match(source, /zonesAndRangeMobileBoard/);
+  assert.match(source, /Bow: \+2 zones/);
+});
