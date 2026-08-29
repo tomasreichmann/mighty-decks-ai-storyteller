@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { ActorCard } from "../cards/ActorCard";
 import { AssetCard } from "../cards/AssetCard";
 import { CounterCard } from "../cards/CounterCard";
-import { OutcomeCard } from "../cards/OutcomeCard";
 import { CardBoundary } from "../common/CardBoundary";
 import { Label } from "../common/Label";
 import { Token } from "../common/Token";
@@ -12,13 +11,13 @@ import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
 import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
+import { CompleteTableSetup } from "./RulesBoardIllustrations";
 import styles from "./RulesRulebookContent.module.css";
 
 const actorToken = "/actors/base/guard-blue.png";
 const outcomeCardClassName = "w-[6rem]";
 const trackingCardClassName = "w-[10rem]";
 const fumbleCardClassName = "w-[6.5rem]";
-const tableSetupCardClassName = "w-[9rem]";
 const locationExamples = [
   {
     title: "Castle Gate",
@@ -131,71 +130,6 @@ export const EffectEquation = (): JSX.Element => (
     <span aria-hidden="true" className="text-2xl">=</span>
     <span className="rounded border-2 border-kac-iron bg-kac-gold px-3 py-2">5 Effect</span>
   </div>
-);
-
-export const CompleteTableSetup = (): JSX.Element => (
-  <RulebookFigure
-    title="Complete table setup"
-    summary="The shared scene, Outcome deck and hand, and player components stay visible in distinct rows at the table."
-  >
-    <div className={styles.tableSetupViewport}>
-      <div className={styles.tableSetupCanvas}>
-        <div className={styles.tableSetupShared} aria-label="Shared scene components">
-          <LocationCard
-            imageUrl="/rules/locations/castle-gate.png"
-            imageAlt="Castle Gate location"
-            title="Castle Gate"
-            description="Shared scene location."
-            className="w-[20rem]"
-          />
-          <div className={styles.tableSetupTrackedCard}>
-            <CounterCard
-              iconSlug="tracking"
-              title="Reinforcements Coming"
-              currentValue={2}
-              maxValue={4}
-              className={tableSetupCardClassName}
-            />
-            <DieMarker sides={4} value={2} className="!absolute right-2 top-2 z-20" />
-          </div>
-          <div className={styles.tableSetupTrackedCard}>
-            <ActorCard
-              baseLayerSlug="guard_blue"
-              tacticalRoleSlug="brute"
-              className={tableSetupCardClassName}
-            />
-            <DieMarker sides={4} value={3} className="!absolute right-2 top-2 z-20" />
-          </div>
-        </div>
-
-        <div className={styles.tableSetupOutcomes} aria-label="Outcome deck and hand">
-          <div className={styles.tableSetupOutcomeDeck}>
-            <OutcomeCard card="success" face="back" className={tableSetupCardClassName} />
-          </div>
-          <div className={styles.tableSetupOutcomeHand}>
-            <ResolvedCard type="OutcomeCard" slug="success" className={tableSetupCardClassName} />
-            <ResolvedCard type="OutcomeCard" slug="fumble" className={tableSetupCardClassName} />
-            <ResolvedCard type="OutcomeCard" slug="chaos" className={tableSetupCardClassName} />
-          </div>
-        </div>
-
-        <div className={styles.tableSetupPlayer} aria-label="Player components">
-          <ResolvedCard type="EffectCard" slug="injury" className={tableSetupCardClassName} />
-          <ResolvedCard type="StuntCard" slug="marksman" className={tableSetupCardClassName} />
-          <AssetCard
-            kind="custom"
-            noun="Throwing Knife"
-            modifier="Returning"
-            nounDescription="A light thrown weapon."
-            adjectiveDescription="Returns after a throw."
-            iconUrl="/assets/medieval/dagger.png"
-            overlayUrl="/assets/base/empowered.png"
-            className={tableSetupCardClassName}
-          />
-        </div>
-      </div>
-    </div>
-  </RulebookFigure>
 );
 
 export const ComposedAssetEquation = (): JSX.Element => (
