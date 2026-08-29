@@ -70,3 +70,15 @@ test("status thresholds keeps equal-sized cards in separate Distress and Injury 
   assert.match(source, /4 Injury \+ Taken Out/);
   assert.match(source, /recover 1/);
 });
+
+test("fumble branches separates the miss from costly success with equal-sized cards", () => {
+  const source = readFileSync(new URL("./RulesBoardIllustrations.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /export const FumbleBranches/);
+  assert.match(source, /fumbleBranchesBoard/);
+  assert.match(source, /fumbleBranchesMobileBoard/);
+  assert.match(source, /MISS/);
+  assert.match(source, /HIT, BUT/);
+  assert.match(source, /Bandit takes 1 Injury/);
+  assert.match(source, /Bow gains a Complication/);
+});

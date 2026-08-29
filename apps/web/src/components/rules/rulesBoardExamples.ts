@@ -484,3 +484,41 @@ export const statusThresholdsMobileBoard: RulebookBoardExample = {
     { id: "injury-four-label", kind: "note", x: 20, y: 926, width: 340, height: 28, zIndex: 8 },
   ],
 };
+
+const fumbleCard = { width: 100, height: 156 };
+
+export const fumbleBranchesBoard: RulebookBoardExample = {
+  boardSize: { width: 960, height: 600 },
+  items: [
+    { id: "fumble-source-label", kind: "note", x: 360, y: 18, width: 240, height: 32, zIndex: 8 },
+    { id: "fumble-source", kind: "card", x: 430, y: 62, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-arrow-source-branches", kind: "note", x: 456, y: 222, width: 48, height: 48, zIndex: 8 },
+    { id: "fumble-miss", kind: "note", x: 42, y: 296, width: 340, height: 38, zIndex: 8 },
+    { id: "fumble-miss-detail", kind: "note", x: 70, y: 360, width: 284, height: 42, zIndex: 8 },
+    { id: "fumble-hit-but", kind: "note", x: 500, y: 296, width: 410, height: 38, zIndex: 8 },
+    { id: "fumble-bandit-label", kind: "note", x: 494, y: 358, width: 205, height: 30, zIndex: 8 },
+    { id: "fumble-bow-label", kind: "note", x: 720, y: 358, width: 205, height: 30, zIndex: 8 },
+    { id: "fumble-bandit", kind: "card", x: 500, y: 410, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-injury", kind: "card", x: 610, y: 410, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-bow", kind: "card", x: 730, y: 410, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-complication", kind: "card", x: 840, y: 410, ...fumbleCard, zIndex: 4 },
+  ],
+};
+
+export const fumbleBranchesMobileBoard: RulebookBoardExample = {
+  boardSize: { width: 380, height: 900 },
+  items: [
+    { id: "fumble-source-label", kind: "note", x: 20, y: 16, width: 340, height: 30, zIndex: 8 },
+    { id: "fumble-source", kind: "card", x: 140, y: 58, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-arrow-source-branches", kind: "note", x: 166, y: 222, width: 48, height: 28, zIndex: 8 },
+    { id: "fumble-miss", kind: "note", x: 30, y: 266, width: 320, height: 34, zIndex: 8 },
+    { id: "fumble-miss-detail", kind: "note", x: 50, y: 316, width: 280, height: 40, zIndex: 8 },
+    { id: "fumble-hit-but", kind: "note", x: 30, y: 390, width: 320, height: 34, zIndex: 8 },
+    { id: "fumble-bandit-label", kind: "note", x: 42, y: 438, width: 296, height: 28, zIndex: 8 },
+    { id: "fumble-bandit", kind: "card", x: 54, y: 478, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-injury", kind: "card", x: 226, y: 478, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-bow-label", kind: "note", x: 42, y: 650, width: 296, height: 28, zIndex: 8 },
+    { id: "fumble-bow", kind: "card", x: 54, y: 690, ...fumbleCard, zIndex: 4 },
+    { id: "fumble-complication", kind: "card", x: 226, y: 690, ...fumbleCard, zIndex: 4 },
+  ],
+};

@@ -7,16 +7,11 @@ import { CardBoundary } from "../common/CardBoundary";
 import { Text } from "../common/Text";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
-<<<<<<< HEAD
 import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
-import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange, CatastropheFlow } from "./RulesBoardIllustrations";
-=======
-import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange, CatastropheFlow } from "./RulesBoardIllustrations";
->>>>>>> 9da9fc9 (feat(web): add status thresholds board illustration)
+import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange, CatastropheFlow, FumbleBranches } from "./RulesBoardIllustrations";
 import styles from "./RulesRulebookContent.module.css";
 
 const trackingCardClassName = "w-[10rem]";
-const fumbleCardClassName = "w-[6.5rem]";
 const RulebookFigure = ({
   title,
   summary,
@@ -119,33 +114,6 @@ export const ComposedAssetEquation = (): JSX.Element => (
     summary="Tools and Empowered contribute 2 Effect on a Success; Safecracker adds 1 more, for 5 Effect when breaking into a locked place."
   >
     <EffectEquation />
-  </RulebookFigure>
-);
-
-export const FumbleBranches = (): JSX.Element => (
-  <RulebookFigure
-    title="Two valid Fumbles"
-    summary="A Fumble most likely fails, but the Storyteller may allow partial success with a serious Complication. The canonical example above gives the full rule text."
-  >
-    <div className="grid w-full items-start gap-4 md:grid-cols-[minmax(0,0.7fr)_auto_minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="justify-self-center">
-        <ResolvedCard type="OutcomeCard" slug="fumble" className="w-[8rem]" />
-      </div>
-      <span aria-hidden="true" className="hidden self-center font-heading text-2xl md:block">→</span>
-      <div className="stack items-center gap-2 text-center">
-        <Text variant="emphasised" color="blood">MISS</Text>
-        <Text variant="note" color="iron-light">The arrow flies wide: no useful Effect.</Text>
-      </div>
-      <div className="stack items-center gap-2 text-center">
-        <Text variant="emphasised" color="blood">HIT, BUT...</Text>
-        <div className="flex flex-wrap justify-center gap-2">
-          <ResolvedCard type="EffectCard" slug="injury" className="w-[6rem]" />
-          <ResolvedCard type="AssetCard" slug="medieval_hunting_bow" className="w-[6rem]" />
-          <ResolvedCard type="EffectCard" slug="complication" className="w-[6rem]" />
-        </div>
-        <Text variant="note" color="iron-light">1 Injury · Broken String · Action to repair</Text>
-      </div>
-    </div>
   </RulebookFigure>
 );
 
@@ -273,42 +241,6 @@ export const PhysicalAssetComposition = (): JSX.Element => (
   </RulebookFigure>
 );
 
-export const FumbleBranchesV2 = (): JSX.Element => (
-  <RulebookFigure title="Two valid Fumbles" summary="A Fumble most likely fails, but the Storyteller may allow partial success with a serious Complication.">
-    <ol className="sr-only"><li>Fumble.</li><li>Miss: no useful Effect.</li><li>Hit, but: Bandit receives Injury and Bow receives Complication.</li></ol>
-    <div className={styles.fumbleFork}>
-      <div className={styles.fumbleSource}>
-        <ResolvedCard type="OutcomeCard" slug="fumble" className={fumbleCardClassName} />
-      </div>
-      <div className={styles.fumbleBranches}>
-        <section className={styles.fumbleBranch} aria-label="Miss: no useful Effect">
-          <Text variant="emphasised" color="blood">MISS</Text>
-          <Text variant="note" color="iron-light">The arrow flies wide. No useful Effect.</Text>
-        </section>
-        <section className={styles.fumbleBranch} aria-label="Hit with a fitting consequence">
-          <Text variant="emphasised" color="blood">HIT, BUT...</Text>
-          <div className={styles.fumbleConsequences}>
-            <div className={styles.fumbleConsequence}>
-              <div className={styles.fumbleCardPair}>
-                <ActorCard baseLayerSlug="guard_blue" tacticalRoleSlug="minion" className={fumbleCardClassName} />
-                <ResolvedCard type="EffectCard" slug="injury" className={fumbleCardClassName} />
-              </div>
-              <Text variant="note" color="blood">Bandit takes 1 Injury</Text>
-            </div>
-            <div className={styles.fumbleConsequence}>
-              <div className={styles.fumbleCardPair}>
-                <ResolvedCard type="AssetCard" slug="medieval_hunting_bow" className={fumbleCardClassName} />
-                <ResolvedCard type="EffectCard" slug="complication" className={fumbleCardClassName} />
-              </div>
-              <Text variant="note" color="blood">Bow gains a Complication</Text>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  </RulebookFigure>
-);
-
 export const rulebookIllustrationsBySectionId: Readonly<Record<string, () => JSX.Element>> = {
   "what-you-need-to-play": CompleteTableSetup,
   effect: EffectEquation,
@@ -328,5 +260,5 @@ export const rulebookIllustrationsBySubsectionId: Readonly<Record<string, () => 
   "9-4-consumables": ConsumableCardIllustration,
   "building-an-asset-card": AssetCompositionFigure,
   "building-an-actor-card": ActorCompositionFigure,
-  "example-two-valid-fumbles": FumbleBranchesV2,
+  "example-two-valid-fumbles": FumbleBranches,
 };

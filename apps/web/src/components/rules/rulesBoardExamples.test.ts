@@ -199,4 +199,36 @@ test("the complete table board is flat, labelled, and contained", async () => {
     );
     assert.equal(cardSizes.size, 1);
   }
+
+  assert.ok("fumbleBranchesBoard" in fixtures);
+  assert.ok("fumbleBranchesMobileBoard" in fixtures);
+  for (const example of [fixtures.fumbleBranchesBoard, fixtures.fumbleBranchesMobileBoard]) {
+    const itemIds = example.items.map((item) => item.id);
+    assert.equal(new Set(itemIds).size, itemIds.length);
+    for (const itemId of [
+      "fumble-source",
+      "fumble-miss",
+      "fumble-hit-but",
+      "fumble-bandit",
+      "fumble-injury",
+      "fumble-bow",
+      "fumble-complication",
+    ]) {
+      assert.ok(itemIds.includes(itemId));
+    }
+    for (const item of example.items) {
+      assert.ok(item.x >= 0 && item.y >= 0, `${item.id} starts inside the board`);
+      assert.ok(
+        item.x + (item.width ?? 0) <= example.boardSize.width &&
+          item.y + (item.height ?? 0) <= example.boardSize.height,
+        `${item.id} stays inside the board`,
+      );
+    }
+    const cardSizes = new Set(
+      example.items
+        .filter((item) => item.kind === "card")
+        .map((item) => `${item.width}x${item.height}`),
+    );
+    assert.equal(cardSizes.size, 1);
+  }
 });

@@ -29,6 +29,8 @@ import {
   catastropheFlowMobileBoard,
   statusThresholdsBoard,
   statusThresholdsMobileBoard,
+  fumbleBranchesBoard,
+  fumbleBranchesMobileBoard,
 } from "./rulesBoardExamples";
 
 const boardBackground = "/backgrounds/board.jpg";
@@ -420,5 +422,48 @@ export const StatusThresholds = (): JSX.Element => (
     </ol>
     <StaticBoardFigure boardSize={statusThresholdsMobileBoard.boardSize} items={statusThresholdsMobileBoard.items} ariaLabel="Distress and Injury threshold lanes with Panicked, Hopeless, and Taken Out milestones" backgroundImageUrl={boardBackground} className="h-[50rem] w-full flex-none sm:hidden" renderItem={renderStatusThresholdItem} />
     <StaticBoardFigure boardSize={statusThresholdsBoard.boardSize} items={statusThresholdsBoard.items} ariaLabel="Distress and Injury threshold lanes with Panicked, Hopeless, and Taken Out milestones" backgroundImageUrl={boardBackground} className="hidden h-[35rem] w-full flex-none sm:block" renderItem={renderStatusThresholdItem} />
+  </RulebookBoardFigure>
+);
+
+const renderFumbleBranchesItem = (item: BoardItemRecord): ReactNode => {
+  switch (item.id) {
+    case "fumble-source-label":
+      return <Label color="blood" rotate={false} className="w-full justify-center">A Fumble gives the Storyteller two valid paths</Label>;
+    case "fumble-source":
+      return <ResolvedBoardCard type="OutcomeCard" slug="fumble" />;
+    case "fumble-arrow-source-branches":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-3xl text-kac-iron">↓</span>;
+    case "fumble-miss":
+      return <Label color="blood" rotate={false} className="h-full w-full justify-center">MISS</Label>;
+    case "fumble-miss-detail":
+      return <Label color="bone" rotate={false} className="h-full w-full justify-center text-center">The arrow flies wide. No useful Effect.</Label>;
+    case "fumble-hit-but":
+      return <Label color="fire" rotate={false} className="h-full w-full justify-center">HIT, BUT…</Label>;
+    case "fumble-bandit-label":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Bandit takes 1 Injury</Label>;
+    case "fumble-bow-label":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Bow gains a Complication</Label>;
+    case "fumble-bandit":
+      return <ActorCard kind="custom" custom={{ imageUrl: "/actors/base/guard-red.png", adjective: "Ruthless", noun: "Bandit", nounDescription: "Hit, but hurt.", adjectiveDescription: "Fitting consequence." }} className="w-full" />;
+    case "fumble-injury":
+      return <ResolvedBoardCard type="EffectCard" slug="injury" />;
+    case "fumble-bow":
+      return <ResolvedBoardCard type="AssetCard" slug="medieval_hunting_bow" />;
+    case "fumble-complication":
+      return <ResolvedBoardCard type="EffectCard" slug="complication" />;
+    default:
+      return null;
+  }
+};
+
+export const FumbleBranches = (): JSX.Element => (
+  <RulebookBoardFigure title="Two valid Fumbles" summary="A Fumble usually misses. When a costly success fits the fiction better, apply the success alongside a serious Complication.">
+    <ol className="sr-only">
+      <li>Fumble.</li>
+      <li>Miss: no useful Effect.</li>
+      <li>Hit, but: Bandit takes 1 Injury and Bow gains a Complication.</li>
+    </ol>
+    <StaticBoardFigure boardSize={fumbleBranchesMobileBoard.boardSize} items={fumbleBranchesMobileBoard.items} ariaLabel="Two valid Fumble branches: miss or costly success with Bandit Injury and Bow Complication" backgroundImageUrl={boardBackground} className="h-[45rem] w-full flex-none sm:hidden" renderItem={renderFumbleBranchesItem} />
+    <StaticBoardFigure boardSize={fumbleBranchesBoard.boardSize} items={fumbleBranchesBoard.items} ariaLabel="Two valid Fumble branches: miss or costly success with Bandit Injury and Bow Complication" backgroundImageUrl={boardBackground} className="hidden h-[34rem] w-full flex-none sm:block" renderItem={renderFumbleBranchesItem} />
   </RulebookBoardFigure>
 );
