@@ -14,6 +14,7 @@ interface BoardFrameProps {
   disableWheelZoom?: boolean;
   interactive?: boolean;
   ariaLabel?: string;
+  backgroundImageUrl?: string;
 }
 
 export const getBoardFrameGridZoom = (zoom: number): number => {
@@ -35,6 +36,7 @@ export const BoardFrame = ({
   disableWheelZoom = false,
   interactive = true,
   ariaLabel = undefined,
+  backgroundImageUrl,
 }: BoardFrameProps): JSX.Element => {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<{
@@ -146,11 +148,18 @@ export const BoardFrame = ({
   const textureSize = 28 * gridZoom;
   const dotRadius = Math.max(0.7, 1.2 * gridZoom);
   const dotFadeRadius = Math.max(dotRadius + 0.2, 1.4 * gridZoom);
-  const frameStyle: CSSProperties = {
-    backgroundImage: `radial-gradient(circle at center, rgba(255,249,227,0.21) 0 ${dotRadius}px, transparent ${dotFadeRadius}px)`,
-    backgroundPosition: `${-viewport.x * gridZoom}px ${-viewport.y * gridZoom}px`,
-    backgroundSize: `${textureSize}px ${textureSize}px`,
-  };
+  const frameStyle: CSSProperties = backgroundImageUrl
+    ? {
+        backgroundImage: `url(${JSON.stringify(backgroundImageUrl)})`,
+        backgroundPosition: "center",
+        backgroundRepeat: "repeat",
+        backgroundSize: "512px 512px",
+      }
+    : {
+        backgroundImage: `radial-gradient(circle at center, rgba(255,249,227,0.21) 0 ${dotRadius}px, transparent ${dotFadeRadius}px)`,
+        backgroundPosition: `${-viewport.x * gridZoom}px ${-viewport.y * gridZoom}px`,
+        backgroundSize: `${textureSize}px ${textureSize}px`,
+      };
 
   return (
     <div

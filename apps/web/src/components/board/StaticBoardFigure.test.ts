@@ -10,7 +10,8 @@ test("StaticBoardFigure composes the non-interactive shared board stack", () => 
 
   assert.match(source, /<BoardProvider/);
   assert.match(source, /<BoardFrame[^>]*interactive=\{false\}/);
+  assert.match(source, /<BoardFrame[^>]*backgroundImageUrl=\{backgroundImageUrl\}/);
   assert.match(source, /<Board/);
-  assert.match(source, /backgroundImageUrl=\{backgroundImageUrl\}/);
+  assert.doesNotMatch(source, /<Board\s[^>]*backgroundImageUrl/);
   assert.match(source, /renderItem=\{renderItem\}/);
 });

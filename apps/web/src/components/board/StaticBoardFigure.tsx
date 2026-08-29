@@ -26,8 +26,8 @@ export const StaticBoardFigure = ({
   renderItem,
 }: StaticBoardFigureProps): JSX.Element => (
   <BoardProvider boardSize={boardSize} initialItems={items}>
-    <BoardFrame interactive={false} ariaLabel={ariaLabel} className={className}>
-      <Board backgroundImageUrl={backgroundImageUrl} renderItem={renderItem} />
+    <BoardFrame interactive={false} ariaLabel={ariaLabel} className={className} backgroundImageUrl={backgroundImageUrl}>
+      <Board renderItem={renderItem} />
     </BoardFrame>
   </BoardProvider>
 );
