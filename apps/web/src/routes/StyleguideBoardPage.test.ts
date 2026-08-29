@@ -20,6 +20,7 @@ test("StyleguideBoardPage teaches static board composition", () => {
 
   assert.match(source, /<BoardProvider/);
   assert.match(source, /<BoardFrame[^>]*interactive=\{false\}/);
+  assert.match(source, /className="h-\[18rem\] w-full flex-none sm:h-\[22rem\]"/);
   assert.match(source, /<Board/);
   assert.match(source, /GameCardView/);
   assert.match(source, /CardBoundary/);

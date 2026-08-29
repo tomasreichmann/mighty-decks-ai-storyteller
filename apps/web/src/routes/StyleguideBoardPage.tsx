@@ -47,7 +47,7 @@ const StaticBoardExample = ({
     <BoardFrame
       interactive={false}
       ariaLabel={ariaLabel}
-      className="h-[18rem] w-full sm:h-[22rem]"
+      className="h-[18rem] w-full flex-none sm:h-[22rem]"
     >
       <Board renderItem={renderItem} />
     </BoardFrame>

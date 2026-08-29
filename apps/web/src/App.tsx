@@ -129,6 +129,9 @@ const StyleguidePanelPage = lazy(async () => ({
 const StyleguideCardsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideCardsPage")).StyleguideCardsPage,
 }));
+const StyleguideBoardPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideBoardPage")).StyleguideBoardPage,
+}));
 const StyleguideTagsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideTagsPage")).StyleguideTagsPage,
 }));
@@ -496,6 +499,14 @@ export const App = ({
             element={
               <RouteShellBoundary>
                 <StyleguideCardsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/board"
+            element={
+              <RouteShellBoundary>
+                <StyleguideBoardPage />
               </RouteShellBoundary>
             }
           />

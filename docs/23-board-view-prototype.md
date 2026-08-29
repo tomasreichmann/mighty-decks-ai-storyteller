@@ -4,6 +4,11 @@ The hidden `/board` route is a frontend-local lab for a reusable tabletop board
 viewer. It is not connected to adventure sessions, campaign state, Socket.IO, or
 server persistence.
 
+The hidden `/styleguide/board` route is the read-only composition reference for
+contributors. It uses local fixtures, pure layout helpers, flat board items,
+and canonical cards or tokens to teach reusable board and rulebook figures; it
+does not add persistence, drag state, or server APIs.
+
 The hidden `/spaceship` visual lab consumes the same board primitives for a real
 prototype surface: ship metadata, Devices, Location cards, effect cards, token
 rows, actor cards, and actor consequence cards are all direct board items placed
@@ -190,6 +195,12 @@ Transitions only apply when the caller opts in. Pointer drag and wheel zoom use
 the same controller methods without transition options, so direct mouse
 interaction remains immediate. Layout transitions animate item `left`/`top`
 changes; they do not add a timeline system.
+
+`BoardFrame` also supports `interactive={false}` for static illustrations. This
+keeps frame measurement, clipping, dot-grid texture, and responsive fitting,
+but skips pointer panning and wheel listeners so a figure never captures page
+scroll. Layout helpers may compose nested calculations, but the final rendered
+example must remain a flat list of directly positioned board items.
 
 ## Resize And Focus Behavior
 

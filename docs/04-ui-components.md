@@ -760,6 +760,24 @@ Behavior:
 
 ---
 
+### `/styleguide/board`
+
+Hidden internal reference for composing read-only board and rulebook illustrations.
+
+Components:
+
+- `StyleguideBoardPage`
+- `BoardProvider`, `BoardFrame`, and `Board`
+- canonical game cards, tokens, and selected spaceship card surfaces
+
+Behavior:
+
+- uses route-local fixtures plus pure layout helpers to produce one flat list of board placements
+- renders `BoardFrame` with wheel zoom disabled so examples fit responsively while ordinary page scrolling remains available
+- demonstrates canonical component reuse rather than recreating card faces in a custom board shell
+
+---
+
 ### `/styleguide/tags`
 
 Hidden internal overview for the shared chip family.
