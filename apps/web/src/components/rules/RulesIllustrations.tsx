@@ -9,10 +9,9 @@ import { Text } from "../common/Text";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
 import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
-import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange } from "./RulesBoardIllustrations";
+import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange, CatastropheFlow } from "./RulesBoardIllustrations";
 import styles from "./RulesRulebookContent.module.css";
 
-const outcomeCardClassName = "w-[6rem]";
 const trackingCardClassName = "w-[10rem]";
 const fumbleCardClassName = "w-[6.5rem]";
 const RulebookFigure = ({
@@ -198,23 +197,6 @@ export const CounterTracking = (): JSX.Element => (
   </RulebookFigure>
 );
 
-export const CatastropheFlow = (): JSX.Element => (
-  <RulebookFigure
-    title="Catastrophe flow"
-    summary="Finish the current resolution, draw a replacement, then resolve three Fumbles as a dramatic crisis."
-  >
-    <ResolvedCard type="OutcomeCard" slug="success" className={outcomeCardClassName} />
-    <span aria-hidden="true" className="font-heading text-2xl">→</span>
-    <span className="rounded border-2 border-kac-iron bg-kac-bone-light px-3 py-2 font-ui text-sm">Draw replacement</span>
-    <span aria-hidden="true" className="font-heading text-2xl">→</span>
-    <div className="flex gap-1">
-      {[0, 1, 2].map((index) => <ResolvedCard key={index} type="OutcomeCard" slug="fumble" className={outcomeCardClassName} />)}
-    </div>
-    <span aria-hidden="true" className="font-heading text-2xl">→</span>
-    <span className="rounded border-2 border-kac-blood-dark bg-kac-fire-light px-3 py-2 font-ui text-sm">Injury / Asset Complication / Enemy Boost</span>
-  </RulebookFigure>
-);
-
 export const StatusThresholds = (): JSX.Element => (
   <RulebookFigure title="Distress and Injury thresholds" summary="Status cards appear only when each track reaches its threshold; recovering Distress can step the character back down.">
     <ol className="sr-only">
@@ -316,14 +298,6 @@ export const FumbleBranchesV2 = (): JSX.Element => (
   </RulebookFigure>
 );
 
-export const CatastropheFlowV2 = (): JSX.Element => (
-  <RulebookFigure title="Catastrophe flow" summary="The current action resolves before the replacement draw reveals a three-Fumble Catastrophe.">
-    <ol className="sr-only"><li>Action resolves.</li><li>Draw replacement.</li><li>Three Fumbles.</li><li>Catastrophe.</li><li>Injury, Bow Complication, or Enemy Boost.</li></ol>
-    <div className="grid w-full items-center gap-3 md:grid-cols-4"><div className="stack items-center"><Text variant="emphasised" color="iron">1. Action resolves</Text><ResolvedCard type="OutcomeCard" slug="success" className="w-[6rem]" /></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="iron">2. Draw replacement</Text></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="blood">3. Fumble + Fumble + Fumble</Text><div className="flex -space-x-6">{[1, 2, 3].map((value) => <ResolvedCard key={value} type="OutcomeCard" slug="fumble" className="w-[4.5rem]" />)}</div></div><div className="stack items-center"><span aria-hidden="true">→</span><Text variant="emphasised" color="blood">CATASTROPHE</Text></div></div>
-    <div className="flex w-full flex-wrap justify-center gap-3"><div className="stack items-center"><ResolvedCard type="EffectCard" slug="injury" className="w-[6rem]" /><Text variant="note" color="blood">Injury</Text></div><div className="stack items-center"><ResolvedCard type="EffectCard" slug="complication" className="w-[6rem]" /><Text variant="note" color="blood">Bow Complication</Text></div><div className="stack items-center"><ResolvedCard type="EffectCard" slug="boost" className="w-[6rem]" /><Text variant="note" color="blood">Enemy Boost</Text></div></div>
-  </RulebookFigure>
-);
-
 export const rulebookIllustrationsBySectionId: Readonly<Record<string, () => JSX.Element>> = {
   "what-you-need-to-play": CompleteTableSetup,
   effect: EffectEquation,
@@ -332,7 +306,7 @@ export const rulebookIllustrationsBySectionId: Readonly<Record<string, () => JSX
   actors: RemainingToughness,
   "turn-based-play": ActorInitiative,
   "locations-zones-movement-range": ZonesAndRange,
-  catastrophe: CatastropheFlowV2,
+  catastrophe: CatastropheFlow,
   counters: CounterTracking,
 };
 

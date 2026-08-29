@@ -48,3 +48,14 @@ test("zones and range uses a static board with matching location card footprints
   assert.match(source, /zonesAndRangeMobileBoard/);
   assert.match(source, /Bow: \+2 zones/);
 });
+
+test("catastrophe flow shows the replacement draw before its three-Fumble trigger", () => {
+  const source = readFileSync(new URL("./RulesBoardIllustrations.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /export const CatastropheFlow/);
+  assert.match(source, /catastropheFlowBoard/);
+  assert.match(source, /catastropheFlowMobileBoard/);
+  assert.match(source, /Draw replacement/);
+  assert.match(source, /Three Fumbles trigger a Catastrophe/);
+  assert.match(source, /Pick one fitting consequence/);
+});

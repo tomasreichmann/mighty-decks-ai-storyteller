@@ -25,6 +25,8 @@ import {
   coreActionLoopMobileBoard,
   zonesAndRangeBoard,
   zonesAndRangeMobileBoard,
+  catastropheFlowBoard,
+  catastropheFlowMobileBoard,
 } from "./rulesBoardExamples";
 
 const boardBackground = "/backgrounds/board.jpg";
@@ -293,5 +295,68 @@ export const ZonesAndRange = (): JSX.Element => (
     <ol className="sr-only"><li>Mira is at Castle Gate.</li><li>Courtyard is adjacent.</li><li>The Bandit is at Tower, two Zones from Mira.</li></ol>
     <StaticBoardFigure boardSize={zonesAndRangeMobileBoard.boardSize} items={zonesAndRangeMobileBoard.items} ariaLabel="Zones and range with Mira at Castle Gate and a Bandit at Tower" backgroundImageUrl={boardBackground} className="h-[36rem] w-full flex-none sm:hidden" renderItem={renderZonesAndRangeItem} />
     <StaticBoardFigure boardSize={zonesAndRangeBoard.boardSize} items={zonesAndRangeBoard.items} ariaLabel="Zones and range with Mira at Castle Gate and a Bandit at Tower" backgroundImageUrl={boardBackground} className="hidden h-[27rem] w-full flex-none sm:block" renderItem={renderZonesAndRangeItem} />
+  </RulebookBoardFigure>
+);
+
+const renderCatastropheFlowItem = (item: BoardItemRecord): ReactNode => {
+  switch (item.id) {
+    case "catastrophe-resolved-label":
+      return <Label color="gold" rotate={false} className="w-full justify-center">1 · Resolve action</Label>;
+    case "catastrophe-draw-label":
+      return <Label color="steel" rotate={false} className="w-full justify-center">2 · Draw replacement</Label>;
+    case "catastrophe-fumbles-label":
+      return <Label color="blood" rotate={false} className="w-full justify-center">3 · Check the new hand: three Fumbles</Label>;
+    case "catastrophe-resolved":
+      return <ResolvedBoardCard type="OutcomeCard" slug="success" />;
+    case "catastrophe-draw":
+      return <OutcomeCard card="success" face="back" className="w-full" />;
+    case "catastrophe-fumble-first":
+    case "catastrophe-fumble-second":
+    case "catastrophe-fumble-third":
+      return <ResolvedBoardCard type="OutcomeCard" slug="fumble" />;
+    case "catastrophe-trigger":
+      return <Label color="blood" rotate={false} className="h-full w-full justify-center text-center">Three Fumbles trigger a Catastrophe</Label>;
+    case "catastrophe-arrow-resolved-draw":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-3xl text-kac-iron">→</span>;
+    case "catastrophe-arrow-draw-fumbles":
+    case "catastrophe-arrow-fumbles-trigger":
+      return (
+        <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-3xl text-kac-iron">
+          <span className="sm:hidden">↓</span>
+          <span className="hidden sm:block">→</span>
+        </span>
+      );
+    case "catastrophe-arrow-trigger-consequences":
+      return <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-3xl text-kac-iron">↓</span>;
+    case "catastrophe-consequence-title":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Pick one fitting consequence</Label>;
+    case "catastrophe-consequence-injury-label":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Injury</Label>;
+    case "catastrophe-consequence-complication-label":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Bow Complication</Label>;
+    case "catastrophe-consequence-boost-label":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Enemy Boost</Label>;
+    case "catastrophe-consequence-injury":
+      return <ResolvedBoardCard type="EffectCard" slug="injury" />;
+    case "catastrophe-consequence-complication":
+      return <ResolvedBoardCard type="EffectCard" slug="complication" />;
+    case "catastrophe-consequence-boost":
+      return <ResolvedBoardCard type="EffectCard" slug="boost" />;
+    default:
+      return null;
+  }
+};
+
+export const CatastropheFlow = (): JSX.Element => (
+  <RulebookBoardFigure title="Catastrophe flow" summary="Finish the current resolution, draw a replacement, then check the new hand. Three Fumbles trigger a crisis, so the Storyteller picks one fitting consequence.">
+    <ol className="sr-only">
+      <li>Resolve the current action.</li>
+      <li>Draw a replacement card.</li>
+      <li>Check the new hand for three Fumbles.</li>
+      <li>Three Fumbles trigger a Catastrophe.</li>
+      <li>Choose one fitting consequence.</li>
+    </ol>
+    <StaticBoardFigure boardSize={catastropheFlowMobileBoard.boardSize} items={catastropheFlowMobileBoard.items} ariaLabel="Catastrophe flow from a resolved action through the replacement draw, three Fumbles, and one consequence" backgroundImageUrl={boardBackground} className="h-[37rem] w-full flex-none sm:hidden" renderItem={renderCatastropheFlowItem} />
+    <StaticBoardFigure boardSize={catastropheFlowBoard.boardSize} items={catastropheFlowBoard.items} ariaLabel="Catastrophe flow from a resolved action through the replacement draw, three Fumbles, and one consequence" backgroundImageUrl={boardBackground} className="hidden h-[32rem] w-full flex-none sm:block" renderItem={renderCatastropheFlowItem} />
   </RulebookBoardFigure>
 );

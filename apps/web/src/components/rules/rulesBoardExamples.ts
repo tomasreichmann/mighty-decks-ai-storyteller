@@ -379,3 +379,54 @@ export const zonesAndRangeMobileBoard: RulebookBoardExample = {
     { id: "range-bow", kind: "note", x: 20, y: 704, width: 340, height: 26, zIndex: 8 },
   ],
 };
+
+const catastropheCard = { width: 105, height: 156 };
+
+export const catastropheFlowBoard: RulebookBoardExample = {
+  boardSize: { width: 960, height: 560 },
+  items: [
+    { id: "catastrophe-resolved-label", kind: "note", x: 28, y: 18, width: 170, height: 32, zIndex: 8 },
+    { id: "catastrophe-draw-label", kind: "note", x: 234, y: 18, width: 170, height: 32, zIndex: 8 },
+    { id: "catastrophe-fumbles-label", kind: "note", x: 414, y: 18, width: 215, height: 32, zIndex: 8 },
+    { id: "catastrophe-resolved", kind: "card", x: 62, y: 80, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-arrow-resolved-draw", kind: "note", x: 176, y: 132, width: 48, height: 50, zIndex: 8 },
+    { id: "catastrophe-draw", kind: "card", x: 266, y: 80, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-arrow-draw-fumbles", kind: "note", x: 380, y: 132, width: 42, height: 50, zIndex: 8 },
+    { id: "catastrophe-fumble-first", kind: "card", x: 430, y: 82, ...catastropheCard, zIndex: 2 },
+    { id: "catastrophe-fumble-second", kind: "card", x: 478, y: 74, ...catastropheCard, zIndex: 3 },
+    { id: "catastrophe-fumble-third", kind: "card", x: 526, y: 82, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-arrow-fumbles-trigger", kind: "note", x: 640, y: 132, width: 42, height: 50, zIndex: 8 },
+    { id: "catastrophe-trigger", kind: "note", x: 704, y: 126, width: 210, height: 48, zIndex: 8 },
+    { id: "catastrophe-arrow-trigger-consequences", kind: "note", x: 756, y: 210, width: 48, height: 48, zIndex: 8 },
+    { id: "catastrophe-consequence-title", kind: "note", x: 230, y: 276, width: 500, height: 32, zIndex: 8 },
+    { id: "catastrophe-consequence-injury-label", kind: "note", x: 92, y: 326, width: 180, height: 28, zIndex: 8 },
+    { id: "catastrophe-consequence-complication-label", kind: "note", x: 390, y: 326, width: 180, height: 28, zIndex: 8 },
+    { id: "catastrophe-consequence-boost-label", kind: "note", x: 688, y: 326, width: 180, height: 28, zIndex: 8 },
+    { id: "catastrophe-consequence-injury", kind: "card", x: 130, y: 370, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-consequence-complication", kind: "card", x: 428, y: 370, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-consequence-boost", kind: "card", x: 726, y: 370, ...catastropheCard, zIndex: 4 },
+  ],
+};
+
+export const catastropheFlowMobileBoard: RulebookBoardExample = {
+  boardSize: { width: 380, height: 780 },
+  items: [
+    { id: "catastrophe-resolved-label", kind: "note", x: 20, y: 16, width: 140, height: 30, zIndex: 8 },
+    { id: "catastrophe-draw-label", kind: "note", x: 220, y: 16, width: 140, height: 30, zIndex: 8 },
+    { id: "catastrophe-resolved", kind: "card", x: 48, y: 58, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-arrow-resolved-draw", kind: "note", x: 166, y: 110, width: 48, height: 48, zIndex: 8 },
+    { id: "catastrophe-draw", kind: "card", x: 227, y: 58, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-fumbles-label", kind: "note", x: 20, y: 242, width: 340, height: 30, zIndex: 8 },
+    { id: "catastrophe-fumble-first", kind: "card", x: 94, y: 282, ...catastropheCard, zIndex: 2 },
+    { id: "catastrophe-fumble-second", kind: "card", x: 137, y: 274, ...catastropheCard, zIndex: 3 },
+    { id: "catastrophe-fumble-third", kind: "card", x: 180, y: 282, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-arrow-draw-fumbles", kind: "note", x: 166, y: 222, width: 48, height: 18, zIndex: 8 },
+    { id: "catastrophe-arrow-fumbles-trigger", kind: "note", x: 166, y: 448, width: 48, height: 28, zIndex: 8 },
+    { id: "catastrophe-trigger", kind: "note", x: 40, y: 486, width: 300, height: 38, zIndex: 8 },
+    { id: "catastrophe-arrow-trigger-consequences", kind: "note", x: 166, y: 526, width: 48, height: 18, zIndex: 8 },
+    { id: "catastrophe-consequence-title", kind: "note", x: 20, y: 550, width: 340, height: 28, zIndex: 8 },
+    { id: "catastrophe-consequence-injury", kind: "card", x: 25, y: 594, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-consequence-complication", kind: "card", x: 138, y: 594, ...catastropheCard, zIndex: 4 },
+    { id: "catastrophe-consequence-boost", kind: "card", x: 251, y: 594, ...catastropheCard, zIndex: 4 },
+  ],
+};

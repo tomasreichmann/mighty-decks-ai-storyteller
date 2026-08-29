@@ -132,4 +132,38 @@ test("the complete table board is flat, labelled, and contained", async () => {
     const cardSizes = new Set(example.items.filter((item) => item.kind === "card").map((item) => `${item.width}x${item.height}`));
     assert.equal(cardSizes.size, 1);
   }
+
+  assert.ok("catastropheFlowBoard" in fixtures);
+  assert.ok("catastropheFlowMobileBoard" in fixtures);
+  for (const example of [fixtures.catastropheFlowBoard, fixtures.catastropheFlowMobileBoard]) {
+    const itemIds = example.items.map((item) => item.id);
+    assert.equal(new Set(itemIds).size, itemIds.length);
+    for (const itemId of [
+      "catastrophe-resolved",
+      "catastrophe-draw",
+      "catastrophe-fumble-first",
+      "catastrophe-fumble-second",
+      "catastrophe-fumble-third",
+      "catastrophe-trigger",
+      "catastrophe-consequence-injury",
+      "catastrophe-consequence-complication",
+      "catastrophe-consequence-boost",
+    ]) {
+      assert.ok(itemIds.includes(itemId));
+    }
+    for (const item of example.items) {
+      assert.ok(item.x >= 0 && item.y >= 0, `${item.id} starts inside the board`);
+      assert.ok(
+        item.x + (item.width ?? 0) <= example.boardSize.width &&
+          item.y + (item.height ?? 0) <= example.boardSize.height,
+        `${item.id} stays inside the board`,
+      );
+    }
+    const cardSizes = new Set(
+      example.items
+        .filter((item) => item.kind === "card")
+        .map((item) => `${item.width}x${item.height}`),
+    );
+    assert.equal(cardSizes.size, 1);
+  }
 });
