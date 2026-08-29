@@ -430,3 +430,57 @@ export const catastropheFlowMobileBoard: RulebookBoardExample = {
     { id: "catastrophe-consequence-boost", kind: "card", x: 251, y: 594, ...catastropheCard, zIndex: 4 },
   ],
 };
+
+const statusCard = { width: 90, height: 156 };
+
+export const statusThresholdsBoard: RulebookBoardExample = {
+  boardSize: { width: 960, height: 620 },
+  items: [
+    { id: "distress-title", kind: "note", x: 30, y: 16, width: 180, height: 32, zIndex: 8 },
+    { id: "distress-ok", kind: "note", x: 30, y: 128, width: 140, height: 38, zIndex: 8 },
+    { id: "distress-arrow-ok-three", kind: "note", x: 185, y: 122, width: 42, height: 48, zIndex: 8 },
+    { id: "distress-three", kind: "card", x: 242, y: 66, ...statusCard, zIndex: 4 },
+    { id: "status-panicked", kind: "card", x: 350, y: 66, ...statusCard, zIndex: 4 },
+    { id: "distress-count-three", kind: "note", x: 298, y: 76, width: 34, height: 24, zIndex: 10 },
+    { id: "distress-arrow-three-four", kind: "note", x: 456, y: 122, width: 42, height: 48, zIndex: 8 },
+    { id: "distress-recover", kind: "note", x: 430, y: 230, width: 110, height: 26, zIndex: 8 },
+    { id: "distress-four", kind: "card", x: 548, y: 66, ...statusCard, zIndex: 4 },
+    { id: "status-hopeless", kind: "card", x: 656, y: 66, ...statusCard, zIndex: 4 },
+    { id: "distress-count-four", kind: "note", x: 604, y: 76, width: 34, height: 24, zIndex: 10 },
+    { id: "distress-three-label", kind: "note", x: 222, y: 262, width: 200, height: 30, zIndex: 8 },
+    { id: "distress-four-label", kind: "note", x: 528, y: 262, width: 200, height: 30, zIndex: 8 },
+    { id: "injury-title", kind: "note", x: 30, y: 330, width: 180, height: 32, zIndex: 8 },
+    { id: "injury-ok", kind: "note", x: 30, y: 442, width: 140, height: 38, zIndex: 8 },
+    { id: "injury-arrow-ok-four", kind: "note", x: 210, y: 436, width: 42, height: 48, zIndex: 8 },
+    { id: "injury-four", kind: "card", x: 300, y: 380, ...statusCard, zIndex: 4 },
+    { id: "status-taken-out", kind: "card", x: 408, y: 380, ...statusCard, zIndex: 4 },
+    { id: "injury-count-four", kind: "note", x: 356, y: 390, width: 34, height: 24, zIndex: 10 },
+    { id: "injury-four-label", kind: "note", x: 280, y: 576, width: 220, height: 30, zIndex: 8 },
+  ],
+};
+
+export const statusThresholdsMobileBoard: RulebookBoardExample = {
+  boardSize: { width: 380, height: 990 },
+  items: [
+    { id: "distress-title", kind: "note", x: 20, y: 16, width: 340, height: 30, zIndex: 8 },
+    { id: "distress-ok", kind: "note", x: 90, y: 58, width: 200, height: 32, zIndex: 8 },
+    { id: "distress-arrow-ok-three", kind: "note", x: 166, y: 94, width: 48, height: 26, zIndex: 8 },
+    { id: "distress-three", kind: "card", x: 54, y: 128, ...statusCard, zIndex: 4 },
+    { id: "status-panicked", kind: "card", x: 236, y: 128, ...statusCard, zIndex: 4 },
+    { id: "distress-count-three", kind: "note", x: 110, y: 138, width: 34, height: 24, zIndex: 10 },
+    { id: "distress-three-label", kind: "note", x: 20, y: 298, width: 340, height: 28, zIndex: 8 },
+    { id: "distress-recover", kind: "note", x: 60, y: 344, width: 260, height: 28, zIndex: 8 },
+    { id: "distress-arrow-three-four", kind: "note", x: 166, y: 376, width: 48, height: 26, zIndex: 8 },
+    { id: "distress-four", kind: "card", x: 54, y: 410, ...statusCard, zIndex: 4 },
+    { id: "status-hopeless", kind: "card", x: 236, y: 410, ...statusCard, zIndex: 4 },
+    { id: "distress-count-four", kind: "note", x: 110, y: 420, width: 34, height: 24, zIndex: 10 },
+    { id: "distress-four-label", kind: "note", x: 20, y: 580, width: 340, height: 28, zIndex: 8 },
+    { id: "injury-title", kind: "note", x: 20, y: 644, width: 340, height: 30, zIndex: 8 },
+    { id: "injury-ok", kind: "note", x: 90, y: 686, width: 200, height: 32, zIndex: 8 },
+    { id: "injury-arrow-ok-four", kind: "note", x: 166, y: 722, width: 48, height: 26, zIndex: 8 },
+    { id: "injury-four", kind: "card", x: 54, y: 756, ...statusCard, zIndex: 4 },
+    { id: "status-taken-out", kind: "card", x: 236, y: 756, ...statusCard, zIndex: 4 },
+    { id: "injury-count-four", kind: "note", x: 110, y: 766, width: 34, height: 24, zIndex: 10 },
+    { id: "injury-four-label", kind: "note", x: 20, y: 926, width: 340, height: 28, zIndex: 8 },
+  ],
+};

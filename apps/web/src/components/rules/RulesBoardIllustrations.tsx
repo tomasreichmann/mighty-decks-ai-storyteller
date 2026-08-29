@@ -27,6 +27,8 @@ import {
   zonesAndRangeMobileBoard,
   catastropheFlowBoard,
   catastropheFlowMobileBoard,
+  statusThresholdsBoard,
+  statusThresholdsMobileBoard,
 } from "./rulesBoardExamples";
 
 const boardBackground = "/backgrounds/board.jpg";
@@ -358,5 +360,65 @@ export const CatastropheFlow = (): JSX.Element => (
     </ol>
     <StaticBoardFigure boardSize={catastropheFlowMobileBoard.boardSize} items={catastropheFlowMobileBoard.items} ariaLabel="Catastrophe flow from a resolved action through the replacement draw, three Fumbles, and one consequence" backgroundImageUrl={boardBackground} className="h-[37rem] w-full flex-none sm:hidden" renderItem={renderCatastropheFlowItem} />
     <StaticBoardFigure boardSize={catastropheFlowBoard.boardSize} items={catastropheFlowBoard.items} ariaLabel="Catastrophe flow from a resolved action through the replacement draw, three Fumbles, and one consequence" backgroundImageUrl={boardBackground} className="hidden h-[32rem] w-full flex-none sm:block" renderItem={renderCatastropheFlowItem} />
+  </RulebookBoardFigure>
+);
+
+const renderStatusThresholdItem = (item: BoardItemRecord): ReactNode => {
+  switch (item.id) {
+    case "distress-title":
+      return <Label color="fire" rotate={false} className="w-full justify-center">Distress thresholds</Label>;
+    case "injury-title":
+      return <Label color="blood" rotate={false} className="w-full justify-center">Injury thresholds</Label>;
+    case "distress-ok":
+      return <Label color="bone" rotate={false} className="h-full w-full justify-center">0–2 OK</Label>;
+    case "injury-ok":
+      return <Label color="bone" rotate={false} className="h-full w-full justify-center">0–3 OK</Label>;
+    case "distress-arrow-ok-three":
+    case "distress-arrow-three-four":
+    case "injury-arrow-ok-four":
+      return (
+        <span aria-hidden="true" className="flex h-full items-center justify-center font-heading text-3xl text-kac-iron">
+          <span className="sm:hidden">↓</span>
+          <span className="hidden sm:block">→</span>
+        </span>
+      );
+    case "distress-three":
+    case "distress-four":
+      return <ResolvedBoardCard type="EffectCard" slug="distress" />;
+    case "status-panicked":
+      return <ResolvedBoardCard type="EffectCard" slug="panicked" />;
+    case "status-hopeless":
+      return <ResolvedBoardCard type="EffectCard" slug="hopeless" />;
+    case "injury-four":
+      return <ResolvedBoardCard type="EffectCard" slug="injury" />;
+    case "status-taken-out":
+      return <ResolvedBoardCard type="EffectCard" slug="taken-out" />;
+    case "distress-count-three":
+      return <Label color="fire" size="sm" rotate={false} className="h-full w-full justify-center">×3</Label>;
+    case "distress-count-four":
+    case "injury-count-four":
+      return <Label color="blood" size="sm" rotate={false} className="h-full w-full justify-center">×4</Label>;
+    case "distress-three-label":
+      return <Label color="fire" rotate={false} className="w-full justify-center">3 Distress + Panicked</Label>;
+    case "distress-four-label":
+      return <Label color="blood" rotate={false} className="w-full justify-center">4 Distress + Hopeless</Label>;
+    case "injury-four-label":
+      return <Label color="blood" rotate={false} className="w-full justify-center">4 Injury + Taken Out</Label>;
+    case "distress-recover":
+      return <Label color="cloth" rotate={false} className="w-full justify-center">recover 1: Hopeless → Panicked</Label>;
+    default:
+      return null;
+  }
+};
+
+export const StatusThresholds = (): JSX.Element => (
+  <RulebookBoardFigure title="Distress and Injury thresholds" summary="Status cards appear only when each track reaches its threshold. Recovering one Distress moves Hopeless back to Panicked.">
+    <ol className="sr-only">
+      <li>Distress: 0–2 OK; 3 Distress + Panicked; 4 Distress + Hopeless.</li>
+      <li>Recovering one Distress moves Hopeless back to Panicked.</li>
+      <li>Injury: 0–3 OK; 4 Injury + Taken Out.</li>
+    </ol>
+    <StaticBoardFigure boardSize={statusThresholdsMobileBoard.boardSize} items={statusThresholdsMobileBoard.items} ariaLabel="Distress and Injury threshold lanes with Panicked, Hopeless, and Taken Out milestones" backgroundImageUrl={boardBackground} className="h-[50rem] w-full flex-none sm:hidden" renderItem={renderStatusThresholdItem} />
+    <StaticBoardFigure boardSize={statusThresholdsBoard.boardSize} items={statusThresholdsBoard.items} ariaLabel="Distress and Injury threshold lanes with Panicked, Hopeless, and Taken Out milestones" backgroundImageUrl={boardBackground} className="hidden h-[35rem] w-full flex-none sm:block" renderItem={renderStatusThresholdItem} />
   </RulebookBoardFigure>
 );

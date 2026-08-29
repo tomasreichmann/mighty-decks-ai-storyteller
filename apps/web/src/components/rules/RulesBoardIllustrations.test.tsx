@@ -59,3 +59,14 @@ test("catastrophe flow shows the replacement draw before its three-Fumble trigge
   assert.match(source, /Three Fumbles trigger a Catastrophe/);
   assert.match(source, /Pick one fitting consequence/);
 });
+
+test("status thresholds keeps equal-sized cards in separate Distress and Injury lanes", () => {
+  const source = readFileSync(new URL("./RulesBoardIllustrations.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /export const StatusThresholds/);
+  assert.match(source, /statusThresholdsBoard/);
+  assert.match(source, /statusThresholdsMobileBoard/);
+  assert.match(source, /3 Distress \+ Panicked/);
+  assert.match(source, /4 Injury \+ Taken Out/);
+  assert.match(source, /recover 1/);
+});

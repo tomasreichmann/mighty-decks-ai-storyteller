@@ -4,12 +4,15 @@ import { ActorCard } from "../cards/ActorCard";
 import { AssetCard } from "../cards/AssetCard";
 import { CounterCard } from "../cards/CounterCard";
 import { CardBoundary } from "../common/CardBoundary";
-import { Label } from "../common/Label";
 import { Text } from "../common/Text";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
+<<<<<<< HEAD
 import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
 import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange, CatastropheFlow } from "./RulesBoardIllustrations";
+=======
+import { CompleteTableSetup, CoreActionLoop, ActorInitiative, ZonesAndRange, CatastropheFlow } from "./RulesBoardIllustrations";
+>>>>>>> 9da9fc9 (feat(web): add status thresholds board illustration)
 import styles from "./RulesRulebookContent.module.css";
 
 const trackingCardClassName = "w-[10rem]";
@@ -259,6 +262,14 @@ export const StatusThresholds = (): JSX.Element => (
         </div>
       </section>
     </div>
+  </RulebookFigure>
+);
+
+export const PhysicalAssetComposition = (): JSX.Element => (
+  <RulebookFigure title="Physical Asset composition" summary="A base Asset and its modifier remain a readable combined card; a Stunt sits beside it without becoming an Effect equation.">
+    <AssetCard kind="custom" noun="Throwing Knife" modifier="Returning" nounDescription="A light thrown weapon." adjectiveDescription="Returns after a throw." iconUrl="/assets/medieval/dagger.png" overlayUrl="/assets/base/empowered.png" className="w-[10rem]" />
+    <span aria-hidden="true" className="font-heading text-2xl">+</span>
+    <ResolvedCard type="StuntCard" slug="marksman" className="w-[10rem]" />
   </RulebookFigure>
 );
 
