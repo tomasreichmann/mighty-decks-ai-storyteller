@@ -12,6 +12,8 @@ interface BoardFrameProps {
   children: ReactNode;
   className?: string;
   disableWheelZoom?: boolean;
+  interactive?: boolean;
+  ariaLabel?: string;
 }
 
 export const getBoardFrameGridZoom = (zoom: number): number => {
@@ -31,6 +33,8 @@ export const BoardFrame = ({
   children,
   className,
   disableWheelZoom = false,
+  interactive = true,
+  ariaLabel = undefined,
 }: BoardFrameProps): JSX.Element => {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<{
@@ -63,6 +67,10 @@ export const BoardFrame = ({
   }, [setFrameSize]);
 
   useEffect(() => {
+    if (!interactive) {
+      return;
+    }
+
     const frame = frameRef.current;
     if (!frame) {
       return;
@@ -89,12 +97,12 @@ export const BoardFrame = ({
     return () => {
       frame.removeEventListener("wheel", handleWheel);
     };
-  }, [disableWheelZoom, viewport.zoom, zoomAt]);
+  }, [disableWheelZoom, interactive, viewport.zoom, zoomAt]);
 
   const handlePointerDown = (
     event: ReactPointerEvent<HTMLDivElement>,
   ): void => {
-    if (event.button !== 0) {
+    if (!interactive || event.button !== 0) {
       return;
     }
 
@@ -148,16 +156,20 @@ export const BoardFrame = ({
     <div
       ref={frameRef}
       className={cn(
-        "board-frame relative min-h-0 flex-1 touch-none select-none overflow-hidden border-[3px] border-kac-iron bg-kac-cloth-dark shadow-[inset_0_0_0_2px_rgba(255,250,227,0.2),6px_6px_0_0_#121b23]",
+        "board-frame relative min-h-0 flex-1 overflow-hidden border-[3px] border-kac-iron bg-kac-cloth-dark shadow-[inset_0_0_0_2px_rgba(255,250,227,0.2),6px_6px_0_0_#121b23]",
+        interactive ? "touch-none select-none" : null,
         className,
       )}
       style={frameStyle}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      role="application"
-      aria-label="Interactive board frame"
+      onPointerDown={interactive ? handlePointerDown : undefined}
+      onPointerMove={interactive ? handlePointerMove : undefined}
+      onPointerUp={interactive ? handlePointerUp : undefined}
+      onPointerCancel={interactive ? handlePointerUp : undefined}
+      role={interactive ? "application" : "group"}
+      aria-label={
+        ariaLabel ??
+        (interactive ? "Interactive board frame" : "Static board illustration")
+      }
     >
       {children}
     </div>
