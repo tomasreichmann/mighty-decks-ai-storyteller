@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { requestBackendReadiness } from "./lib/backendReadiness";
+import "@mighty-decks/components/styles.css";
 import "./styles.css";
 
 const initialBackendReadinessPromise = requestBackendReadiness();

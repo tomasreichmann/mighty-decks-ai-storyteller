@@ -1,6 +1,7 @@
 export * from "./adventureState";
 export * from "./actorCards";
 export * from "./assetCards";
+export * from "./cardPresentation";
 export * from "./campaign";
 export * from "./campaignEvents";
 export * from "./outcomeDeck";

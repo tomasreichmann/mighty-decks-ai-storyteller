@@ -23,4 +23,6 @@ const webPublic = resolve(packageRoot, "../../apps/web/public");
 for (const directory of ["outcomes", "effects", "stunts", "actors", "assets", "counters", "backgrounds", "types", "text-icons"]) {
   await cp(resolve(webPublic, directory), resolve(packageRoot, "assets", directory), { recursive: true, force: true });
 }
+await mkdir(resolve(packageRoot, "assets", "art", "effects"), { recursive: true });
+await cp(resolve(webPublic, "effects", "dying.png"), resolve(packageRoot, "assets", "art", "effects", "taken-out.png"), { force: true });
 console.log(`Generated ${cardCatalog.length} catalog records and CSV projections.`);

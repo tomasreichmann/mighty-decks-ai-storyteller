@@ -25,6 +25,10 @@
       "types": "./dist/assetCards.d.ts",
       "import": "./dist/assetCards.js"
     },
+    "./cardPresentation": {
+      "types": "./dist/cardPresentation.d.ts",
+      "import": "./dist/cardPresentation.js"
+    },
     "./campaign": {
       "types": "./dist/campaign.d.ts",
       "import": "./dist/campaign.js"
