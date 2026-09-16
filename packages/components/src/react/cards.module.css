@@ -1,0 +1,17 @@
+.boundary { box-sizing: border-box; color: #1d2529; font-family: MightyDecksShantell, "Trebuchet MS", cursive; font-size: 16px; line-height: 1.15; }
+.boundary *, .boundary *::before, .boundary *::after { box-sizing: border-box; }
+.card { position: relative; width: 204px; max-width: 100%; aspect-ratio: 204 / 332; overflow: hidden; border: 2px solid #6d5435; border-radius: 12px; background: #f5ead6 url("/backgrounds/paper-with-image-shadow.png") center / cover; box-shadow: 2px 2px 0 #121b23; }
+.image { display: block; width: 156px; height: 98px; margin: 42px auto 5px; object-fit: contain; }
+.overlay { position: absolute; top: 44px; left: 24px; width: 156px; height: 98px; object-fit: contain; opacity: .8; pointer-events: none; }
+.deck { position: absolute; top: 14px; right: 13px; font-family: MightyDecksKalam, sans-serif; font-size: 9px; font-weight: 700; }
+.title { min-height: 24px; padding: 0 14px; text-align: center; font-family: MightyDecksKalam, sans-serif; font-size: 20px; font-weight: 700; line-height: 1; }
+.adjective { min-height: 20px; padding: 0 14px; text-align: center; font-family: MightyDecksKalam, sans-serif; font-size: 16px; font-weight: 700; line-height: 1; }
+.body { min-height: 80px; padding: 9px 19px; text-align: center; color: #445054; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.2; white-space: pre-wrap; }
+.footer { min-height: 38px; padding: 5px 19px; text-align: center; color: #1d2529; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.1; white-space: pre-wrap; }
+.compact .image { width: 90px; height: 90px; margin-top: 30px; }
+.compact .overlay { top: 30px; left: 57px; width: 90px; height: 90px; }
+.compact .title { display: grid; min-height: 140px; padding: 14px 13px; place-items: start center; font-size: 36px; overflow-wrap: anywhere; }
+.compact .deck, .compact .adjective, .compact .body, .compact .footer { display: none; }
+.button { display: inline-block; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.button:focus-visible { outline: 3px solid #b78016; outline-offset: 3px; }
+.button:disabled { cursor: not-allowed; opacity: .6; }

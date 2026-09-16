@@ -1,0 +1,28 @@
+{
+  "name": "@mighty-decks/components",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist", "assets", "generated", "docs", "skills"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./react": { "types": "./dist/react/index.d.ts", "import": "./dist/react/index.js" },
+    "./styles.css": "./dist/styles.css",
+    "./export": { "types": "./dist/export.d.ts", "import": "./dist/export.js" },
+    "./csv/*": "./generated/csv/*",
+    "./png/*": "./generated/png/*"
+  },
+  "bin": { "mighty-decks-components": "./dist/cli.js" },
+  "scripts": {
+    "build": "vite build && tsx scripts/write-types.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test tests/**/*.test.ts",
+    "generate": "tsx scripts/generate.ts",
+    "pack:local": "pnpm build && pnpm generate && pnpm pack --pack-destination ../../output"
+  },
+  "peerDependencies": { "react": "^18.0.0", "react-dom": "^18.0.0" },
+  "dependencies": { "zod": "^3.24.1" },
+  "devDependencies": { "@types/node": "^22.10.2", "@types/react": "^18.3.14", "@types/react-dom": "^18.3.3", "@vitejs/plugin-react": "^4.3.4", "playwright": "1.60.0", "react": "^18.3.1", "react-dom": "^18.3.1", "tsx": "^4.21.0", "typescript": "^5.7.2", "vite": "^6.0.5" }
+}

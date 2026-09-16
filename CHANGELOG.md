@@ -8,6 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Components: add the `@mighty-decks/components` workspace package with scoped React card primitives, English catalog lookup, CSV projections, resource-copy CLI, packaged guidance, and a portable usage skill.
 - Web/server: add a user-facing `/api/readiness` check and diegetic Render wake-up UX that keeps static pages available while Storyteller tools wait for the free service.
 
 - Web: add a complete anchored `/rules` rulebook with component-composed instructional figures and Message-based play examples.
@@ -19,6 +20,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: repair `/rules` status thresholds, the missing Physical Asset Stunt, and d4 tracking figures so terminal cards, values, removal, overlap, and alignment read correctly.
 
 ### Changed
+
+- Repo: remove stale card prototypes and source-inspection UI tests; package catalog and visual checks now cover durable card contracts instead.
 
 - Rules: standardize the maximum-Injury status on Taken Out, make failure the most likely Fumble result while allowing partial success with a serious Complication, and let Storytellers define other fitting Complication effects or removal conditions.
 - Docs: make the `/rules` rulebook the explicit core-gameplay authority, align the AI scene-loop draft with canonical Outcome and Actor timing rules, and route the Mighty Decks rules skill away from stale duplicated mechanics.

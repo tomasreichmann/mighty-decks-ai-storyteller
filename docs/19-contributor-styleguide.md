@@ -22,6 +22,7 @@ This is the compact repo reference that sits alongside `AGENTS.md`.
 - Keep public and debug payloads explicit.
 - Update docs and `CHANGELOG.md` when behavior, routes, env vars, or workflow change.
 - Keep comments short and intentional.
+- Keep reusable card rendering and catalog projection in `packages/components`; keep Adventure/session callbacks in the app adapter layer. Generate package resources with `pnpm components:generate` rather than editing generated CSV output.
 
 ## Repo-local skills
 
