@@ -4,46 +4,48 @@ Source: [palette-reference.png](palette-reference.png) (1672 x 941 pixels).
 
 Use the family-section swatches, including their base swatch, consistently. The top overview repeats the base colors with different shading. Values below are the per-channel RGB median of a 37 x 17 pixel patch centered inside each family swatch, excluding outlines, shadows, and labels. Printed hex values are intentionally ignored.
 
+The UI intentionally overrides sampled Iron with `kac-iron #121B23` and `kac-iron-dark #0B141C` to restore the deep ink contrast in [styleguide-polish-reference.png](styleguide-polish-reference.png). Iron Light remains `#354B5F` for secondary text. The table below retains the original sampled values for provenance. Dark button families use Steel Light text instead of Bone or Curse tints.
+
 Tailwind remains the implementation source of truth in `apps/web/tailwind.config.ts`. Preview with `pnpm dev` at `/styleguide/colors`; no new environment variables.
 
 | Token | Sampled color |
 | --- | --- |
-| `kac-gold` | `#FAC028` |
-| `kac-gold-light` | `#FEF3B6` |
-| `kac-gold-dark` | `#F8A732` |
-| `kac-gold-darker` | `#CC7E0D` |
-| `kac-cloth` | `#3B7DF4` |
-| `kac-cloth-light` | `#82A1BA` |
-| `kac-cloth-lightest` | `#D9E3EA` |
-| `kac-cloth-dark` | `#3C598D` |
-| `kac-bone` | `#E7CAA5` |
-| `kac-bone-light` | `#E8D1B6` |
-| `kac-bone-dark` | `#AC8D6B` |
-| `kac-bone-darker` | `#91765A` |
-| `kac-fire` | `#EC7812` |
-| `kac-fire-light` | `#FDAD19` |
-| `kac-fire-lightest` | `#FEE58F` |
-| `kac-fire-dark` | `#9D0F0C` |
-| `kac-iron` | `#2F3D4E` |
-| `kac-iron-light` | `#324457` |
-| `kac-iron-dark` | `#101B26` |
-| `kac-steel` | `#B5C1CE` |
-| `kac-steel-light` | `#F4F4F5` |
-| `kac-steel-dark` | `#6F8098` |
-| `kac-blood` | `#C91D21` |
-| `kac-blood-light` | `#E82029` |
-| `kac-blood-lighter` | `#FD7D7D` |
-| `kac-blood-lightest` | `#FE9C9E` |
-| `kac-blood-dark` | `#722538` |
-| `kac-curse` | `#E6458B` |
-| `kac-curse-light` | `#FD718C` |
-| `kac-curse-lighter` | `#FEC7CA` |
-| `kac-curse-lightest` | `#FEEEED` |
-| `kac-curse-dark` | `#C6034C` |
-| `kac-monster` | `#4DBC7E` |
-| `kac-monster-light` | `#B5F3B7` |
-| `kac-monster-lightest` | `#E5FCA7` |
-| `kac-monster-dark` | `#28B13A` |
-| `kac-skin` | `#FBC4CD` |
-| `kac-skin-light` | `#F6D1D0` |
-| `kac-skin-dark` | `#F1979A` |
+| `kac-gold` | `#FDCD37` |
+| `kac-gold-light` | `#FEF8C4` |
+| `kac-gold-dark` | `#FAAE2F` |
+| `kac-gold-darker` | `#D98904` |
+| `kac-cloth` | `#3C83FC` |
+| `kac-cloth-light` | `#8DACC5` |
+| `kac-cloth-lightest` | `#E2EBF0` |
+| `kac-cloth-dark` | `#415F93` |
+| `kac-bone` | `#EFD9BB` |
+| `kac-bone-light` | `#EEDEC8` |
+| `kac-bone-dark` | `#B59A79` |
+| `kac-bone-darker` | `#9A7F63` |
+| `kac-fire` | `#F38112` |
+| `kac-fire-light` | `#FDB20E` |
+| `kac-fire-lightest` | `#FEEB95` |
+| `kac-fire-dark` | `#A6110E` |
+| `kac-iron` | `#324355` |
+| `kac-iron-light` | `#354B5F` |
+| `kac-iron-dark` | `#13202A` |
+| `kac-steel` | `#C1CEDA` |
+| `kac-steel-light` | `#F7F8F9` |
+| `kac-steel-dark` | `#7B8EA6` |
+| `kac-blood` | `#CE2225` |
+| `kac-blood-light` | `#EC2A34` |
+| `kac-blood-lighter` | `#FD8286` |
+| `kac-blood-lightest` | `#FDA2A8` |
+| `kac-blood-dark` | `#7F2D42` |
+| `kac-curse` | `#AB58E4` |
+| `kac-curse-light` | `#C778FC` |
+| `kac-curse-lighter` | `#E8BCFD` |
+| `kac-curse-lightest` | `#FBF0FE` |
+| `kac-curse-dark` | `#7202AF` |
+| `kac-monster` | `#54BD8C` |
+| `kac-monster-light` | `#BDF5C1` |
+| `kac-monster-lightest` | `#EAFDBD` |
+| `kac-monster-dark` | `#32C045` |
+| `kac-skin` | `#FEC7DF` |
+| `kac-skin-light` | `#FBD8DE` |
+| `kac-skin-dark` | `#F4A4AC` |

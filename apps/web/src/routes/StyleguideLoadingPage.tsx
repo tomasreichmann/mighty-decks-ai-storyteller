@@ -165,7 +165,7 @@ export const StyleguideLoadingPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Progress ring
@@ -214,9 +214,11 @@ export const StyleguideLoadingPage = (): JSX.Element => {
             </div>
           ))}
         </div>
-      </Panel>
+      </section>
 
-      <Panel as="section" tone="cloth" contentClassName="stack gap-4">
+      <hr className="border-kac-iron/20" />
+
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Pending dots
@@ -249,15 +251,27 @@ export const StyleguideLoadingPage = (): JSX.Element => {
             </div>
           ))}
         </div>
-      </Panel>
+      </section>
 
-      <Link
-        to="/styleguide"
-        className="inline-flex items-center gap-2 self-start font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron transition hover:text-kac-blood-dark"
-      >
-        <span aria-hidden="true">&larr;</span>
-        Back to Overview
-      </Link>
+      <hr className="border-kac-iron/20" />
+
+      <Panel as="section" tone="bone" contentClassName="stack gap-2">
+        <Text variant="h3" color="iron">
+          Where to use it
+        </Text>
+        <Text variant="body" color="iron-light" className="text-sm">
+          Use `LoadingIndicator` only when progress can be measured. Use
+          `PendingIndicator` when work is in flight but no honest percentage is
+          available.
+        </Text>
+        <Link
+          to="/styleguide"
+          className="inline-flex items-center gap-2 self-start font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron transition hover:text-kac-blood-dark"
+        >
+          <span aria-hidden="true">&larr;</span>
+          Back to Overview
+        </Link>
+      </Panel>
     </div>
   );
 };

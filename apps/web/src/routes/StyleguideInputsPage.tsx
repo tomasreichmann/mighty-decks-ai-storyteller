@@ -38,7 +38,7 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
           Short-form input
@@ -100,9 +100,11 @@ export const StyleguideInputsPage = (): JSX.Element => {
             </div>
           </div>
         </form>
-      </Panel>
+      </section>
 
-      <Panel as="section" tone="cloth" contentClassName="stack gap-4">
+      <hr className="border-kac-iron/20" />
+
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
           Long-form input
@@ -155,7 +157,9 @@ export const StyleguideInputsPage = (): JSX.Element => {
             />
           </div>
         </form>
-      </Panel>
+      </section>
+
+      <hr className="border-kac-iron/20" />
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">

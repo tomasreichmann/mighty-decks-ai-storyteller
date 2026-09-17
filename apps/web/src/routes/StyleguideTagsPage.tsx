@@ -59,7 +59,7 @@ export const StyleguideTagsPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Tag Tone samples
@@ -80,7 +80,7 @@ export const StyleguideTagsPage = (): JSX.Element => {
             tone="gold"
             leading={<span aria-hidden="true">*</span>}
             trailing={
-              <span className="inline-flex h-full items-center border-l border-kac-iron px-2 text-xs font-bold uppercase tracking-[0.06em] text-kac-iron">
+              <span className="inline-flex h-full items-center border-l-2 border-kac-iron px-2 text-xs font-bold uppercase tracking-[0.06em] text-kac-iron">
                 04
               </span>
             }
@@ -89,14 +89,11 @@ export const StyleguideTagsPage = (): JSX.Element => {
             Tag Tone
           </Tag>
         </div>
-      </Panel>
+      </section>
 
-      <Panel
-        as="section"
-        tone="cloth"
-        className="relative z-20"
-        contentClassName="stack gap-4 pb-8"
-      >
+      <hr className="border-kac-iron/20" />
+
+      <section className="relative z-20 stack gap-4 pb-8">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Editable Tags
@@ -122,9 +119,11 @@ export const StyleguideTagsPage = (): JSX.Element => {
           tagVariant="cloth"
           removeTone="blood"
         />
-      </Panel>
+      </section>
 
-      <Panel as="section" tone="gold" contentClassName="stack gap-4">
+      <hr className="border-kac-iron/20" />
+
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Connection Status
@@ -145,7 +144,9 @@ export const StyleguideTagsPage = (): JSX.Element => {
             />
           ))}
         </div>
-      </Panel>
+      </section>
+
+      <hr className="border-kac-iron/20" />
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">

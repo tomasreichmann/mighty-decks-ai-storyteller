@@ -3,12 +3,12 @@ import type { ButtonColors } from "./Button";
 export type HighlightColor = ButtonColors;
 
 const colorClassMap: Record<HighlightColor, string> = {
-  steel: "text-kac-steel-light",
+  steel: "text-kac-steel-dark",
   "steel-light": "text-kac-steel-light",
   "steel-dark": "text-kac-steel-dark",
-  iron: "text-kac-iron",
-  "iron-light": "text-kac-iron-light",
-  "iron-dark": "text-kac-iron-dark",
+  iron: "text-kac-iron/20",
+  "iron-light": "text-kac-iron-light/20",
+  "iron-dark": "text-kac-iron-dark/20",
   blood: "text-kac-blood-light",
   "blood-light": "text-kac-blood-light",
   "blood-lighter": "text-kac-blood-lighter",

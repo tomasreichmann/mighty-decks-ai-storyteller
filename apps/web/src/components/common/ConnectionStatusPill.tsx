@@ -20,25 +20,25 @@ const statusToneMap: Record<
 > = {
   connected: {
     dotClassName:
-      "bg-kac-monster-dark border border-kac-iron/70 shadow-[0_1px_0_rgba(255,255,255,0.35)]",
+      "bg-kac-monster-dark border-2 border-kac-iron shadow-[0_1px_0_rgba(255,255,255,0.35)]",
     tone: "monster",
     statusLabel: "connected",
   },
   reconnecting: {
     dotClassName:
-      "bg-kac-gold-dark border border-kac-iron/70 shadow-[0_1px_0_rgba(255,255,255,0.35)]",
+      "bg-kac-gold-dark border-2 border-kac-iron shadow-[0_1px_0_rgba(255,255,255,0.35)]",
     tone: "gold",
     statusLabel: "reconnecting",
   },
   offline: {
     dotClassName:
-      "bg-kac-blood border border-kac-iron/70 shadow-[0_1px_0_rgba(255,255,255,0.25)]",
+      "bg-kac-blood border-2 border-kac-iron shadow-[0_1px_0_rgba(255,255,255,0.25)]",
     tone: "blood",
     statusLabel: "offline",
   },
   disconnected: {
     dotClassName:
-      "bg-kac-blood border border-kac-iron/70 shadow-[0_1px_0_rgba(255,255,255,0.25)]",
+      "bg-kac-blood border-2 border-kac-iron shadow-[0_1px_0_rgba(255,255,255,0.25)]",
     tone: "blood",
     statusLabel: "disconnected",
   },

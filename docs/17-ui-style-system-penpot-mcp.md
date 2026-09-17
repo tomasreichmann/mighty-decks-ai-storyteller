@@ -63,7 +63,7 @@ Usage rule:
 - Do not introduce new hardcoded color literals without documenting them in token payload.
 - Start neutral: use paper/Bone and Iron for ordinary surfaces and text. Apply semantic palette colors to highlights, active states, labels, messages, and other deliberate accents rather than tinting every container.
 - Palette values are sampled from the actual swatch pixels in `docs/reference/palette-reference.png`, not its printed hex labels. See [sampling details](reference/palette-samples.md).
-- Validate the compact family/variant presentation on `/styleguide/colors`; Tailwind remains the implementation source of truth for token values.
+- Validate the palette overview and expanded family swatches on `/styleguide/colors`. Each family includes semantic guidance, large variant samples, full token names, and hex values on neutral backgrounds; the layout wraps on small screens. Tailwind remains the implementation source of truth for token values.
 
 ### Spacing tokens
 

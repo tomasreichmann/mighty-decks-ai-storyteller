@@ -1,5 +1,5 @@
 import { useHref, useLinkClickHandler, useLocation } from "react-router-dom";
-import { HighlightAction } from "../common/HighlightAction";
+import { Button } from "../common/Button";
 import {
   type StyleguideCatalogEntry,
   styleguideNavigationEntries,
@@ -8,7 +8,7 @@ import {
 const StyleguideNavLink = ({ item }: { item: StyleguideCatalogEntry }): JSX.Element => {
   const { pathname } = useLocation();
   const href = useHref(item.path);
-  const navigate = useLinkClickHandler(item.path);
+  const navigate = useLinkClickHandler<HTMLElement>(item.path);
   const activePaths = item.activePaths ?? [item.path];
   const isActive = activePaths.some(
     (activePath) =>
@@ -17,15 +17,17 @@ const StyleguideNavLink = ({ item }: { item: StyleguideCatalogEntry }): JSX.Elem
   );
 
   return (
-    <HighlightAction
+    <Button
+      variant="ghost"
+      size="sm"
       href={href}
-      active={isActive}
+      aria-current={isActive ? "page" : undefined}
       color="gold"
       className="styleguide-section-nav__link"
       onClick={navigate}
     >
       {item.title}
-    </HighlightAction>
+    </Button>
   );
 };
 

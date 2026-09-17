@@ -544,13 +544,18 @@ Behavior:
 - the overview opens with compact guidance: use an existing primitive before creating a pattern, keep surfaces neutral first, use semantic colors as accents, and give content priority over chrome
 - the section nav provides access to `/styleguide/typography`, `/styleguide/colors`, `/styleguide/labels`, `/styleguide/messages`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/step-navigation`, `/styleguide/tokens`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/media`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
 - the cards page is the primary gallery entry point; the detail routes remain direct drill-down pages for internal inspection but are not surfaced in the main styleguide nav
-- the typography lab includes the shared framed table treatment so reference tables can be checked alongside the system's text scale
+- the typography lab uses open sections for its text, link, and table examples so reference hierarchy can be checked without panel chrome
 
 ---
 
 ### `/styleguide/typography`
 
 Hidden internal overview for typography and sticker-style labels.
+
+The typography lab uses open sections and includes inline and shared ghost-link
+examples for checking text-link hierarchy, focus treatment, and lightweight
+navigation. Its Steel heading highlight uses the darker Steel token for a
+clearer paper-surface accent.
 
 Components:
 
@@ -648,6 +653,8 @@ Behavior:
 
 Hidden internal overview for the shared button family.
 
+- Text contrast uses deep Iron (`#121B23`) for headings and gold actions, Iron Dark (`#0B141C`) on other light fills, and neutral Steel Light labels on Cloth, Fire, Blood, Curse, and Iron buttons. Iron Light stays softer for secondary copy. These are intentional contrast overrides of the sampled palette; see `docs/reference/palette-samples.md`.
+
 Components:
 
 - `StyleguideButtonsPage`
@@ -657,7 +664,7 @@ Components:
 Behavior:
 
 - isolates solid, circle, CTA, and ghost APIs so contributors can compare hierarchy without the rest of the styleguide chrome
-- shows ghost actions as Iron text with an animated semantic marker highlight on hover/focus and a persistent active/selected highlight; ghosts are not outlined rectangular buttons
+- shows ghost actions as Iron text with a highlight-colored underline when idle, replacing the underline with a compact, softly slanted semantic highlight matching `docs/reference/navigation-ghost-button-reference.png`: hover/focus reveals the same color and strength as selection with a left-to-right marker stroke; persistent selection uses `aria-pressed="true"`, `aria-selected="true"`, or a non-false `aria-current`. Reduced motion makes the reveal immediate. Styleguide navigation uses shared Gold ghost links. Main navigation uses ghost links with Gold (Home), Steel (Modules), Cloth (Campaigns), and Curse (Rules) highlights; ghosts are not outlined rectangular buttons
 - keeps the button family scoped to one page before it is reused in routes or labs
 
 ---
@@ -1148,6 +1155,7 @@ Located in `apps/web/src/components/common/`:
 - `TextArea` (shared multiline field with the `sm`/`md`/`lg` size ladder)
 - `Toggle`
 - `Highlight` (decorative text accent; use via `Heading` where possible)
+- Iron-family heading highlights and ghost-button markers use 20% opacity to preserve dark text contrast on neutral paper surfaces; idle ghost underlines retain the full Iron color.
 - `ImageBackground` (for image-backed UI blocks)
 
 ### Current usage pattern observed in views

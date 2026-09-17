@@ -63,14 +63,13 @@ export const Tag = ({
     <span
       className={cn(
         "tag inline-flex items-stretch overflow-hidden rounded-md",
-        "border border-kac-iron",
-        "shadow-[0_1px_0_#101B26,0_3px_7px_rgba(0,0,0,0.25)]",
+        "border-2 border-kac-iron",
         tagToneClassMap[tone],
         className,
       )}
     >
       {leading ? (
-        <span className="tag__leading inline-flex items-center">
+        <span className="tag__leading inline-flex items-center px-1.5">
           {leading}
         </span>
       ) : null}

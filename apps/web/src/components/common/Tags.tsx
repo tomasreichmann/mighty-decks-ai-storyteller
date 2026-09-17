@@ -285,7 +285,7 @@ export const Tags = ({
                     disabled={disabled}
                     aria-label={`Remove ${tag}`}
                     className={cn(
-                      "tags__tag-remove inline-flex h-full min-w-[1.9rem] items-center justify-center border-l border-kac-iron px-1.5",
+                      "tags__tag-remove inline-flex h-full min-w-[1.9rem] items-center justify-center border-l-2 border-kac-iron px-1.5",
                       "font-heading text-sm/none font-bold",
                       "shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]",
                       "[text-shadow:0_1px_0_rgba(0,0,0,0.35)] transition duration-100",

@@ -20,9 +20,8 @@ test("StyleguideSectionNav exposes the active Colors catalog entry", () => {
 
   assert.ok(colorLink, "the Colors catalog entry should be available in the navigation");
   assert.equal(colorLink.props["aria-current"], "page");
-  assert.match(colorLink.props.className, /highlight-action/);
   assert.equal(
-    colorLink.findByProps({ className: "highlight-action__label" }).children.join(""),
+    colorLink.findByProps({ className: "button__label" }).children.join(""),
     "Colors",
   );
 });

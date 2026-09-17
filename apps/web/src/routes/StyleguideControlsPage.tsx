@@ -44,7 +44,7 @@ export const StyleguideControlsPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+      <section className="stack gap-4">
         <div className="stack gap-3">
           <div className="stack gap-1">
             <Text variant="h3" color="iron">
@@ -116,9 +116,11 @@ export const StyleguideControlsPage = (): JSX.Element => {
             ))}
           </div>
         </div>
-      </Panel>
+      </section>
 
-      <Panel as="section" tone="gold" contentClassName="stack gap-4">
+      <hr className="border-kac-iron/20" />
+
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             RockerSwitch
@@ -156,15 +158,18 @@ export const StyleguideControlsPage = (): JSX.Element => {
             onClick={() => setRockerReadyActive((current) => !current)}
           />
         </div>
-      </Panel>
+      </section>
+
+      <hr className="border-kac-iron/20" />
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">
-          Back to the overview
+          Where to use it
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
-          This page now holds the grouped control work so it can stay focused
-          without sharing the screen with card labs or tag chip examples.
+          Use `ToggleButton` for an independent on/off choice,
+          `ButtonRadioGroup` for one selection from a compact set, and
+          `RockerSwitch` when a binary choice should feel mechanical.
         </Text>
         <Link
           to="/styleguide"

@@ -1,54 +1,104 @@
-import { Link } from "react-router-dom";
+import { Button } from "../components/common/Button";
 import { Heading } from "../components/common/Heading";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 import { styleguidePaletteFamilies } from "../components/styleguide/styleguideCatalog";
 
+const variantCount = styleguidePaletteFamilies.reduce(
+  (count, family) => count + family.variants.length,
+  0,
+);
+
 export const StyleguideColorsPage = (): JSX.Element => {
   return (
-    <div className="styleguide-colors-page app-shell stack gap-6 py-8">
+    <div className="styleguide-colors-page app-shell stack gap-10 py-8">
       <StyleguideSectionNav />
 
-      <header className="stack gap-2">
-        <Heading level="h1" color="iron" highlightProps={{ color: "gold" }}>
-          Colors
-        </Heading>
-        <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          Semantic palette reference. Tailwind remains the implementation source
-          of truth; use these names to choose the right family before styling.
+      <header className="stack gap-5">
+        <Text variant="body" color="iron-light" className="text-xs font-bold uppercase tracking-widest">
+          The Mighty Decks palette / {styleguidePaletteFamilies.length} families / {variantCount} colors
         </Text>
+        <Heading level="h1" color="iron" highlightProps={{ color: "gold" }}>
+          Colors with character
+        </Heading>
+        <Text variant="body" color="iron" className="max-w-2xl">
+          Warm paper, bold accents, and a color for every cue. Start with a
+          family's purpose, then choose the shade that fits.
+        </Text>
+        <ul className="grid grid-cols-5 gap-x-2 gap-y-5 sm:grid-cols-10" aria-label="Palette at a glance">
+          {styleguidePaletteFamilies.map((family) => (
+            <li key={family.tone} className="min-w-0">
+              <div
+                aria-hidden="true"
+                className="mb-2 h-20 rounded-sm border-2 border-kac-iron shadow-[4px_4px_0_0_#121b23] sm:h-28"
+                style={{ backgroundColor: family.variants[0].hex }}
+              />
+              <Text variant="body" color="iron" className="text-xs font-bold sm:text-sm">
+                {family.name}
+              </Text>
+            </li>
+          ))}
+        </ul>
       </header>
 
-      <div className="grid gap-3 xl:grid-cols-2">
-        {styleguidePaletteFamilies.map((family) => (
+      <div className="flex flex-col gap-3 border-y-2 border-kac-iron py-5 sm:flex-row sm:items-baseline sm:justify-between">
+        <Heading level="h2" highlightProps={{ color: "bone" }} className="text-2xl sm:text-3xl">
+          Explore the families
+        </Heading>
+        <Text variant="body" color="iron-light" className="max-w-md text-sm">
+          Keep everyday surfaces neutral. Use color to guide attention,
+          signal a state, or add emphasis.
+        </Text>
+      </div>
+
+      <div className="stack gap-8">
+        {styleguidePaletteFamilies.map((family, familyIndex) => (
           <section
             key={family.tone}
             aria-labelledby={`palette-${family.tone}`}
-            className="grid gap-3 rounded-sm border border-kac-iron/35 bg-kac-bone-light/25 p-3 sm:grid-cols-[minmax(8rem,0.7fr)_1fr]"
+            className="grid gap-5 border-b-2 border-kac-iron pb-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-8"
           >
-            <div className="stack gap-1">
-              <Text variant="h3" color="iron" className="text-[1.35rem] leading-none">
-                <span id={`palette-${family.tone}`}>{family.name}</span>
-              </Text>
-              <Text variant="note" color="iron-light" className="text-xs font-bold uppercase tracking-[0.08em]">
+            <div className="stack gap-3">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-kac-iron-light" aria-hidden="true">
+                  {String(familyIndex + 1).padStart(2, "0")}
+                </span>
+                <div id={`palette-${family.tone}`}>
+                  <Heading level="h3" highlightProps={{ color: family.tone }}>
+                    {family.name}
+                  </Heading>
+                </div>
+              </div>
+              <Text variant="body" color="iron" className="mt-1 text-xs font-bold uppercase tracking-widest">
                 {family.meaning}
               </Text>
-              <Text variant="note" color="iron-light" className="text-xs">
+              <Text variant="body" color="iron-light" className="max-w-lg text-sm">
                 {family.description}
               </Text>
             </div>
-            <ul className="flex flex-wrap content-start gap-2" aria-label={`${family.name} variants`}>
+
+            <ul
+              className="grid grid-cols-2 gap-3 sm:flex sm:gap-2"
+              aria-label={`${family.name} variants`}
+            >
               {family.variants.map((variant, index) => (
-                <li key={variant.token} className="flex min-w-[5.4rem] items-center gap-1.5">
-                  <span
+                <li key={variant.token} className="min-w-0 sm:flex-1">
+                  <div
                     aria-hidden="true"
-                    className={index === 0 ? "h-8 w-8 shrink-0 rounded-sm border border-kac-iron" : "h-5 w-5 shrink-0 rounded-sm border border-kac-iron/55"}
+                    className="h-28 rounded-sm border-2 border-kac-iron shadow-[4px_4px_0_0_#121b23] sm:h-36"
                     style={{ backgroundColor: variant.hex }}
                   />
-                  <span className="font-ui text-2xs font-bold uppercase leading-tight text-kac-iron">
-                    {variant.token}
-                    <span className="block font-body font-normal normal-case text-kac-iron-light">{variant.hex}</span>
-                  </span>
+                  <div className="stack gap-1 pt-3">
+                    <Text variant="body" color="iron" className="text-sm font-bold capitalize">
+                      {index === 0 ? "Base" : variant.token.slice(family.tone.length + 1)}
+                    </Text>
+                    <code className="break-words font-mono text-xs leading-relaxed text-kac-iron-light">
+                      kac-{variant.token}
+                    </code>
+                    <span className="font-mono text-sm text-kac-iron">
+                      {variant.hex}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -56,12 +106,15 @@ export const StyleguideColorsPage = (): JSX.Element => {
         ))}
       </div>
 
-      <Link
-        to="/styleguide"
-        className="w-fit font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron underline decoration-kac-gold decoration-4 underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kac-iron"
-      >
-        Back to overview
-      </Link>
+      <footer className="flex flex-col items-start gap-4 pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <Text variant="body" color="iron-light" className="max-w-xl text-sm">
+          Token names and hex values are shown for every shade. Tailwind is the
+          implementation source of truth.
+        </Text>
+        <Button href="/styleguide" variant="ghost" size="sm">
+          Back to overview
+        </Button>
+      </footer>
     </div>
   );
 };

@@ -31,9 +31,8 @@ test("ghost buttons preserve native link semantics while using the shared marker
   if (!marker) {
     throw new Error("Ghost marker was not rendered");
   }
-  assert.match(marker.props.className, /text-\[#EC7812\]/);
   assert.equal(
-    marker.findByProps({ className: "highlight-action__label" }).children.join(""),
+    marker.findByProps({ className: "button__label" }).children.join(""),
     "Cancel",
   );
 });

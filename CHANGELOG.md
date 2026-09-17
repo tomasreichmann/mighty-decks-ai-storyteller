@@ -8,6 +8,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add unframed inline and shared ghost-link examples to the typography styleguide, and darken its Steel heading highlight.
+
 - Docs: synchronize the package-owned English rulebook and fast-session prompt into checked local mirrors with SHA-256 provenance; `pnpm docs:rules:check` now protects web builds from stale rule sources.
 
 - Components: publish `@mighty-decks/components` with scoped React card primitives, English catalog lookup, CSV projections, resource-copy CLI, packaged guidance, and a portable usage skill.
@@ -19,9 +21,21 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: soften Iron heading and ghost-button highlights so Iron text remains readable on paper surfaces, including hovered and selected ghost actions.
+
+- Web: restore deep Iron text contrast for highlighted headings and light buttons, and neutral near-white labels on dark button families after the palette update.
+
 - Web: repair `/rules` status thresholds, the missing Physical Asset Stunt, and d4 tracking figures so terminal cards, values, removal, overlap, and alignment read correctly.
 
 ### Changed
+
+- Web: replace the remaining styleguide highlight links with shared ghost buttons and underline idle ghost actions in their highlight color for clearer clickability; retain the existing marker colors and hover animation.
+
+- Web: redesign `/styleguide/colors` with an at-a-glance palette, larger family swatches, and readable token names and hex values in a responsive layout.
+
+- Web: align ghost buttons with the navigation reference using compact slanted highlights; hover/focus draws the selected-state color from left to right, with reduced-motion support. Main navigation now uses shared ghost links with per-item colors and persistent current-page highlights.
+
+- Web: refresh all 39 palette swatches from the updated reference image pixels, including the purple Curse family; keep ghost buttons, outcome colors, styleguide, and design references in sync.
 
 - Web: resample all 39 palette variants from the reference image pixels instead of its printed values; synchronize shared component colors, outcome aliases, styleguide swatches, and design tokens.
 

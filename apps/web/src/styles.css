@@ -7,7 +7,7 @@
 :root {
   position: relative;
   color: #121b23;
-  background: #F4F4F5;
+  background: #F7F8F9;
   z-index: 1;
 }
 
@@ -33,7 +33,7 @@ body {
 }
 
 .halftone-vignette {
-  --bg: #E8D1B6;
+  --bg: #EEDEC8;
   --dot-rgb: 18 27 35;
   --grid: 10px;
   --stop1: 3.5px;
@@ -167,81 +167,55 @@ h6 {
   filter: blur(20px);
 }
 
-.highlight-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.25rem;
-  padding: 0.25rem 0.375rem;
-  color: #121b23;
-  font-family: "Shantell Sans", cursive;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
-}
-
-.highlight-action:focus-visible {
-  outline: 2px solid #F8A732;
-  outline-offset: 3px;
-}
-
-.highlight-action[aria-disabled="true"],
-.highlight-action:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.highlight-action__marker {
+.button__marker {
   position: relative;
   isolation: isolate;
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
-.highlight-action__marker::before {
-  position: absolute;
-  z-index: -1;
-  right: -0.14em;
-  bottom: 0.02em;
-  left: -0.14em;
-  height: 58%;
-  background: currentColor;
-  clip-path: polygon(0 20%, 8% 6%, 23% 14%, 39% 3%, 58% 12%, 73% 0, 91% 11%, 100% 4%, 98% 86%, 82% 96%, 64% 88%, 43% 100%, 21% 89%, 3% 96%);
-  content: "";
-  opacity: 0.68;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 150ms ease-out;
-}
-
-.highlight-action__label {
+.button__label {
   position: relative;
   z-index: 1;
   color: #121b23;
   white-space: nowrap;
 }
 
-.highlight-action:hover:not([aria-disabled="true"]):not(:disabled) .highlight-action__marker::before,
-.highlight-action:focus-visible .highlight-action__marker::before,
-.highlight-action--active .highlight-action__marker::before {
-  transform: scaleX(1);
-}
-
-.button--ghost:hover:not([aria-disabled="true"]):not(:disabled) .button__marker::before,
-.button--ghost:focus-visible .button__marker::before {
-  transform: scaleX(1);
+.button--ghost:is(:hover, :focus-visible, [aria-pressed="true"], [aria-selected="true"], [aria-current]:not([aria-current="false"])) .button__marker,
+.button--ghost:is(:disabled, [aria-disabled="true"]) .button__marker {
+  text-decoration-line: none;
 }
 
 .button--ghost .button__marker::before {
-  opacity: 1;
+  position: absolute;
+  z-index: -1;
+  background: currentColor;
+  content: "";
+  inset: -0.2em -0.45em;
+  height: auto;
+  border-radius: 0.15em;
+  clip-path: inset(0 100% 0 0);
+  opacity: 0.85;
+  transform: skewX(-7deg) rotate(-1deg);
+  transition: clip-path 220ms ease-out;
 }
 
-.button--ghost[aria-pressed="true"] .button__marker::before {
-  opacity: 0.58;
-  transform: scaleX(1);
+.button--ghost .button__marker--iron::before {
+  opacity: 0.2;
+}
+
+.button--ghost:hover:not([aria-disabled="true"]):not(:disabled) .button__marker::before,
+.button--ghost:focus-visible:not([aria-disabled="true"]):not(:disabled) .button__marker::before,
+.button--ghost[aria-pressed="true"] .button__marker::before,
+.button--ghost[aria-current]:not([aria-current="false"]) .button__marker::before,
+.button--ghost[aria-selected="true"] .button__marker::before {
+  clip-path: inset(0 0 0 0);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .highlight-action__marker::before {
+  .button--ghost .button__marker::before {
     transition-duration: 1ms;
   }
 }

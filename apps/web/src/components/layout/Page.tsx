@@ -12,7 +12,7 @@ import {
   useMatch,
 } from "react-router-dom";
 import { cn } from "../../utils/cn";
-import { HighlightAction } from "../common/HighlightAction";
+import { Button, type ButtonColors } from "../common/Button";
 import { Text } from "../common/Text";
 import styles from "./Page.module.css";
 
@@ -25,6 +25,7 @@ interface PageProps extends PropsWithChildren {
 interface NavItem {
   to: string;
   label: string;
+  color: ButtonColors;
   end?: boolean;
   activePath?: string;
 }
@@ -39,21 +40,25 @@ const navItems: NavItem[] = [
   {
     to: "/",
     label: "Home",
+    color: "gold",
     end: true,
   },
   {
     to: "/adventure-module/list",
     label: "Modules",
+    color: "steel",
     activePath: "/adventure-module/*",
   },
   {
     to: "/campaign/list",
     label: "Campaigns",
+    color: "cloth",
     activePath: "/campaign/*",
   },
   {
     to: "/rules",
     label: "Rules",
+    color: "curse",
     activePath: "/rules/*",
   },
 ];
@@ -101,17 +106,18 @@ const PrimaryNavLink = ({
   onNavigate: () => void;
 }): JSX.Element => {
   const href = useHref(item.to);
-  const navigate = useLinkClickHandler(item.to);
+  const navigate = useLinkClickHandler<HTMLElement>(item.to);
   const isActive = useMatch({
     path: item.activePath ?? item.to,
     end: item.end ?? false,
   }) !== null;
 
   return (
-    <HighlightAction
+    <Button
+      variant="ghost"
       href={href}
-      active={isActive}
-      color="gold"
+      aria-current={isActive ? "page" : undefined}
+      color={item.color}
       className={styles.primaryNavLink}
       onClick={(event) => {
         onNavigate();
@@ -119,7 +125,7 @@ const PrimaryNavLink = ({
       }}
     >
       {item.label}
-    </HighlightAction>
+    </Button>
   );
 };
 

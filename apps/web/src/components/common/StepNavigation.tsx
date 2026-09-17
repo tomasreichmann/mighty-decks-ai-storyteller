@@ -61,7 +61,7 @@ export const StepNavigation = ({
               ? currentNodeColorClasses[color]
               : isComplete
                 ? "border-kac-iron bg-kac-cloth-light text-kac-iron"
-                : "border-kac-steel-dark bg-kac-bone-light text-kac-iron-light",
+                : "border-kac-iron bg-kac-bone-light text-kac-iron-light",
             isDisabled && "opacity-55",
           );
           const labelClasses = cn(
@@ -87,7 +87,7 @@ export const StepNavigation = ({
                   aria-hidden="true"
                   className={cn(
                     "step-navigation__connector absolute top-4 left-[calc(50%+1rem)] right-[calc(-50%+1rem)] hidden h-px sm:block",
-                    isComplete ? "bg-kac-cloth-dark" : "bg-kac-iron/70",
+                    "bg-kac-iron",
                   )}
                 />
               ) : null}

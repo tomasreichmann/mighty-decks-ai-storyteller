@@ -108,7 +108,7 @@ export const StyleguideLabelsPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Color family sheet
@@ -134,9 +134,11 @@ export const StyleguideLabelsPage = (): JSX.Element => {
             </div>
           ))}
         </div>
-      </Panel>
+      </section>
 
-      <Panel as="section" tone="cloth" contentClassName="stack gap-4">
+      <hr className="border-kac-iron/20" />
+
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Size ladder
@@ -176,7 +178,9 @@ export const StyleguideLabelsPage = (): JSX.Element => {
             Large warning
           </Label>
         </div>
-      </Panel>
+      </section>
+
+      <hr className="border-kac-iron/20" />
 
       <Panel as="section" tone="gold" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">

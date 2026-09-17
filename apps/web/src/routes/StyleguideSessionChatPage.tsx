@@ -33,8 +33,8 @@ export const StyleguideSessionChatPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Panel as="section" tone="cloth" contentClassName="stack gap-3">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="stack gap-3">
           <div className="stack gap-1">
             <Text variant="h3" color="iron">
               Session Chat Player
@@ -46,9 +46,9 @@ export const StyleguideSessionChatPage = (): JSX.Element => {
           <Button href="/styleguide/session-chat-player" color="gold" size="sm">
             Open Player Lab
           </Button>
-        </Panel>
+        </section>
 
-        <Panel as="section" tone="gold" contentClassName="stack gap-3">
+        <section className="stack gap-3">
           <div className="stack gap-1">
             <Text variant="h3" color="iron">
               Session Chat Storyteller
@@ -61,8 +61,10 @@ export const StyleguideSessionChatPage = (): JSX.Element => {
           <Button href="/styleguide/session-chat-storyteller" color="gold" size="sm">
             Open Storyteller Lab
           </Button>
-        </Panel>
+        </section>
       </div>
+
+      <hr className="border-kac-iron/20" />
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">

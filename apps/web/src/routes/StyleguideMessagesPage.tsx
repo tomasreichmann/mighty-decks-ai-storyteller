@@ -48,7 +48,7 @@ export const StyleguideMessagesPage = (): JSX.Element => {
         </Text>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-4">
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Semantic callout shells
@@ -83,9 +83,11 @@ export const StyleguideMessagesPage = (): JSX.Element => {
             reassuring, not celebratory noise.
           </Message>
         </div>
-      </Panel>
+      </section>
 
-      <Panel as="section" tone="cloth" contentClassName="stack gap-4">
+      <hr className="border-kac-iron/20" />
+
+      <section className="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Highlighted callouts
@@ -110,7 +112,9 @@ export const StyleguideMessagesPage = (): JSX.Element => {
             </Message>
           ))}
         </div>
-      </Panel>
+      </section>
+
+      <hr className="border-kac-iron/20" />
 
       <Panel as="section" tone="gold" contentClassName="stack gap-2">
         <Text variant="h3" color="iron">

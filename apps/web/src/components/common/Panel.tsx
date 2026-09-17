@@ -36,7 +36,7 @@ export const Panel = ({
       className={cn(
         styles.panelFrame,
         toneClassMap[tone],
-        "relative flex flex-col overflow-hidden rounded-sm border border-kac-iron bg-kac-bone-light shadow-[3px_3px_0_0_#2F3D4E]",
+        "relative flex flex-col overflow-hidden rounded-sm border-2 border-kac-iron bg-kac-bone-light shadow-[4px_4px_0_0_#121b23]",
         className,
       )}
       {...restProps}

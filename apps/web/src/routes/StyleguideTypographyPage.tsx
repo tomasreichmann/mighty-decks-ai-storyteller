@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
+import { Button } from "../components/common/Button";
 import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
-import { Panel } from "../components/common/Panel";
+import { Section } from "../components/common/Section";
 import { Table } from "../components/common/Table";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
@@ -64,7 +65,7 @@ export const StyleguideTypographyPage = (): JSX.Element => {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
-        <Panel as="section" tone="bone" contentClassName="stack gap-4">
+        <Section className="stack gap-4">
           <div className="stack gap-1">
             <Text variant="h3" color="iron">
               Label
@@ -92,9 +93,9 @@ export const StyleguideTypographyPage = (): JSX.Element => {
               Large
             </Label>
           </div>
-        </Panel>
+        </Section>
 
-        <Panel as="section" tone="cloth" contentClassName="stack gap-4">
+        <Section className="stack gap-4">
           <div className="stack gap-1">
             <Text variant="h3" color="iron">
               Text
@@ -122,9 +123,9 @@ export const StyleguideTypographyPage = (): JSX.Element => {
               instructions.
             </Text>
           </div>
-        </Panel>
+        </Section>
 
-        <Panel as="section" tone="gold" contentClassName="stack gap-4">
+        <Section className="stack gap-4">
           <div className="stack gap-1">
             <Text variant="h3" color="iron">
               Heading
@@ -169,10 +170,43 @@ export const StyleguideTypographyPage = (): JSX.Element => {
               ))}
             </div>
           </div>
-        </Panel>
+        </Section>
       </div>
 
-      <Panel as="section" tone="gold" contentClassName="stack gap-3">
+      <Section className="stack gap-3">
+        <div className="stack gap-1">
+          <Text variant="h3" color="iron">
+            Links
+          </Text>
+          <Text variant="body" color="iron-light" className="text-sm">
+            Use a clear inline anchor when it belongs in a sentence. Use the
+            shared ghost button for lightweight navigation or secondary actions.
+          </Text>
+        </div>
+        <Text variant="body" color="iron">
+          Find the right interaction pattern in the{" "}
+          <a
+            href="/styleguide"
+            className="underline decoration-kac-cloth underline-offset-2 transition hover:text-kac-cloth-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kac-gold-dark/50"
+          >
+            styleguide overview
+          </a>
+          .
+        </Text>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" color="gold" size="sm" href="/styleguide/buttons">
+            View actions
+          </Button>
+          <Button variant="ghost" color="cloth" size="sm" href="/styleguide/inputs">
+            Explore inputs
+          </Button>
+          <Button variant="ghost" color="fire" size="sm" href="/styleguide/messages">
+            Read feedback
+          </Button>
+        </div>
+      </Section>
+
+      <Section className="stack gap-3">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
             Table treatment
@@ -203,9 +237,9 @@ export const StyleguideTypographyPage = (): JSX.Element => {
             </tr>
           </tbody>
         </Table>
-      </Panel>
+      </Section>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-2">
+      <Section className="stack gap-2">
         <Text variant="h3" color="iron">
           Where to use it
         </Text>
@@ -222,7 +256,7 @@ export const StyleguideTypographyPage = (): JSX.Element => {
           <span aria-hidden="true">&larr;</span>
           Back to Overview
         </Link>
-      </Panel>
+      </Section>
     </div>
   );
 };
