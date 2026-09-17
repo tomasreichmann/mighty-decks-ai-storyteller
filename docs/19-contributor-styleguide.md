@@ -22,8 +22,8 @@ This is the compact repo reference that sits alongside `AGENTS.md`.
 - Keep public and debug payloads explicit.
 - Update docs and `CHANGELOG.md` when behavior, routes, env vars, or workflow change.
 - Keep comments short and intentional.
-- Keep reusable card rendering and catalog projection in the public `@mighty-decks/components` package; keep Adventure/session callbacks in the app adapter layer. Its source and release workflow live at `tomasreichmann/mighty-decks-components`.
-- The package owns English rules documents. Refresh checked local mirrors with `pnpm docs:rules` only after changing the installed components artifact; commit `docs/rules-source.json` with them and use `pnpm docs:rules:check` to verify no drift. Do not hand-edit generated rulebook or fast-session-prompt mirrors.
+- Keep reusable card rendering and catalog projection in the pinned `@mighty-decks/components` Git dependency; keep Adventure/session callbacks in the app adapter layer. Update its full commit SHA consistently in the web and server dependencies, then install and run the relevant checks.
+- The package owns English rules documents. Import them from the package; do not restore local rulebook or fast-session-prompt mirrors.
 
 ## Repo-local skills
 

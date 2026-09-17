@@ -13,6 +13,14 @@ apps/server/logs
 # Local dev command logs
 /dev*.log
 .agent-logs/
+.cache/mighty-decks/
+
+# Checked-in Mighty Decks runtime distribution.
+!vendor/
+!vendor/mighty-decks/
+!vendor/mighty-decks/components/
+!vendor/mighty-decks/components/dist/
+!vendor/mighty-decks/components/dist/**
 
 # Runtime/generated artifacts
 apps/server/output/

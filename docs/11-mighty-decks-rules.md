@@ -1,8 +1,8 @@
 # Mighty Decks rules
 
-The package-owned English rules text is mirrored at [the Mighty Decks rulebook](mighty-decks-rulebook.md). The public `/rules` route imports that verified Markdown directly. The package is the source of truth for core gameplay; this generated mirror is the repository's checked consumer copy for docs, skills, examples, and card copy.
+The package-owned English rulebook is imported directly by the public `/rules` route from the pinned `@mighty-decks/components` Git dependency. The package is the source of truth for core gameplay; this repository keeps no checked-in copy.
 
-Run `pnpm docs:rules` after intentionally updating the installed `@mighty-decks/components` dependency, then commit both mirrored documents and `rules-source.json`. Run `pnpm docs:rules:check` to verify that the package version, document bytes, and SHA-256 provenance match without writing. The fast-session prompt mirror is a reference only; this synchronization does not inject it into server prompts.
+When intentionally updating the package SHA, review the canonical rulebook in the installed package. The fast-session prompt remains package reference material and is not injected into server prompts.
 
 The public `/rules` route renders its reader-facing canonical Markdown as one anchored, printable rulebook page. The Markdown contains reader-facing copy only; Quick Reference is section 28. The parser also strips a contiguous production illustration brief as defense in depth should one be introduced accidentally.
 

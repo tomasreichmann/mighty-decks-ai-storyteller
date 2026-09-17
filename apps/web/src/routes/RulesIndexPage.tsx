@@ -1,4 +1,4 @@
-import canonicalRulebook from "../../../../docs/mighty-decks-rulebook.md?raw";
+import canonicalRulebook from "@mighty-decks/components/docs/en/mighty-decks-rulebook.md?raw";
 import { RulesRulebookContent } from "../components/rules/RulesRulebookContent";
 import { RulesTableOfContents } from "../components/rules/RulesTableOfContents";
 import { parseRulebookDocument } from "../lib/rulebookDocument";

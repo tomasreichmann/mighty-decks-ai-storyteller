@@ -4,6 +4,7 @@ import { ActorCard } from "../cards/ActorCard";
 import { AssetCard } from "../cards/AssetCard";
 import { CounterCard } from "../cards/CounterCard";
 import { CardBoundary } from "../common/CardBoundary";
+import { Label } from "../common/Label";
 import { Text } from "../common/Text";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";

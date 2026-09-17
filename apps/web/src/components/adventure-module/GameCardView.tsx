@@ -29,7 +29,6 @@ export const GameCardView = ({
         <PackagedGameCard
           type="outcome"
           slug={gameCard.card.slug}
-          assetBaseUrl=""
           className={cn("w-full max-w-[13rem]", className)}
         />
       );
@@ -38,7 +37,6 @@ export const GameCardView = ({
         <PackagedGameCard
           type="effect"
           slug={gameCard.card.slug}
-          assetBaseUrl=""
           className={cn("w-full max-w-[13rem]", className)}
         />
       );
@@ -47,7 +45,6 @@ export const GameCardView = ({
         <PackagedGameCard
           type="stunt"
           slug={gameCard.card.slug}
-          assetBaseUrl=""
           className={cn("w-full max-w-[13rem]", className)}
         />
       );

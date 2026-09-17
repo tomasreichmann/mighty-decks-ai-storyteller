@@ -23,6 +23,9 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: restore `/rules` board and Outcome-backface images in local development by leaving public backgrounds outside the API proxy.
+- Web: restore the missing Label import so `/rules` status thresholds render instead of crashing.
+
 - Web: soften Iron heading and ghost-button highlights so Iron text remains readable on paper surfaces, including hovered and selected ghost actions.
 
 - Web: restore deep Iron text contrast for highlighted headings and light buttons, and neutral near-white labels on dark button families after the palette update.
@@ -30,6 +33,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: repair `/rules` status thresholds, the missing Physical Asset Stunt, and d4 tracking figures so terminal cards, values, removal, overlap, and alignment read correctly.
 
 ### Changed
+
+- Components: consume the pinned Mighty Decks Git package directly; the server now exposes its canonical assets and generated PNGs, keeps `/actors` and `/backgrounds` aliases, and no longer commits copied package resources or rulebook mirrors.
 
 - Web: replace the remaining styleguide highlight links with shared ghost buttons and underline idle ghost actions in their highlight color for clearer clickability; retain the existing marker colors and hover animation.
 
@@ -214,6 +219,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Remove the redundant helper instructions above shared actor, counter, asset, location, encounter, and quest authoring lists so module and campaign authoring open directly into the create action plus searchable grid.
 
 ### Docs
+
+- Plan a Git-file replacement for the components npm/release bridge: local generation, committed React/PNG outputs, pinned consumer sync, and removal of GitHub-side component builds.
 
 - Plan the components package extraction, separate PNG releases, publication gates, and independent Storyteller/Exiles migrations.
 

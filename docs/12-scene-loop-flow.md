@@ -1,6 +1,6 @@
 # 12 - Scene Loop Flow (Draft)
 
-This is a proposed AI Storyteller orchestration flow, not a separate rules source. Core gameplay follows [the canonical Mighty Decks rulebook](mighty-decks-rulebook.md), which is rendered at `/rules`. The runtime may automate or defer a rule, but it must not silently redefine it.
+This is a proposed AI Storyteller orchestration flow, not a separate rules source. Core gameplay follows the canonical Mighty Decks rulebook rendered at `/rules` from the pinned Components package. The runtime may automate or defer a rule, but it must not silently redefine it.
 
 This flow chart defines the proposed play-phase turn loop to address:
 

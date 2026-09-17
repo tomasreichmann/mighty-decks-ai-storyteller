@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import { registerComponentResources } from "./registerComponentResources";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
@@ -315,6 +316,7 @@ registerCampaignRoutes(app, {
     });
   },
 });
+await registerComponentResources(app);
 
 registerReadinessRoutes(app);
 

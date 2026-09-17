@@ -42,6 +42,14 @@ const createLocalDevProxy = (
     target,
     changeOrigin: true,
   },
+  "/mighty-decks": {
+    target,
+    changeOrigin: true,
+  },
+  "/actors": {
+    target,
+    changeOrigin: true,
+  },
   "/socket.io": {
     target,
     changeOrigin: true,
