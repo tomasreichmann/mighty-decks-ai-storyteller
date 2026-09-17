@@ -8,7 +8,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
-- Components: add the `@mighty-decks/components` workspace package with scoped React card primitives, English catalog lookup, CSV projections, resource-copy CLI, packaged guidance, and a portable usage skill.
+- Components: publish `@mighty-decks/components` with scoped React card primitives, English catalog lookup, CSV projections, resource-copy CLI, packaged guidance, and a portable usage skill.
 - Web/server: add a user-facing `/api/readiness` check and diegetic Render wake-up UX that keeps static pages available while Storyteller tools wait for the free service.
 
 - Web: add a complete anchored `/rules` rulebook with component-composed instructional figures and Message-based play examples.
@@ -21,6 +21,7 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Components: consume the public `@mighty-decks/components` registry package instead of the local workspace source; retain game/session behavior in application adapters.
 - Repo: remove stale card prototypes and source-inspection UI tests; package catalog and visual checks now cover durable card contracts instead.
 
 - Rules: standardize the maximum-Injury status on Taken Out, make failure the most likely Fumble result while allowing partial success with a serious Complication, and let Storytellers define other fitting Complication effects or removal conditions.
@@ -189,6 +190,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Remove the redundant helper instructions above shared actor, counter, asset, location, encounter, and quest authoring lists so module and campaign authoring open directly into the create action plus searchable grid.
 
 ### Docs
+
+- Plan the components package extraction, separate PNG releases, publication gates, and independent Storyteller/Exiles migrations.
 
 - Document the `/rules/ship-combat` prototype route, selected flip-spent-token power rule, Device exhaustion default, damage flow, Flight Controls options, and the hidden `/spaceship` visual lab in the rules and spaceship prototype docs.
 - Document the ship-combat Device and Special Location reference rules in the rules and spaceship prototype docs.

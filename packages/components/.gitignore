@@ -1,6 +1,0 @@
-dist/
-generated/
-assets/*
-!assets/THIRD-PARTY-NOTICES.md
-!assets/fonts/
-!assets/fonts/**
