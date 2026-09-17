@@ -1,0 +1,16 @@
+{
+  "package": {
+    "name": "@mighty-decks/components",
+    "version": "0.1.0"
+  },
+  "documents": {
+    "mighty-decks-rulebook.md": {
+      "sourcePath": "docs/en/mighty-decks-rulebook.md",
+      "sha256": "9e05d7334ba21744ada3b8837617a31e22d64cad261d4fc112ea38ea377c978d"
+    },
+    "mighty-decks-fast-session-storyteller-system-prompt.md": {
+      "sourcePath": "docs/en/mighty-decks-fast-session-storyteller-system-prompt.md",
+      "sha256": "f2df685d5b8a22062211bc7840f8eda65b603df5bf51d322d1f0c079133c3e5c"
+    }
+  }
+}

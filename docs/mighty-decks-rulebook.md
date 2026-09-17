@@ -392,6 +392,10 @@ Possible consequences include:
 
 A Catastrophe **can** Take Out a character when that makes sense, especially if they were already near their limit, but the recommended default is to bring characters to the brink rather than remove them from play immediately.
 
+A Catastrophe should feel **substantially worse than an ordinary Fumble**. Do not soften all of its consequences into cosmetic inconvenience. In most cases, at least one consequence should persist beyond the immediate action or significantly escalate the scene: meaningful Injury or Distress, damaged or lost equipment, a closed opportunity, a newly active threat, a major Counter change, separation, exposure, or another problem the characters must deal with later.
+
+The Catastrophe should not erase a success that already resolved unless the fiction makes that unavoidable. It is usually more satisfying to let the achievement stand and make the **price of that achievement dramatically worse**.
+
 ### Example — Catastrophe
 
 Mira takes her Action normally and then draws a replacement Outcome card.
@@ -438,9 +442,13 @@ Be generous when the connection is natural, but reject tenuous attempts to turn 
 
 Stunts represent talents, unusual abilities, learned techniques, supernatural powers, background advantages, or signature moves.
 
-At the beginning of some scenes, the Storyteller may choose up to as many scene-appropriate Stunts as there are players and place them face up on the table. Each displayed Stunt lists a requirement that players can fulfill during that scene. The first player to fulfill a Stunt's requirement gains that Stunt immediately and keeps it for the rest of the Adventure.
+At the beginning of some scenes, the Storyteller may place scene-appropriate Stunts face up on the table. Each displayed Stunt lists a requirement that players can fulfill during that scene. A player who fulfills a displayed requirement gains that Stunt immediately and keeps it for the rest of the Adventure.
 
-A player may earn more than one Stunt, but the Storyteller should guide opportunities so that one player does not hoard the available Stunts.
+When Stunt opportunities are used in a **single-player game, offer at least 2 different Stunts**, normally 2–3. In group play, the Storyteller may normally offer up to as many Stunts as there are players, or a slightly larger selection when meaningful choice would improve the scene.
+
+A player can gain **at most 1 offered Stunt per scene**. Once they gain one, they cannot claim another displayed Stunt until a later scene. This lets the Storyteller offer real alternatives without encouraging one player to collect every opportunity.
+
+Choose opportunities that reward **different approaches** to the scene. Avoid presenting one Stunt whose requirement is simply the obvious solution to the current problem. Requirements should usually ask for something notable enough to feel earned rather than triggering from routine, consequence-free actions.
 
 Players normally choose **2 Stunts** during setup unless the Adventure says otherwise.
 
@@ -514,6 +522,28 @@ Total recovery Effect is **2**, so Aldren removes **2 Injury**.
 Because Tomas used an Outcome card for the healing, that was his Action for the round.
 
 Alternatively, Tomas could use only the Consumable for its listed Effect and still use his Outcome card for a different Action, if the Consumable does not itself require the Action.
+
+---
+
+### 9.5 Persistent Asset Upgrades
+
+A long-running Adventure may give the characters a persistent shared Asset such as a vehicle, ship, headquarters, workshop, or companion machine.
+
+Such Assets can gain **named upgrades** during play. An upgrade should usually do one of the following:
+
+- give **+1 Effect** in a narrow, clearly defined situation,
+- allow an action that was previously impossible,
+- improve range, capacity, protection, mobility, or another concrete capability,
+- remove a recurring limitation,
+- create a new tactical or narrative option.
+
+Avoid blanket bonuses that make every use of the Asset better.
+
+When a major upgrade opportunity appears, offer **multiple meaningful directions** when possible instead of a single obviously correct improvement. For example, a vehicle might be developed toward combat, transport and trade, exploration and sensors, stealth, rescue, or another role appropriate to the setting. Costs, limited upgrade space, or mutually exclusive systems can make that choice matter.
+
+Major repairs and upgrades may cost Adventure resources. Minor maintenance can be waved away when tracking it would add bookkeeping without creating a decision.
+
+Invite players to **name, customize, or describe** persistent Assets and important upgrades. Personalization makes mechanical rewards easier to remember and gives the group reasons to care when those Assets are later threatened.
 
 ---
 
@@ -610,7 +640,9 @@ A Low Tension scene often gives characters a reasonable chance to recover. See *
 
 Alternate tension when possible. Constant crisis becomes exhausting; constant safety removes pressure.
 
-After a difficult High Tension scene, even a short Low Tension scene can create room for roleplay, consequences, planning, and recovery.
+After a difficult High Tension scene, even a short Low Tension scene can create room for roleplay, consequences, planning, and recovery. When the fiction allows it, the Storyteller can explicitly offer a choice to **slow down or press on**. Slowing down can create a short character moment, recovery opportunity, shopping or maintenance scene, or a chance for an NPC to ask a personal question that lets players establish backstory organically.
+
+Low Tension scenes do not need a plot twist to justify themselves. Their purpose can simply be to let characters react to what just happened and make the next dangerous scene matter more.
 
 ---
 
@@ -942,6 +974,8 @@ The Storyteller can invite a player to describe important moments:
 
 The Storyteller keeps final authority over consequences involving the world and NPCs, while players remain the primary authors of their own character's intent, attitude, and style.
 
+As a default, **do not speak or decide for a player character**. Do not invent their feelings, jokes, purchases, habits, whether they drink, which weapon they draw, or other consequential or character-defining choices unless the player has already established them or the action follows directly from what they declared. Describe the world and NPC reactions, then leave room for the player to respond.
+
 ---
 
 ## 23. Ending a Scene
@@ -1049,11 +1083,39 @@ If a player proposes a creative action that makes sense, let the Effect represen
 
 A Fumble should create trouble, not a dead end.
 
-Good Fumbles introduce cost, danger, pressure, damage, lost position, or difficult choices.
+Good Fumbles introduce cost, danger, pressure, damage, lost position, or difficult choices. Let competent characters remain competent: failure can come from the danger being real rather than from suddenly making the character foolish or incapable.
 
-### Spread Catastrophe Consequences
+Across a longer Adventure, vary the consequences. Use Injury and Distress when appropriate, but also damage Assets, close opportunities, create enemies, worsen relationships, spend resources, separate characters, expose secrets, or introduce persistent problems that can matter in later scenes. If every Fumble can be repaired immediately, danger starts to feel temporary.
 
-Three different problems are usually more interesting than three copies of Injury.
+### Make Catastrophes Change the Situation
+
+Three different problems are usually more interesting than three copies of Injury, but a Catastrophe should also be **severe enough to be remembered**. Whenever possible, combine immediate harm with a lasting consequence or a major escalation. A Catastrophe is a good moment for a threat to arrive, an escape route to close, a valued Asset to break, or a dangerous truth to become unavoidable.
+
+### Present Real Choices, Not Guided Solutions
+
+When several approaches are possible, give them different advantages and uncertainties. Avoid designing every clue, reward, Stunt opportunity, or resource problem so that they point toward one obvious answer.
+
+Useful choices often trade one good thing for another: safety versus reward, speed versus information, a reliable resource versus uncertain treasure, or a short route versus a dangerous opportunity. The Storyteller does not need to expose every number. Imperfect or even misleading information can be fair when the characters have a reasonable way to investigate it.
+
+### Reuse Characters and Threats
+
+A recurring NPC, rival, villain, faction, or recognizable threat often creates more investment than a completely new cast in every scene. Reintroduce established characters when the fiction gives them a plausible reason to cross paths again, and let previous dealings change how they behave.
+
+Give important NPCs distinct motives, temperaments, vocabulary, humor, risk tolerance, and relationships to the characters. Avoid making every competent NPC sound equally dry, sarcastic, friendly, or pragmatic.
+
+Recurring threats should also develop. Foreshadow them with a recognizable signature, then let the characters witness increasingly direct consequences. Seeing a threat **do something** can be more powerful than finding another wreck after the fact. Whenever possible, give an abstract danger a behavior, agent, victim, face, or recurring visual motif the players can learn to recognize.
+
+### Vary Encounter Types
+
+Do not rely on one repeated challenge structure. Across an Adventure, mix combat, chases, rescues under pressure, negotiation, stealth, puzzles, heists, escapes, investigations, survival problems, social scenes, and vehicle or ship action as appropriate to the setting.
+
+If the characters acquire weapons, specialized equipment, allies, or upgrades, create occasional situations where those choices can matter. Equipment is more satisfying when it changes what the players can attempt rather than merely filling an inventory.
+
+### Keep Scene Framing Concise
+
+At the start of a scene, establish the vibe with a short, vivid description, then surface a few obvious **points of interest, leads, threats, or opportunities** the player can engage with. These are invitations rather than a closed menu; players can always attempt something else.
+
+Prefer one strong line over several approximate ones. Avoid repeating information the player already knows. Dialogue and concrete sensory detail can carry characterization more efficiently than long explanatory prose.
 
 ### Keep NPCs Simple
 

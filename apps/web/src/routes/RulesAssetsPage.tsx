@@ -7,6 +7,7 @@ import { AssetCard } from "../components/cards/AssetCard";
 import { AssetModifierCard } from "../components/cards/AssetModifierCard";
 import { ShortcodeField } from "../components/adventure-module/ShortcodeField";
 import { Text } from "../components/common/Text";
+import { AssetCompositionFigure } from "../components/rules/RulesCardComposition";
 import {
   assetBaseCardsByGroup,
   assetModifierCards,
@@ -32,11 +33,13 @@ interface RulesAssetsContentProps {
     modifierSlug?: AssetModifierSlug;
   }) => void;
   showHeader?: boolean;
+  presentation?: "authoring" | "reader";
 }
 
 export const RulesAssetsContent = ({
   onAddAssetCard,
   showHeader = true,
+  presentation = "authoring",
 }: RulesAssetsContentProps): JSX.Element => {
   const [modifierEnabled, setModifierEnabled] = useState(false);
   const [selectedModifierSlug, setSelectedModifierSlug] = useState<
@@ -51,16 +54,25 @@ export const RulesAssetsContent = ({
           <Text variant="h3" color="iron">
             Asset Cards
           </Text>
-          <Text variant="body" color="iron-light" className="text-sm">
-            Copy each <code>@asset/&lt;slug&gt;</code> shortcode into Adventure
-            Module markdown editors. When Modifier is enabled, copied shortcodes
-            use <code>@asset/&lt;slug&gt;/&lt;modifier-slug&gt;</code> and normalize
-            into stored GameCard embeds with <code>modifierSlug</code>.
-          </Text>
+          {presentation === "reader" ? (
+            <Text variant="body" color="iron-light" className="text-sm">
+              Build an Asset from a base and, when relevant, a modifier. Read both rules once; the combined card does not duplicate either bonus. <a className="underline" href="/rules#building-an-actor-card">Learn how Actor cards are assembled.</a>
+            </Text>
+          ) : (
+            <Text variant="body" color="iron-light" className="text-sm">
+              Copy each <code>@asset/&lt;slug&gt;</code> shortcode into Adventure
+              Module markdown editors. When Modifier is enabled, copied shortcodes
+              use <code>@asset/&lt;slug&gt;/&lt;modifier-slug&gt;</code> and normalize
+              into stored GameCard embeds with <code>modifierSlug</code>.
+            </Text>
+          )}
         </div>
       ) : null}
 
-      <div className="stack gap-3 rounded border-2 border-kac-iron/40 bg-kac-bone-light/60 px-4 py-3">
+      {presentation === "reader" ? <AssetCompositionFigure /> : null}
+
+      <fieldset className="stack gap-3 rounded border-2 border-kac-iron/40 bg-kac-bone-light/60 px-4 py-3">
+        <legend className="px-1 font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron">Asset modifier</legend>
         <label className="inline-flex items-center gap-2 font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron">
           <input
             type="checkbox"
@@ -88,7 +100,7 @@ export const RulesAssetsContent = ({
                   name="rules-assets-modifier"
                   value={modifier.slug}
                   aria-label={`Select ${modifier.title} modifier`}
-                  className="sr-only"
+                  className="peer sr-only"
                   checked={selectedModifierSlug === modifier.slug}
                   onChange={() => {
                     setSelectedModifierSlug(modifier.slug);
@@ -99,7 +111,7 @@ export const RulesAssetsContent = ({
                     "rounded-[0.95rem] p-1 transition duration-150",
                     selectedModifierSlug === modifier.slug
                       ? "bg-[#d6bb94] shadow-[0_0_0_2px_rgba(121,86,45,0.4)]"
-                      : "bg-white/25 hover:bg-white/40",
+                      : "bg-white/25 hover:bg-white/40 peer-focus-visible:ring-2 peer-focus-visible:ring-kac-gold-dark",
                   )}
                 >
                   <AssetModifierCard modifierSlug={modifier.slug} className="mx-auto" />
@@ -108,7 +120,8 @@ export const RulesAssetsContent = ({
             ))}
           </div>
         ) : null}
-      </div>
+        <Text variant="note" color="iron-light">{appliedModifierSlug ? `Applied modifier: ${assetModifierCards.find((modifier) => modifier.slug === appliedModifierSlug)?.title ?? "Unknown"}.` : "No modifier applied; base Assets are complete on their own."}</Text>
+      </fieldset>
 
       {assetGroupOrder.map((groupLabel) => (
         <section key={groupLabel} className="stack gap-3">
@@ -131,7 +144,7 @@ export const RulesAssetsContent = ({
                   modifierSlug={appliedModifierSlug}
                   className="mx-auto"
                 />
-                <ShortcodeField
+                {presentation === "authoring" ? <ShortcodeField
                   shortcode={createAssetShortcode(
                     asset.slug,
                     appliedModifierSlug,
@@ -146,7 +159,7 @@ export const RulesAssetsContent = ({
                           })
                       : undefined
                   }
-                />
+                /> : null}
               </div>
             ))}
           </div>
@@ -157,5 +170,5 @@ export const RulesAssetsContent = ({
 };
 
 export const RulesAssetsPage = (): JSX.Element => {
-  return <RulesAssetsContent />;
+  return <RulesAssetsContent presentation="reader" />;
 };

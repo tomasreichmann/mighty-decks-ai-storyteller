@@ -8,7 +8,7 @@ const rulebookDocument = parseRulebookDocument(canonicalRulebook);
 export const RulesIndexPage = (): JSX.Element => {
   return (
     <div data-rules-page className="grid gap-8 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
-      <RulesTableOfContents />
+      <RulesTableOfContents document={rulebookDocument} />
       <article aria-label="Mighty Decks rulebook" className="min-w-0">
         <RulesRulebookContent document={rulebookDocument} />
       </article>

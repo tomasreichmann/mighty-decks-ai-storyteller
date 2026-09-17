@@ -7,10 +7,10 @@
     "prepare:spec": "pnpm -C ../../spec build",
     "predev": "pnpm run prepare:spec",
     "dev": "vite",
-    "prebuild": "pnpm run prepare:spec",
+    "prebuild": "pnpm run prepare:spec && pnpm -C ../.. docs:rules:check",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview",
-    "pretypecheck": "pnpm run prepare:spec",
+    "pretypecheck": "pnpm run prepare:spec && pnpm -C ../.. docs:rules:check",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

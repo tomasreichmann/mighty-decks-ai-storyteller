@@ -1,6 +1,6 @@
 # Adventure Examples
 
-Use the external prototype pages as reference material, not vendored source. They are not rules authority: when their wording or examples differ from `docs/mighty-decks-rulebook.md`, the repo rulebook rendered at `/rules` wins. Do not copy the full bundled SPA into this repo or into skills.
+Use the external prototype pages as reference material, not vendored source. They are not rules authority: when their wording or examples differ from the package-owned rulebook mirrored at `docs/mighty-decks-rulebook.md`, the checked `/rules` copy wins. Do not copy the full bundled SPA into this repo or into skills.
 
 ## Source Links
 

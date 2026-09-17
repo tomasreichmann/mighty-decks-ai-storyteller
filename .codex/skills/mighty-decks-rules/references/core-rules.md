@@ -1,6 +1,6 @@
 # Canonical Core Rules Index
 
-`docs/mighty-decks-rulebook.md` is the canonical core rules source and the direct content source for `/rules`. Read the relevant sections there before making a rules decision. This file is a navigation aid and drift check, not a second rulebook.
+The installed `@mighty-decks/components` package owns the canonical English core rules. `docs/mighty-decks-rulebook.md` is its checked generated mirror and the direct content source for `/rules`. Read the relevant sections there before making a rules decision. Run `pnpm docs:rules:check` when provenance matters; do not hand-edit the mirror. This file is a navigation aid and drift check, not a second rulebook.
 
 ## Section Map
 

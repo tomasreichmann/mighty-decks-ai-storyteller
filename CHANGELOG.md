@@ -8,6 +8,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Docs: synchronize the package-owned English rulebook and fast-session prompt into checked local mirrors with SHA-256 provenance; `pnpm docs:rules:check` now protects web builds from stale rule sources.
+
 - Components: publish `@mighty-decks/components` with scoped React card primitives, English catalog lookup, CSV projections, resource-copy CLI, packaged guidance, and a portable usage skill.
 - Web/server: add a user-facing `/api/readiness` check and diegetic Render wake-up UX that keeps static pages available while Storyteller tools wait for the free service.
 

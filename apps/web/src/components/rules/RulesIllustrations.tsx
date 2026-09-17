@@ -11,6 +11,7 @@ import { Text } from "../common/Text";
 import { LocationCard } from "../styleguide/LocationCard";
 import { resolveGameCard, type GameCardType } from "../../lib/markdownGameComponents";
 import { DieMarker } from "./DieMarker";
+import { ActorCompositionFigure, AssetCompositionFigure } from "./RulesCardComposition";
 import styles from "./RulesRulebookContent.module.css";
 
 const actorToken = "/actors/base/guard-blue.png";
@@ -472,14 +473,6 @@ export const StatusThresholds = (): JSX.Element => (
   </RulebookFigure>
 );
 
-export const PhysicalAssetComposition = (): JSX.Element => (
-  <RulebookFigure title="Physical Asset composition" summary="A base Asset and its modifier remain a readable combined card; a Stunt sits beside it without becoming an Effect equation.">
-    <AssetCard kind="custom" noun="Throwing Knife" modifier="Returning" nounDescription="A light thrown weapon." adjectiveDescription="Returns after a throw." iconUrl="/assets/medieval/dagger.png" overlayUrl="/assets/base/empowered.png" className="w-[10rem]" />
-    <span aria-hidden="true" className="font-heading text-2xl">+</span>
-    <ResolvedCard type="StuntCard" slug="marksman" className="w-[10rem]" />
-  </RulebookFigure>
-);
-
 export const FumbleBranchesV2 = (): JSX.Element => (
   <RulebookFigure title="Two valid Fumbles" summary="A Fumble most likely fails, but the Storyteller may allow partial success with a serious Complication.">
     <ol className="sr-only"><li>Fumble.</li><li>Miss: no useful Effect.</li><li>Hit, but: Bandit receives Injury and Bow receives Complication.</li></ol>
@@ -534,7 +527,6 @@ export const CoreActionLoopV2 = (): JSX.Element => (
 export const rulebookIllustrationsBySectionId: Readonly<Record<string, () => JSX.Element>> = {
   "what-you-need-to-play": CompleteTableSetup,
   effect: EffectEquation,
-  "characters-expertise-stunts-assets": PhysicalAssetComposition,
   "core-action-loop": CoreActionLoopV2,
   actors: RemainingToughness,
   "turn-based-play": ActorInitiative,
@@ -548,5 +540,7 @@ export const rulebookIllustrationsBySubsectionId: Readonly<Record<string, () => 
   "9-2-stunts": StuntCardIllustration,
   "9-3-assets": AssetCardIllustration,
   "9-4-consumables": ConsumableCardIllustration,
+  "building-an-asset-card": AssetCompositionFigure,
+  "building-an-actor-card": ActorCompositionFigure,
   "example-two-valid-fumbles": FumbleBranchesV2,
 };
