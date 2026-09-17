@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Panel } from "./Panel";
 import { Text } from "./Text";
 import { cn } from "../../utils/cn";
 
@@ -33,44 +32,40 @@ export const StoryTileCard = ({
   className = "",
 }: StoryTileCardProps): JSX.Element => {
   const cardBody = (
-    <article className="flex h-full flex-col">
-      <div className="relative overflow-hidden border-b-2 border-kac-iron bg-kac-iron-dark">
+    <article className="flex h-full flex-col overflow-hidden rounded-sm border-2 border-kac-iron bg-kac-bone-light shadow-[3px_3px_0_0_#121b23] transition duration-200 ease-out group-hover:-translate-y-0.5 group-hover:shadow-[4px_4px_0_0_#121b23] group-focus-within:-translate-y-0.5 group-focus-within:shadow-[4px_4px_0_0_#121b23]">
+      <div className="overflow-hidden border-b-2 border-kac-iron bg-kac-iron-dark">
         <img
           src={imageUrl}
           alt={imageAlt}
           loading={imageLoading}
           decoding={imageDecoding}
-          className="aspect-video h-auto w-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+          className="aspect-video h-auto w-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-[1.01]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-kac-iron-dark/85 via-kac-iron-dark/20 to-transparent" />
+      </div>
 
+      <div className="flex flex-1 flex-col gap-3 bg-kac-bone-light px-4 py-4">
         {(topMeta || kindBadge) ? (
-          <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-            <div className="flex max-w-[calc(100%-5.5rem)] flex-wrap gap-2">
-              {topMeta}
-            </div>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="flex flex-wrap gap-2">{topMeta}</div>
             {kindBadge}
           </div>
         ) : null}
 
-        <div className="absolute inset-x-3 bottom-3">
-          <Text
-            variant="h3"
-            color="paper"
-            className="max-w-[16rem] text-[1.8rem] leading-none drop-shadow-[0_2px_0_#090f15] sm:max-w-[20rem] sm:text-[2rem]"
-          >
-            {title}
-          </Text>
-        </div>
-      </div>
+        <Text
+          variant="h3"
+          color="iron"
+          data-story-tile-title
+          className="text-[1.6rem] leading-none sm:text-[1.8rem]"
+        >
+          {title}
+        </Text>
 
-      <div className="flex flex-1 flex-col gap-3 px-4 py-4">
         {summary ? (
           <Text
             variant="body"
             color="iron-light"
             className={cn(
-              "text-sm leading-relaxed",
+              "text-sm leading-relaxed text-kac-iron-light",
               "overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]",
             )}
           >
@@ -92,14 +87,7 @@ export const StoryTileCard = ({
   );
 
   return (
-    <Panel
-      tone="bone"
-      className={cn(
-        "group h-full w-full max-w-[30rem] transition-transform duration-200 ease-out hover:-translate-y-1 focus-within:-translate-y-1",
-        className,
-      )}
-      contentClassName="h-full p-0"
-    >
+    <div className={cn("group h-full w-full max-w-[30rem]", className)}>
       {href ? (
         <a
           href={href}
@@ -110,6 +98,6 @@ export const StoryTileCard = ({
       ) : (
         cardBody
       )}
-    </Panel>
+    </div>
   );
 };

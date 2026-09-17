@@ -9,7 +9,7 @@
   overflow-y: hidden;
   overscroll-behavior-inline: contain;
   padding: 0.25rem 0.25rem 0.8rem;
-  scrollbar-color: var(--kac-cloth, #80a0bc) rgb(18 27 35 / 0.14);
+  scrollbar-color: var(--kac-cloth, #82A1BA) rgb(18 27 35 / 0.14);
   scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
@@ -26,7 +26,7 @@
 .tableSetupViewport::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
-  background: var(--kac-cloth, #80a0bc);
+  background: var(--kac-cloth, #82A1BA);
   background-clip: padding-box;
 }
 
@@ -70,7 +70,7 @@
   inset: 0;
   border: 2px solid var(--kac-iron, #121b23);
   border-radius: 0.6rem;
-  background: var(--kac-cloth, #80a0bc);
+  background: var(--kac-cloth, #82A1BA);
   content: "";
 }
 

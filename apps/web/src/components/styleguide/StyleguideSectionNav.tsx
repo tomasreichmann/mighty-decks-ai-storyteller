@@ -1,111 +1,43 @@
-import { Link, useLocation } from "react-router-dom";
-import { cn } from "../../utils/cn";
+import { useHref, useLinkClickHandler, useLocation } from "react-router-dom";
+import { HighlightAction } from "../common/HighlightAction";
+import {
+  type StyleguideCatalogEntry,
+  styleguideNavigationEntries,
+} from "./styleguideCatalog";
 
-const styleguideSectionItems = [
-  {
-    to: "/styleguide",
-    label: "Overview",
-    activePaths: ["/styleguide"],
-  },
-  {
-    to: "/styleguide/typography",
-    label: "Typography",
-    activePaths: ["/styleguide/typography"],
-  },
-  {
-    to: "/styleguide/inputs",
-    label: "Inputs",
-    activePaths: ["/styleguide/inputs"],
-  },
-  {
-    to: "/styleguide/loading",
-    label: "Loading",
-    activePaths: ["/styleguide/loading"],
-  },
-  {
-    to: "/styleguide/buttons",
-    label: "Buttons",
-    activePaths: ["/styleguide/buttons"],
-  },
-  {
-    to: "/styleguide/tokens",
-    label: "Tokens",
-    activePaths: ["/styleguide/tokens", "/styleguide/actor-token"],
-  },
-  {
-    to: "/styleguide/panel",
-    label: "Panel",
-    activePaths: ["/styleguide/panel"],
-  },
-  {
-    to: "/styleguide/cards",
-    label: "Cards",
-    activePaths: ["/styleguide/cards"],
-  },
-  {
-    to: "/styleguide/tags",
-    label: "Tags",
-    activePaths: ["/styleguide/tags"],
-  },
-  {
-    to: "/styleguide/labels",
-    label: "Labels",
-    activePaths: ["/styleguide/labels"],
-  },
-  {
-    to: "/styleguide/messages",
-    label: "Messages",
-    activePaths: ["/styleguide/messages"],
-  },
-  {
-    to: "/styleguide/controls",
-    label: "Controls",
-    activePaths: ["/styleguide/controls"],
-  },
-  {
-    to: "/styleguide/session-chat",
-    label: "Session Chat",
-    activePaths: [
-      "/styleguide/session-chat",
-      "/styleguide/session-chat-player",
-      "/styleguide/session-chat-storyteller",
-    ],
-  },
-] as const;
-
-export const StyleguideSectionNav = (): JSX.Element => {
+const StyleguideNavLink = ({ item }: { item: StyleguideCatalogEntry }): JSX.Element => {
   const { pathname } = useLocation();
+  const href = useHref(item.path);
+  const navigate = useLinkClickHandler(item.path);
+  const activePaths = item.activePaths ?? [item.path];
+  const isActive = activePaths.some(
+    (activePath) =>
+      pathname === activePath ||
+      (activePath !== "/styleguide" && pathname.startsWith(`${activePath}/`)),
+  );
 
   return (
+    <HighlightAction
+      href={href}
+      active={isActive}
+      color="gold"
+      className="styleguide-section-nav__link"
+      onClick={navigate}
+    >
+      {item.title}
+    </HighlightAction>
+  );
+};
+
+export const StyleguideSectionNav = (): JSX.Element => {
+  return (
     <nav
-      className="styleguide-section-nav flex flex-wrap gap-2"
+      className="styleguide-section-nav flex flex-wrap gap-x-4 gap-y-2"
       aria-label="Styleguide sections"
     >
-      {styleguideSectionItems.map((item) => {
-        const isActive =
-          item.to === "/styleguide"
-            ? pathname === "/styleguide"
-            : item.activePaths.some(
-                (activePath) =>
-                  pathname === activePath ||
-                  pathname.startsWith(`${activePath}/`),
-              );
-
-        return (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={cn(
-              "styleguide-section-nav__link inline-flex items-center rounded-sm border-2 border-kac-iron px-3 py-1.5 font-ui text-xs font-bold uppercase tracking-[0.08em] transition duration-100",
-              isActive
-                ? "styleguide-section-nav__link--active bg-kac-gold text-kac-iron shadow-[3px_3px_0_0_#121b23]"
-                : "bg-kac-bone-light text-kac-iron shadow-[2px_2px_0_0_#121b23] hover:brightness-[1.03]",
-            )}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
+      {styleguideNavigationEntries.map((item) => (
+        <StyleguideNavLink key={item.path} item={item} />
+      ))}
     </nav>
   );
 };

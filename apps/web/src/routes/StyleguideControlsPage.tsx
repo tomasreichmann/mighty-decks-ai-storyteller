@@ -51,7 +51,9 @@ export const StyleguideControlsPage = (): JSX.Element => {
               ToggleButton states
             </Text>
             <Text variant="body" color="iron-light" className="text-sm">
-              Straight-edged grouped controls for option picking.
+              Use a ButtonRadioGroup when one option from a compact set should
+              be selected. Its neutral shared rail keeps the active semantic
+              choice legible without turning every segment into a button.
             </Text>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -74,7 +76,8 @@ export const StyleguideControlsPage = (): JSX.Element => {
             color={activeColor}
             onValueChange={setActiveColor}
             options={toggleColors.map((color) => ({
-              label: color,
+              disabled: color === "curse",
+              label: color === "curse" ? "curse (locked)" : color,
               value: color,
             }))}
             size="md"

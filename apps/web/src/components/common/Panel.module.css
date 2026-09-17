@@ -1,20 +1,21 @@
 .panelFrame {
   position: relative;
+  border-left-width: 3px;
+  border-left-color: var(--panel-accent);
 }
 
-.panelFrame::before {
-  content: "";
-  --size: 4px;
-  --skew-shift-x: 3px;
-  --skew-shift-y: 3px;
-  position: absolute;
-  inset: -4px;
-  pointer-events: none;
-  border-width: var(--size);
-  clip-path: polygon(
-    var(--skew-shift-x) var(--skew-shift-y),
-    calc(100% - var(--skew-shift-x)) var(--skew-shift-y),
-    100% 100%,
-    var(--skew-shift-x) calc(100% - var(--skew-shift-y))
-  );
+.toneBone {
+  --panel-accent: #E7CAA5;
+}
+
+.toneGold {
+  --panel-accent: #ffb500;
+}
+
+.toneCloth {
+  --panel-accent: #3B7DF4;
+}
+
+.toneFire {
+  --panel-accent: #EC7812;
 }

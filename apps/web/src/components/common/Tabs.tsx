@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import { cn } from "../../utils/cn";
 import {
   buttonRadioGroupRailClassName,
-  getButtonRadioGroupCapClassName,
   getButtonRadioGroupSegmentClassName,
 } from "./ButtonRadioGroup";
 import type { ToggleButtonColor } from "./ToggleButton";
@@ -32,11 +31,7 @@ export const Tabs = ({
       className={cn(buttonRadioGroupRailClassName, className)}
       aria-label={ariaLabel}
     >
-      <span
-        aria-hidden="true"
-        className={getButtonRadioGroupCapClassName(color, "left")}
-      />
-      <div className="flex min-w-0 flex-wrap items-stretch pl-px pt-px">
+      <div className="flex min-w-0 flex-wrap items-stretch">
         {items.map((tab) => (
           <NavLink
             key={tab.id ?? tab.to}
@@ -56,10 +51,6 @@ export const Tabs = ({
           </NavLink>
         ))}
       </div>
-      <span
-        aria-hidden="true"
-        className={getButtonRadioGroupCapClassName(color, "right")}
-      />
     </nav>
   );
 };

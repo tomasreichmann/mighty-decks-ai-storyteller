@@ -55,7 +55,7 @@ const sizeShowcaseCards = [
     kind: "ghost" as const,
     sampleColor: "steel" as const,
     description:
-      "The outlined secondary action with the hard border shadow treatment.",
+      "The lightweight text action with an animated semantic marker highlight.",
   },
 ] as const;
 
@@ -79,7 +79,7 @@ const colorShowcaseRows = [
   {
     name: "Ghost",
     kind: "ghost" as const,
-    description: "The outlined ghost button across the full palette, now including the corrected fire tone.",
+    description: "The text-highlight action across the full palette; color controls its marker, not its ink.",
   },
 ] as const;
 

@@ -6,13 +6,13 @@ import type { ComponentSize } from "./componentSizing";
 import styles from "./FieldShell.module.css";
 
 export const fieldControlBaseClassName =
-  "relative block w-full border-2 border-kac-iron rounded-sm bg-gradient-to-b from-[#f8efd8] to-[#e5d4b9] text-kac-iron outline-none transition duration-100 font-ui";
+  "relative block w-full border-2 border-kac-iron rounded-sm bg-[#f8efd8] text-kac-iron outline-none transition duration-100 font-ui";
 
 export const fieldControlDepthClassName =
-  "shadow-[inset_2px_2px_0_0_#9f8a6d,inset_-2px_-2px_0_0_#fff7e6]";
+  "shadow-[inset_0_1px_0_#fff7e6,inset_0_-1px_0_#d8c29f]";
 
 export const fieldControlStateClassName =
-  "placeholder:text-kac-steel-dark/70 disabled:cursor-not-allowed disabled:opacity-60";
+  "placeholder:text-kac-steel-dark/50 disabled:cursor-not-allowed disabled:opacity-60";
 
 const toCharacterString = (value: unknown): string => {
   if (typeof value === "string") {

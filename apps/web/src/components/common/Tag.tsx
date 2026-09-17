@@ -64,7 +64,7 @@ export const Tag = ({
       className={cn(
         "tag inline-flex items-stretch overflow-hidden rounded-md",
         "border border-kac-iron",
-        "shadow-[0_1px_0_#090f15,0_3px_7px_rgba(0,0,0,0.25)]",
+        "shadow-[0_1px_0_#101B26,0_3px_7px_rgba(0,0,0,0.25)]",
         tagToneClassMap[tone],
         className,
       )}

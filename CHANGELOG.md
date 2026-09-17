@@ -23,6 +23,11 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Changed
 
+- Web: resample all 39 palette variants from the reference image pixels instead of its printed values; synchronize shared component colors, outcome aliases, styleguide swatches, and design tokens.
+
+- Web: update the base tactile palette for gold, fire, blood, bone, steel, skin, cloth, curse, monster, and iron; synchronize the Colors styleguide and Penpot token references.
+- Web: polish the shared styleguide direction around neutral paper surfaces, semantic accent colors, text-highlight ghost/navigation actions, restrained Panels, separated form actions, one-rail segmented choices, and media-first cards; add Colors, Media, and Step Navigation labs.
+
 - Components: consume the public `@mighty-decks/components` registry package instead of the local workspace source; retain game/session behavior in application adapters.
 - Repo: remove stale card prototypes and source-inspection UI tests; package catalog and visual checks now cover durable card contracts instead.
 

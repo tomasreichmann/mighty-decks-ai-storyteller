@@ -8,7 +8,7 @@ It complements `docs/04-ui-components.md` (structural composition) with concrete
 
 Goals:
 
-- Document current style truth from implementation.
+- Document the paper + ink + sticker visual direction from implementation.
 - Define canonical usage guidance for future UI work.
 - Provide machine-readable token payload for Penpot MCP recreation.
 
@@ -54,13 +54,16 @@ Machine-readable payload files:
 
 | Token group | Explicit values | Status | Source |
 | --- | --- | --- | --- |
-| `palette.core` | `kac-steel-light #f3f3f4`, `kac-iron #121b23`, `kac-iron-dark #090f15`, `kac-blood-light #e3132c`, `kac-fire-light #f88b00`, `kac-bone-light #e4ceb3`, `kac-gold #ffd23b`, `kac-gold-dark #f59d20`, `kac-cloth-light #80a0bc`, `kac-curse #f20170`, `kac-monster-dark #1aa62b`, `special #d99600`, `success #1aa62b`, `partial #65738b`, `chaos #f20170`, `fumble #090f15`, `ink #111827`, `paper #f8fafc` | `canonical` | `apps/web/tailwind.config.ts` |
+| `palette.core` | `kac-steel-light #F4F4F5`, `kac-iron #1F2937`, `kac-iron-dark #101B26`, `kac-blood-light #E82029`, `kac-fire-light #FDAD19`, `kac-bone-light #E8D1B6`, `kac-gold #F7B500`, `kac-gold-dark #F8A732`, `kac-cloth-light #82A1BA`, `kac-curse #E83E8C`, `kac-monster-dark #28B13A`, `special #d99600`, `success #28B13A`, `partial #6F8098`, `chaos #E6458B`, `fumble #101B26`, `ink #111827`, `paper #f8fafc` | `canonical` | `apps/web/tailwind.config.ts` |
 | `literals.current` | `#fffdf5`, `#f8efd8`, `#fffaf0`, `#d6c1a1`, `#9f8a6d`, `255 210 59` | `current-only` | common components + message css module |
 
 Usage rule:
 
 - Prefer `kac-*` and outcome utility tokens over hardcoded literals.
 - Do not introduce new hardcoded color literals without documenting them in token payload.
+- Start neutral: use paper/Bone and Iron for ordinary surfaces and text. Apply semantic palette colors to highlights, active states, labels, messages, and other deliberate accents rather than tinting every container.
+- Palette values are sampled from the actual swatch pixels in `docs/reference/palette-reference.png`, not its printed hex labels. See [sampling details](reference/palette-samples.md).
+- Validate the compact family/variant presentation on `/styleguide/colors`; Tailwind remains the implementation source of truth for token values.
 
 ### Spacing tokens
 
@@ -138,15 +141,16 @@ Exceptions:
 
 Surface rules:
 
-- Use Panel gradients (`bone`, `gold`, `cloth`, `fire`) for framed containers.
-- Use Message gradients for semantic callouts.
-- Treat `Panel` as the framed surface and validate its density and tone choices in `/styleguide/panel` before reusing it broadly.
+- Use a neutral paper/Bone surface with Iron text and edges by default.
+- Reserve semantic color for a small edge, marker highlight, selected state, label, or other accent. `Message` owns full semantic callout surfaces.
+- Use `Panel` only for a meaningful framed group; ordinary sections, form clusters, roster rows, and inner subsections should use `Section` and spacing instead.
+- Validate the open-section, paper-panel, labeled-panel, and `Message` distinction in `/styleguide/panel` before adding a frame.
 
 Border rules:
 
 - Primary control border width is `2px`.
-- Input depth borders (`3px` + `6px`) are current-only style behavior.
-- Panel frame `4px` border remains pattern-specific.
+- Inputs use a restrained Iron edge and subtle depth, not a deep inset well.
+- `Panel` uses a 1–2px Iron edge with a small hard offset shadow; it is not a heavy multi-frame treatment.
 
 Radius rules:
 
@@ -155,8 +159,8 @@ Radius rules:
 
 Shadow rules:
 
-- Keep tactile hard shadows for controls.
-- Keep inset dual shadows for panel and toggle depth.
+- Keep tactile hard shadows restrained and local to controls or framed surfaces.
+- Avoid nested or broad inset depth on ordinary content.
 
 Motion rules:
 
@@ -182,6 +186,9 @@ Canonical contracts are defined for:
 - `TextField`
 - `TextArea`
 - `Toggle`
+- `StepNavigation`
+- `ImageCard`
+- `StoryTileCard`
 
 Tag family note:
 
@@ -191,11 +198,15 @@ Tag family note:
 
 Primitive API notes:
 
-- `Button` solid is the neutral default for standard and grouped actions.
+- `Button` solid is the default for ordinary actions. `Button` ghost is a lightweight text action: no box chrome, with an animated marker highlight behind its text on hover/focus and a persistent highlight when selected/pressed.
 - `CTAButton` owns the skewed, highlighted solo-action treatment, and its hover highlight resolves to a darker matching tone for the washed-out gold, steel, and monster buttons.
 - `Label` uses `color` and `size` props rather than dynamic text-class composition.
 - `Heading` uses `level` instead of a variant prop so the semantic title level is explicit at the call site.
 - Shared field and control shells use the same `sm`/`md`/`lg` size ladder so rows with adjacent controls can match height.
+- Compose forms vertically: field first, then an 8–12px gap, then a separate action row. Do not attach Save, Preview, or Submit controls to a field edge merely to make their heights match.
+- `ButtonRadioGroup` is one neutral shared rail with quiet inactive segments, simple dividers, and one semantic active segment. It is not a row of independently framed buttons; `RockerSwitch` remains the distinct binary-control family.
+- `ImageCard` and `StoryTileCard` give media the visual priority: clean artwork, a simple Iron edge/hard shadow, and captions or metadata outside or only lightly overlapping the image.
+- `StepNavigation` uses numbered nodes and an Iron connector as progress status; only navigable steps are links and the current item uses `aria-current="step"`.
 
 Source of truth for variant maps:
 
@@ -219,11 +230,15 @@ Canonical patterns:
 8. `cta-highlight-button`
 9. `status-pill-with-dot`
 10. `grouped-toggle-row`
+11. `text-highlight-action`
+12. `step-navigation`
+13. `media-caption-card`
 
 Current route chrome note:
 
-- The top navigation in `Page.tsx` and `Page.module.css` now uses explicit per-link comic panel background assets (`monster` for Home, `gold` for Modules, `fire` for Campaigns, `cloth` for Rules, `curse` for Image Lab, and `grey` for Workflow) instead of hue-rotating a shared image.
-- When adding or revising top-level nav items, assign a specific background asset in the nav item config rather than recoloring a single shared background in CSS.
+- Top navigation is neutral paper chrome with text-highlight links. Do not use raster button backgrounds, skewed tab geometry, route-specific illustrated button assets, text stroke, or boxed button chrome for navigation.
+- The active route keeps a Gold marker highlight; hover and keyboard focus animate the highlight left-to-right. Semantic highlight tones may be used where they add meaning, while the link text remains Iron.
+- The mobile menu keeps its existing disclosure behavior but presents the same vertically stacked text-highlight links.
 
 Campaign/session alignment note:
 
@@ -233,7 +248,7 @@ Campaign/session alignment note:
   - roster/status/debug regions expressed with lighter wrappers before another framed panel
 - Join entry should use one compact CTA-width action, not stretched full-width buttons whose hover skew/rotation becomes visually noisy.
 - Status summaries should prefer `Tag` and `ConnectionStatusPill` near the section title before introducing another content surface.
-- `Panel` remains the right choice for primary story surfaces, summary cards, and major route blocks, but it should not become the default wrapper for every inner subsection, roster item, or form cluster on session screens.
+- `Panel` remains the right choice for primary story surfaces, summary cards, and major route blocks, but it should not become the default wrapper for every inner subsection, roster item, form cluster, or media item.
 
 Grouped-control note:
 
@@ -260,10 +275,9 @@ Tracked implementation drifts:
 
 1. Button taxonomy mismatch (`solid|ghost|circle` vs docs naming).
 2. Undefined `AdventureHeader` color classes.
-6. `Panel` disabled pseudo behavior mismatch.
-7. `Text` h1 transform class syntax risk.
-8. Penpot token payload does not yet encode the Page nav's per-route background art assignments.
-9. Grouped toggle controls remain a separate control family from the main `Button` variant taxonomy by design.
+3. `Panel` disabled pseudo behavior mismatch.
+4. `Text` h1 transform class syntax risk.
+5. Grouped toggle controls remain a separate control family from the main `Button` variant taxonomy by design.
 
 Canonical decision policy:
 

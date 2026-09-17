@@ -29,54 +29,54 @@ interface TonePalette {
 
 const loadingTonePalette: Record<LoadingIndicatorTone, TonePalette> = {
   steel: {
-    light: "#f3f3f4",
+    light: "#F4F4F5",
     base: "#abb4c3",
-    dark: "#65738b",
+    dark: "#6F8098",
   },
   iron: {
-    light: "#23303d",
+    light: "#324457",
     base: "#121b23",
-    dark: "#090f15",
+    dark: "#101B26",
   },
   blood: {
-    light: "#ff9494",
-    base: "#e3132c",
-    dark: "#541423",
+    light: "#FE9C9E",
+    base: "#E82029",
+    dark: "#722538",
   },
   fire: {
-    light: "#ffe79b",
-    base: "#f88b00",
-    dark: "#950101",
+    light: "#FEE58F",
+    base: "#FDAD19",
+    dark: "#9D0F0C",
   },
   bone: {
-    light: "#e4ceb3",
+    light: "#E8D1B6",
     base: "#ecb87b",
-    dark: "#a3835f",
+    dark: "#AC8D6B",
   },
   skin: {
-    light: "#f2ced1",
+    light: "#F6D1D0",
     base: "#f7adae",
-    dark: "#e6848c",
+    dark: "#F1979A",
   },
   gold: {
-    light: "#fff5c0",
+    light: "#FEF3B6",
     base: "#ffd23b",
-    dark: "#f59d20",
+    dark: "#F8A732",
   },
   cloth: {
-    light: "#d8e2ea",
+    light: "#D9E3EA",
     base: "#5c77b2",
-    dark: "#32497b",
+    dark: "#3C598D",
   },
   curse: {
-    light: "#fff2f2",
+    light: "#FEEEED",
     base: "#f20170",
-    dark: "#c10045",
+    dark: "#C6034C",
   },
   monster: {
-    light: "#d7ffab",
+    light: "#E5FCA7",
     base: "#4ec342",
-    dark: "#1aa62b",
+    dark: "#28B13A",
   },
 };
 
@@ -256,7 +256,7 @@ export const LoadingIndicator = ({
   thickness = 16,
   color,
   trackColor,
-  arcColor = "#f59d20",
+  arcColor = "#F8A732",
   className = "",
   ariaLabel = "Loading progress",
   children,
@@ -388,7 +388,7 @@ export const LoadingIndicator = ({
           >
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0.3" />
             <stop offset="45%" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="100%" stopColor="#090f15" stopOpacity="0.24" />
+            <stop offset="100%" stopColor="#101B26" stopOpacity="0.24" />
           </linearGradient>
         </defs>
 
@@ -425,7 +425,7 @@ export const LoadingIndicator = ({
               cy={center}
               r={ringRadius}
               fill="none"
-              stroke="#090f15"
+              stroke="#101B26"
               strokeOpacity="0.88"
               strokeLinejoin="round"
               strokeWidth={safeThickness + arcBorderWidth * 2}
@@ -454,7 +454,7 @@ export const LoadingIndicator = ({
             <path
               d={arcPath}
               fill="none"
-              stroke="#090f15"
+              stroke="#101B26"
               strokeOpacity="0.88"
               strokeLinecap="butt"
               strokeLinejoin="round"
@@ -484,12 +484,12 @@ export const LoadingIndicator = ({
             <g
               transform={`translate(${formatPathNumber(startPoint.x)} ${formatPathNumber(startPoint.y)}) rotate(${formatPathNumber(startAngle + 90)})`}
             >
-              <path d={buildJaggedCapPath(safeThickness, -1)} fill="#090f15" />
+              <path d={buildJaggedCapPath(safeThickness, -1)} fill="#101B26" />
             </g>
             <g
               transform={`translate(${formatPathNumber(endPoint.x)} ${formatPathNumber(endPoint.y)}) rotate(${formatPathNumber(endAngle + 90)})`}
             >
-              <path d={buildJaggedCapPath(safeThickness, 1)} fill="#090f15" />
+              <path d={buildJaggedCapPath(safeThickness, 1)} fill="#101B26" />
             </g>
           </>
         ) : null}

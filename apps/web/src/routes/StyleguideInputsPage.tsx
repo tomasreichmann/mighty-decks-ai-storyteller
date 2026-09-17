@@ -7,10 +7,8 @@ import { TextArea } from "../components/common/TextArea";
 import { TextField } from "../components/common/TextField";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
 
-const inputButtonRowClassName = "grid gap-3 sm:flex sm:items-end sm:gap-0";
-const inputButtonWrapClassName = "sm:self-end";
-const textAreaButtonRowClassName = "grid gap-3 sm:flex sm:items-end sm:gap-0";
-const textAreaButtonWrapClassName = "sm:self-end";
+const formStackClassName = "stack max-w-2xl gap-2";
+const actionRowClassName = "flex flex-wrap items-center gap-2";
 
 export const StyleguideInputsPage = (): JSX.Element => {
   return (
@@ -34,126 +32,129 @@ export const StyleguideInputsPage = (): JSX.Element => {
           Inputs
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          Validate the field APIs here. The rows below keep inputs and buttons
-          directly adjacent so we can check that matching sizes stay aligned.
+          Keep the field and its actions distinct: input first, a small gap,
+          then a compact action row. This protects readable forms at every
+          control size.
         </Text>
       </div>
 
       <Panel as="section" tone="bone" contentClassName="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
-            TextField and Button
+          Short-form input
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            `TextField` is the simple one-line input for titles, names, and
-            short structured values.
+            `TextField` is for titles, names, and short structured values.
           </Text>
         </div>
 
-        <div className="grid gap-4">
-          <div className={inputButtonRowClassName}>
+        <form className="grid gap-6" onSubmit={(event) => event.preventDefault()}>
+          <div className={formStackClassName}>
             <TextField
-              label="Short title"
-              size="sm"
+              label="Title"
+              size="md"
               color="gold"
-              placeholder="A compact title"
-              className="w-full max-w-md"
+              placeholder="A short, descriptive title..."
             />
-            <div className={inputButtonWrapClassName}>
-              <Button size="sm" color="cloth">
+            <div className={actionRowClassName}>
+              <Button type="submit" size="md" color="gold">
                 Save
               </Button>
-            </div>
-          </div>
-          <div className={inputButtonRowClassName}>
-            <TextField
-              label="Display name"
-              size="md"
-              color="cloth"
-              placeholder="A slightly longer label"
-              className="w-full max-w-md"
-            />
-            <div className={inputButtonWrapClassName}>
-              <Button size="md" color="cloth">
+              <Button type="button" variant="ghost" size="md" color="cloth">
                 Preview
               </Button>
             </div>
           </div>
-          <div className={inputButtonRowClassName}>
+
+          <div className={formStackClassName}>
             <TextField
-              label="Public prompt"
-              size="lg"
-              color="fire"
-              placeholder="A more prominent input"
-              className="w-full max-w-md"
+              id="adventure-slug"
+              label="Adventure URL"
+              size="md"
+              color="cloth"
+              defaultValue="the-hidden-valley"
+              readOnly
+              aria-describedby="adventure-slug-help"
             />
-            <div className={inputButtonWrapClassName}>
-              <Button size="lg" color="fire">
-                Submit
-              </Button>
+            <div id="adventure-slug-help">
+              <Text variant="note" color="iron-light">
+                Generated from the title. Read-only until you unlock the adventure.
+              </Text>
             </div>
           </div>
-        </div>
+
+          <div className={formStackClassName}>
+            <TextField
+              id="join-code"
+              label="Join code"
+              size="md"
+              color="fire"
+              aria-invalid="true"
+              aria-describedby="join-code-error"
+              placeholder="Enter the six-character code"
+            />
+            <div id="join-code-error" role="alert">
+              <Text variant="note" color="blood">
+                Enter all six characters to continue.
+              </Text>
+            </div>
+          </div>
+        </form>
       </Panel>
 
       <Panel as="section" tone="cloth" contentClassName="stack gap-4">
         <div className="stack gap-1">
           <Text variant="h3" color="iron">
-            TextArea and Button
+          Long-form input
           </Text>
           <Text variant="body" color="iron-light" className="text-sm">
-            `TextArea` is for slightly longer notes, summaries, and prompts that
-            still need the same shared size and color controls.
+            `TextArea` is for descriptions, summaries, and prompts. Actions
+            belong beneath the writing surface, not on its edge.
           </Text>
         </div>
 
-        <div className="grid gap-4">
-          <div className={textAreaButtonRowClassName}>
+        <form className="grid gap-6" onSubmit={(event) => event.preventDefault()}>
+          <div className={formStackClassName}>
             <TextArea
-              label="Short note"
-              size="sm"
-              color="gold"
-              rows={2}
-              placeholder="One line of copy"
-              className="w-full max-w-md"
-            />
-            <div className={textAreaButtonWrapClassName}>
-              <Button size="sm" color="cloth">
-                Insert
-              </Button>
-            </div>
-          </div>
-          <div className={textAreaButtonRowClassName}>
-            <TextArea
-              label="Summary"
+              label="Description"
               size="md"
               color="cloth"
-              rows={3}
-              placeholder="A quick summary"
-              className="w-full max-w-md"
+              rows={4}
+              placeholder="Share the details of your adventure..."
             />
-            <div className={textAreaButtonWrapClassName}>
-              <Button size="md" color="cloth">
+            <div className={actionRowClassName}>
+              <Button type="button" variant="ghost" size="md" color="cloth">
                 Preview
               </Button>
-            </div>
-          </div>
-          <div className={textAreaButtonRowClassName}>
-            <TextArea
-              label="Long prompt"
-              size="lg"
-              color="fire"
-              rows={4}
-              placeholder="A more expressive block of copy"
-              className="w-full max-w-md"
-            />
-            <div className={textAreaButtonWrapClassName}>
-              <Button size="lg" color="fire">
-                Send
+              <Button type="submit" size="md" color="monster">
+                Submit
               </Button>
             </div>
           </div>
-        </div>
+
+          <div className={formStackClassName}>
+            <TextArea
+              label="Session recap"
+              size="md"
+              color="bone"
+              rows={3}
+              defaultValue="The party crossed the frost bridge and found the old signal tower."
+              readOnly
+            />
+            <Text variant="note" color="iron-light">
+              Read-only fields preserve system-authored continuity notes.
+            </Text>
+          </div>
+          <div className={formStackClassName}>
+            <TextField
+              label="Locked title"
+              size="sm"
+              color="steel"
+              defaultValue="Awaiting the storyteller"
+              disabled
+            />
+          </div>
+        </form>
       </Panel>
 
       <Panel as="section" tone="bone" contentClassName="stack gap-2">
@@ -162,8 +163,8 @@ export const StyleguideInputsPage = (): JSX.Element => {
         </Text>
         <Text variant="body" color="iron-light" className="text-sm">
           Use `TextField` for short single-line input, `TextArea` for compact
-          multi-line copy, and keep the shared field shell aligned with buttons
-          whenever an input sits beside an action.
+          multi-line copy, and place any actions in a separate row beneath the
+          field.
         </Text>
         <Link
           to="/styleguide"

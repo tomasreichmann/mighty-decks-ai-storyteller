@@ -1,36 +1,10 @@
 import { Link } from "react-router-dom";
 import { Heading } from "../components/common/Heading";
 import { Label } from "../components/common/Label";
+import { Message } from "../components/common/Message";
 import { Panel } from "../components/common/Panel";
 import { Text } from "../components/common/Text";
 import { StyleguideSectionNav } from "../components/styleguide/StyleguideSectionNav";
-
-const panelSamples = [
-  {
-    tone: "bone" as const,
-    title: "Primary surface",
-    description:
-      "Use bone for the lightest, most general-purpose framed surface in the system.",
-  },
-  {
-    tone: "gold" as const,
-    title: "Callout surface",
-    description:
-      "Use gold when a framed surface needs to feel warmer and a little more attention-grabbing.",
-  },
-  {
-    tone: "cloth" as const,
-    title: "Support surface",
-    description:
-      "Use cloth for softer supporting containers that should sit back behind the main story task.",
-  },
-  {
-    tone: "fire" as const,
-    title: "Alert surface",
-    description:
-      "Use fire when the framed panel carries urgency, warning, or a strong editorial cue.",
-  },
-] as const;
 
 export const StyleguidePanelPage = (): JSX.Element => {
   return (
@@ -54,49 +28,63 @@ export const StyleguidePanelPage = (): JSX.Element => {
           Panel
         </Heading>
         <Text variant="body" color="iron-light" className="max-w-3xl text-sm">
-          Panel is the lighter framed surface in the system. Use it for major
-          story blocks, not as a default wrapper for every small subsection.
+          Panels are quiet paper cards for meaningful grouped content. Keep ordinary
+          content open, and reserve semantic color callouts for Message.
         </Text>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {panelSamples.map((sample) => (
-          <Panel
-            key={sample.title}
-            as="section"
-            tone={sample.tone}
-            contentClassName="stack gap-3"
-          >
-            <Label color={sample.tone} rotate={false} className="self-start">
-              {sample.tone}
-            </Label>
-            <Text variant="h3" color="iron">
-              {sample.title}
-            </Text>
-            <Text variant="body" color="iron-light" className="text-sm">
-              {sample.description}
-            </Text>
-          </Panel>
-        ))}
+        <section className="stack gap-2 px-1 py-2">
+          <Text variant="h3" color="iron">
+            Open Section (no Panel)
+          </Text>
+          <Text variant="body" color="iron-light" className="max-w-sm text-sm">
+            Use spacing, type hierarchy, and a clear heading for primary content that
+            does not need a boundary.
+          </Text>
+        </section>
+
+        <Panel as="section" contentClassName="stack gap-2">
+          <Text variant="h3" color="iron">
+            Paper Panel
+          </Text>
+          <Text variant="body" color="iron-light" className="text-sm">
+            A flexible container for related content: one border, one small shadow,
+            and a restrained edge accent.
+          </Text>
+        </Panel>
+
+        <Panel as="section" tone="cloth" contentClassName="stack gap-3">
+          <Label color="cloth" rotate={false} className="self-start">
+            Quiet note
+          </Label>
+          <Text variant="h3" color="iron">
+            Panel + Label
+          </Text>
+          <Text variant="body" color="iron-light" className="text-sm">
+            Add a label when a grouped surface needs a compact editorial cue, without
+            making the surface itself a semantic alert.
+          </Text>
+        </Panel>
+
+        <Message as="section" color="monster" label="Success" rotateLabel={false}>
+          <Text variant="h3" color="iron">
+            Semantic Message
+          </Text>
+          <Text variant="body" color="iron-light" className="mt-1 text-sm">
+            Messages own full semantic color when content needs to communicate status,
+            guidance, warning, or an outcome.
+          </Text>
+        </Message>
       </div>
 
-      <Panel as="section" tone="bone" contentClassName="stack gap-2">
-        <Text variant="h3" color="iron">
-          Where to use it
-        </Text>
-        <Text variant="body" color="iron-light" className="text-sm">
-          Reach for `Panel` when you need a framed major surface, summary block,
-          or route-level section. If a piece of content does not need a frame,
-          prefer spacing and simpler wrappers instead.
-        </Text>
-        <Link
-          to="/styleguide"
-          className="inline-flex items-center gap-2 self-start font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron transition hover:text-kac-blood-dark"
-        >
-          <span aria-hidden="true">&larr;</span>
-          Back to Overview
-        </Link>
-      </Panel>
+      <Link
+        to="/styleguide"
+        className="inline-flex items-center gap-2 self-start font-ui text-sm font-bold uppercase tracking-[0.08em] text-kac-iron transition hover:text-kac-blood-dark"
+      >
+        <span aria-hidden="true">&larr;</span>
+        Back to Overview
+      </Link>
     </div>
   );
 };

@@ -458,7 +458,7 @@ Behavior:
 - keep storyteller inside the campaign shell overall
 - keep realtime session concerns (`useCampaignSession`, chat draft, staged table selection, live selection send/remove actions) inside `CampaignStorytellerSessionShell`, outside the shared authoring reducer
 - make the `chat` tab feel like a purpose-built live session surface, not another generic stacked panel page
-- reserve heavy framed panels for the primary transcript surface and avoid framing every inner subsection
+- reserve a restrained paper `Panel` for the primary transcript surface and avoid framing every inner subsection
 - keep player and storyteller transcript composers aligned on the same compact image-trigger-plus-modal flow so both roles can share generated images through the same raw-text transcript model
 - reuse the same entity editor components as Adventure Module authoring so compact shortcode rows appear in storyteller detail tabs too
 - run close-session and other destructive session actions through the shared `ConfirmationDialog` rather than native browser confirm prompts
@@ -505,12 +505,15 @@ Components:
 - `StyleguideIndexPage`
 - `StyleguideSectionNav`
 - `StyleguideTypographyPage`
+- `StyleguideColorsPage`
 - `StyleguideLabelsPage`
 - `StyleguideMessagesPage`
 - `StyleguideInputsPage`
 - `StyleguideButtonsPage`
+- `StyleguideStepNavigationPage`
 - `StyleguidePanelPage`
 - `StyleguideCardsPage`
+- `StyleguideMediaPage`
 - `StyleguideTagsPage`
 - `StyleguideControlsPage`
 - `StyleguideSessionChatPage`
@@ -530,13 +533,16 @@ Components:
 - `ToggleButton`
 - `ButtonRadioGroup`
 - `RockerSwitch`
+- `StepNavigation`
+- `ImageCard`
+- `StoryTileCard`
 
 Behavior:
 
 - direct-route accessible but intentionally unlinked from the public app flows
-- `/styleguide` is now the overview and secondary-nav hub for the styleguide labs
-- the overview now reads as a design reference: principles, the complete color-family ledger shown as swatches with hex values, shared-component rules, and component use cases
-- the section nav provides access to `/styleguide/typography`, `/styleguide/labels`, `/styleguide/messages`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/tokens`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
+- `/styleguide` is a component directory and secondary-nav hub: each grouped entry gives a concise “Use when” note, exported primitives, and a link to its detailed lab; it does not duplicate broad demos or the full palette ledger
+- the overview opens with compact guidance: use an existing primitive before creating a pattern, keep surfaces neutral first, use semantic colors as accents, and give content priority over chrome
+- the section nav provides access to `/styleguide/typography`, `/styleguide/colors`, `/styleguide/labels`, `/styleguide/messages`, `/styleguide/inputs`, `/styleguide/buttons`, `/styleguide/step-navigation`, `/styleguide/tokens`, `/styleguide/panel`, `/styleguide/cards`, `/styleguide/media`, `/styleguide/tags`, `/styleguide/controls`, and `/styleguide/session-chat`
 - the cards page is the primary gallery entry point; the detail routes remain direct drill-down pages for internal inspection but are not surfaced in the main styleguide nav
 - the typography lab includes the shared framed table treatment so reference tables can be checked alongside the system's text scale
 
@@ -561,6 +567,23 @@ Behavior:
 - includes the full `Label` palette and the `Small` / `Medium` / `Large` size ladder so chips can be checked across the same surface
 - uses different heading highlight tones so the heading accent can be validated as a variable treatment rather than a single fixed color
 - includes the shared table treatment with framed headers, alternating rows, and a horizontal-scroll fallback for narrow screens
+
+---
+
+### `/styleguide/colors`
+
+Hidden internal compact palette reference.
+
+Components:
+
+- `StyleguideColorsPage`
+- shared palette metadata
+
+Behavior:
+
+- presents all supported palette families in compact rows/cards: a base swatch, smaller variants, token/hex labels, and one semantic-use sentence
+- keeps token definitions in Tailwind; styleguide metadata only supplies display names and usage guidance shared with other labs
+- reinforces neutral paper/Bone surfaces and Iron text first, with Gold, Cloth, Fire, Blood, Curse, Monster, Steel, and Skin applied as purposeful accents or semantic states
 
 ---
 
@@ -615,9 +638,9 @@ Components:
 
 Behavior:
 
-- groups the shared input primitives beside matching buttons so contributors can confirm height alignment before they reuse a control in a feature surface
-- keeps the standard input shells in one page for API validation
-- validates button/input rows side by side so adjacent controls can share a height baseline
+- keeps the standard input shells in one page for API validation and shows their flatter paper surface, restrained edge/depth, quiet placeholder, and marker-style focus accent
+- models realistic vertical composition: field, 8–12px gap, then a separate action row for Save/Preview/Submit
+- includes helper/validation and disabled/read-only examples; controls may share a size ladder, but form actions do not attach to the field edge
 
 ---
 
@@ -633,8 +656,27 @@ Components:
 
 Behavior:
 
-- isolates the standard and high-emphasis button APIs so contributors can compare size and color behavior without the rest of the styleguide chrome
+- isolates solid, circle, CTA, and ghost APIs so contributors can compare hierarchy without the rest of the styleguide chrome
+- shows ghost actions as Iron text with an animated semantic marker highlight on hover/focus and a persistent active/selected highlight; ghosts are not outlined rectangular buttons
 - keeps the button family scoped to one page before it is reused in routes or labs
+
+---
+
+### `/styleguide/step-navigation`
+
+Hidden internal overview for ordered progress navigation.
+
+Components:
+
+- `StyleguideStepNavigationPage`
+- `StepNavigation`
+
+Behavior:
+
+- shows `START → INVITE → CHOOSE → PLAY` with current first, middle, and final states, plus clickable and display-only variants
+- uses small numbered nodes, a thin Iron connector, muted completed/future states, and a semantic current node; it contains no decorative illustration
+- uses `<nav aria-label="Progress">`, `aria-current="step"` on the current item, real links when navigation exists, and noninteractive status markup otherwise
+- includes compact/mobile wrapping coverage
 
 ---
 
@@ -657,7 +699,7 @@ Behavior:
 
 ### `/styleguide/panel`
 
-Hidden internal overview for the heavy framed surface.
+Hidden internal overview for paper-surface hierarchy.
 
 Components:
 
@@ -666,8 +708,9 @@ Components:
 
 Behavior:
 
-- showcases `Panel` as the heavyweight framed surface for major route blocks and summary panels
-- keeps framed surfaces separate from the lighter body, field, and chip labs so contributors can judge when a frame is actually warranted
+- contrasts an open `Section` (explicitly not a Panel), a restrained paper `Panel`, a Panel with `Label`, and a semantic `Message`
+- reserves `Panel` for major grouped content; ordinary subsections, roster rows, form clusters, and media items use spacing or a lighter primitive
+- validates the neutral Bone/paper surface, 1–2px Iron edge, small hard shadow, and restrained tone accent rather than a heavy multi-frame or strongly tinted wrapper
 
 ---
 
@@ -685,6 +728,28 @@ Behavior:
 
 - groups the supported card directions into one gallery page for scoped contributor work
 - keeps the detailed card routes as hidden drill-downs rather than first-class styleguide sections
+
+---
+
+### `/styleguide/media`
+
+Hidden internal overview for narrative media surfaces; game cards remain on `/styleguide/cards`.
+
+Components:
+
+- `StyleguideMediaPage`
+- `ImageCard`
+- `StoryTileCard`
+- `Label`
+- `Tag`
+- `Button`
+
+Behavior:
+
+- compares a compact image card, image plus caption, narrative story tile, and metadata/actions composition
+- gives artwork the dominant frame with a simple Iron edge and restrained hard shadow; image labels only lightly overlap an edge
+- keeps story titles and summaries in a warm caption/content area rather than hiding artwork behind a dark full-image gradient and large overlay title
+- limits hover movement to a subtle feedback cue
 
 ---
 
@@ -721,7 +786,8 @@ Components:
 Behavior:
 
 - groups the control lab onto one page so grouped state can be reviewed without unrelated styleguide surfaces
-- keeps the toggle, radio, and rocker variants scoped to the same controls page
+- validates `ButtonRadioGroup` as one neutral shared rail with simple dividers, quiet inactive segments, and a distinct semantic active segment
+- keeps the toggle, radio, and rocker variants scoped to the same controls page; `RockerSwitch` is unchanged as the binary/toy-like control family
 
 ---
 

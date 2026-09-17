@@ -20,7 +20,7 @@ export const ImageCard = ({
   return (
     <div
       className={cn(
-        "relative h-[200px] w-[300px] max-w-full overflow-visible rounded-sm border-2 border-kac-iron bg-kac-iron-dark shadow-[4px_4px_0_0_#121b23]",
+        "relative aspect-[3/2] w-full max-w-[30rem] overflow-visible rounded-sm border-2 border-kac-iron bg-kac-iron-dark shadow-[3px_3px_0_0_#121b23]",
         className,
       )}
     >
@@ -28,11 +28,14 @@ export const ImageCard = ({
         src={imageUrl}
         alt={imageAlt}
         aria-hidden={imageAlt.length === 0 ? "true" : undefined}
-        className="h-full w-full rounded-[2px] object-cover"
+        className="h-full w-full rounded-[1px] object-cover"
       />
 
-      <div className="pointer-events-none absolute -bottom-2 -right-2 z-10">
-        <Label color={labelVariant} className="max-w-[230px] text-right leading-tight">
+      <div
+        data-image-card-label
+        className="pointer-events-none absolute -bottom-1 left-3 z-10"
+      >
+        <Label color={labelVariant} className="max-w-[calc(100%-1.5rem)] leading-tight">
           {label}
         </Label>
       </div>

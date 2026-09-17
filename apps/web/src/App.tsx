@@ -102,6 +102,12 @@ const StyleguideTokensPage = lazy(async () => ({
 const StyleguideIndexPage = lazy(async () => ({
   default: (await import("./routes/StyleguideIndexPage")).StyleguideIndexPage,
 }));
+const StyleguideColorsPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideColorsPage")).StyleguideColorsPage,
+}));
+const StyleguideMediaPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideMediaPage")).StyleguideMediaPage,
+}));
 const StyleguideTypographyPage = lazy(async () => ({
   default: (await import("./routes/StyleguideTypographyPage"))
     .StyleguideTypographyPage,
@@ -136,6 +142,10 @@ const StyleguideMessagesPage = lazy(async () => ({
 const StyleguideControlsPage = lazy(async () => ({
   default: (await import("./routes/StyleguideControlsPage"))
     .StyleguideControlsPage,
+}));
+const StyleguideStepNavigationPage = lazy(async () => ({
+  default: (await import("./routes/StyleguideStepNavigationPage"))
+    .StyleguideStepNavigationPage,
 }));
 const StyleguideSessionChatPage = lazy(async () => ({
   default: (await import("./routes/StyleguideSessionChatPage"))
@@ -410,6 +420,22 @@ export const App = ({
             }
           />
           <Route
+            path="/styleguide/colors"
+            element={
+              <RouteShellBoundary>
+                <StyleguideColorsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/media"
+            element={
+              <RouteShellBoundary>
+                <StyleguideMediaPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
             path="/styleguide/actor-token"
             element={
               <RouteShellBoundary>
@@ -502,6 +528,14 @@ export const App = ({
             element={
               <RouteShellBoundary>
                 <StyleguideControlsPage />
+              </RouteShellBoundary>
+            }
+          />
+          <Route
+            path="/styleguide/step-navigation"
+            element={
+              <RouteShellBoundary>
+                <StyleguideStepNavigationPage />
               </RouteShellBoundary>
             }
           />

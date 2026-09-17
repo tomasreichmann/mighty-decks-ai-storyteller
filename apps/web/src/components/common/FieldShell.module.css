@@ -9,10 +9,12 @@
 .focusHighlightWrapper input:focus-visible + .focusHighlight,
 .focusHighlightWrapper textarea:focus-visible + .focusHighlight {
   position: absolute;
-  inset: -5px;
-  z-index: -2;
+  right: 0.5rem;
+  bottom: -0.25rem;
+  left: 0.25rem;
+  z-index: 10;
+  height: 0.25rem;
   pointer-events: none;
-  border: 10px solid theme("colors.kac-gold-light");
-  transform: rotate(-0.25deg) skewX(-2.5deg);
-  transform-origin: center;
+  background: theme("colors.kac-gold");
+  clip-path: polygon(0 22%, 100% 0, 98% 86%, 3% 100%);
 }

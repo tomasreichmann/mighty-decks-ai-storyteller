@@ -73,10 +73,10 @@ const variantClassMap: Record<ButtonVariant, string> = {
     "bg-gradient-to-b disabled:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_10px,transparent_10px,transparent_20px)]",
   ),
   ghost: cn(
-    "border-2 border-kac-iron/60 bg-transparent shadow-[1px_1px_0_0_#121b23]",
-    "hover:translate-y-[1px] hover:brightness-[1.03] hover:shadow-[2px_2px_0_0_#121b23]",
-    "active:translate-y-[2px] active:shadow-none",
-    "disabled:translate-y-0 disabled:shadow-[1px_1px_0_0_#121b23] disabled:border-kac-iron/35 disabled:bg-transparent",
+    "button--ghost border-0 bg-transparent shadow-none",
+    "hover:translate-y-0 hover:brightness-100 hover:shadow-none",
+    "active:translate-y-0 active:shadow-none",
+    "disabled:translate-y-0 disabled:shadow-none disabled:border-0 disabled:bg-transparent",
   ),
   circle: cn(
     "rounded-full bg-gradient-to-b border-2 border-kac-iron shadow-[2px_2px_0_0_#121b23]",
@@ -157,55 +157,56 @@ const resolveSolidColorClasses = (color: ButtonColors): string => {
 
 const resolveGhostColorClasses = (color: ButtonColors): string => {
   switch (color) {
-    case "cloth":
-    case "cloth-light":
-    case "cloth-dark":
-      return "text-kac-cloth-dark border-kac-cloth-dark/70 hover:bg-kac-cloth-light/25";
-    case "bone":
-    case "bone-light":
-    case "bone-dark":
-    case "bone-darker":
-      return "text-kac-iron-dark border-kac-bone-dark/70 hover:bg-kac-bone-light/45";
-    case "curse":
-    case "curse-light":
-    case "curse-lighter":
-    case "curse-lightest":
-    case "curse-dark":
-      return "text-kac-curse-dark border-kac-curse-dark/70 hover:bg-kac-curse-light/20";
+    case "fire":
+    case "fire-light":
+    case "fire-lightest":
+    case "fire-dark":
+      return "text-[#EC7812]";
     case "blood":
     case "blood-light":
     case "blood-lighter":
     case "blood-lightest":
     case "blood-dark":
-      return "text-kac-blood-dark border-kac-blood-dark/65 hover:bg-kac-blood-light/15";
-    case "fire":
-    case "fire-light":
-    case "fire-lightest":
-    case "fire-dark":
-      return "text-kac-fire-dark border-kac-fire-dark/70 hover:bg-kac-fire-light/25";
+      return "text-[#C91D21]";
+    case "bone":
+    case "bone-light":
+    case "bone-dark":
+    case "bone-darker":
+      return "text-[#E7CAA5]";
+    case "steel":
+    case "steel-light":
+    case "steel-dark":
+      return "text-[#B5C1CE]";
+    case "skin":
+    case "skin-light":
+    case "skin-dark":
+      return "text-[#FBC4CD]";
+    case "cloth":
+    case "cloth-light":
+    case "cloth-lightest":
+    case "cloth-dark":
+      return "text-[#3B7DF4]";
+    case "curse":
+    case "curse-light":
+    case "curse-lighter":
+    case "curse-lightest":
+    case "curse-dark":
+      return "text-[#E6458B]";
     case "monster":
     case "monster-light":
     case "monster-lightest":
     case "monster-dark":
-      return "text-kac-monster-dark border-kac-monster-dark/65 hover:bg-kac-monster-light/25";
+      return "text-[#4DBC7E]";
+    case "iron":
+    case "iron-light":
+    case "iron-dark":
+      return "text-[#2F3D4E]";
     case "gold":
     case "gold-light":
     case "gold-dark":
     case "gold-darker":
-      return "text-kac-gold-darker border-kac-gold-dark/70 hover:bg-kac-gold-light/40";
-    case "iron":
-    case "iron-light":
-    case "iron-dark":
-      return "text-kac-iron-light border-kac-iron/60 hover:bg-kac-steel-light/30 disabled:border-kac-iron/35";
-    case "skin":
-    case "skin-light":
-    case "skin-dark":
-      return "text-kac-blood-dark border-kac-skin-dark/65 hover:bg-kac-skin-light/35";
-    case "steel":
-    case "steel-light":
-    case "steel-dark":
     default:
-      return "text-kac-iron border-kac-steel-dark/70 hover:bg-kac-steel-light/40";
+      return "text-[#FAC028]";
   }
 };
 
@@ -237,6 +238,11 @@ export const Button = forwardRef<HTMLElement, ButtonProps>((rawProps, ref) => {
       sizeClasses,
       className,
     );
+    const content = variant === "ghost" ? (
+      <span className={cn("highlight-action__marker button__marker", colorClasses)}>
+        <span className="highlight-action__label">{rawProps.children}</span>
+      </span>
+    ) : rawProps.children;
 
     if ("href" in rawProps) {
       const {
@@ -271,7 +277,9 @@ export const Button = forwardRef<HTMLElement, ButtonProps>((rawProps, ref) => {
             onClick?.(event);
           }}
           {...anchorProps}
-        />
+        >
+          {content}
+        </a>
       );
     }
 
@@ -295,7 +303,9 @@ export const Button = forwardRef<HTMLElement, ButtonProps>((rawProps, ref) => {
         type={type}
         className={classes}
         {...buttonProps}
-      />
+      >
+        {content}
+      </button>
     );
   });
 

@@ -1,12 +1,18 @@
 import {
   useEffect,
   useState,
-  type CSSProperties,
   type PropsWithChildren,
   type ReactNode,
 } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import {
+  NavLink,
+  useHref,
+  useLinkClickHandler,
+  useLocation,
+  useMatch,
+} from "react-router-dom";
 import { cn } from "../../utils/cn";
+import { HighlightAction } from "../common/HighlightAction";
 import { Text } from "../common/Text";
 import styles from "./Page.module.css";
 
@@ -20,13 +26,7 @@ interface NavItem {
   to: string;
   label: string;
   end?: boolean;
-  buttonBackgroundImage: string;
-  linkClassName?: string;
-  hideInProduction?: boolean;
-}
-
-interface ComicNavStyle extends CSSProperties {
-  "--button-background-image": string;
+  activePath?: string;
 }
 
 interface FooterLink {
@@ -40,37 +40,23 @@ const navItems: NavItem[] = [
     to: "/",
     label: "Home",
     end: true,
-    buttonBackgroundImage: "/button-background-monster.png",
   },
   {
     to: "/adventure-module/list",
     label: "Modules",
-    buttonBackgroundImage: "/button-background-gold.png",
+    activePath: "/adventure-module/*",
   },
   {
     to: "/campaign/list",
     label: "Campaigns",
-    buttonBackgroundImage: "/button-background-fire.png",
+    activePath: "/campaign/*",
   },
   {
     to: "/rules",
     label: "Rules",
-    buttonBackgroundImage: "/button-background-cloth.png",
+    activePath: "/rules/*",
   },
-  {
-    to: "/image-lab",
-    label: "Image Lab",
-    buttonBackgroundImage: "/button-background-curse.png",
-    hideInProduction: true,
-  },
-  {
-    to: "/workflow-lab",
-    label: "Workflow Lab",
-    buttonBackgroundImage: "/button-background-grey.png",
-    linkClassName: styles.comicNavLinkWide,
-    hideInProduction: true,
-  },
-].filter((item) => !(import.meta.env.PROD && item.hideInProduction));
+];
 
 const footerLinks: FooterLink[] = [
   { to: "/", label: "Home", end: true },
@@ -107,6 +93,36 @@ const defaultFooterContent = (
   </div>
 );
 
+const PrimaryNavLink = ({
+  item,
+  onNavigate,
+}: {
+  item: NavItem;
+  onNavigate: () => void;
+}): JSX.Element => {
+  const href = useHref(item.to);
+  const navigate = useLinkClickHandler(item.to);
+  const isActive = useMatch({
+    path: item.activePath ?? item.to,
+    end: item.end ?? false,
+  }) !== null;
+
+  return (
+    <HighlightAction
+      href={href}
+      active={isActive}
+      color="gold"
+      className={styles.primaryNavLink}
+      onClick={(event) => {
+        onNavigate();
+        navigate(event);
+      }}
+    >
+      {item.label}
+    </HighlightAction>
+  );
+};
+
 export const Page = ({
   mode = "fit-content",
   footerContent = defaultFooterContent,
@@ -129,7 +145,7 @@ export const Page = ({
     >
       {hideHeader ? null : (
         <header className={styles.pageHeader}>
-          <div className={cn("app-shell paper-shadow", styles.headerShell)}>
+          <div className={cn("app-shell", styles.headerShell)}>
             <NavLink
               to="/"
               className={styles.brandLink}
@@ -168,30 +184,13 @@ export const Page = ({
               aria-label="Primary"
             >
               <div className={styles.comicNavContent}>
-                {navItems.map((item) => {
-                  const style: ComicNavStyle = {
-                    "--button-background-image": `url("${item.buttonBackgroundImage}")`,
-                  };
-
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      end={item.end}
-                      style={style}
-                      className={({ isActive }) =>
-                        cn(
-                          styles.comicNavLink,
-                          item.linkClassName,
-                          isActive && styles.comicNavLinkActive,
-                        )
-                      }
-                      onClick={() => setMobileNavOpen(false)}
-                    >
-                      <span className={styles.comicNavLabel}>{item.label}</span>
-                    </NavLink>
-                  );
-                })}
+                {navItems.map((item) => (
+                  <PrimaryNavLink
+                    key={item.to}
+                    item={item}
+                    onNavigate={() => setMobileNavOpen(false)}
+                  />
+                ))}
               </div>
             </nav>
           </div>
