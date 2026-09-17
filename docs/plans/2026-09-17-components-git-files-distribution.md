@@ -8,7 +8,9 @@
 
 **Tech Stack:** Existing TypeScript/Vite/Playwright authoring tools; Git; Node standard-library sync script; existing pnpm workspaces for local module resolution.
 
-**Status:** Proposed implementation plan; no dependencies, workflows, or external repositories changed by this planning task. Supersedes the npm/release-archive distribution direction in the September 16 separation plan and the existing release-tarball TODO. Preserve already completed extraction and app integration work.
+**Status:** Proposed implementation plan requiring a rebaseline before execution. Its September 17 observations predate Storyteller's current direct Git-pinned component dependency; treat them as historical rather than an implementation baseline. This plan supersedes the npm/release-archive distribution direction in the September 16 separation plan and the existing release-tarball TODO. Preserve already completed extraction and app integration work.
+
+**Rebaseline required (2026-09-18):** Storyteller currently pins `@mighty-decks/components` to Git commit `98598c99463000e51f752e911261a0520a19dd27` in both application manifests, and the local `packages/components/` workspace has already been retired. Before beginning the producer or consumer tasks below, update the inventory, rollback point, consumer migration steps, and validation commands to start from that state. Do not revive the obsolete npm package, checked local workspace, rulebook mirror, or release-archive workflows while doing so.
 
 ## Decision and scope
 
@@ -26,7 +28,7 @@ This removes component generation on GitHub. Each React application still needs 
 
 No automatic cross-repo pushes, bots, new registry, CDN, LFS setup, or replacement release platform. A developer runs an update command in each consumer and commits the result.
 
-## Current evidence, inspected September 17
+## Historical evidence, inspected September 17
 
 | Repository | Current state | Migration consequence |
 | --- | --- | --- |

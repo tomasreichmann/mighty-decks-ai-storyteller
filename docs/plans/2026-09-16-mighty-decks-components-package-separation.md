@@ -8,7 +8,7 @@
 
 **Tech stack:** TypeScript, React 18, Vite 6, Zod, pnpm, Node test runner/tsx, Playwright, GitHub Actions, npm trusted publishing.
 
-**Status:** In progress — first publication and partial consumer migrations exist, but the release and migration acceptance gates have not been completed. This plan remains an active TODO; see [`docs/TODO.md`](../TODO.md#active-plans) for discovery.
+**Status:** Superseded. The Git-file distribution plan replaces this plan's npm publication, release-archive, and GitHub-side build direction. The remaining release and migration acceptance gates below are retired; retain this document only as historical context. See [`docs/TODO.md`](../TODO.md#historical-plans).
 
 ## Current implementation state (verified 2026-09-17)
 

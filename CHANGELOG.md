@@ -8,6 +8,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Web: add `/rules/actors`, a core Actor base, tactical role, and tactical special reference using canonical package cards.
+
 - Web: add a read-only `/styleguide/board` reference for composing board and rulebook illustrations from shared layouts, canonical cards, tokens, and spaceship surfaces.
 
 - Web: add unframed inline and shared ghost-link examples to the typography styleguide, and darken its Steel heading highlight.

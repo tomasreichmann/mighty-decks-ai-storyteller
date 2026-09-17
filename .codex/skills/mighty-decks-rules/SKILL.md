@@ -9,7 +9,7 @@ Ground gameplay and content decisions in the rulebook rendered by `/rules`, not 
 
 ## Source Authority
 
-1. The installed `@mighty-decks/components` package owns the English core rulebook. `docs/mighty-decks-rulebook.md` is its checked generated mirror, which `/rules` imports directly. Verify it with `pnpm docs:rules:check`; do not hand-edit it.
+1. The installed `@mighty-decks/components` package owns the English core rulebook, which `/rules` imports directly. Do not create or hand-edit a local rulebook mirror.
 2. `spec/rulesCards.ts` is the shared card catalog. It must match the rulebook but does not override it.
 3. Ship combat is a separate prototype extension. Its explicit overrides apply only in that mode; otherwise the core rulebook wins.
 4. External prototype pages are inspiration only. Never use them to override repo rules.
@@ -26,6 +26,6 @@ If another doc, skill reference, card, or example conflicts with the canonical r
 
 ## References
 
-- Read `references/core-rules.md` to locate the authoritative sections in `docs/mighty-decks-rulebook.md` and check common drift points.
+- Read `references/core-rules.md` to locate authoritative sections in the installed package rulebook and check common drift points.
 - For ship combat, read the canonical core sections first, then `references/ship-combat.md` for prototype-only extensions and explicit overrides.
 - Read `references/adventure-examples.md` for external prototype links and how to use them as style/content references.

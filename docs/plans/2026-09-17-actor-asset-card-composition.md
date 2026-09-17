@@ -8,6 +8,8 @@
 
 **Tech stack:** React, TypeScript, existing card components, Markdown, Node test runner with tsx, pnpm, existing responsive styles.
 
+**Status:** Partially implemented. The composition figures, Asset-reader integration, and supporting documentation landed in `ae0827e`. The local rulebook-mirror and `docs:rules` workflow proposed in Task 2 were retired in `4588c51` when `/rules` began importing the package rulebook directly. Treat that task and its mirror-specific acceptance criteria as historical; any remaining upstream rulebook-copy work belongs in the components repository.
+
 ## Scope and source authority
 
 The user's instruction that `mighty-decks-components` owns the rules supersedes the current local documentation convention. Today, `RulesIndexPage.tsx` directly imports `docs/mighty-decks-rulebook.md`; `docs/11-mighty-decks-rules.md` and the rules skill call that file authoritative. The planned relationship is **components English rulebook → versioned package → checked, generated local copy → `/rules`**. Local mirrors must not become independent editable rulebooks.
