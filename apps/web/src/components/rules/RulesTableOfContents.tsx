@@ -83,7 +83,7 @@ const RulebookGroupLinks = ({ document }: { document: RulebookDocument }): JSX.E
 
 export const RulesTableOfContents = ({ document }: { document: RulebookDocument }): JSX.Element => {
   return (
-    <aside className="print:hidden">
+    <aside className="print:hidden lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
       <details className="lg:hidden">
         <summary className="cursor-pointer font-heading text-lg font-bold text-kac-iron marker:text-kac-gold-dark">
           Jump to a rule
@@ -95,7 +95,7 @@ export const RulesTableOfContents = ({ document }: { document: RulebookDocument 
 
       <nav
         aria-label="Rulebook sections"
-        className="hidden lg:block lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-3"
+        className="hidden lg:block lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-3"
       >
         <Label color="gold" rotate={false}>
           Rulebook contents
