@@ -18,6 +18,12 @@ import { WakeScreen } from "./components/WakeScreen";
 import { isBackendDependentPath } from "./lib/backendReadiness";
 import type { ReadinessResponse } from "@mighty-decks/spec/readiness";
 
+const CardParityPage = import.meta.env.DEV
+  ? lazy(async () => ({
+      default: (await import("./routes/CardParityPage")).CardParityPage,
+    }))
+  : null;
+
 const AdventureModuleAuthoringPage = lazy(async () => ({
   default: (await import("./routes/AdventureModuleAuthoringPage"))
     .AdventureModuleAuthoringPage,
@@ -297,6 +303,12 @@ export const App = ({
         <Suspense fallback={<RouteLoadingFallback />}>
           <Routes>
         <Route element={<FitContentLayout />}>
+          {import.meta.env.DEV && CardParityPage && (
+            <Route
+              path="/__dev/card-parity"
+              element={<RouteShellBoundary><CardParityPage /></RouteShellBoundary>}
+            />
+          )}
           <Route
             path="/"
             element={

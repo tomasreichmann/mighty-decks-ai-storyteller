@@ -25,6 +25,10 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Fixed
 
+- Web: make Actor description icons readable at a 16px native size, align standalone layers with assembled teaching cards through shared package geometry, and correct composition spacing and print layout.
+- Web: render Asset modifiers transparently with the same title ink and footer placement as assembled Assets.
+- Components: show the canonical Marksman Stunt and Burning/Freezing Effect prose instead of unrelated Actor rules selected by colliding slugs; rules and catalog content are unchanged.
+
 - Web: restore `/rules` board and Outcome-backface images in local development by leaving public backgrounds outside the API proxy.
 - Web: restore the missing Label import so `/rules` status thresholds render instead of crashing.
 
@@ -35,6 +39,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Web: repair `/rules` status thresholds, the missing Physical Asset Stunt, and d4 tracking figures so terminal cards, values, removal, overlap, and alignment read correctly.
 
 ### Changed
+
+- Components: track the `@mighty-decks/components` Git dependency's `main` branch and refresh the lockfile from its latest commit.
 
 - Components: consume the pinned Mighty Decks Git package directly; the server now exposes its canonical assets and generated PNGs, keeps `/actors` and `/backgrounds` aliases, and no longer commits copied package resources or rulebook mirrors.
 

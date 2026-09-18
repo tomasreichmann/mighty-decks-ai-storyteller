@@ -17,8 +17,8 @@ importers:
         specifier: ^8.3.0
         version: 8.3.0
       '@mighty-decks/components':
-        specifier: git+https://github.com/tomasreichmann/mighty-decks-components.git#98598c99463000e51f752e911261a0520a19dd27
-        version: https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/98598c99463000e51f752e911261a0520a19dd27(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: github:tomasreichmann/mighty-decks-components#main
+        version: https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/82fec13afbea3062e672debdf8f1f42a1827217b(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mighty-decks/spec':
         specifier: workspace:*
         version: link:../../spec
@@ -57,8 +57,8 @@ importers:
         specifier: ^3.52.4
         version: 3.52.4(@codemirror/language@6.12.2)(@lezer/highlight@1.2.3)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.29)
       '@mighty-decks/components':
-        specifier: git+https://github.com/tomasreichmann/mighty-decks-components.git#98598c99463000e51f752e911261a0520a19dd27
-        version: https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/98598c99463000e51f752e911261a0520a19dd27(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: github:tomasreichmann/mighty-decks-components#main
+        version: https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/82fec13afbea3062e672debdf8f1f42a1827217b(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mighty-decks/spec':
         specifier: workspace:*
         version: link:../../spec
@@ -1303,8 +1303,8 @@ packages:
       react: '>= 18 || >= 19'
       react-dom: '>= 18 || >= 19'
 
-  '@mighty-decks/components@https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/98598c99463000e51f752e911261a0520a19dd27':
-    resolution: {tarball: https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/98598c99463000e51f752e911261a0520a19dd27}
+  '@mighty-decks/components@https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/82fec13afbea3062e672debdf8f1f42a1827217b':
+    resolution: {tarball: https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/82fec13afbea3062e672debdf8f1f42a1827217b}
     version: 0.1.5
     engines: {node: '>=22.14.0 <23'}
     hasBin: true
@@ -5679,7 +5679,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@mighty-decks/components@https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/98598c99463000e51f752e911261a0520a19dd27(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@mighty-decks/components@https://codeload.github.com/tomasreichmann/mighty-decks-components/tar.gz/82fec13afbea3062e672debdf8f1f42a1827217b(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)

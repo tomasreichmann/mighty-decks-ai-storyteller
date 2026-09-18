@@ -1,12 +1,9 @@
 import React from "react";
+import { AssetCard as PackageAssetCard } from "@mighty-decks/components/react";
 import type {
   AssetBaseSlug,
   AssetModifierSlug,
 } from "@mighty-decks/spec/assetCards";
-import {
-  assetBaseCardsBySlug,
-  assetModifierCardsBySlug,
-} from "../../data/assetCards";
 import { cn } from "../../utils/cn";
 import { LayeredCard, type LayeredCardProps } from "./LayeredCard";
 
@@ -119,25 +116,12 @@ export const AssetCard = (props: AssetCardProps): JSX.Element => {
   }
 
   const { baseAssetSlug, modifierSlug, className } = props;
-  const baseAsset = assetBaseCardsBySlug.get(baseAssetSlug);
-  const modifier = modifierSlug
-    ? assetModifierCardsBySlug.get(modifierSlug)
-    : undefined;
 
   return (
-    <LayeredCard
-      imageUri={baseAsset?.imageUri}
-      imageOverlayUri={modifier?.imageUri}
-      noun={baseAsset?.title ?? "Unknown Asset"}
-      nounDeck={baseAsset?.deck ?? ""}
-      nounCornerIcon="/types/asset.png"
-      nounEffect={baseAsset?.effect}
-      adjective={modifier?.title}
-      adjectiveDeck={modifier?.deck}
-      adjectiveCornerIcon={modifier ? "/types/asset.png" : undefined}
-      adjectiveEffect={modifier?.effect}
+    <PackageAssetCard
+      baseAssetSlug={baseAssetSlug}
+      modifierSlug={modifierSlug}
       className={cn(sharedCardClassName, className)}
-      {...sharedLayeredCardProps}
     />
   );
 };

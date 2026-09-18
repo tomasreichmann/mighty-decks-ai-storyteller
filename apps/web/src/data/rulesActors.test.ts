@@ -5,9 +5,9 @@ import { rulesActorGroups } from "./rulesActors";
 
 const actorFamilies = ["actor-base", "actor-role", "actor-special"] as const;
 
-test("projects every core Actor catalog card exactly once", () => {
-  const expected = cardCatalog.filter((card) =>
-    actorFamilies.includes(card.family as (typeof actorFamilies)[number]),
+test("projects every Actor catalog card, including the expanded base catalog, exactly once", () => {
+  const expected = actorFamilies.flatMap((family) =>
+    cardCatalog.filter((card) => card.family === family),
   );
   const projected = rulesActorGroups.flatMap((group) => group.cards);
 
@@ -15,7 +15,7 @@ test("projects every core Actor catalog card exactly once", () => {
     Object.fromEntries(
       rulesActorGroups.map((group) => [group.family, group.cards.length]),
     ),
-    { "actor-base": 44, "actor-role": 16, "actor-special": 24 },
+    { "actor-base": 84, "actor-role": 16, "actor-special": 24 },
   );
   assert.deepEqual(
     projected.map((card) => card.id),

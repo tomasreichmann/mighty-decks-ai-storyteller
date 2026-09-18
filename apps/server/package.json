@@ -25,7 +25,7 @@
   "dependencies": {
     "@fastify/cors": "^10.1.0",
     "@fastify/static": "^8.3.0",
-    "@mighty-decks/components": "git+https://github.com/tomasreichmann/mighty-decks-components.git#98598c99463000e51f752e911261a0520a19dd27",
+    "@mighty-decks/components": "github:tomasreichmann/mighty-decks-components#main",
     "@mighty-decks/spec": "workspace:*",
     "dotenv": "^16.4.5",
     "fastify": "^5.2.1",

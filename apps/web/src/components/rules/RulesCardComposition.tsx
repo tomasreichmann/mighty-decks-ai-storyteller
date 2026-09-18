@@ -1,6 +1,5 @@
-import { GameCard } from "@mighty-decks/components/react";
+import { ActorCard as PackageActorCard, GameCard } from "@mighty-decks/components/react";
 import type { ReactNode } from "react";
-import { ActorCard } from "../cards/ActorCard";
 import { AssetCard } from "../cards/AssetCard";
 import { AssetModifierCard } from "../cards/AssetModifierCard";
 import { CardBoundary } from "../common/CardBoundary";
@@ -8,7 +7,7 @@ import { Text } from "../common/Text";
 
 const Part = ({ label, children }: { label: string; children: ReactNode }): JSX.Element => (
   <li className="stack min-w-0 items-center gap-2 text-center">
-    <span className="font-heading text-sm font-bold text-kac-iron">{label}</span>
+    <span className="flex min-h-[3.75rem] items-end justify-center font-heading text-sm font-bold leading-5 text-kac-iron">{label}</span>
     {children}
   </li>
 );
@@ -36,7 +35,7 @@ export const ActorCompositionFigure = (): JSX.Element => (
       <Arrow />
       <Part label="Assembled Actor — Fast Minion">
         <CardBoundary label="Fast Minion Actor card failed">
-          <ActorCard baseLayerSlug="civilian" tacticalRoleSlug="minion" tacticalSpecialSlug="fast" className="w-[11rem] max-w-full" />
+          <PackageActorCard baseLayerSlug="civilian" tacticalRoleSlug="minion" tacticalSpecialSlug="fast" className="w-[11rem] max-w-full" />
         </CardBoundary>
       </Part>
     </ol>

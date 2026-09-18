@@ -1,8 +1,8 @@
 # Mighty Decks rules
 
-The package-owned English rulebook is imported directly by the public `/rules` route from the pinned `@mighty-decks/components` Git dependency. The package is the source of truth for core gameplay; this repository keeps no checked-in copy.
+The package-owned English rulebook is imported directly by the public `/rules` route from the `@mighty-decks/components` Git dependency, which tracks its `main` branch. The package is the source of truth for core gameplay; this repository keeps no checked-in copy.
 
-When intentionally updating the package SHA, review the canonical rulebook in the installed package. The fast-session prompt remains package reference material and is not injected into server prompts.
+When intentionally refreshing the package, review the canonical rulebook in the installed package. The fast-session prompt remains package reference material and is not injected into server prompts.
 
 The public `/rules` route renders its reader-facing canonical Markdown as one anchored, printable rulebook page. The Markdown contains reader-facing copy only; Quick Reference is section 28. The parser also strips a contiguous production illustration brief as defense in depth should one be introduced accidentally.
 
@@ -11,5 +11,11 @@ The generated canonical Markdown remains authoritative for all reader-facing pro
 Concise summaries may link to or index the rulebook, but they must not become competing rules sources. When a repository document, skill, example, or shared card conflicts with the rulebook, follow the rulebook and update the stale source. Product-scope documents may describe features that are not implemented yet; that implementation scope does not redefine the tabletop rules.
 
 The `/rules/outcomes`, `/rules/effects`, `/rules/stunts`, `/rules/actors`, and `/rules/assets` tabs remain component-reference pages. `/rules/actors` projects the package-owned core Actor catalog and reuses its canonical card renderer; this app owns only reader grouping and navigation. `/rules/ship-combat` is a separate prototype reference; it is not part of the canonical core rulebook unless the product owner explicitly makes that rules change.
+
+The Components package owns reusable card geometry, icon sizing, and overlay appearance. Generic Actor teaching figures use its standalone layers and assembled `ActorCard`. Generic Assets and standalone modifiers use thin Storyteller adapters to the package's `AssetCard` and `AssetModifierCard`. Storyteller retains its local Actor renderer and custom Asset compatibility paths for application-specific props; this does not make those paths the reference for canonical teaching figures. Application callbacks and reader layout remain in Storyteller. These rendering fixes do not change rules or catalog content.
+
+For temporary visual review, run the normal backend (`pnpm -C apps/server dev`) so package assets are served, then `pnpm -C apps/web dev --host` and open `/__dev/card-parity` directly on the frontend. No new environment variables are needed. This development-only route is absent from navigation and is not registered in production. It compares actual package and Storyteller paths at native and rules-page widths, including overlay surfaces and the composition figures. Labels identify shared delegates: identical output from two paths using the same package renderer is an adapter smoke check, not independent renderer evidence. Retained local Actor samples make the compatibility path visible separately.
+
+Keep the temporary route through review. After the corrected package integration is accepted and visual evidence is saved under `.agent-logs/rules-card-parity/`, remove only `CardParityPage.tsx`, its CSS module, the lazy import and route registration in `App.tsx`, and this temporary URL documentation. Keep the upstream regression coverage. See the [implementation and verification plan](plans/2026-09-18-rules-ui-card-parity.md) and [original issue report and resolution checklist](plans/issues-in-ui.md).
 
 The standalone [card-component catalog](mighty-decks-card-components.md) is generated from the shared `spec/` exports with `pnpm docs:cards`. Regenerate and commit it whenever card copy or a composable Actor, Asset, or Counter catalog changes; do not edit the generated Markdown directly.
