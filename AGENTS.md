@@ -1,5 +1,7 @@
 # AGENTS.md — Mighty Decks AI Storyteller (MVP)
 
+For new Campaign Session AI orchestration work, follow [MIG-21](docs/plans/2026-10-05-mig-21-ai-orchestration-architecture.md). The `Adventure` naming below governs the legacy MVP routes/state; Campaign Sessions are a distinct domain. Enforce the repository-wide 350-line TS/TSX limit and the new import boundary with `pnpm check:file-lengths` and `pnpm check:architecture`.
+
 This repo builds a **GM-less, text-first** multiplayer “AI Storyteller” for 1–5 players.
 It is a **single React PWA** with **two roles** (Player + Screen) connected to a **Node.js (TypeScript) Socket.IO** orchestrator.
 Models are accessed via **OpenRouter** including image generation.

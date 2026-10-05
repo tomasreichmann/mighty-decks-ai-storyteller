@@ -2,6 +2,8 @@
 
 This document describes the current post-MVP campaign flow that sits on top of Adventure Module authoring.
 
+The proposed AI extension is documented in [MIG-21 — AI orchestration prototype architecture and implementation plan](plans/2026-10-05-mig-21-ai-orchestration-architecture.md). That design includes a review of the 23 active prototype tickets, Campaign-wide mutation authority and checkpoints, typed orchestration boundaries, and a strict file-length guard plan. Those planned capabilities are not implemented by the human-session behavior described here.
+
 It covers the implemented `Campaigns` domain, human-storyteller session routes, and the dev-focused mock participant flow used for testing without a full table.
 
 ---

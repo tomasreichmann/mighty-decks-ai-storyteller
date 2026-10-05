@@ -76,6 +76,22 @@
     "./readiness": {
       "types": "./dist/readiness.d.ts",
       "import": "./dist/readiness.js"
+    },
+    "./aiRuntimeIds": {
+      "types": "./dist/aiRuntimeIds.d.ts",
+      "import": "./dist/aiRuntimeIds.js"
+    },
+    "./aiContext": {
+      "types": "./dist/aiContext.d.ts",
+      "import": "./dist/aiContext.js"
+    },
+    "./aiExecution": {
+      "types": "./dist/aiExecution.d.ts",
+      "import": "./dist/aiExecution.js"
+    },
+    "./aiModelPresets": {
+      "types": "./dist/aiModelPresets.d.ts",
+      "import": "./dist/aiModelPresets.js"
     }
   },
   "scripts": {

@@ -3,6 +3,8 @@
 This document describes the **system architecture** for the MVP:
 how the frontend, backend, and AI agents are connected, and how data flows between them.
 
+The Campaign Session AI extension is specified in [MIG-21](plans/2026-10-05-mig-21-ai-orchestration-architecture.md). This page describes the existing legacy Adventure runtime; it is not the implementation map for the new Campaign runtime. The MIG-21 foundation adds shared contracts and import/size guards, while Session coordination, model execution, and gameplay behavior belong to later tickets.
+
 The architecture is designed to be:
 
 - simple enough for fast iteration

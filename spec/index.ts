@@ -14,3 +14,7 @@ export * from "./imageGeneration";
 export * from "./workflowLab";
 export * from "./spaceshipBoardState";
 export * from "./readiness";
+export * from "./aiRuntimeIds";
+export * from "./aiContext";
+export * from "./aiExecution";
+export * from "./aiModelPresets";

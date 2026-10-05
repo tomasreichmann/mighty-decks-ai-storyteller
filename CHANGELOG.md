@@ -8,6 +8,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 
 ### Added
 
+- Add MIG-21 foundational runtime IDs, prompt provenance, model preset, and execution-event contracts, plus strict file-length and import-boundary checks. Existing oversized files remain visible guard failures.
+
 - Web: add `/rules/actors`, a core Actor base, tactical role, and tactical special reference using canonical package cards.
 
 - Web: add a read-only `/styleguide/board` reference for composing board and rulebook illustrations from shared layouts, canonical cards, tokens, and spaceship surfaces.
@@ -227,6 +229,8 @@ This changelog tracks the current repository baseline and ongoing unreleased wor
 - Remove the redundant helper instructions above shared actor, counter, asset, location, encounter, and quest authoring lists so module and campaign authoring open directly into the create action plus searchable grid.
 
 ### Docs
+
+- Document the MIG-21 Campaign AI architecture, existing-code assessment, 23-ticket backlog/dependency review, and exclusive Campaign mutation authority decision.
 
 - Plan a Git-file replacement for the components npm/release bridge: local generation, committed React/PNG outputs, pinned consumer sync, and removal of GitHub-side component builds.
 
